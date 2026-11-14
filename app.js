@@ -71,58 +71,59 @@
   });
   document.getElementById('current-year').textContent = String(new Date().getFullYear());
 
-  // The same catalog drives both collection pages and the latest items on Home.
+  // A single public JSON catalog powers the collections, homepage, and agent discovery.
   const types = ['tool', 'app', 'product'];
-  const catalog = (Array.isArray(window.YORPHIVES_CATALOG) ? window.YORPHIVES_CATALOG : [])
-    .filter(item => item && typeof item.name === 'string' && item.name.trim() && typeof item.description === 'string' && types.includes(item.type) && /^\d{4}-\d{2}-\d{2}$/.test(item.date || '') && (() => { const date = new Date(`${item.date}T00:00:00Z`); return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === item.date; })())
-    .sort((a, b) => b.date.localeCompare(a.date));
-
+  const recent = document.getElementById('recent-items');
+  function statusCard(text, label = 'THE COLLECTION') {
+    const box = document.createElement('div'); box.className = 'catalog-empty';
+    const tag = document.createElement('span'); tag.className = 'status-label'; tag.textContent = label;
+    const description = document.createElement('p'); description.textContent = text; box.append(tag, description);
+    return box;
+  }
+  function validItem(item) {
+    if (!item || typeof item.name !== 'string' || !item.name.trim() || typeof item.description !== 'string' || !types.includes(item.type) || !/^\d{4}-\d{2}-\d{2}$/.test(item.date || '')) return false;
+    const date = new Date(`${item.date}T00:00:00Z`);
+    return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === item.date;
+  }
   function card(item) {
-    const element = document.createElement('article');
-    element.className = 'catalog-card';
-    const tag = document.createElement('span');
-    tag.className = 'status-label';
-    tag.textContent = item.type === 'tool' ? 'FREE TOOL' : item.type.toUpperCase();
-    const title = document.createElement('h3');
-    title.textContent = item.name;
-    const description = document.createElement('p');
-    description.textContent = item.description;
-    const date = document.createElement('time');
-    date.dateTime = item.date;
-    date.textContent = `ADDED ${item.date}`;
+    const element = document.createElement('article'); element.className = 'catalog-card';
+    const tag = document.createElement('span'); tag.className = 'status-label'; tag.textContent = item.type === 'tool' ? 'FREE TOOL' : item.type.toUpperCase();
+    const title = document.createElement('h3'); title.textContent = item.name;
+    const description = document.createElement('p'); description.textContent = item.description;
+    const date = document.createElement('time'); date.dateTime = item.date; date.textContent = `ADDED ${item.date}`;
     element.append(tag, title, description, date);
     if (typeof item.url === 'string' && item.url.trim()) {
       try {
         const destination = new URL(item.url, window.location.href);
         if (destination.protocol === 'http:' || destination.protocol === 'https:') {
-          const link = document.createElement('a');
-          link.className = 'text-link dark-link';
-          link.href = destination.href;
-          link.textContent = `Explore ${item.name}`;
-          element.append(link);
+          const link = document.createElement('a'); link.className = 'text-link dark-link'; link.href = destination.href;
+          link.textContent = `Open ${item.name}`; element.append(link);
         }
-      } catch (_) { /* Keep the card readable if the URL is incomplete. */ }
+      } catch (_) { /* Leave incomplete URLs unlinked. */ }
     }
     return element;
   }
-
-  const recent = document.getElementById('recent-items');
-  if (catalog.length) catalog.slice(0, 3).forEach(item => recent.append(card(item)));
-  else {
-    const empty = document.createElement('div');
-    empty.className = 'catalog-empty';
-    const label = document.createElement('span');
-    label.className = 'status-label';
-    label.textContent = 'THE FIRST CHAPTER';
-    const message = document.createElement('p');
-    message.textContent = 'Our first tools and products are taking shape. New additions will appear here.';
-    empty.append(label, message);
-    recent.append(empty);
+  async function loadCatalog() {
+    recent.replaceChildren(statusCard('Loading the latest tools and products…'));
+    try {
+      const response = await fetch('catalog.json');
+      if (!response.ok) throw new Error('Catalog unavailable');
+      const data = await response.json();
+      if (!Array.isArray(data.items)) throw new Error('Invalid catalog');
+      const catalog = data.items.filter(validItem).sort((a, b) => b.date.localeCompare(a.date));
+      recent.replaceChildren();
+      if (catalog.length) catalog.slice(0, 3).forEach(item => recent.append(card(item)));
+      else recent.append(statusCard('Our first tools and products are taking shape. New additions will appear here.', 'THE FIRST CHAPTER'));
+      for (const [id, items] of [['tools', catalog.filter(item => item.type === 'tool')], ['explore', catalog.filter(item => item.type !== 'tool')]]) {
+        const grid = document.getElementById(`${id}-items`);
+        const empty = document.getElementById(`${id}-empty`);
+        grid.replaceChildren(); empty.hidden = items.length > 0;
+        items.forEach(item => grid.append(card(item)));
+      }
+    } catch (_) {
+      recent.replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
+      for (const id of ['tools', 'explore']) document.getElementById(`${id}-items`).replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
+    }
   }
-  for (const [id, items] of [['tools', catalog.filter(item => item.type === 'tool')], ['explore', catalog.filter(item => item.type !== 'tool')]]) {
-    if (!items.length) continue;
-    const grid = document.getElementById(`${id}-items`);
-    items.forEach(item => grid.append(card(item)));
-    document.getElementById(`${id}-empty`).hidden = true;
-  }
+  loadCatalog();
 })();
