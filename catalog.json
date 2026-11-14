@@ -3,13 +3,1127 @@
   "description": "YorpHives tools and products. Browser tools run locally; no hosted execution API is currently provided.",
   "items": [
     {
+      "name": "Word & Character Counter",
+      "description": "Count words, characters, sentences, paragraphs, and estimated reading time.",
+      "type": "tool",
+      "category": "Writing",
+      "date": "2026-11-14",
+      "url": "tools/word-counter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: word-counter",
+          "object of named form inputs"
+        ],
+        "toolId": "word-counter",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "Paste or type text here"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Text Case Converter",
+      "description": "Convert text to uppercase, lowercase, title case, or sentence case.",
+      "type": "tool",
+      "category": "Writing",
+      "date": "2026-11-14",
+      "url": "tools/case-converter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: case-converter",
+          "object of named form inputs"
+        ],
+        "toolId": "case-converter",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "Paste or type text here"
+          },
+          {
+            "name": "mode",
+            "type": "select",
+            "options": [
+              "upper",
+              "lower",
+              "title",
+              "sentence"
+            ],
+            "default": "upper"
+          }
+        ]
+      }
+    },
+    {
+      "name": "URL Slug Generator",
+      "description": "Turn a title into a clean, readable URL slug.",
+      "type": "tool",
+      "category": "Writing",
+      "date": "2026-11-14",
+      "url": "tools/slug-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: slug-generator",
+          "object of named form inputs"
+        ],
+        "toolId": "slug-generator",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "A useful title for your page"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Duplicate Line Remover",
+      "description": "Remove repeated lines while keeping their original order.",
+      "type": "tool",
+      "category": "Writing",
+      "date": "2026-11-14",
+      "url": "tools/duplicate-line-remover/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: duplicate-line-remover",
+          "object of named form inputs"
+        ],
+        "toolId": "duplicate-line-remover",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "One item per line"
+          },
+          {
+            "name": "ignorecase",
+            "type": "checkbox",
+            "checkedValue": "on",
+            "defaultChecked": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Line Sorter",
+      "description": "Sort lines alphabetically or in natural numeric order.",
+      "type": "tool",
+      "category": "Writing",
+      "date": "2026-11-14",
+      "url": "tools/line-sorter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: line-sorter",
+          "object of named form inputs"
+        ],
+        "toolId": "line-sorter",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "One item per line"
+          },
+          {
+            "name": "order",
+            "type": "select",
+            "options": [
+              "asc",
+              "desc"
+            ],
+            "default": "asc"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Whitespace Cleaner",
+      "description": "Clean spaces and blank lines with simple, configurable options.",
+      "type": "tool",
+      "category": "Writing",
+      "date": "2026-11-14",
+      "url": "tools/whitespace-cleaner/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: whitespace-cleaner",
+          "object of named form inputs"
+        ],
+        "toolId": "whitespace-cleaner",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "Paste or type text here"
+          },
+          {
+            "name": "trim",
+            "type": "checkbox",
+            "checkedValue": "on",
+            "defaultChecked": true
+          },
+          {
+            "name": "collapse",
+            "type": "checkbox",
+            "checkedValue": "on",
+            "defaultChecked": true
+          },
+          {
+            "name": "empty",
+            "type": "checkbox",
+            "checkedValue": "on",
+            "defaultChecked": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Text Find & Replace",
+      "description": "Find and replace an exact piece of text without uploading it.",
+      "type": "tool",
+      "category": "Writing",
+      "date": "2026-11-14",
+      "url": "tools/text-find-replace/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: text-find-replace",
+          "object of named form inputs"
+        ],
+        "toolId": "text-find-replace",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "Paste or type text here"
+          },
+          {
+            "name": "find",
+            "type": "text",
+            "default": "",
+            "placeholder": "Text to find"
+          },
+          {
+            "name": "replace",
+            "type": "text",
+            "default": "",
+            "placeholder": "Replacement text"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Text Difference Checker",
+      "description": "Compare two versions of text line by line.",
+      "type": "tool",
+      "category": "Writing",
+      "date": "2026-11-14",
+      "url": "tools/text-diff/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: text-diff",
+          "object of named form inputs"
+        ],
+        "toolId": "text-diff",
+        "inputs": [
+          {
+            "name": "original",
+            "type": "textarea",
+            "placeholder": "Paste the original text"
+          },
+          {
+            "name": "revised",
+            "type": "textarea",
+            "placeholder": "Paste the revised text"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Base64 Encoder & Decoder",
+      "description": "Encode and decode UTF-8 text using Base64.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-14",
+      "url": "tools/base64-tool/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: base64-tool",
+          "object of named form inputs"
+        ],
+        "toolId": "base64-tool",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "Paste or type text here"
+          },
+          {
+            "name": "mode",
+            "type": "select",
+            "options": [
+              "encode",
+              "decode"
+            ],
+            "default": "encode"
+          }
+        ]
+      }
+    },
+    {
+      "name": "URL Encoder & Decoder",
+      "description": "Encode or decode a URL component using percent encoding.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-14",
+      "url": "tools/url-encoder/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: url-encoder",
+          "object of named form inputs"
+        ],
+        "toolId": "url-encoder",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "Paste or type text here"
+          },
+          {
+            "name": "mode",
+            "type": "select",
+            "options": [
+              "encode",
+              "decode"
+            ],
+            "default": "encode"
+          }
+        ]
+      }
+    },
+    {
+      "name": "HTML Entity Encoder & Decoder",
+      "description": "Encode special HTML characters or decode common entities and numeric references.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-14",
+      "url": "tools/html-entities/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: html-entities",
+          "object of named form inputs"
+        ],
+        "toolId": "html-entities",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "Paste or type text here"
+          },
+          {
+            "name": "mode",
+            "type": "select",
+            "options": [
+              "encode",
+              "decode"
+            ],
+            "default": "encode"
+          }
+        ]
+      }
+    },
+    {
+      "name": "JSON to CSV Converter",
+      "description": "Convert an array of JSON objects into CSV for spreadsheets and data tools.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-14",
+      "url": "tools/json-to-csv/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: json-to-csv",
+          "object of named form inputs"
+        ],
+        "toolId": "json-to-csv",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "[{\"name\":\"Mira\",\"score\":42},{\"name\":\"Kai\",\"score\":35}]"
+          },
+          {
+            "name": "safe",
+            "type": "checkbox",
+            "checkedValue": "on",
+            "defaultChecked": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "CSV to JSON Converter",
+      "description": "Convert CSV with a header row into an array of JSON objects.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-14",
+      "url": "tools/csv-to-json/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: csv-to-json",
+          "object of named form inputs"
+        ],
+        "toolId": "csv-to-json",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "name,score\nMira,42\nKai,35"
+          }
+        ]
+      }
+    },
+    {
+      "name": "URL Parser",
+      "description": "Inspect a URL’s host, path, query parameters, and fragment.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-14",
+      "url": "tools/url-parser/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: url-parser",
+          "object of named form inputs"
+        ],
+        "toolId": "url-parser",
+        "inputs": [
+          {
+            "name": "url",
+            "type": "url",
+            "default": "https://example.com/page?ref=news#section"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UUID Generator",
+      "description": "Generate version 4 UUIDs using your browser’s secure random generator.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-14",
+      "url": "tools/uuid-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: uuid-generator",
+          "object of named form inputs"
+        ],
+        "toolId": "uuid-generator",
+        "inputs": [
+          {
+            "name": "count",
+            "type": "number",
+            "default": "5",
+            "min": "1",
+            "max": "100",
+            "step": "1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SHA Hash Generator",
+      "description": "Create a SHA-256, SHA-384, or SHA-512 hash of UTF-8 text.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-14",
+      "url": "tools/hash-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: hash-generator",
+          "object of named form inputs"
+        ],
+        "toolId": "hash-generator",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "Paste or type text here"
+          },
+          {
+            "name": "algorithm",
+            "type": "select",
+            "options": [
+              "SHA-256",
+              "SHA-384",
+              "SHA-512"
+            ],
+            "default": "SHA-256"
+          }
+        ]
+      }
+    },
+    {
+      "name": "JWT Decoder",
+      "description": "Read the header and payload of a JSON Web Token locally.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-14",
+      "url": "tools/jwt-decoder/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: jwt-decoder",
+          "object of named form inputs"
+        ],
+        "toolId": "jwt-decoder",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "Paste a JWT with three dot-separated parts"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Unix Timestamp Converter",
+      "description": "Convert Unix timestamps to UTC dates or timezone-qualified ISO dates to timestamps.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-14",
+      "url": "tools/unix-timestamp/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: unix-timestamp",
+          "object of named form inputs"
+        ],
+        "toolId": "unix-timestamp",
+        "inputs": [
+          {
+            "name": "mode",
+            "type": "select",
+            "options": [
+              "to-date",
+              "to-timestamp"
+            ],
+            "default": "to-date"
+          },
+          {
+            "name": "value",
+            "type": "text",
+            "default": "1704067200"
+          },
+          {
+            "name": "unit",
+            "type": "select",
+            "options": [
+              "seconds",
+              "milliseconds"
+            ],
+            "default": "seconds"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Percentage Calculator",
+      "description": "Calculate a percentage of a value, a percentage share, or percentage change.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-14",
+      "url": "tools/percentage-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: percentage-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "percentage-calculator",
+        "inputs": [
+          {
+            "name": "mode",
+            "type": "select",
+            "options": [
+              "of",
+              "what",
+              "change"
+            ],
+            "default": "of"
+          },
+          {
+            "name": "a",
+            "type": "number",
+            "default": "20",
+            "step": "any"
+          },
+          {
+            "name": "b",
+            "type": "number",
+            "default": "150",
+            "step": "any"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Discount Calculator",
+      "description": "Calculate a sale price and savings from an original price and discount.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-14",
+      "url": "tools/discount-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: discount-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "discount-calculator",
+        "inputs": [
+          {
+            "name": "price",
+            "type": "number",
+            "default": "100",
+            "min": "0",
+            "step": "any"
+          },
+          {
+            "name": "rate",
+            "type": "number",
+            "default": "20",
+            "min": "0",
+            "max": "100",
+            "step": "any"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Profit Margin Calculator",
+      "description": "Calculate profit, margin, and markup from cost and selling price.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-14",
+      "url": "tools/profit-margin/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: profit-margin",
+          "object of named form inputs"
+        ],
+        "toolId": "profit-margin",
+        "inputs": [
+          {
+            "name": "cost",
+            "type": "number",
+            "default": "60",
+            "min": "0",
+            "step": "any"
+          },
+          {
+            "name": "price",
+            "type": "number",
+            "default": "100",
+            "min": "0.01",
+            "step": "any"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Tip & Bill Split Calculator",
+      "description": "Calculate a tip and split a bill among a group.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-14",
+      "url": "tools/tip-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: tip-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "tip-calculator",
+        "inputs": [
+          {
+            "name": "bill",
+            "type": "number",
+            "default": "100",
+            "min": "0",
+            "step": "any"
+          },
+          {
+            "name": "rate",
+            "type": "number",
+            "default": "15",
+            "min": "0",
+            "step": "any"
+          },
+          {
+            "name": "people",
+            "type": "number",
+            "default": "2",
+            "min": "1",
+            "max": "1000",
+            "step": "1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Sales Tax Calculator",
+      "description": "Calculate tax and the total from an amount and a rate you provide.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-14",
+      "url": "tools/sales-tax-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: sales-tax-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "sales-tax-calculator",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "number",
+            "default": "100",
+            "min": "0",
+            "step": "any"
+          },
+          {
+            "name": "rate",
+            "type": "number",
+            "default": "10",
+            "min": "0",
+            "step": "any"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Unit Converter",
+      "description": "Convert common length, weight, and temperature units.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-14",
+      "url": "tools/unit-converter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: unit-converter",
+          "object of named form inputs"
+        ],
+        "toolId": "unit-converter",
+        "inputs": [
+          {
+            "name": "value",
+            "type": "number",
+            "default": "1000",
+            "step": "any"
+          },
+          {
+            "name": "from",
+            "type": "select",
+            "options": [
+              "mm",
+              "cm",
+              "m",
+              "km",
+              "in",
+              "ft",
+              "yd",
+              "mi",
+              "mg",
+              "g",
+              "kg",
+              "oz",
+              "lb",
+              "c",
+              "f",
+              "k"
+            ],
+            "default": "m"
+          },
+          {
+            "name": "to",
+            "type": "select",
+            "options": [
+              "mm",
+              "cm",
+              "m",
+              "km",
+              "in",
+              "ft",
+              "yd",
+              "mi",
+              "mg",
+              "g",
+              "kg",
+              "oz",
+              "lb",
+              "c",
+              "f",
+              "k"
+            ],
+            "default": "km"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Time Duration Calculator",
+      "description": "Find the time between two clock times, including an overnight end.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-14",
+      "url": "tools/time-duration/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: time-duration",
+          "object of named form inputs"
+        ],
+        "toolId": "time-duration",
+        "inputs": [
+          {
+            "name": "start",
+            "type": "time",
+            "default": "09:00"
+          },
+          {
+            "name": "end",
+            "type": "time",
+            "default": "17:30"
+          },
+          {
+            "name": "overnight",
+            "type": "checkbox",
+            "checkedValue": "on",
+            "defaultChecked": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Average & Median Calculator",
+      "description": "Calculate the mean, median, sum, and range of a list of numbers.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-14",
+      "url": "tools/average-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: average-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "average-calculator",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "placeholder": "10, 20, 30, 40"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Hex Color Converter",
+      "description": "Convert a hex color into RGB and HSL values.",
+      "type": "tool",
+      "category": "Design",
+      "date": "2026-11-14",
+      "url": "tools/color-converter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: color-converter",
+          "object of named form inputs"
+        ],
+        "toolId": "color-converter",
+        "inputs": [
+          {
+            "name": "color",
+            "type": "text",
+            "default": "#37b69c"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Color Contrast Checker",
+      "description": "Check text and background colors against WCAG contrast thresholds.",
+      "type": "tool",
+      "category": "Design",
+      "date": "2026-11-14",
+      "url": "tools/contrast-checker/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: contrast-checker",
+          "object of named form inputs"
+        ],
+        "toolId": "contrast-checker",
+        "inputs": [
+          {
+            "name": "foreground",
+            "type": "text",
+            "default": "#123329"
+          },
+          {
+            "name": "background",
+            "type": "text",
+            "default": "#ffffff"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CSS Gradient Generator",
+      "description": "Create a two-color CSS linear gradient and preview the result.",
+      "type": "tool",
+      "category": "Design",
+      "date": "2026-11-14",
+      "url": "tools/gradient-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: gradient-generator",
+          "object of named form inputs"
+        ],
+        "toolId": "gradient-generator",
+        "inputs": [
+          {
+            "name": "first",
+            "type": "text",
+            "default": "#38c4a5"
+          },
+          {
+            "name": "second",
+            "type": "text",
+            "default": "#176cb0"
+          },
+          {
+            "name": "angle",
+            "type": "number",
+            "default": "135",
+            "min": "0",
+            "max": "360",
+            "step": "1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Aspect Ratio Calculator",
+      "description": "Simplify image dimensions and calculate a proportional height.",
+      "type": "tool",
+      "category": "Design",
+      "date": "2026-11-14",
+      "url": "tools/aspect-ratio-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: aspect-ratio-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "aspect-ratio-calculator",
+        "inputs": [
+          {
+            "name": "width",
+            "type": "number",
+            "default": "1920",
+            "min": "1",
+            "step": "1"
+          },
+          {
+            "name": "height",
+            "type": "number",
+            "default": "1080",
+            "min": "1",
+            "step": "1"
+          },
+          {
+            "name": "target",
+            "type": "number",
+            "default": "800",
+            "min": "1",
+            "step": "any"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Color Palette Generator",
+      "description": "Generate five evenly spaced colors from a hex color.",
+      "type": "tool",
+      "category": "Design",
+      "date": "2026-11-14",
+      "url": "tools/color-palette/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: color-palette",
+          "object of named form inputs"
+        ],
+        "toolId": "color-palette",
+        "inputs": [
+          {
+            "name": "color",
+            "type": "text",
+            "default": "#37b69c"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Password Generator",
+      "description": "Generate a random password locally with your chosen character sets.",
+      "type": "tool",
+      "category": "Security",
+      "date": "2026-11-14",
+      "url": "tools/password-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/utility-core.mjs",
+        "export": "runUtility",
+        "arguments": [
+          "tool id: password-generator",
+          "object of named form inputs"
+        ],
+        "toolId": "password-generator",
+        "inputs": [
+          {
+            "name": "length",
+            "type": "number",
+            "default": "20",
+            "min": "8",
+            "max": "128",
+            "step": "1"
+          },
+          {
+            "name": "lower",
+            "type": "checkbox",
+            "checkedValue": "on",
+            "defaultChecked": true
+          },
+          {
+            "name": "upper",
+            "type": "checkbox",
+            "checkedValue": "on",
+            "defaultChecked": true
+          },
+          {
+            "name": "numbers",
+            "type": "checkbox",
+            "checkedValue": "on",
+            "defaultChecked": true
+          },
+          {
+            "name": "symbols",
+            "type": "checkbox",
+            "checkedValue": "on",
+            "defaultChecked": true
+          }
+        ]
+      }
+    },
+    {
       "name": "JSON Formatter & Validator",
       "description": "Format, minify, and validate JSON while preserving the original numbers.",
       "type": "tool",
       "date": "2026-11-14",
       "url": "tools/json-formatter/",
       "execution": "browser-local",
-      "module": { "url": "tools/toolkit.mjs", "export": "formatJson", "arguments": ["jsonText", "indent (0, 2, or 4)"] }
+      "module": {
+        "url": "tools/toolkit.mjs",
+        "export": "formatJson",
+        "arguments": [
+          "jsonText",
+          "indent (0, 2, or 4)"
+        ]
+      },
+      "category": "Developer"
     },
     {
       "name": "Campaign URL Builder",
@@ -18,7 +1132,15 @@
       "date": "2026-11-14",
       "url": "tools/campaign-url-builder/",
       "execution": "browser-local",
-      "module": { "url": "tools/toolkit.mjs", "export": "buildCampaignUrl", "arguments": ["baseUrl", "parameters object with source, medium, campaign, term, and content"] }
+      "module": {
+        "url": "tools/toolkit.mjs",
+        "export": "buildCampaignUrl",
+        "arguments": [
+          "baseUrl",
+          "parameters object with source, medium, campaign, term, and content"
+        ]
+      },
+      "category": "Marketing"
     },
     {
       "name": "Image Resizer & Compressor",
@@ -27,7 +1149,8 @@
       "date": "2026-11-14",
       "url": "tools/image-resizer/",
       "execution": "browser-local",
-      "module": null
+      "module": null,
+      "category": "Creator"
     }
   ]
 }

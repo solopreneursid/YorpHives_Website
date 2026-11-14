@@ -87,7 +87,7 @@
   }
   function card(item) {
     const element = document.createElement('article'); element.className = 'catalog-card';
-    const tag = document.createElement('span'); tag.className = 'status-label'; tag.textContent = item.type === 'tool' ? 'FREE TOOL' : item.type.toUpperCase();
+    const tag = document.createElement('span'); tag.className = 'status-label'; tag.textContent = item.type === 'tool' ? `FREE TOOL${item.category ? ` / ${item.category.toUpperCase()}` : ''}` : item.type.toUpperCase();
     const title = document.createElement('h3'); title.textContent = item.name;
     const description = document.createElement('p'); description.textContent = item.description;
     const date = document.createElement('time'); date.dateTime = item.date; date.textContent = `ADDED ${item.date}`;
@@ -114,12 +114,29 @@
       recent.replaceChildren();
       if (catalog.length) catalog.slice(0, 3).forEach(item => recent.append(card(item)));
       else recent.append(statusCard('Our first tools and products are taking shape. New additions will appear here.', 'THE FIRST CHAPTER'));
-      for (const [id, items] of [['tools', catalog.filter(item => item.type === 'tool')], ['explore', catalog.filter(item => item.type !== 'tool')]]) {
-        const grid = document.getElementById(`${id}-items`);
-        const empty = document.getElementById(`${id}-empty`);
-        grid.replaceChildren(); empty.hidden = items.length > 0;
-        items.forEach(item => grid.append(card(item)));
+      const tools = catalog.filter(item => item.type === 'tool');
+      const toolsGrid = document.getElementById('tools-items');
+      const toolsEmpty = document.getElementById('tools-empty');
+      const controls = document.getElementById('tool-controls');
+      const search = document.getElementById('tool-search');
+      const category = document.getElementById('tool-category');
+      const count = document.getElementById('tool-count');
+      toolsEmpty.hidden = tools.length > 0; controls.hidden = tools.length === 0;
+      for (const name of [...new Set(tools.map(item => item.category).filter(Boolean))].sort()) {
+        const option = document.createElement('option'); option.value = name; option.textContent = name; category.append(option);
       }
+      function renderTools() {
+        const query = search.value.trim().toLocaleLowerCase();
+        const matches = tools.filter(item => (!category.value || item.category === category.value) && (!query || `${item.name} ${item.description} ${item.category || ''}`.toLocaleLowerCase().includes(query)));
+        toolsGrid.replaceChildren(); matches.forEach(item => toolsGrid.append(card(item)));
+        if (tools.length && !matches.length) toolsGrid.append(statusCard('No tools match your search. Try a different term or category.', 'NO MATCHES'));
+        count.textContent = tools.length ? `${matches.length} ${matches.length === 1 ? 'tool' : 'tools'}${matches.length !== tools.length ? ` of ${tools.length}` : ''}` : '';
+      }
+      search.addEventListener('input', renderTools); category.addEventListener('change', renderTools); renderTools();
+      const products = catalog.filter(item => item.type !== 'tool');
+      const productGrid = document.getElementById('explore-items'); productGrid.replaceChildren();
+      document.getElementById('explore-empty').hidden = products.length > 0;
+      products.forEach(item => productGrid.append(card(item)));
     } catch (_) {
       recent.replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
       for (const id of ['tools', 'explore']) document.getElementById(`${id}-items`).replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
