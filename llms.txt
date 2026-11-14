@@ -1,0 +1,13 @@
+# YorpHives
+
+YorpHives is an independent digital studio exploring tools, websites, applications, and AI agents.
+
+## Free tools
+
+- JSON Formatter & Validator: /tools/json-formatter/ — format, minify, and validate JSON locally in a browser while preserving the original number and string text.
+- Campaign URL Builder: /tools/campaign-url-builder/ — create UTM campaign links locally in a browser.
+- Image Resizer & Compressor: /tools/image-resizer/ — resize and compress JPEG, PNG, and WebP images locally in a browser.
+
+The machine-readable catalog is at /catalog.json. The first two tools expose reusable, dependency-free JavaScript functions in /tools/toolkit.mjs. Fetch the module to use it locally; there is no hosted execution API. Images and form inputs are not uploaded by these tools.
+
+Contact: connect@yorphives.com
