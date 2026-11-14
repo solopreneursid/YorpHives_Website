@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "description": "YorpHives tools and products. Browser tools run locally; no hosted execution API is currently provided.",
+  "items": [
+    {
+      "name": "JSON Formatter & Validator",
+      "description": "Format, minify, and validate JSON while preserving the original numbers.",
+      "type": "tool",
+      "date": "2026-11-14",
+      "url": "tools/json-formatter/",
+      "execution": "browser-local",
+      "module": { "url": "tools/toolkit.mjs", "export": "formatJson", "arguments": ["jsonText", "indent (0, 2, or 4)"] }
+    },
+    {
+      "name": "Campaign URL Builder",
+      "description": "Create clean UTM tracking links for campaigns, newsletters, and social posts.",
+      "type": "tool",
+      "date": "2026-11-14",
+      "url": "tools/campaign-url-builder/",
+      "execution": "browser-local",
+      "module": { "url": "tools/toolkit.mjs", "export": "buildCampaignUrl", "arguments": ["baseUrl", "parameters object with source, medium, campaign, term, and content"] }
+    },
+    {
+      "name": "Image Resizer & Compressor",
+      "description": "Resize and compress images privately in your browser, with no upload.",
+      "type": "tool",
+      "date": "2026-11-14",
+      "url": "tools/image-resizer/",
+      "execution": "browser-local",
+      "module": null
+    }
+  ]
+}
