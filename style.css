@@ -6,3 +6,4 @@
 @media(max-width:800px){.site-nav{max-height:calc(100vh - 76px);max-height:calc(100dvh - 76px);overflow-y:auto;overscroll-behavior:contain}}
 /* Founder-led studio illustration */
 .home-hero h1 em{font-size:.91em}
+.footer-directory{display:flex;align-items:center;flex-wrap:wrap;gap:14px 24px;border-top:1px solid #ffffff1d;margin-top:48px;padding-top:22px}.footer-directory span{font-size:9px;letter-spacing:.16em;font-weight:800;color:#7e9d91}.footer-directory a{font-size:12px;color:#b1c7bb}.footer-directory a:hover{color:#c2ffe6}.footer-directory+.footer-bottom{margin-top:25px}
