@@ -20,3 +20,8 @@
 /tools/models/u2netp-309c8469.onnx
   Cache-Control: public, max-age=31536000, immutable
   X-Content-Type-Options: nosniff
+
+# Immutable, SHA-256-pinned optional 6.6 MB Apache-2.0 MODNet portrait model.
+/tools/models/modnet-int8-92e49898.onnx
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
