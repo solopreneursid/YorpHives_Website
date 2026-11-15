@@ -1,0 +1,151 @@
+// Build provider-neutral, crawlable static pages from the public catalog.
+// Preview builds are explicitly noindex; production builds are canonical to
+// yorphives.com. Never copy tests, source scripts, or git internals into assets.
+import {cp,mkdir,readFile,readdir,rm,stat,writeFile} from 'node:fs/promises';
+import {dirname,join,resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const dest=resolve(root,'dist');
+const target=process.argv.find(s=>s.startsWith('--target='))?.slice('--target='.length);
+if(!['preview','production'].includes(target))
+  throw Error('Select an explicit build target: --target=preview or --target=production');
+const origin='https://yorphives.com/';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const xml=esc;
+const pathRx=/^(?:(?:[a-z0-9][a-z0-9-]*\/)+|(?:[a-z0-9][a-z0-9-]*\/)*[a-z0-9][a-z0-9-]*\.html)$/;
+const fileFor=url=>url.endsWith('/')?url+'index.html':url;
+const src=async path=>readFile(resolve(root,path),'utf8');
+const output=async path=>readFile(resolve(dest,path),'utf8');
+const write=async (path,content)=>{const file=resolve(dest,path);await mkdir(dirname(file),{recursive:true});await writeFile(file,content);};
+const exists=async path=>stat(resolve(dest,path)).then(s=>s.isFile()).catch(()=>false);
+const catalog=JSON.parse(await src('catalog.json'));
+if(!Array.isArray(catalog.items))throw Error('Catalog has no items.');
+const published=catalog.items.filter(item=>item.published!==false&&item.visibility!=='private');
+const seen=new Set();
+for(const item of published){
+ if(!item||typeof item.name!=='string'||!item.name.trim()||typeof item.description!=='string'||!item.description.trim())
+   throw Error('Every public page requires a useful name and description.');
+ if(typeof item.url!=='string'||!pathRx.test(item.url)||item.url.includes('..'))
+   throw Error('Invalid public path: '+String(item.url));
+ if(seen.has(item.url))throw Error('Duplicate public path: '+item.url);
+ seen.add(item.url);
+}
+await rm(dest,{recursive:true,force:true});
+await mkdir(dest,{recursive:true});
+for(const file of ['index.html','app.js','style.css','catalog.json','_headers','robots.txt','llms.txt'])
+ await cp(resolve(root,file),resolve(dest,file));
+const roots=new Set(['tools',...published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0])]);
+for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory()).catch(()=>false))
+ await cp(resolve(root,dir),resolve(dest,dir),{recursive:true});
+for(const item of published)if(!item.url.includes('/'))
+ await cp(resolve(root,item.url),resolve(dest,item.url));
+const appCategory=category=>{
+ const c=String(category||'').toLowerCase();
+ if(/developer|code|programming/.test(c))return 'DeveloperApplication';
+ if(/design|image|color/.test(c))return 'DesignApplication';
+ if(/business|marketing|finance|calculator/.test(c))return 'BusinessApplication';
+ if(/security|password/.test(c))return 'SecurityApplication';
+ if(/video|audio|media|presentation/.test(c))return 'MultimediaApplication';
+ return 'UtilitiesApplication';
+};
+const dataJson=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026');
+function injectHead(html,metadata){
+ if(!/<\/head>/i.test(html)||!/<h1\b/i.test(html))throw Error('Public page lacks a <head> or <h1>.');
+ // Remove our previous generated block if regenerating; avoid duplicate canonicals.
+ html=html.replace(/<link\b[^>]*rel=["']canonical["'][^>]*>/gi,'')
+   .replace(/<meta\b[^>]*property=["']og:url["'][^>]*>/gi,'')
+   .replace(/<meta\b[^>]*name=["']twitter:card["'][^>]*>/gi,'')
+   .replace(/<script\b[^>]*id=["']yorphives-discovery-schema["'][\s\S]*?<\/script>/gi,'');
+ return html.replace(/<\/head>/i,metadata+'</head>');
+}
+function metadata(url,graph){
+ return '<link rel="canonical" href="'+esc(url)+'">'+
+ '<meta property="og:url" content="'+esc(url)+'">'+
+ '<meta name="twitter:card" content="summary">'+
+ '<script type="application/ld+json" id="yorphives-discovery-schema">'+dataJson({'@context':'https://schema.org','@graph':graph})+'</script>';
+}
+for(const item of published){
+ const path=fileFor(item.url);
+ if(!await exists(path))throw Error('Published page not found: '+path);
+ let html=await output(path);
+ // Supersede the original generator's minimal, redundant WebApplication block.
+ html=html.replace(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi,block=>{
+  try {const old=JSON.parse(block.slice(block.indexOf('>')+1,block.lastIndexOf('</script>')));
+   if(old['@type']==='WebApplication'&&old.name===item.name)return '';
+  }catch{/* Preserve manually written markup */}return block;
+ });
+ const url=origin+item.url,id=url+'#main-entity',bread=url+'#breadcrumbs';
+ const ancestors=[{'@type':'ListItem',position:1,name:'YorpHives',item:origin}];
+ const top=item.url.split('/')[0]+'/';
+ if(item.url.includes('/')&&await exists(top+'index.html'))
+  ancestors.push({'@type':'ListItem',position:ancestors.length+1,name:top==='tools/'?'Free tools':top.slice(0,-1),item:origin+top});
+ ancestors.push({'@type':'ListItem',position:ancestors.length+1,name:item.name,item:url});
+ const entity={'@id':id,'@type':item.type==='product'?'Product':item.type==='service'?'Service':
+  item.type==='tool'||item.type==='app'?'WebApplication':'Thing',
+  name:item.name,description:item.description,url};
+ if(['tool','app'].includes(item.type)){
+  entity.applicationCategory=appCategory(item.category);
+  entity.operatingSystem=item.execution==='browser-local'?'Any modern web browser':item.operatingSystem||'Web browser';
+  if(item.type==='tool'||item.isFree===true){
+   entity.isAccessibleForFree=true;
+   entity.offers={'@type':'Offer',price:'0',priceCurrency:'USD'};
+  }
+ }
+ if(typeof item.price==='number'&&Number.isFinite(item.price)&&item.price>=0&&/^[A-Z]{3}$/.test(item.currency||'')){
+  entity.offers={'@type':'Offer',price:String(item.price),priceCurrency:item.currency};
+ }
+ const graph=[
+  {'@type':'WebPage','@id':url+'#webpage',url,name:item.name+' | YorpHives',description:item.description,
+   inLanguage:'en',mainEntity:{'@id':id},breadcrumb:{'@id':bread}},
+  {'@type':'BreadcrumbList','@id':bread,itemListElement:ancestors},
+  entity
+ ];
+ html=injectHead(html,metadata(url,graph));
+ await write(path,html);
+}
+// A directory stays crawlable and provides standard links to every item.
+const directories=[...new Set(published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0]+'/'))];
+for(const directory of directories){
+ const path=directory+'index.html';
+ if(!await exists(path))continue;
+ const url=origin+directory,inside=published.filter(x=>x.url.startsWith(directory));
+ let html=await output(path);
+ const graph=[
+  {'@type':'CollectionPage','@id':url+'#webpage',url,name:directory==='tools/'?'Free tools directory | YorpHives':'YorpHives '+directory.slice(0,-1),
+   mainEntity:{'@id':url+'#items'}},
+  {'@type':'ItemList','@id':url+'#items',itemListElement:inside.map((x,i)=>({
+   '@type':'ListItem',position:i+1,name:x.name,url:origin+x.url
+  }))}
+ ];
+ html=injectHead(html,metadata(url,graph));
+ await write(path,html);
+}
+const urls=['',...directories.filter(async()=>true),...published.map(x=>x.url)];
+const canonicalPaths=[...new Set(urls)].filter(p=>p===''||p.endsWith('/')&&
+ (p===''||published.some(x=>x.url===p)||directories.includes(p)));
+const sitemap='<?xml version="1.0" encoding="UTF-8"?>\n'+
+ '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+
+ canonicalPaths.map(p=>'  <url><loc>'+xml(origin+p)+'</loc></url>').join('\n')+'\n</urlset>\n';
+await write('sitemap.xml',sitemap);
+if(target==='preview'){
+ // Robots must be allowed to fetch pages to see the noindex response header.
+ // A blanket robots.txt Disallow would prevent verification of noindex.
+ await write('robots.txt','User-agent: *\nAllow: /\n');
+ const headers=await output('_headers');
+ if(!/^\/\*$/m.test(headers))throw Error('Security headers rule missing.');
+ await write('_headers',headers.replace(/^\/\*$/m,'/*\n  X-Robots-Tag: noindex, nofollow'));
+}else{
+ await write('robots.txt','User-agent: *\nAllow: /\nSitemap: '+origin+'sitemap.xml\n');
+ const headers=await output('_headers');
+ if(/X-Robots-Tag:\s*noindex/i.test(headers))throw Error('Production must not inherit preview noindex.');
+}
+let llms=await output('llms.txt');
+llms+='\n## Direct discovery for search engines and autonomous agents\n\n'+
+ 'Every public tool, app, product or service has its own direct URL in /catalog.json. '+
+ 'Use that URL rather than the homepage. Structured data and canonical URLs are embedded in the HTML, '+
+ 'and /sitemap.xml lists published pages. Catalog items with execution=browser-local provide client-side processing; '+
+ 'do not assume a server-executable API exists.\n';
+await write('llms.txt',llms);
+console.log('DISCOVERY BUILD PASSED: '+published.length+' directly linked public pages; '+canonicalPaths.length+
+ ' canonical sitemap URLs; mode='+target+'. Homepage markup preserved.');

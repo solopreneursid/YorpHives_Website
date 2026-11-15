@@ -44,3 +44,7 @@ Before any live cutover, generate and validate the sitemap (`node scripts/genera
 - **Founder action required:** In GitHub settings, configure the **Cloudflare Workers and Pages** GitHub App to allow access to `YorpHives_Website`. If the existing installation is inaccessible, reauthorize the Cloudflare app from the Cloudflare Pages Git integration UI, preserving the existing live project. Retry a separate staging project build with `node --test tests/*.test.mjs && node scripts/release-check.mjs` and destination `.`.
 
 **Go-live decision: HOLD until the source connection, full suite and browser preview are verified.**
+
+## Universal discoverability and preview indexing protection (2026-11-15)
+
+The preview build command is now `node scripts/build-site.mjs --target=preview && node --test tests/*.test.mjs && node scripts/release-check.mjs dist`, with Cloudflare Pages output directory `dist`. This creates direct canonical HTML pages for public catalog entries and applies a preview-only noindex response header while preserving the homepage visual content. Never connect `yorphives.com` to the review project. The production command uses `--target=production` and is founder-gated. Follow `SEO.md` when adding future tools, apps, products or services. No automated promotion of the new build to the live domain is authorized.
