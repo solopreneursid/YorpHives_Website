@@ -86,7 +86,7 @@ async function extractZip(files){
  if(!entries.length||entries.length>50)throw Error('Use an archive with 1–50 files.');
  const total=entries.reduce((sum,e)=>{
   const size=e._data?.uncompressedSize;
-  if(!safeEntry(e.name))throw Error('The archive contains an unsafe file path.');
+  if(!safeEntry(e.name)||(e.unsafeOriginalName&&(!safeEntry(e.unsafeOriginalName)||e.unsafeOriginalName!==e.name)))throw Error('The archive contains an unsafe file path.');
   if(!Number.isFinite(size)||size<0||size>15*MB)throw Error('An archive entry is too large or has an unknown size.');
   return sum+size;
  },0);
