@@ -55,11 +55,11 @@ test('homepage positions qualification before the carousel and provides truthful
   const css=await read('style.css');
   const js=await read('app.js');
   assert.match(html,/id="explore-spotlight"/);
-  assert.match(html,/YorpHives Headquarters must evaluate market demand/);
+  assert.match(html,/Yorphives HQ must evaluate market demand/);
   assert.match(html,/Only qualified opportunities with final founder approval become launches/);
   assert.match(html,/id="qualified-showcase-cards"/);
   assert.match(html,/id="qualified-showcase-empty"/);
-  assert.match(html,/No Headquarters-qualified applications have been released yet/);
+  assert.match(html,/No HQ-qualified applications have been released yet/);
   assert.match(html,/id="qualified-showcase-pause"/);
   assert.match(js,/qualifiedProducts\(catalog\)/);
   assert.match(js,/setupQualifiedShowcase\(products\)/);
