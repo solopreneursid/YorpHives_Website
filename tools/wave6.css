@@ -1,0 +1,31 @@
+/* YorpHives Wave 6 — consistent compact creator workspaces, accessible on touch. */
+.wave6-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin-top:14px}
+.wave6-options .tool-field{min-width:0}
+.wave6-options .tool-field.wide{grid-column:1/-1}
+.wave6-options input,.wave6-options select,.wave6-options textarea{width:100%;max-width:100%;box-sizing:border-box}
+.wave6-options textarea{min-height:118px;resize:vertical;font:inherit;line-height:1.5}
+.wave6-status-note{font-size:13px;line-height:1.6;color:#4f7260;margin:10px 0}
+.wave6-source-frame{position:relative;width:100%;max-width:740px;margin:12px auto 20px;border:1px solid #abcdbc;border-radius:12px;background:#edf6f0;overflow:hidden}
+.wave6-source-frame>img{display:block;width:100%;height:auto;max-height:570px;object-fit:contain;user-select:none}
+.wave6-source-frame>img[hidden],.wave6-source-frame[hidden]{display:none}
+.wave6-source-frame>video{display:block;width:100%;height:auto;max-height:390px;object-fit:contain;background:#0b2920}
+.wave6-source-frame>video[hidden]{display:none}
+.wave6-color-mark{position:absolute;width:23px;height:23px;border:3px solid white;box-shadow:0 0 0 2px #133f32,0 3px 10px #123a2d66;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+.wave6-source-frame.color-picker>img{cursor:crosshair}
+.wave6-out-image{display:block;max-width:100%;max-height:440px;object-fit:contain;border-radius:11px;margin-top:18px;background:#e8f4eb}
+.wave6-swatch{display:block;width:100%;height:76px;border:1px solid #abb8b1;border-radius:11px;margin:17px 0}
+#wave6-result audio{display:block;width:100%;margin:18px 0}
+#wave6-result>.tool-field{display:block;margin:17px 0 10px}
+#wave6-result .wave4-code{width:100%;min-height:155px;box-sizing:border-box}
+.wave6-alert{padding:13px 15px;border:1px solid #e6d7a7;border-radius:11px;background:#fff9e6;color:#634d27;font-size:13px;line-height:1.6;margin:15px 0}
+.scan-stage{position:relative;max-width:770px;margin:18px auto;border:1px solid #9abbab;background:#e5ede8;box-shadow:0 10px 32px #113e2633;overflow:hidden;touch-action:none}
+.scan-stage img{display:block;width:100%;height:100%;object-fit:fill;pointer-events:none}
+.scan-overlay{position:absolute;inset:0;touch-action:none}
+.scan-polygon{position:absolute;width:100%;height:100%;inset:0;pointer-events:none;overflow:visible}
+.scan-polygon polygon{fill:#72f5bd27;stroke:#39ffb7;stroke-width:.55;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.scan-corner{position:absolute;z-index:5;display:block;width:33px;height:33px;border-radius:50%;border:3px solid #fff;background:#177f5c;box-shadow:0 2px 11px #113d3288;transform:translate(-50%,-50%);padding:0;cursor:grab;touch-action:none}
+.scan-corner:active{cursor:grabbing;background:#126846}
+.scan-corner:focus-visible{outline:3px solid #ffb83f;outline-offset:4px}
+.scan-panel-hint{font-size:13px;color:#2d6d51;font-weight:650;line-height:1.6}
+@media(max-width:720px){.wave6-options{grid-template-columns:1fr;gap:13px}.scan-corner{width:35px;height:35px}.scan-stage{margin:14px 0}}
+@media(prefers-reduced-motion:reduce){.scan-corner,.wave6-source-frame *{transition:none!important}}
