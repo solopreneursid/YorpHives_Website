@@ -6,3 +6,12 @@
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Navigation content changes often; do not reuse stale browser snapshots.
+# CSS, images and tool bundles keep their existing caching behavior.
+/
+  Cache-Control: no-store
+/index.html
+  Cache-Control: no-store
+/app.js
+  Cache-Control: no-cache, max-age=0, must-revalidate
