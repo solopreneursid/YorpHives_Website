@@ -1218,3 +1218,12 @@
   #home .explore-spotlight h2{font-size:36px}
   #home .builders-home h2{font-size:35px}
 }
+
+/* Final optical alignment after 320px/desktop screenshot inspection. */
+@media(min-width:1201px){
+  #home .stage-product{top:32px}
+}
+@media(max-width:420px){
+  #home .studio-note-rule{display:inline-block;width:3px;height:3px;flex:0 0 3px;border-radius:50%;background:#8ed3c3}
+  #home .studio-note{column-gap:7px}
+}
