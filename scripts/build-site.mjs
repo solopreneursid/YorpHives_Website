@@ -78,6 +78,23 @@ function injectSiteSupport(html,page){
  return html.replace(header,header.replace(/<\/header>$/i,action+'</header>'));
 }
 
+function injectToolSuite(html,item){
+ if(item.type!=='tool'||!item.url.startsWith('tools/')||(item.url==='tools/pdf-compressor/'||item.module?.url==='tools/wave2-core.mjs'))return html;
+ if(!/<body\b[^>]*class="tool-page"/.test(html))throw Error('Unexpected tool HTML: '+item.url);
+ const family=html.includes('id="file-tool-form"')?'file':html.includes('id="utility-form"')?'utility':html.includes('id="wave1-form"')?'wave1':html.includes('id="image-file"')?'image':html.includes('id="json-input"')?'json':'general';
+ const css='<link rel="stylesheet" href="../tool-suite-v1.css">';
+ const script='<script type="module" src="../tool-suite-v1.mjs"></script>';
+ if(html.includes('tool-suite-v1.css')||html.includes('tool-suite-v1.mjs'))throw Error('Duplicate design assets');
+ if(!html.includes('<link rel="stylesheet" href="../tool.css">'))throw Error('Tool CSS base missing: '+item.url);
+ html=html.replace('<link rel="stylesheet" href="../tool.css">','<link rel="stylesheet" href="../tool.css">'+css);
+ html=html.replace(/<body\b([^>]*)>/i,(_,attrs)=>'<body'+attrs+' data-tui-family="'+family+'" data-tui-category="'+esc(item.category||'Other')+'">');
+ // Replace generic help copy with clear steps appropriate to the current workflow.
+ const first=family==='file'?'Choose the file or files you want to work with.':family==='wave1'?'Upload a file or enter the details shown.':item.category==='Calculators'?'Enter the values you want to calculate.':item.category==='Writing'?'Paste or type the text you want to work with.':'Enter the details or content requested by this tool.';
+ html=html.replace('<li>Enter your information and choose any options.</li>','<li>'+first+'</li>');
+ html=html.replace('<li>Run the tool to see the result.</li>','<li>Choose the main action to create your result.</li>');
+ return html.replace('</body>',script+'</body>');
+}
+
 function metadata(url,graph){
  return '<link rel="canonical" href="'+esc(url)+'">'+
  '<meta property="og:url" content="'+esc(url)+'">'+
@@ -109,6 +126,7 @@ for(const item of published){
  ];
  html=injectHead(html,metadata(url,graph));
  html=injectSiteSupport(html,path);
+ html=injectToolSuite(html,item);
  await write(path,html);
 }
 // A directory stays crawlable and provides standard links to every item.
