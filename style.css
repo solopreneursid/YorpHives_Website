@@ -1023,3 +1023,98 @@
   .site-footer .pulse-items[aria-hidden="true"]{display:none!important}
   .site-footer .pulse-item{transition:none}
 }
+
+
+/* Mobile usability audit: keep content readable on narrow phones without
+   scaling down the desktop composition or clipping real content. */
+@media(max-width:660px){
+  html,body{max-width:100%;overflow-x:clip}
+  #home .studio-hero{min-width:0}
+  #home .studio-copy{min-width:0;padding-inline:6%}
+  #home .studio-visual{height:398px;min-width:0}
+  #home .studio-steps{
+    inset:39px 0 auto;min-width:0;overscroll-behavior-x:contain;
+    scroll-padding-left:6%;-webkit-overflow-scrolling:touch;
+    padding:9px 6% 17px;gap:11px
+  }
+  #home .studio-step,#home .stage-idea,#home .stage-research,
+  #home .stage-strategy,#home .stage-build,#home .stage-product{
+    flex:0 0 116px;width:116px;min-height:137px;
+    scroll-snap-align:start
+  }
+  #home .studio-swipe{
+    top:8px;left:6%;right:6%;z-index:4;color:#b6f6e7;
+    font-size:11px;font-weight:680;letter-spacing:.015em
+  }
+  #home .studio-laptop{bottom:7px;right:8%;width:min(355px,82%)}
+  #home .studio-note{line-height:1.6}
+  #home .studio-benefit strong{font-size:12px}
+  #home .studio-benefit span{font-size:10px}
+  #home .explore-showcase{width:100%;min-width:0}
+  #home .explore-evaluation>p{font-size:12px;line-height:1.6}
+  #home .explore-showcase-head{line-height:1.4;letter-spacing:.09em}
+  #home .explore-showcase-label{line-height:1.4}
+  #home .home-feature-caption-end{font-size:9px}
+  #home .home-feature-widget .explore-feature-empty small{font-size:11px;line-height:1.48}
+  #home .home-feature-widget .explore-feature-bottom{gap:7px}
+  #home .home-feature-widget .explore-feature-controls button{width:36px;height:36px}
+  #explore .explore-feature-controls button{width:36px;height:36px}
+  #tools .launcher-tool-link strong{white-space:normal;overflow-wrap:anywhere;line-height:1.35}
+  #tools .launcher-tool-row{min-height:72px}
+  #tools .launcher-mobile-tile{min-height:61px}
+  #tools .launcher-mobile-tile .launcher-group-name{font-size:12px;line-height:1.3}
+  #tools .launcher-search-shell input{font-size:16px}
+  #tools .launcher-main-head p{font-size:12px;line-height:1.55}
+  #tools .launcher-tool-link span{font-size:11px}
+  #home .category-ribbon-pill{min-height:44px}
+}
+@media(max-width:420px){
+  /* Avoid a stranded "a" line on 320px Android screens. */
+  #home .studio-hero h1{font-size:clamp(31px,8.9vw,35px);letter-spacing:-.055em}
+  #home .studio-badge{font-size:10px;max-width:100%}
+  #home .studio-description{line-height:1.68}
+  #home .studio-step strong{font-size:12px}
+  #home .studio-step small{font-size:10px}
+  #home .studio-benefits-inner{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #home .studio-benefit{min-width:0;gap:8px;padding:10px 7px}
+  #home .studio-benefit svg{width:20px;height:20px}
+  #home .explore-showcase{padding:16px 13px}
+  /* A single column is easier to read than two 130px-wide assessment tiles. */
+  #home .explore-eval-grid{grid-template-columns:minmax(0,1fr);gap:9px}
+  #home .explore-eval-card{min-height:91px;padding:12px 15px}
+  #home .explore-eval-number{font-size:10px}
+  #home .explore-eval-card strong{font-size:14px;line-height:1.25}
+  #home .explore-eval-card small{font-size:11px;line-height:1.35}
+  #home .explore-eval-art{width:55px;height:34px;right:13px;top:23px}
+  #home .explore-evaluation h3{font-size:clamp(24px,7vw,30px)}
+  #home .explore-showcase-head>div{min-width:0}
+  #home .explore-showcase-label{max-width:115px}
+  #home .home-feature-wrap{padding:11px}
+  #home .home-feature-widget .explore-feature-empty,
+  #home .home-feature-widget .explore-feature-product{padding:12px 10px}
+  #home .home-feature-widget .explore-feature-empty strong{font-size:16px}
+  #home .home-feature-widget .explore-feature-empty-logo,
+  #home .home-feature-widget .explore-feature-logo{width:50px;height:50px}
+  #home #home-feature-count{font-size:9px;line-height:1.35}
+  #home .home-feature-widget .explore-feature-controls button{width:34px;height:34px}
+  .site-footer .footer-pulse{grid-template-columns:minmax(0,1fr);gap:8px;min-height:0;padding:13px 0}
+  .site-footer .pulse-label{border-right:0;padding:0;min-height:0}
+  .site-footer .pulse-heading{font-size:12px;letter-spacing:.08em}
+  .site-footer .pulse-heading small{font-size:9px;letter-spacing:.06em}
+  .site-footer .pulse-viewport{min-height:44px}
+  .site-footer .pulse-item{min-height:44px;max-width:280px}
+}
+@media(max-width:350px){
+  .site-header{padding-inline:14px;gap:8px}
+  .site-header .header-kofi{display:none}
+  .site-header .brand-name{font-size:16px}
+  .site-header .menu-toggle{width:42px;height:42px;margin-left:auto}
+  #home .explore-showcase-head{font-size:9px}
+  #home .explore-showcase-footer{letter-spacing:.045em}
+  #home .home-feature-caption{letter-spacing:.05em}
+  #home .home-feature-caption-end{max-width:95px;font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  #home .studio-steps{scroll-behavior:auto}
+  #home .studio-step{transition:none}
+}
