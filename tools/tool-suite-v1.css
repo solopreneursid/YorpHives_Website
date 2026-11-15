@@ -1,0 +1,160 @@
+/* YorpHives Tool Suite 1.0 — lightweight design system for non-compressor utilities.
+   No remote assets. All selectors isolated to tool pages using data-tui-family.
+   Components remain native HTML controls and retain all existing processor IDs. */
+body[data-tui-family]{--tui-green:#147750;--tui-mint:#e9f8ef;--tui-ink:#143b2d;--tui-muted:#708577;--tui-border:#d5e6db;--tui-shadow:0 18px 55px rgba(13,61,38,.075)}
+body[data-tui-family] .tool-wrap{max-width:1190px;padding-top:43px}
+body[data-tui-family] .breadcrumb{margin-bottom:27px}
+body[data-tui-family] .tool-intro{margin-bottom:28px;align-items:center}
+body[data-tui-family] .tool-intro h1{font-size:clamp(37px,4.65vw,61px);line-height:1.11;letter-spacing:-.052em;font-weight:850;margin-top:9px}
+body[data-tui-family] .tool-intro>div>p:last-child{font-size:15px;line-height:1.7;max-width:700px}
+body[data-tui-family] .privacy-badge{display:inline-flex;align-items:center;gap:7px;box-shadow:inset 0 0 0 1px #d3f2dd}
+body[data-tui-family] .privacy-badge::before{content:"✓";display:grid;place-items:center;background:#2f9d70;color:#fff;width:15px;height:15px;border-radius:50%;font-size:9px;font-weight:900}
+body[data-tui-family] .tool-panel{border-radius:18px;border:1px solid #dce8df;box-shadow:var(--tui-shadow);overflow:hidden}
+body[data-tui-family] .panel-head{padding:18px 29px;background:linear-gradient(110deg,#0e2a20 0%,#143f2e 100%);min-height:67px}
+body[data-tui-family] .panel-head strong{font-size:14px;font-weight:800;letter-spacing:-.012em}
+body[data-tui-family] .panel-head span{color:#b5dfc7;font-size:11px}
+body[data-tui-family] .panel-content{padding:30px 33px 34px;min-width:0}
+body[data-tui-family] .tui-workspace-head{display:flex;align-items:flex-start;gap:13px;margin:0 0 22px;padding:0;min-width:0}
+body[data-tui-family] .tui-workspace-number{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:10px;border:1px solid #cde9d6;background:#eaf8ee;color:#227a55;font-size:11px;font-weight:850;letter-spacing:.025em}
+body[data-tui-family] .tui-workspace-copy{min-width:0;display:flex;flex-direction:column;gap:5px;padding-top:1px}
+body[data-tui-family] .tui-workspace-title{font-size:19px;line-height:1.26;font-weight:850;letter-spacing:-.035em;color:#153629}
+body[data-tui-family] .tui-workspace-hint{font-size:12px;line-height:1.55;color:#718678}
+body[data-tui-family] .tui-options-head{display:flex;align-items:center;gap:10px;margin:23px 0 14px}
+body[data-tui-family] .tui-options-head::before{content:"02";display:grid;place-items:center;border:1px solid #cde9d6;background:#eaf8ee;color:#227a55;width:30px;height:30px;border-radius:9px;font-size:10px;font-weight:850}
+body[data-tui-family] .tui-options-head span{color:#17392b;font-size:15px;font-weight:850;letter-spacing:-.02em}
+body[data-tui-family] .tui-upload-zone{position:relative;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:146px;padding:22px 19px!important;border:1.5px dashed #a6cdb6!important;border-radius:15px!important;background:linear-gradient(115deg,#f4fdf6,#fbfdfa)!important;color:#154732!important;text-align:center;cursor:pointer;transition:border-color .14s,background .14s,box-shadow .14s}
+body[data-tui-family] .tui-upload-zone:hover,body[data-tui-family] .tui-upload-zone.tui-drag-active{background:#ecf9f0!important;border-color:#249569!important;box-shadow:0 4px 23px rgba(24,100,61,.075)}
+body[data-tui-family] .tui-upload-zone:focus-within{outline:3px solid #59bb90;outline-offset:3px}
+body[data-tui-family] .tui-upload-icon{display:grid;place-items:center;width:45px;height:45px;border-radius:13px;background:#e0f5e7;color:#21815b;flex:none}
+body[data-tui-family] .tui-upload-icon svg{width:24px;height:24px}
+body[data-tui-family] .tui-upload-title{font-size:15px;font-weight:850;letter-spacing:-.014em;color:#153e2e;max-width:100%;overflow-wrap:anywhere}
+body[data-tui-family] .tui-upload-subtitle{font-size:11px;font-weight:500;line-height:1.5;color:#6f8a79}
+body[data-tui-family] .tui-upload-zone>input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;margin:0;padding:0;z-index:2}
+body[data-tui-family] .file-note{font-size:11px;line-height:1.6;color:#648370;margin:10px 2px 20px}
+body[data-tui-family] .file-note::before{content:"✓";display:inline-grid;place-items:center;width:16px;height:16px;margin-right:7px;background:#dcf2e3;color:#168456;border-radius:50%;font-size:10px;font-weight:900}
+body[data-tui-family] .utility-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+body[data-tui-family] .utility-inputs:empty{display:none}
+body[data-tui-family] .utility-inputs>.tool-field:has(textarea){grid-column:1/-1}
+body[data-tui-family] .tool-fields{gap:17px}
+body[data-tui-family] .tool-field{font-size:12px;font-weight:790;color:#234b38;line-height:1.5;min-width:0}
+body[data-tui-family] .tool-field input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),body[data-tui-family] .tool-field select,body[data-tui-family] .tool-field textarea{display:block;width:100%;min-width:0;max-width:100%;margin-top:9px;border:1px solid #cfded3;border-radius:11px;background:#fbfdfb;color:#17382d;box-shadow:inset 0 1px 3px rgba(19,62,40,.018);padding:14px 15px;font-size:14px;font-weight:500;line-height:1.5;font-family:inherit;transition:background .15s,border-color .15s,box-shadow .15s}
+body[data-tui-family] .tool-field textarea{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;min-height:190px;resize:vertical;line-height:1.65}
+body[data-tui-family][data-tui-family=utility] .tool-field textarea:not(.utility-output){min-height:225px}
+body[data-tui-family] .tool-field textarea.utility-output{min-height:155px;background:#f6fcf8}
+body[data-tui-family] .tool-field input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):hover,body[data-tui-family] .tool-field select:hover,body[data-tui-family] .tool-field textarea:hover{border-color:#9fbea9;background:#fff}
+body[data-tui-family] .tool-field input:focus-visible,body[data-tui-family] .tool-field select:focus-visible,body[data-tui-family] .tool-field textarea:focus-visible{outline:2px solid #4bb488;outline-offset:2px;border-color:#25865e}
+body[data-tui-family] .tool-field input[type=range]{accent-color:#1c8e61;min-height:36px}
+body[data-tui-family] .tool-field input[type=number]{font-variant-numeric:tabular-nums}
+body[data-tui-family] .utility-check{display:flex;align-items:center;gap:11px;min-height:46px;border:1px solid #dae9de;border-radius:11px;padding:12px 14px;background:#f9fcf9;color:#325843;font-size:12px;font-weight:650;cursor:pointer}
+body[data-tui-family] .utility-check:has(input:checked){background:#eff9f2;border-color:#c5e6cf}
+body[data-tui-family] .utility-check input{accent-color:#177e57;width:19px;height:19px;flex:none;cursor:pointer}
+body[data-tui-family] .tool-buttons{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:21px}
+body[data-tui-family] .tool-btn{min-height:47px;padding:12px 18px;border-radius:10px;font-size:12px;line-height:1.4;letter-spacing:0;font-weight:800;box-shadow:none;cursor:pointer;transition:background .14s,border-color .14s,transform .14s}
+body[data-tui-family] .tool-btn:not(:disabled):hover{transform:translateY(-1px)}
+body[data-tui-family] .tool-btn.primary{background:#103c2c;border-color:#103c2c;color:#fff;box-shadow:0 4px 13px rgba(11,67,43,.12)}
+body[data-tui-family] .tool-btn.primary:not(:disabled):hover{background:#1b6649}
+body[data-tui-family] .tool-btn:not(.primary){border-color:#c6ddcc;background:#f7fbf7;color:#285f43}
+body[data-tui-family] .tool-btn:not(.primary):hover{background:#e7f6eb}
+body[data-tui-family] .tool-btn:focus-visible{outline:3px solid #56b78a;outline-offset:3px}
+body[data-tui-family] .tool-btn:disabled{opacity:.52;transform:none;cursor:not-allowed}
+body[data-tui-family] .tui-status{display:flex;align-items:center;gap:10px;min-height:41px;border:1px solid #e3eee5;background:#f9fcfa;border-radius:10px;padding:10px 13px!important;margin:18px 0 0!important;line-height:1.5;font-size:12px;color:#5b7665}
+body[data-tui-family] .tui-status::before{content:"✓";display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:#dbf3e5;color:#24805a;font-weight:900;font-size:10px;flex:none}
+body[data-tui-family] .tui-status:empty{display:none}
+body[data-tui-family] .tui-status.error{color:#a43831;border-color:#f0d4d0;background:#fff9f7}
+body[data-tui-family] .tui-status.error::before{content:"!";background:#fae4e0;color:#a43831}
+body[data-tui-family] [aria-busy=true] .tui-status::before{content:"";border:2px solid #c3decf;border-top-color:#218256;background:transparent;animation:tui-spin .8s linear infinite}
+@keyframes tui-spin{to{transform:rotate(360deg)}}
+body[data-tui-family] .tui-result-panel{display:block;border:1px solid #cce5d5;background:linear-gradient(140deg,#f5fcf7,#fff 80%);padding:21px;border-radius:14px;margin-top:23px;min-width:0}
+body[data-tui-family] .tui-result-panel[hidden]{display:none!important}
+body[data-tui-family] .tui-result-head{display:flex;align-items:center;gap:12px;margin-bottom:17px;grid-column:1/-1}
+body[data-tui-family] .tui-result-symbol{width:33px;height:33px;border-radius:50%;flex:none;display:grid;place-items:center;background:#168658;color:#fff;font-size:14px;font-weight:900}
+body[data-tui-family] .tui-result-copy{display:flex;flex-direction:column;gap:3px}
+body[data-tui-family] .tui-result-copy strong{font-size:17px;font-weight:850;letter-spacing:-.025em;color:#1b4430}
+body[data-tui-family] .tui-result-copy small{font-size:11px;color:#799184}
+body[data-tui-family] .tui-result-panel .tool-buttons{margin-top:16px}
+body[data-tui-family] .tui-result-panel .tool-btn.primary{min-width:170px}
+body[data-tui-family] .utility-preview{background:transparent}
+body[data-tui-family] .utility-qr{max-width:260px;border-radius:12px;background:#fff;padding:14px;border:1px solid #deeadf}
+body[data-tui-family] .file-list{margin:13px 0 6px;padding:8px 11px;border:1px solid #e1ebe4;border-radius:12px;background:#f8fbf9;max-height:290px;overflow:auto}
+body[data-tui-family] .file-list li{border:0;border-bottom:1px solid #e5ede6;padding:11px;display:flex;align-items:center;gap:10px;justify-content:space-between;font-size:12px}
+body[data-tui-family] .file-list li:last-child{border-bottom:0}
+body[data-tui-family] .file-order{flex:none;border-radius:7px;border:1px solid #cbe0d1;background:#fff;color:#276249;min-width:32px;min-height:32px}
+body[data-tui-family] .file-preview{display:block;max-width:100%;max-height:330px;object-fit:contain;margin:9px auto 14px;border:1px solid #e3ece5;border-radius:12px}
+body[data-tui-family] .file-preview[hidden]{display:none}
+body[data-tui-family] .image-settings{grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-top:24px}
+body[data-tui-family] .file-box{border:1.5px dashed #a6cdb6;background:linear-gradient(115deg,#f4fdf6,#fbfdfa);border-radius:14px;padding:23px}
+body[data-tui-family] .file-box input[type=file]{max-width:100%;color:#597564;font-size:12px}
+body[data-tui-family] input[type=file]::file-selector-button{border:1px solid #aed0b9;border-radius:8px;background:#fff;color:#205b3f;padding:9px 12px;margin-right:11px;font-weight:800;cursor:pointer}
+body[data-tui-family] .file-box input[type=file]::file-selector-button{background:#e7f6ec}
+body[data-tui-family] .image-preview{gap:18px}
+body[data-tui-family] .image-preview img{border:1px solid #d8e5dc;padding:8px;background:#fff;border-radius:12px}
+body[data-tui-family] .image-meta{margin-top:14px;font-size:12px;color:#65836e}
+body[data-tui-family] .tool-help{gap:24px;margin-top:39px}
+body[data-tui-family] .tool-help-card{border-top:1px solid #cddfd3;padding:23px 2px 0}
+body[data-tui-family] .tool-help h2{font-size:19px;font-weight:830;letter-spacing:-.035em}
+body[data-tui-family] .tool-help p,body[data-tui-family] .tool-help li{font-size:13px;line-height:1.85}
+body[data-tui-family] .tool-related{margin-top:43px}
+body[data-tui-family] .related-links a{border-radius:9px;background:#eff8f1;border:1px solid #d5e8db;padding:10px 13px;transition:background .15s}
+body[data-tui-family] .related-links a:hover{background:#dff2e6}
+body[data-tui-family="json"] .tool-fields textarea{min-height:310px;background:#f9fcfa}
+body[data-tui-family="json"] .tool-buttons{gap:10px}
+body[data-tui-family="image"] .tool-panel .panel-content>.tui-workspace-head{margin-bottom:19px}
+body[data-tui-category="Calculators"] .utility-inputs>.tool-field input{font-variant-numeric:tabular-nums}
+body[data-tui-category="Calculators"] .utility-inputs>.tool-field{background:#f9fcfa;border:1px solid #e4eee5;padding:12px 13px;border-radius:12px}
+body[data-tui-category="Calculators"] .utility-inputs>.tool-field input,body[data-tui-category="Calculators"] .utility-inputs>.tool-field select{background:#fff}
+@media(max-width:850px){
+ body[data-tui-family] .tool-wrap{padding-top:33px}
+ body[data-tui-family] .panel-content{padding:24px}
+ body[data-tui-family] .tool-intro{gap:14px}
+ body[data-tui-family] .image-settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:680px){
+ body[data-tui-family] .tool-wrap{padding:26px 5% 58px}
+ body[data-tui-family] .panel-head{padding:16px 19px;min-height:60px}
+ body[data-tui-family] .panel-content{padding:21px 16px 24px}
+ body[data-tui-family] .tool-intro h1{font-size:clamp(33px,9vw,43px)}
+ body[data-tui-family] .tool-intro>div>p:last-child{font-size:13px}
+ body[data-tui-family] .tui-workspace-title{font-size:17px}
+ body[data-tui-family] .utility-inputs{grid-template-columns:1fr;gap:14px}
+ body[data-tui-family] .tool-fields{grid-template-columns:1fr}
+ body[data-tui-family] .utility-inputs>.tool-field:has(textarea){grid-column:auto}
+ body[data-tui-family] .tui-upload-zone{min-height:133px;padding:18px 14px!important}
+ body[data-tui-family] .tui-upload-title{font-size:14px}
+ body[data-tui-family] .tool-field textarea{min-height:174px}
+ body[data-tui-family][data-tui-family=utility] .tool-field textarea:not(.utility-output){min-height:190px}
+ body[data-tui-family] .tool-buttons{gap:9px}
+ body[data-tui-family] .tool-btn{min-height:46px}
+ body[data-tui-family] .tool-help{grid-template-columns:1fr;gap:20px}
+ body[data-tui-family] .tui-result-panel{padding:16px}
+ body[data-tui-family] .image-settings{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+}
+@media(max-width:390px){
+ body[data-tui-family] .panel-content{padding:18px 13px 22px}
+ body[data-tui-family] .tool-panel{border-radius:13px}
+ body[data-tui-family] .tool-buttons{align-items:stretch}
+ body[data-tui-family] .tool-buttons .tool-btn{flex:1}
+ body[data-tui-family] .image-settings{grid-template-columns:1fr}
+ body[data-tui-family] .panel-head span{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ body[data-tui-family] .tool-btn,body[data-tui-family] .tui-upload-zone,body[data-tui-family] .tool-field input{transition:none}
+ body[data-tui-family] [aria-busy=true] .tui-status::before{animation:none}
+}
+
+
+/* Dedicated image-resizer upload card: keep original processor input and IDs. */
+body[data-tui-family="image"] .tui-image-drop{position:relative;display:grid;grid-template-columns:55px minmax(0,1fr) auto;grid-template-rows:auto auto auto;column-gap:14px;row-gap:6px;align-items:center;min-height:126px;border-radius:15px;padding:20px 22px;background:linear-gradient(115deg,#f3fcf6,#fbfdfa);transition:border-color .15s,background .15s}
+body[data-tui-family="image"] .tui-image-drop:hover,body[data-tui-family="image"] .tui-image-drop.tui-drag-active{background:#edfaf0;border-color:#25885c}
+body[data-tui-family="image"] .tui-image-drop:focus-within{outline:3px solid #54ba89;outline-offset:3px}
+body[data-tui-family="image"] .tui-image-drop .tui-upload-icon{grid-column:1;grid-row:1/3;width:52px;height:52px}
+body[data-tui-family="image"] .tui-image-drop .tui-image-name{grid-column:2;grid-row:1;font-size:15px;line-height:1.4;font-weight:850;min-width:0;overflow-wrap:anywhere}
+body[data-tui-family="image"] .tui-image-drop .tui-image-subtitle{grid-column:2;grid-row:2;font-size:11px;color:#6b8676;min-width:0}
+body[data-tui-family="image"] .tui-image-drop .tui-image-browse{grid-column:3;grid-row:1/3;padding:12px 15px;border:1px solid #c2ddcd;background:#fff;border-radius:10px;color:#1c6948;font-size:12px;font-weight:800;pointer-events:none}
+body[data-tui-family="image"] .tui-image-drop #image-file{position:absolute;inset:0;z-index:3;opacity:0;width:100%;height:100%;padding:0;margin:0;cursor:pointer}
+body[data-tui-family="image"] .tui-image-drop .note{grid-column:1/-1;grid-row:3;margin:9px 0 0;font-size:11px;color:#6b8875}
+@media(max-width:680px){
+ body[data-tui-family="image"] .tui-image-drop{padding:16px 13px;grid-template-columns:43px minmax(0,1fr);column-gap:11px}
+ body[data-tui-family="image"] .tui-image-drop .tui-upload-icon{width:42px;height:42px}
+ body[data-tui-family="image"] .tui-image-drop .tui-image-name{font-size:13px}
+ body[data-tui-family="image"] .tui-image-drop .tui-image-browse{display:none}
+}
