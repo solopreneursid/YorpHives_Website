@@ -37,7 +37,7 @@ body[data-tui-family] .utility-inputs:empty{display:none}
 body[data-tui-family] .utility-inputs>.tool-field:has(textarea){grid-column:1/-1}
 body[data-tui-family] .tool-fields{gap:17px}
 body[data-tui-family] .tool-field{font-size:12px;font-weight:790;color:#234b38;line-height:1.5;min-width:0}
-body[data-tui-family] .tool-field input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),body[data-tui-family] .tool-field select,body[data-tui-family] .tool-field textarea{display:block;width:100%;min-width:0;max-width:100%;margin-top:9px;border:1px solid #cfded3;border-radius:11px;background:#fbfdfb;color:#17382d;box-shadow:inset 0 1px 3px rgba(19,62,40,.018);padding:14px 15px;font:500 14px/1.5 inherit;transition:background .15s,border-color .15s,box-shadow .15s}
+body[data-tui-family] .tool-field input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),body[data-tui-family] .tool-field select,body[data-tui-family] .tool-field textarea{display:block;width:100%;min-width:0;max-width:100%;margin-top:9px;border:1px solid #cfded3;border-radius:11px;background:#fbfdfb;color:#17382d;box-shadow:inset 0 1px 3px rgba(19,62,40,.018);padding:14px 15px;font-size:14px;font-weight:500;line-height:1.5;font-family:inherit;transition:background .15s,border-color .15s,box-shadow .15s}
 body[data-tui-family] .tool-field textarea{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;min-height:190px;resize:vertical;line-height:1.65}
 body[data-tui-family][data-tui-family=utility] .tool-field textarea:not(.utility-output){min-height:225px}
 body[data-tui-family] .tool-field textarea.utility-output{min-height:155px;background:#f6fcf8}

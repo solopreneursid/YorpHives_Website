@@ -65,6 +65,20 @@ function injectSiteSupport(html,page){
  return html.replace(header,header.replace(/<\/header>$/i,action+'</header>'));
 }
 
+// Add one shared visual language to all free tools without changing processors or page routes.
+function injectToolSuite(html,item){
+ if(item.type!=='tool'||!item.url.startsWith('tools/')||item.url==='tools/pdf-compressor/')return html;
+ if(!/<body\b[^>]*class="tool-page"/.test(html))throw Error('Unexpected tool HTML: '+item.url);
+ const family=html.includes('id="file-tool-form"')?'file':html.includes('id="utility-form"')?'utility':html.includes('id="wave1-form"')?'wave1':html.includes('id="image-file"')?'image':html.includes('id="json-input"')?'json':'general';
+ const css='<link rel="stylesheet" href="../tool-suite-v1.css">';
+ const script='<script type="module" src="../tool-suite-v1.mjs"></script>';
+ if(html.includes('tool-suite-v1.css')||html.includes('tool-suite-v1.mjs'))throw Error('Duplicate design assets');
+ if(!html.includes('<link rel="stylesheet" href="../tool.css">'))throw Error('Tool CSS base missing: '+item.url);
+ html=html.replace('<link rel="stylesheet" href="../tool.css">','<link rel="stylesheet" href="../tool.css">'+css);
+ html=html.replace(/<body\b([^>]*)>/i,(_,attrs)=>'<body'+attrs+' data-tui-family="'+family+'" data-tui-category="'+esc(item.category||'Other')+'">');
+ return html.replace('</body>',script+'</body>');
+}
+
 function metadata(url,graph){
  return '<link rel="canonical" href="'+esc(url)+'">'+
  '<meta property="og:url" content="'+esc(url)+'">'+
@@ -96,6 +110,7 @@ for(const item of published){
  ];
  html=injectHead(html,metadata(url,graph));
  html=injectSiteSupport(html,path);
+ html=injectToolSuite(html,item);
  await write(path,html);
 }
 // A directory stays crawlable and provides standard links to every item.
@@ -182,6 +197,7 @@ if(target==='preview'){
  await cp(resolve(root,'review/wave1-ui-qa.mjs'),resolve(dest,'wave1-ui-qa.mjs'));
  await cp(resolve(root,'review/compressor-ui-qa.mjs'),resolve(dest,'compressor-ui-qa.mjs'));
  await cp(resolve(root,'review/compressor-design-qa.mjs'),resolve(dest,'compressor-design-qa.mjs'));
+ await cp(resolve(root,'review/tool-suite-qa.mjs'),resolve(dest,'tool-suite-qa.mjs'));
 }else{
  await write('robots.txt','User-agent: *\nAllow: /\nSitemap: '+origin+'sitemap.xml\n');
  const headers=await output('_headers');
