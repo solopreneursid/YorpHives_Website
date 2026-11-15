@@ -146,3 +146,16 @@ test('no direct legacy routing depends on the retired Pages prototype',async()=>
  for(const path of ['/free-tools/file-studio/','/free-tools/grayscale-image/','/free-tools/split-pdf/'])
   assert.ok(lines.includes(path+' /tools/ 302'),path+' needs safe first-party fallback');
 });
+
+test('Wave 1 full UI smoke harness remains preview-only',async()=>{
+ const headers=await read('_headers',dest);
+ const preview=headers.includes('X-Robots-Tag: noindex, nofollow');
+ const file=resolve(dest,'wave1-ui-qa.mjs');
+ const exists=await stat(file).then(x=>x.isFile()).catch(()=>false);
+ assert.equal(exists,preview,'No browser UI QA should be publicly shipped.');
+ if(preview){
+  const source=await read('wave1-ui-qa.mjs',dest);
+  assert.match(source,/form\.requestSubmit\(\)/);
+  assert.match(source,/URL\.createObjectURL=function/);
+ }
+});

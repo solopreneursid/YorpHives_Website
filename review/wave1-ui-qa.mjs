@@ -55,7 +55,7 @@ try{
  const blob=captured.at(-1);
  assert(blob instanceof Blob,'Download was not generated from a Blob.');
  info.bytes=blob.size;info.filename=download.download;info.mime=blob.type;
- assert(info.bytes>80,'The file is empty.');
+ assert(info.bytes>(blob.type.startsWith('text/')?0:80),'The output is empty or invalid.');
  if(info.filename.endsWith('.pdf'))assert(String.fromCharCode(...new Uint8Array(await blob.slice(0,4).arrayBuffer()))==='%PDF','PDF signature invalid.');
  if(info.filename.endsWith('.png')){const bytes=new Uint8Array(await blob.slice(0,4).arrayBuffer());assert(bytes[0]===137&&bytes[1]===80,'PNG signature invalid');}
  if(info.filename.endsWith('.svg'))assert((await blob.text()).includes('<svg'),'SVG data missing');

@@ -39,6 +39,22 @@ if(group==='pdf-render'){
  await check('PDF to text (real PDF.js)',async()=>{const r=await processWave1('pdf-to-text',[file]);assert(/HELLO\s+TEST\s+PAGE\s+2/.test(r.text.replace(/\s+/g,' ')),'PDF text extraction missing: '+r.text.slice(0,220));return r.text.slice(0,80);});
  await check('PDF to images (real PDF.js)',async()=>{const r=await processWave1('pdf-to-images',[file],{format:'png',scale:1.2});assert(r.blob.size>300,'Image zip empty');assert(r.filename.endsWith('.zip'),'Expected ZIP for three pages');const {inspectZip}=await import('./tools/safe-zip.mjs');const z=inspectZip(await r.blob.arrayBuffer());assert(z.entries.size===3,'Wrong image count');return [...z.entries.keys()].join(',');});
  await check('PDF raster compression',async()=>{const r=await processWave1('pdf-compressor',[file],{quality:60,scale:.7});const d=await pdfRead(r);assert(d.getPageCount()===3,'Compressed PDF invalid');return r.summary;});
+ await check('raster compression actually reduces an image-heavy PDF',async()=>{
+  const canvas=document.createElement('canvas');canvas.width=630;canvas.height=630;
+  const ctx=canvas.getContext('2d');const img=ctx.createImageData(630,630);
+  let seed=1935;for(let i=0;i<img.data.length;i+=4){seed=(seed*1664525+1013904223)>>>0;const a=(seed>>>10)&255;
+    img.data[i]=a;img.data[i+1]=(seed>>>19)&255;img.data[i+2]=(seed>>>3)&255;img.data[i+3]=255;}
+  ctx.putImageData(img,0,0);
+  const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+  const doc=await PDFDocument.create(),embedded=await doc.embedPng(await png.arrayBuffer()),page=doc.addPage([630,630]);
+  page.drawImage(embedded,{x:0,y:0,width:630,height:630});
+  const original=new File([await doc.save()],'image-heavy.pdf',{type:'application/pdf'});
+  const compact=await processWave1('pdf-compressor',[original],{quality:35,scale:.65});
+  assert(compact.blob.size<original.size,'Compressor failed to shrink a large embedded PNG.');
+  assert((await pdfRead(compact)).getPageCount()===1,'Reduced PDF is invalid.');
+  return {before:original.size,after:compact.blob.size};
+ });
+
 }
 if(group==='images'){
  const file=await imageFile();
