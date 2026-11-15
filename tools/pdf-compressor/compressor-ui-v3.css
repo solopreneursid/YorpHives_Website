@@ -1,0 +1,108 @@
+/* YorpHives PDF Compressor v3 — isolated, cache-busted stylesheet.
+   Intentionally scoped to this tool; no global changes or external resources. */
+body[data-wave1="pdf-compressor"] .tool-wrap{max-width:1180px}
+body[data-wave1="pdf-compressor"] .tool-intro h1{font-size:clamp(37px,4.8vw,62px)}
+body[data-wave1="pdf-compressor"] .tool-panel{border-radius:17px;box-shadow:0 17px 50px rgba(15,57,39,.065)}
+body[data-wave1="pdf-compressor"] .panel-head{padding:17px 28px}
+body[data-wave1="pdf-compressor"] .panel-content{padding:30px 34px 35px}
+#pdf-compressor-form{max-width:100%;min-width:0;color:#17392b}
+#pdf-compressor-form .cpx-step-section{min-width:0}
+#pdf-compressor-form .cpx-step-heading{display:flex;align-items:flex-start;gap:14px;margin:0 0 18px}
+#pdf-compressor-form .cpx-step-number{display:grid;place-items:center;flex:none;width:35px;height:35px;border:1px solid #d0e7d8;border-radius:10px;background:#edf9f1;color:#247350;font-size:12px;font-weight:850;letter-spacing:.03em}
+#pdf-compressor-form .cpx-step-heading h2{margin:0;color:#102d22;font-size:19px;font-weight:820;line-height:1.24;letter-spacing:-.035em}
+#pdf-compressor-form .cpx-step-heading p{font-size:12px;color:#758a7c;margin:5px 0 0;line-height:1.5}
+#pdf-compressor-form .cpx-dropzone{isolation:isolate;position:relative;display:flex;align-items:center;gap:19px;width:100%;min-height:118px;padding:23px 25px;border:1.5px dashed #a8cbb6;border-radius:15px;background:linear-gradient(105deg,#f6fdf8 0%,#f8fbf7 100%);cursor:pointer;transition:border-color .16s,background .16s,box-shadow .16s}
+#pdf-compressor-form .cpx-dropzone:hover,#pdf-compressor-form .cpx-dropzone.cpx-dragging{border-color:#399875;background:#eaf9ef}
+#pdf-compressor-form .cpx-dropzone:focus-within{outline:3px solid #78d1a3;outline-offset:3px}
+#pdf-compressor-form .cpx-dropzone input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2}
+#pdf-compressor-form .cpx-upload-illustration{flex:none;display:grid;place-items:center;width:65px;height:65px;border-radius:16px;background:#ddf3e6;color:#287b5a}
+#pdf-compressor-form .cpx-upload-copy{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1}
+#pdf-compressor-form .cpx-upload-copy strong{font-size:16px;font-weight:850;line-height:1.25;color:#123d2e;overflow-wrap:anywhere}
+#pdf-compressor-form .cpx-upload-copy>span{font-size:12px;line-height:1.4;color:#6a8774}
+#pdf-compressor-form .cpx-browse-action{flex:none;display:flex;align-items:center;gap:15px;border:1px solid #a9d4ba;background:#fff;color:#226948;font-weight:800;font-size:12px;padding:12px 16px;border-radius:10px;box-shadow:0 3px 11px rgba(33,92,56,.045);pointer-events:none}
+#pdf-compressor-form .cpx-browse-action span{font-size:17px}
+#pdf-compressor-form .cpx-privacy{margin:12px 3px 0;color:#6a8573;display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:11px;line-height:1.5}
+#pdf-compressor-form .cpx-privacy span:first-child{color:#22956b;font-size:14px}
+#pdf-compressor-form .cpx-level-section{margin-top:31px}
+#pdf-compressor-form .cpx-visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;padding:0;border:0;margin:-1px}
+#pdf-compressor-form .compression-choices{border:0;padding:0;margin:0;min-width:0}
+#pdf-compressor-form .compression-choices-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+#pdf-compressor-form .compression-option{position:relative;display:block;min-width:0;cursor:pointer}
+#pdf-compressor-form .compression-option>input{position:absolute;width:1px;height:1px;opacity:0;top:50%;left:50%;cursor:pointer}
+#pdf-compressor-form .compression-option-content{position:relative;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;gap:0;width:100%;height:100%;min-height:160px;padding:20px 19px 20px;border:1.5px solid #d7e5db;border-radius:15px;background:#fff;box-shadow:0 3px 15px rgba(21,68,42,.025);transition:background .16s,border-color .16s,box-shadow .16s,transform .16s}
+#pdf-compressor-form .compression-option:hover .compression-option-content{border-color:#55b787;box-shadow:0 8px 24px rgba(24,96,59,.065);transform:translateY(-1px)}
+#pdf-compressor-form .compression-option>input:checked+.compression-option-content{border-color:#198b63;background:#effaf3;box-shadow:0 0 0 2px rgba(39,155,98,.11),0 8px 26px rgba(30,117,71,.06)}
+#pdf-compressor-form .compression-option>input:focus-visible+.compression-option-content{outline:3px solid #46b98b;outline-offset:3px}
+#pdf-compressor-form .cpx-card-top{display:flex;align-items:flex-start;gap:8px;justify-content:space-between;width:100%;min-height:43px;margin:0 0 16px}
+#pdf-compressor-form .cpx-strength-icon{display:flex;align-items:flex-end;justify-content:center;gap:4px;background:#e9f5ee;color:#398a62;width:44px;height:42px;border-radius:11px;padding:11px 10px}
+#pdf-compressor-form .cpx-strength-icon i{width:5px;height:7px;border-radius:3px;background:currentColor;opacity:.28;display:block}
+#pdf-compressor-form .cpx-strength-icon i:nth-child(2){height:12px}
+#pdf-compressor-form .cpx-strength-icon i:nth-child(3){height:18px}
+#pdf-compressor-form .cpx-strength-low i:first-child,#pdf-compressor-form .cpx-strength-best i:first-child,#pdf-compressor-form .cpx-strength-best i:nth-child(2),#pdf-compressor-form .cpx-strength-high i{opacity:1}
+#pdf-compressor-form .compression-option-badge{position:absolute;right:16px;top:17px;padding:6px 9px;background:#d8f4df;border-radius:100px;color:#18744e;font-size:9px;font-weight:850;letter-spacing:.045em;white-space:nowrap}
+#pdf-compressor-form .cpx-selected-check{display:grid;place-items:center;width:21px;height:21px;border:1.5px solid #c4d6c9;background:#fff;border-radius:50%;font-size:12px;font-weight:850;color:transparent;margin-left:auto}
+#pdf-compressor-form .compression-option-badge+.cpx-selected-check{visibility:hidden}
+#pdf-compressor-form .compression-option>input:checked+.compression-option-content .cpx-selected-check{visibility:visible;background:#16875b;border-color:#16875b;color:#fff}
+#pdf-compressor-form .compression-option>input:checked+.compression-option-content .compression-option-badge{background:#bceccc}
+#pdf-compressor-form .compression-option-content>strong{font-size:17px;letter-spacing:-.035em;font-weight:830;color:#193d2e;line-height:1.28;padding:0;margin-bottom:7px}
+#pdf-compressor-form .compression-option-content>small{font-size:12px;line-height:1.5;color:#718879}
+#pdf-compressor-form .cpx-status-bar{border:1px solid #e2ede5;background:#f9fcf9;border-radius:10px;margin-top:23px;padding:12px 15px;display:flex;align-items:center;gap:11px}
+#pdf-compressor-form .cpx-status-icon{display:grid;place-items:center;flex:none;width:21px;height:21px;border-radius:50%;background:#def4e6;color:#237852;font-size:11px;font-weight:850}
+#pdf-compressor-form .tool-status{margin:0;min-height:0;color:#567969;font-size:12px;line-height:1.5}
+#pdf-compressor-form .tool-status.error{color:#a6352e}
+#pdf-compressor-form[aria-busy="true"] .cpx-status-icon{border:2px solid #c9e5d1;border-top-color:#167e56;border-radius:50%;color:transparent;background:transparent;animation:cpx-turn .75s linear infinite}
+@keyframes cpx-turn{to{transform:rotate(360deg)}}
+#pdf-compressor-form .cpx-result{margin-top:20px;border:1px solid #c5e8d1;border-radius:14px;background:linear-gradient(110deg,#f4fdf6,#fff);padding:21px}
+#pdf-compressor-form .cpx-result[hidden],#pdf-compressor-form .cpx-download[hidden],#pdf-compressor-form .cpx-saved[hidden]{display:none!important}
+#pdf-compressor-form .cpx-result-heading{display:flex;gap:12px;align-items:center;margin-bottom:17px}
+#pdf-compressor-form .cpx-result-check{display:grid;place-items:center;background:#168458;color:#fff;border-radius:50%;width:34px;height:34px;flex:none;font-weight:900}
+#pdf-compressor-form .cpx-result-heading>div{display:flex;flex-direction:column;gap:3px}
+#pdf-compressor-form .cpx-result-heading strong{font-size:17px;font-weight:850;color:#174531}
+#pdf-compressor-form .cpx-result-heading small{font-size:11px;color:#72917d}
+#pdf-compressor-form .cpx-file-sizes{display:flex;align-items:center;gap:18px;flex-wrap:wrap;background:#fff;border:1px solid #e5eee7;border-radius:11px;padding:13px 17px}
+#pdf-compressor-form .cpx-file-sizes>div{display:flex;flex-direction:column;gap:4px;min-width:91px}
+#pdf-compressor-form .cpx-file-sizes>div>span{font-size:10px;color:#748b7b;font-weight:700}
+#pdf-compressor-form .cpx-file-sizes strong{font-size:20px;color:#183e2e;letter-spacing:-.035em}
+#pdf-compressor-form .cpx-size-arrow{font-size:22px;color:#90ad99}
+#pdf-compressor-form .cpx-saved{border-radius:999px;background:#e2f7e9;color:#1b8152;padding:6px 10px;font-size:11px;font-weight:850;margin-left:auto}
+#pdf-compressor-form .cpx-outcome{font-size:11px;line-height:1.6;color:#60816d;margin:14px 0}
+#pdf-compressor-form .cpx-download{display:inline-flex;min-width:200px;border-radius:10px;min-height:47px;font-size:12px;text-align:center;text-decoration:none}
+#pdf-compressor-form .cpx-download span{font-size:17px}
+@media(max-width:830px){
+ body[data-wave1="pdf-compressor"] .panel-content{padding:25px}
+ #pdf-compressor-form .compression-choices-grid{gap:9px}
+ #pdf-compressor-form .compression-option-content{padding:16px 13px;min-height:156px}
+ #pdf-compressor-form .compression-option-content>strong{font-size:14px}
+ #pdf-compressor-form .compression-option-content>small{font-size:11px}
+ #pdf-compressor-form .compression-option-badge{font-size:8px;top:14px;right:9px}
+}
+@media(max-width:660px){
+ body[data-wave1="pdf-compressor"] .tool-wrap{padding:27px 5% 60px}
+ body[data-wave1="pdf-compressor"] .tool-intro{margin-bottom:24px}
+ body[data-wave1="pdf-compressor"] .tool-intro h1{font-size:clamp(32px,9vw,46px)}
+ body[data-wave1="pdf-compressor"] .panel-content{padding:20px 15px 24px}
+ #pdf-compressor-form .cpx-step-heading{gap:10px;margin-bottom:14px}
+ #pdf-compressor-form .cpx-step-heading h2{font-size:17px}
+ #pdf-compressor-form .cpx-dropzone{padding:16px;gap:12px;min-height:102px}
+ #pdf-compressor-form .cpx-upload-illustration{width:48px;height:53px;border-radius:12px}
+ #pdf-compressor-form .cpx-upload-illustration svg{width:24px}
+ #pdf-compressor-form .cpx-upload-copy strong{font-size:13px}
+ #pdf-compressor-form .cpx-upload-copy>span{font-size:10px}
+ #pdf-compressor-form .cpx-browse-action{display:none}
+ #pdf-compressor-form .cpx-level-section{margin-top:26px}
+ #pdf-compressor-form .compression-choices-grid{grid-template-columns:1fr;gap:9px}
+ #pdf-compressor-form .compression-option-content{min-height:85px;padding:15px 16px 13px 76px;gap:3px}
+ #pdf-compressor-form .cpx-card-top{position:absolute;inset:0 auto 0 13px;width:47px;min-height:0;display:flex;align-items:center;margin:0}
+ #pdf-compressor-form .cpx-strength-icon{width:42px;height:41px}
+ #pdf-compressor-form .compression-option-content>strong{font-size:15px}
+ #pdf-compressor-form .compression-option-content>small{font-size:11px}
+ #pdf-compressor-form .compression-option-badge{top:10px;right:13px}
+ #pdf-compressor-form .cpx-selected-check{position:absolute;right:-260px;display:none}
+ #pdf-compressor-form .compression-option>input:checked+.compression-option-content:after{content:"✓";position:absolute;right:12px;bottom:12px;display:grid;place-items:center;border-radius:100%;width:21px;height:21px;background:#16875b;color:#fff;font-weight:800;font-size:12px}
+ #pdf-compressor-form .cpx-result{padding:16px}
+ #pdf-compressor-form .cpx-file-sizes{gap:10px;padding:12px}
+ #pdf-compressor-form .cpx-file-sizes strong{font-size:16px}
+ #pdf-compressor-form .cpx-file-sizes>div{min-width:75px}
+ #pdf-compressor-form .cpx-download{width:100%}
+}
+@media(prefers-reduced-motion:reduce){#pdf-compressor-form .compression-option-content{transition:none}#pdf-compressor-form[aria-busy="true"] .cpx-status-icon{animation:none}}
