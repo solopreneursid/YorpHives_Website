@@ -15,6 +15,7 @@ async function until(fn,timeout=15000){
  throw Error('Timed out waiting for the tool interface.');
 }
 const info={tool:document.body.dataset.filetool,selected:0,processed:false,download:false,validOutput:false};
+let restoreBlobFactory;
 try{
  const id=info.tool,input=document.getElementById('file-input'),submit=document.getElementById('file-run'),
   form=document.getElementById('file-tool-form'),download=document.getElementById('file-download'),
@@ -49,12 +50,19 @@ try{
  input.files=transfer.files;
  input.dispatchEvent(new Event('change',{bubbles:true}));
  info.selected=selected.length;
+ // Cloudflare's headless browser may block fetch(blob:) even though the link is
+ // valid. Observe the actual Blob passed to the browser's download URL factory.
+ const captured=[];
+ const originalCreate=URL.createObjectURL;
+ URL.createObjectURL=function(blob){captured.push(blob);return originalCreate.call(URL,blob);};
+ restoreBlobFactory=()=>{URL.createObjectURL=originalCreate;};
  form.requestSubmit();
  await until(()=>!download.hidden&&download.href.startsWith('blob:'),25000);
  info.processed=!!message.textContent&&!message.classList.contains('error');
  info.download=true;
- const response=await fetch(download.href);
- const output=new Uint8Array(await response.arrayBuffer());
+ const blob=captured.at(-1);
+ if(!blob)throw Error('The UI did not create a downloadable Blob.');
+ const output=new Uint8Array(await blob.arrayBuffer());
  if(id==='pdf-merge')info.validOutput=String.fromCharCode(...output.slice(0,4))==='%PDF';
  else if(id==='image-cropper')info.validOutput=output.length>12&&output[0]===137&&output[1]===80;
  else if(id==='batch-find-replace'||id==='csv-file-to-xlsx'||id==='zip-file-creator')
@@ -63,5 +71,5 @@ try{
   info.validOutput=new TextDecoder().decode(output).includes('Identical content groups: 1');
  if(!info.processed||!info.validOutput)throw Error('Output or status did not match the tool workflow.');
  status.dataset.status='passed';
-}catch(e){status.dataset.status='failed';info.error=String(e?.message||e);}
+}catch(e){status.dataset.status='failed';info.error=String(e?.message||e);}finally{restoreBlobFactory?.();}
 status.textContent=JSON.stringify(info,null,2);
