@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const source=await readFile(resolve(root,'app.js'),'utf8');
-const begin=source.indexOf('  function setupExploreFeatureSpotlight(products) {');
+const begin=source.indexOf('  function setupExploreFeatureSpotlight(products, location');
 const end=source.indexOf('  async function loadCatalog() {',begin);
 assert.ok(begin>=0&&end>begin,'Explore auto-rotation logic must be present');
 const setup=new Function('document','window','IntersectionObserver',
