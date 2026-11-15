@@ -34,8 +34,19 @@ test('preview deployments are explicitly noindex but stay crawlable for the head
   assert.match(robots,/Sitemap: https:\/\/yorphives.com\/sitemap\.xml/);
  }
 });
-test('SEO publishing leaves the studio homepage visual source untouched',async()=>{
- assert.equal(await read('index.html',dest),await read('index.html'));
+test('SEO publishing preserves homepage markup outside the generated YHpulse feed',async()=>{
+ const source=await read('index.html');
+ const built=await read('index.html',dest);
+ const start='<!-- PULSE_START -->',end='<!-- PULSE_END -->';
+ const strip=html=>{
+   const i=html.indexOf(start),j=html.indexOf(end,i+start.length);
+   assert.ok(i>=0&&j>i,'YHpulse markers must exist once');
+   assert.equal(html.indexOf(start,i+1),-1);
+   assert.equal(html.indexOf(end,j+1),-1);
+   return html.slice(0,i+start.length)+html.slice(j);
+ };
+ assert.equal(strip(built),strip(source));
+ assert.match(built,/LATEST 10 UPDATES/);
 });
 test('test source, secrets and internal documents cannot leak into static output',async()=>{
  for(const path of ['scripts/build-site.mjs','tests/seo-discovery.test.mjs','RELEASE.md','SEO.md','.git/config'])
