@@ -41,3 +41,9 @@
   .header-kofi small{font-size:7.6px}
   .site-header .menu-toggle{width:40px;height:40px}
 }
+/* Footer uses the same refined, compact Ko-fi CTA as the homepage header. */
+.footer-support .footer-kofi{display:inline-flex;order:initial;width:max-content;min-width:98px;min-height:44px;padding:6px 10px;margin:1px 0 0;border-radius:12px}
+.footer-support .footer-kofi small{display:block;margin:0;font-size:8px;line-height:1.12;letter-spacing:.015em;color:#b8d5cc}
+.footer-support .support-feedback{margin:9px 0 0;font-size:11px;line-height:1.4;color:#a8c7b8}
+.footer-support .support-feedback[hidden]{display:none!important}
+@media(max-width:480px){.footer-support .footer-kofi{min-width:85px;min-height:40px;padding:5px 6px;border-radius:10px}}

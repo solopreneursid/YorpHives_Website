@@ -37,18 +37,26 @@
   window.addEventListener('hashchange', route);
   route();
 
-  // The homepage Ko-fi callout is discoverable now. Until the founder provides
-  // their actual Ko-fi profile URL, show the existing "coming soon" message
-  // instead of sending supporters to an invented or unrelated account.
+  // Keep both support actions honest until the founder shares a real Ko-fi link.
+  // Both use the same accessible confirmation rather than an invented payment URL.
+  const footerKofi = document.getElementById('footer-kofi');
+  const supportFeedback = document.getElementById('support-note');
+  const showSupportStatus = () => {
+    if (!supportFeedback) return;
+    supportFeedback.hidden = false;
+    supportFeedback.textContent = 'Ko-fi support coming soon';
+  };
   document.getElementById('header-kofi')?.addEventListener('click', () => {
     const support = document.querySelector('.footer-support');
     if (!support) return;
+    showSupportStatus();
     support.scrollIntoView({
       block: 'center',
       behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     });
-    support.focus({preventScroll:true});
+    footerKofi?.focus({preventScroll:true});
   });
+  footerKofi?.addEventListener('click', showSupportStatus);
 
   menu.addEventListener('click', () => {
     const isOpen = !navigation.classList.contains('open');

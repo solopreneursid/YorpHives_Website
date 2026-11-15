@@ -31,7 +31,8 @@ test('homepage displays Ko-fi support action in the top header, with a smaller s
  const header=html.match(/<header class="site-header">([\s\S]*?)<\/header>/)?.[1]||'';
  assert.match(header,/<button class="header-kofi" id="header-kofi"/);
  assert.match(header,/<strong>Ko-fi<\/strong>\s*<small>support my work<\/small>/);
- assert.match(html,/id="support-note">Ko-fi support coming soon<\/small>/);
+ assert.match(html,/id="footer-kofi"[^>]*><strong>Ko-fi<\/strong><small>support my work<\/small><\/button>/);
+ assert.match(html,/id="support-note" class="support-feedback" role="status" aria-live="polite" hidden>/);
  assert.doesNotMatch(header,/<a[^>]+href="https:\/\/ko-fi\.com\//i,'Do not invent a payment destination.');
  const js=await read('app.js'),css=await read('style.css');
  assert.match(js,/getElementById\('header-kofi'\).*addEventListener\('click'/);
@@ -47,4 +48,14 @@ test('Ko-fi header stays compact and readable across desktop and mobile',async()
  const mobile=css.slice(css.lastIndexOf('@media(max-width:480px)'));
  assert.ok(mobile.includes('.header-kofi{min-width:85px;min-height:40px'),'Phone button should be compact');
  assert.ok(css.includes('.header-kofi:focus-visible{outline:3px'),'Button must remain keyboard accessible');
+});
+
+test('footer Ko-fi CTA shares the header style and only shows an honest support status',async()=>{
+ const html=await read('index.html'),css=await read('style.css'),js=await read('app.js');
+ assert.match(html,/<button class="header-kofi footer-kofi"/);
+ assert.doesNotMatch(html,/<button class="support-button"[^>]*>Support YorpHives<\/button>/);
+ assert.match(css,/\.footer-support \.footer-kofi\{display:inline-flex/);
+ assert.match(css,/\.footer-support \.support-feedback\[hidden\]\{display:none!important\}/);
+ assert.match(js,/footerKofi\?\.addEventListener\('click', showSupportStatus\)/);
+ assert.match(js,/supportFeedback\.textContent = 'Ko-fi support coming soon'/);
 });
