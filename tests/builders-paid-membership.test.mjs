@@ -60,7 +60,7 @@ test('Legacy /#post deep link resolves to locked membership explanation, never a
 });
 test('Mobile Builders layouts and reduced-motion preferences have explicit rules',async()=>{
  const css=await load('style.css');
- assert.match(css,/#home \.builders-home-grid\{grid-template-columns:repeat\(3/);
+ assert.match(css,/#home \.builders-home-grid\{[^}]*grid-template-columns:repeat\(3/);
  assert.match(css,/#builders \.builders-membership-options\{display:grid/);
  assert.match(css,/@media\(max-width:570px\)\{/);
  assert.match(css,/#home \.builders-home-grid\{grid-template-columns:1fr/);
