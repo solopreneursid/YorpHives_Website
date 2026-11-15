@@ -109,106 +109,19 @@
   }
   // The same qualification gate is enforced by the static build and the public UI.
   // HQ can evaluate and recommend; the final approval is always founder-controlled.
-  function setupQualifiedShowcase(products) {
-    const panel = document.getElementById('qualified-showcase');
-    const empty = document.getElementById('qualified-showcase-empty');
-    const cards = document.getElementById('qualified-showcase-cards');
-    const count = document.getElementById('qualified-showcase-count');
-    const previous = document.getElementById('qualified-showcase-prev');
-    const next = document.getElementById('qualified-showcase-next');
-    const pause = document.getElementById('qualified-showcase-pause');
-    const badge = document.getElementById('explore-showcase-label');
-    if (!panel || !empty || !cards) return;
-    const ready = products.length > 0;
-    panel.hidden = !ready;
-    empty.hidden = ready;
-    badge.textContent = ready ? 'RESEARCH-QUALIFIED · FOUNDER-APPROVED' : 'EVIDENCE BEFORE LAUNCH';
-    if (!ready) return;
-
-    const small = window.matchMedia('(max-width:540px)');
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion:reduce)');
-    let start = 0;
-    let paused = reducedMotion.matches;
-    let onscreen = typeof IntersectionObserver === 'undefined';
-    const visibleCount = () => Math.min(products.length, small.matches ? 1 : 2);
-
-    function productCard(product, index) {
-      const link = document.createElement('a');
-      link.className = 'explore-product-card palette-' + (index % 4) + ' entering';
-      link.href = new URL(product.url, document.baseURI).href;
-      link.setAttribute('aria-label', 'Explore ' + product.name);
-      const art = document.createElement('div');
-      art.className = 'explore-product-art';
-      // This illustration contains no product-specific claims and needs no external assets.
-      art.innerHTML = '<div class="explore-product-screen" aria-hidden="true"><b></b><i></i></div>';
-      const body = document.createElement('div');
-      body.className = 'explore-product-copy';
-      const label = document.createElement('span');
-      label.className = 'explore-product-type';
-      label.textContent = (product.type === 'app' ? 'APP' : 'PRODUCT') + ' · LAUNCHED';
-      const title = document.createElement('h3');
-      title.textContent = product.name;
-      const description = document.createElement('p');
-      description.textContent = product.description;
-      const action = document.createElement('span');
-      action.className = 'explore-product-cta';
-      action.textContent = 'Explore product ↗';
-      body.append(label, title, description, action);
-      link.append(art, body);
-      return link;
-    }
-
-    function paint() {
-      const visible = visibleCount();
-      const selection = Array.from({length: visible}, (_, offset) => {
-        const index = (start + offset) % products.length;
-        return productCard(products[index], index);
-      });
-      cards.replaceChildren(...selection);
-      count.textContent = (start + 1) + '–' + (Math.min(products.length, start + visible)) + ' of ' + products.length + ' products';
-      const canRotate = products.length > visible;
-      previous.disabled = !canRotate;
-      next.disabled = !canRotate;
-      pause.disabled = !canRotate || reducedMotion.matches;
-      pause.setAttribute('aria-pressed', String(paused));
-      pause.textContent = paused ? '▶' : 'Ⅱ';
-      pause.setAttribute('aria-label', paused ? 'Resume automatic product rotation' : 'Pause automatic product rotation');
-      if (reducedMotion.matches) cards.querySelectorAll('.entering').forEach(card => card.classList.remove('entering'));
-    }
-
-    previous.addEventListener('click', () => { start = (start - 1 + products.length) % products.length; paint(); });
-    next.addEventListener('click', () => { start = (start + 1) % products.length; paint(); });
-    pause.addEventListener('click', () => { if (pause.disabled) return; paused = !paused; paint(); });
-    if (typeof small.addEventListener === 'function') small.addEventListener('change', paint);
-    if (typeof reducedMotion.addEventListener === 'function') reducedMotion.addEventListener('change', () => { if (reducedMotion.matches) paused = true; paint(); });
-    if (typeof IntersectionObserver !== 'undefined') {
-      new IntersectionObserver(entries => { onscreen = entries.some(entry => entry.isIntersecting); }, {threshold: .15}).observe(panel);
-    }
-    if (products.length > 1) window.setInterval(() => {
-      if (paused || reducedMotion.matches || !onscreen || document.hidden ||
-          document.getElementById('home').hidden || document.activeElement?.closest('.explore-showcase')) return;
-      if (products.length > visibleCount()) {
-        start = (start + visibleCount()) % products.length;
-        paint();
-      }
-    }, 6500);
-    paint();
-  }
-
-
-  // Small Explore-page spotlight: new approved catalog entries join on the next release.
-  // Auto-advances one product at a time; controls are optional, not required.
-  function setupExploreFeatureSpotlight(products) {
-    const root = document.getElementById('explore-feature-window');
-    const empty = document.getElementById('explore-feature-empty');
-    const productLink = document.getElementById('explore-feature-product');
-    const logo = document.getElementById('explore-feature-logo');
-    const title = document.getElementById('explore-feature-name');
-    const type = document.getElementById('explore-feature-type');
-    const counter = document.getElementById('explore-feature-count');
-    const prev = document.getElementById('explore-feature-prev');
-    const next = document.getElementById('explore-feature-next');
-    const pause = document.getElementById('explore-feature-pause');
+  // Shared logo-card spotlight, mounted once on Home and once on Explore.
+  function setupExploreFeatureSpotlight(products, location = 'explore') {
+    const prefix = location === 'home' ? 'home-feature-' : 'explore-feature-';
+    const root = document.getElementById(prefix + 'window');
+    const empty = document.getElementById(prefix + 'empty');
+    const productLink = document.getElementById(prefix + 'product');
+    const logo = document.getElementById(prefix + 'logo');
+    const title = document.getElementById(prefix + 'name');
+    const type = document.getElementById(prefix + 'type');
+    const counter = document.getElementById(prefix + 'count');
+    const prev = document.getElementById(prefix + 'prev');
+    const next = document.getElementById(prefix + 'next');
+    const pause = document.getElementById(prefix + 'pause');
     if (!root || !empty || !productLink || !logo || !title || !counter ||
         !prev || !next || !pause) return;
 
@@ -216,6 +129,18 @@
     const ready = available.length > 0;
     empty.hidden = ready;
     productLink.hidden = !ready;
+    if (location === 'home') {
+      const note = document.getElementById('explore-qualification-note');
+      const footer = document.querySelector('#home .explore-evaluation-foot span:last-child');
+      const badge = document.getElementById('explore-showcase-label');
+      if (note) note.textContent = ready
+        ? 'Every product earns its place through HQ research, business analysis and founder approval.'
+        : 'No HQ-qualified products have been released yet. Here is what every product must pass:';
+      if (footer) footer.textContent = ready
+        ? 'Only products reviewed by Yorphives HQ and approved by the founder go live in Explore.'
+        : 'Qualified launches will appear here after founder approval.';
+      if (badge) badge.textContent = ready ? 'FOUNDER-APPROVED PRODUCTS' : 'EVIDENCE BEFORE LAUNCH';
+    }
     if (!ready) return;
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -287,7 +212,7 @@
     }
     if (canMove()) window.setInterval(() => {
       if (paused || reducedMotion.matches || !onscreen ||
-          document.hidden || document.getElementById('explore').hidden) return;
+          document.hidden || document.getElementById(location).hidden) return;
       index = (index + 1) % available.length;
       paint();
     }, 4500);
@@ -528,8 +453,8 @@
       const productGrid = document.getElementById('explore-items'); productGrid.replaceChildren();
       document.getElementById('explore-empty').hidden = products.length > 0;
       products.forEach(item => productGrid.append(card(item)));
-      setupQualifiedShowcase(products);
-      setupExploreFeatureSpotlight(products);
+      setupExploreFeatureSpotlight(products, 'home');
+      setupExploreFeatureSpotlight(products, 'explore');
     } catch (_) {
       recent.replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
       for (const id of ['tools', 'explore']) document.getElementById(`${id}-items`).replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
