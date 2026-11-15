@@ -5,7 +5,7 @@ import {resolve} from 'node:path';
 const root=process.cwd(),dist=resolve(root,'dist'),read=(base,path)=>readFile(resolve(base,path),'utf8');
 const items=JSON.parse(await read(root,'catalog.json')).items.filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
 test('the shared UI is applied to every non-compressor tool, not just sample pages',async()=>{
- assert.equal(items.length,113);
+ assert.equal(items.length,116);
  let count=0;
  for(const item of items){
   const html=await read(dist,item.url+'index.html');
@@ -14,9 +14,9 @@ test('the shared UI is applied to every non-compressor tool, not just sample pag
    assert.match(html,/compressor-ui-v3\.css/);
    continue;
   }
-  if(item.module?.url==='tools/wave2-core.mjs'){
+  if(['tools/wave2-core.mjs','tools/wave3-core.mjs','tools/pdf-redaction-core.mjs'].includes(item.module?.url)){
    assert.match(html,/wave2\.css/);
-   assert.match(html,/data-wave2=/);
+   assert.match(html,/data-wave2=|data-wave3=|data-redaction=/);
    assert.doesNotMatch(html,/tool-suite-v1\.mjs/);
    continue;
   }
