@@ -121,163 +121,216 @@
       if (catalog.length) catalog.slice(0, 3).forEach(item => recent.append(card(item)));
       else recent.append(statusCard('Our first tools and products are taking shape. New additions will appear here.', 'THE FIRST CHAPTER'));
       const tools = catalog.filter(item => item.type === 'tool');
-      // Search-first library: render 12 results at a time, not the entire catalog.
-      // Every tool retains its own static, crawlable URL in /tools/ and the sitemap.
-      const toolsGrid = document.getElementById('tools-items');
+      // Eight-row Tool Launcher: new categories are included automatically.
+      // Every tool retains its independent direct-entry URL and SEO metadata.
+      const toolGrid = document.getElementById('tools-items');
       const toolsEmpty = document.getElementById('tools-empty');
       const controls = document.getElementById('tool-controls');
       const search = document.getElementById('tool-search');
+      const clear = document.getElementById('tool-clear');
       const sort = document.getElementById('tool-sort');
       const count = document.getElementById('tool-count');
-      const categories = document.getElementById('tool-categories');
+      const total = document.getElementById('tool-total');
+      const sidebar = document.getElementById('tool-categories');
+      const mobileCategories = document.getElementById('tool-mobile-categories');
+      const mobileBrowse = document.getElementById('tool-mobile-browse');
+      const heading = document.getElementById('tool-view-title');
+      const caption = document.getElementById('tool-view-caption');
+      const eyebrow = document.getElementById('tool-eyebrow');
+      const back = document.getElementById('tool-back');
       const noResults = document.getElementById('tool-no-results');
-      const clear = document.getElementById('tool-clear');
       const reset = document.getElementById('tool-reset');
-      const moreWrap = document.getElementById('tool-more-wrap');
-      const more = document.getElementById('tool-more');
-      const progress = document.getElementById('tool-more-progress');
-      const batchSize = 12;
+      const prev = document.getElementById('tool-prev');
+      const next = document.getElementById('tool-next');
+      const pageNumber = document.getElementById('tool-page-number');
+      const pageSize = 8;
       const storageKey = 'yorphives.tool-favorites.v1';
-      const knownUrls = new Set(tools.map(item => item.url));
+      const validUrls = new Set(tools.map(item => item.url));
       let favorites = new Set();
       try {
         const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        if (Array.isArray(stored)) favorites = new Set(stored.filter(url => typeof url === 'string' && knownUrls.has(url)));
-      } catch (_) { /* Private browsing or disabled storage: continue in memory. */ }
+        if (Array.isArray(stored)) favorites = new Set(stored.filter(url => typeof url === 'string' && validUrls.has(url)));
+      } catch (_) { /* Support browsers that restrict local storage. */ }
       const saveFavorites = () => {
         try { localStorage.setItem(storageKey, JSON.stringify([...favorites])); } catch (_) {}
       };
-      let selectedCategory = '';
-      let visibleLimit = batchSize;
-      const searchText = value => String(value || '').normalize('NFKD').toLocaleLowerCase().replace(/[\u0300-\u036f]/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+      const groups = [
+        {id:'documents',name:'Documents',icon:'▤',categories:['PDF','Spreadsheets','Presentations']},
+        {id:'images',name:'Images & Design',icon:'◈',categories:['Images','Design']},
+        {id:'writing',name:'Writing & Text',icon:'✎',categories:['Writing']},
+        {id:'files',name:'Files & ZIP',icon:'▣',categories:['Files']},
+        {id:'developer',name:'Developer',icon:'⌘',categories:['Developer','Security']},
+        {id:'calculators',name:'Calculators',icon:'∑',categories:['Calculators']},
+        {id:'creator',name:'Marketing & Creator',icon:'◎',categories:['Marketing','Creator']}
+      ];
+      const assigned = new Set(groups.flatMap(group => group.categories));
+      for (const category of [...new Set(tools.map(item => item.category || 'Other'))].sort((a,b)=>a.localeCompare(b)))
+        if (!assigned.has(category)) groups.push({id:'other-'+groups.length,name:category,icon:'◇',categories:[category]});
+      const normalize = value => String(value || '').normalize('NFKD').toLocaleLowerCase()
+        .replace(/[\u0300-\u036f]/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
       const aliases = {
-        'image-resizer': 'resize photo compress picture shrink jpg jpeg png webp',
-        'pdf-merge': 'combine pdf join pdf documents',
-        'images-to-pdf': 'photo picture jpg png to pdf',
-        'csv-file-to-xlsx': 'csv to excel spreadsheet',
-        'duplicate-file-finder': 'find identical duplicate files',
-        'zip-file-creator': 'compress archive folder zip',
-        'word-counter': 'count words letters characters',
-        'base64-tool': 'base64 encode decode'
+        'pdf-merge':'combine pdf join pdfs documents',
+        'pdf-extract-pages':'split pdf select pages cut pdf',
+        'images-to-pdf':'convert photo jpg png picture to pdf',
+        'image-resizer':'resize photo shrink image jpg jpeg png webp',
+        'duplicate-file-finder':'find repeated files identical copies duplicates',
+        'batch-find-replace':'bulk text change multiple files replace',
+        'csv-file-to-xlsx':'csv to excel spreadsheet workbook',
+        'word-counter':'count words characters letters',
+        'zip-file-creator':'compress archive multiple files',
+        'json-formatter':'pretty print json beautify'
       };
-      const categoriesWithCounts = [...new Set(tools.map(item => item.category).filter(Boolean))]
-        .sort((a, b) => a.localeCompare(b)).map(name => ({
-          name, total: tools.filter(item => item.category === name).length
-        }));
-      toolsEmpty.hidden = tools.length > 0;
-      controls.hidden = tools.length === 0;
-      const makeChip = (name, label, total) => {
+      let active = '';
+      let page = 1;
+      const groupItems = group => tools.filter(item => group.categories.includes(item.category || 'Other'));
+      const makeCategory = (id,name,icon,amount,mobile=false) => {
         const button = document.createElement('button');
         button.type = 'button';
-        button.className = 'tool-category-chip';
-        button.dataset.category = name;
-        button.setAttribute('aria-pressed', String(selectedCategory === name));
-        const text = document.createElement('span');
-        text.textContent = label;
-        const badge = document.createElement('span');
-        badge.className = 'tool-chip-count';
-        badge.textContent = String(total);
-        button.append(text, badge);
+        button.className = mobile ? 'launcher-mobile-tile' : 'launcher-nav-item';
+        button.dataset.group = id;
+        button.setAttribute('aria-pressed', String(active === id));
+        const symbol = document.createElement('span');
+        symbol.className = 'launcher-group-symbol';
+        symbol.setAttribute('aria-hidden','true');
+        symbol.textContent = icon;
+        const label = document.createElement('span');
+        label.className = 'launcher-group-name';
+        label.textContent = name;
+        const number = document.createElement('span');
+        number.className = 'launcher-group-count';
+        number.textContent = String(amount);
+        button.append(symbol,label,number);
         button.addEventListener('click', () => {
-          selectedCategory = name;
-          visibleLimit = batchSize;
+          active = id;
+          page = 1;
+          search.value = '';
           renderTools();
         });
         return button;
       };
-      categories.append(
-        makeChip('', 'All tools', tools.length),
-        makeChip('__saved__', '★ Saved', favorites.size),
-        ...categoriesWithCounts.map(({name, total}) => makeChip(name, name, total))
-      );
-      const toolLink = item => {
-        const path = String(item.url || '');
-        // Only first-party static routes that exist in the catalog are linked.
-        return /^tools\/[a-z0-9][a-z0-9-]*\/$/.test(path) ? path : null;
-      };
-      const miniCard = item => {
-        const article = document.createElement('article');
-        article.className = 'tool-mini-card';
-        const top = document.createElement('div');
-        top.className = 'tool-mini-top';
-        const category = document.createElement('span');
-        category.className = 'tool-mini-category';
-        category.textContent = item.category || 'Tool';
-        const favorite = document.createElement('button');
-        favorite.type = 'button';
-        favorite.className = 'tool-favorite';
+      toolsEmpty.hidden = tools.length>0;
+      controls.hidden = tools.length===0;
+      total.textContent = tools.length + ' free tools';
+      sidebar.append(makeCategory('','Discover','✧',tools.length));
+      for(const group of groups) {
+        const amount=groupItems(group).length;
+        sidebar.append(makeCategory(group.id,group.name,group.icon,amount));
+        mobileCategories.append(makeCategory(group.id,group.name,group.icon,amount,true));
+      }
+      sidebar.append(makeCategory('__saved__','My tools','☆',favorites.size));
+      mobileCategories.append(makeCategory('__saved__','My tools','☆',favorites.size,true));
+      const toolUrl = item => /^tools\/[a-z0-9][a-z0-9-]*\/$/.test(String(item.url||'')) ? item.url : 'tools/';
+      const makeRow = item => {
+        const row = document.createElement('article');
+        row.className = 'launcher-tool-row';
+        row.setAttribute('role','listitem');
+        const symbol = document.createElement('span');
+        symbol.className = 'launcher-tool-symbol';
+        symbol.textContent = groups.find(group => group.categories.includes(item.category || 'Other'))?.icon || '◇';
+        symbol.setAttribute('aria-hidden','true');
+        const link = document.createElement('a');
+        link.className = 'launcher-tool-link';
+        link.href = toolUrl(item);
+        const title = document.createElement('strong');
+        title.textContent = item.name;
+        const description = document.createElement('span');
+        description.textContent = item.description;
+        link.append(title,description);
+        const save = document.createElement('button');
+        save.type = 'button';
+        save.className = 'launcher-save';
         const saved = favorites.has(item.url);
-        favorite.textContent = saved ? '★' : '☆';
-        favorite.setAttribute('aria-pressed', String(saved));
-        favorite.setAttribute('aria-label', (saved ? 'Remove ' : 'Save ') + item.name + (saved ? ' from saved tools' : ' to saved tools'));
-        favorite.title = saved ? 'Remove from saved' : 'Save this tool';
-        favorite.addEventListener('click', () => {
+        save.textContent = saved ? '★' : '☆';
+        save.setAttribute('aria-pressed',String(saved));
+        save.setAttribute('aria-label',(saved?'Remove ':'Save ')+item.name+(saved?' from saved tools':' to saved tools'));
+        save.title = saved ? 'Remove from My tools' : 'Save to My tools';
+        save.addEventListener('click', () => {
           if (favorites.has(item.url)) favorites.delete(item.url);
           else favorites.add(item.url);
           saveFavorites();
           renderTools();
         });
-        top.append(category, favorite);
-        const link = document.createElement('a');
-        link.className = 'tool-mini-link';
-        link.href = toolLink(item) || 'tools/';
-        const title = document.createElement('h3');
-        title.textContent = item.name;
-        const desc = document.createElement('p');
-        desc.textContent = item.description;
-        const action = document.createElement('span');
-        action.className = 'tool-mini-action';
-        action.textContent = 'Open tool  ↗';
-        link.append(title, desc, action);
-        article.append(top, link);
-        return article;
+        const open = document.createElement('a');
+        open.className = 'launcher-tool-open';
+        open.href = toolUrl(item);
+        open.textContent = '↗';
+        open.setAttribute('aria-label','Open '+item.name);
+        row.append(symbol,link,save,open);
+        return row;
       };
-      function renderTools() {
-        const terms = searchText(search.value).split(/\s+/).filter(Boolean);
-        let matches = tools.filter(item => {
-          if (selectedCategory === '__saved__' && !favorites.has(item.url)) return false;
-          if (selectedCategory && selectedCategory !== '__saved__' && item.category !== selectedCategory) return false;
-          const id = String(item.url || '').split('/')[1];
-          const corpus = searchText([item.name, item.description, item.category, aliases[id] || ''].join(' '));
-          return terms.every(term => corpus.includes(term));
+      function matchedTools() {
+        const words=normalize(search.value).split(/\s+/).filter(Boolean);
+        let matches=tools.filter(item=>{
+          if (active==='__saved__' && !favorites.has(item.url)) return false;
+          if (active && active!=='__saved__' &&
+            !groups.find(group=>group.id===active)?.categories.includes(item.category||'Other')) return false;
+          if(!words.length)return true;
+          const id=String(item.url||'').split('/')[1];
+          const text=normalize([item.name,item.description,item.category,aliases[id]||''].join(' '));
+          return words.every(word=>text.includes(word));
         });
-        if (sort.value === 'az') matches.sort((a,b) => a.name.localeCompare(b.name));
-        else if (sort.value === 'za') matches.sort((a,b) => b.name.localeCompare(a.name));
-        const shown = matches.slice(0, visibleLimit);
-        toolsGrid.replaceChildren(...shown.map(miniCard));
-        noResults.hidden = matches.length > 0;
-        const filtering = !!search.value.trim() || !!selectedCategory;
-        clear.hidden = !filtering;
-        count.textContent = matches.length
-          ? 'Showing ' + shown.length + ' of ' + matches.length + ' ' + (matches.length === 1 ? 'tool' : 'tools')
-          : '0 matching tools';
-        if (filtering && matches.length !== tools.length) count.textContent += ' · ' + tools.length + ' in the library';
-        moreWrap.hidden = shown.length >= matches.length || !matches.length;
-        progress.style.width = (matches.length ? (shown.length / matches.length) * 100 : 0) + '%';
-        more.firstChild.textContent = 'Show ' + Math.min(batchSize, matches.length - shown.length) + ' more tools ';
-        for (const chip of categories.querySelectorAll('button[data-category]')) {
-          chip.setAttribute('aria-pressed', String(chip.dataset.category === selectedCategory));
-          if (chip.dataset.category === '__saved__') chip.querySelector('.tool-chip-count').textContent = String(favorites.size);
+        if (sort.value==='az')matches.sort((a,b)=>a.name.localeCompare(b.name));
+        else if (sort.value==='za')matches.sort((a,b)=>b.name.localeCompare(a.name));
+        else if(words.length){
+          const quality=item=>{
+            const name=normalize(item.name),phrase=words.join(' ');
+            return (name===phrase?1000:name.includes(phrase)?300:0)+
+              words.reduce((sum,word)=>sum+(name.includes(word)?30:0),0);
+          };
+          matches.sort((a,b)=>quality(b)-quality(a));
         }
+        return matches;
       }
-      const resetFilters = () => {
-        search.value = '';
-        selectedCategory = '';
-        sort.value = 'newest';
-        visibleLimit = batchSize;
+      function renderTools() {
+        const searching=!!search.value.trim();
+        const current=groups.find(group=>group.id===active);
+        for(const button of [...sidebar.querySelectorAll('[data-group]'),...mobileCategories.querySelectorAll('[data-group]')]){
+          button.setAttribute('aria-pressed',String(button.dataset.group===active));
+          if(button.dataset.group==='__saved__')button.querySelector('.launcher-group-count').textContent=String(favorites.size);
+        }
+        const matches=matchedTools(),pages=Math.max(1,Math.ceil(matches.length/pageSize));
+        page=Math.min(page,pages);
+        toolGrid.replaceChildren(...matches.slice((page-1)*pageSize,page*pageSize).map(makeRow));
+        noResults.hidden=matches.length>0;
+        const discovering=!searching&&!active;
+        mobileBrowse.hidden=!discovering;
+        back.hidden=discovering;
+        clear.hidden=!searching;
+        eyebrow.textContent=searching?'SEARCH RESULTS':active==='__saved__'?'YOUR SHORTCUTS':current?'BROWSE CATEGORY':'DISCOVER';
+        heading.textContent=searching?'Matching tools':active==='__saved__'?'My saved tools':current?current.name:'Recently added';
+        caption.textContent=searching?'Tools that match what you need.':
+          active==='__saved__'?'Your favorites are saved on this device.':
+          current?matches.length+' useful '+(matches.length===1?'tool':'tools')+' in this collection.':
+          'A small selection from the latest additions.';
+        const message=noResults.querySelector('h3');
+        const details=noResults.querySelector('p');
+        message.textContent=active==='__saved__'&&!searching?'Your saved tools will appear here':'Nothing found for that search';
+        details.textContent=active==='__saved__'&&!searching?'Use ☆ beside any tool to save it for later.':'Try different words or browse a category.';
+        const from=matches.length?(page-1)*pageSize+1:0;
+        const through=Math.min(matches.length,page*pageSize);
+        count.textContent=matches.length?from+'–'+through+' of '+matches.length+' tools':'0 tools';
+        pageNumber.textContent=page+' / '+pages;
+        prev.disabled=page===1;
+        next.disabled=page===pages;
+      }
+      const resetFilters=()=>{
+        search.value='';
+        active='';
+        sort.value='newest';
+        page=1;
         renderTools();
-        search.focus();
       };
-      search.addEventListener('input', () => { visibleLimit = batchSize; renderTools(); });
-      sort.addEventListener('change', () => { visibleLimit = batchSize; renderTools(); });
-      clear.addEventListener('click', resetFilters);
-      reset.addEventListener('click', resetFilters);
-      more.addEventListener('click', () => { visibleLimit += batchSize; renderTools(); });
-      document.addEventListener('keydown', event => {
-        if (event.key !== '/' || document.getElementById('tools').hidden ||
-            event.ctrlKey || event.metaKey || event.altKey ||
-            ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) ||
-            document.activeElement?.isContentEditable) return;
+      back.addEventListener('click',()=>{resetFilters();search.focus();});
+      reset.addEventListener('click',()=>{resetFilters();search.focus();});
+      clear.addEventListener('click',()=>{search.value='';page=1;renderTools();search.focus();});
+      search.addEventListener('input',()=>{active='';page=1;renderTools();});
+      sort.addEventListener('change',()=>{page=1;renderTools();});
+      prev.addEventListener('click',()=>{if(page>1){page--;renderTools();}});
+      next.addEventListener('click',()=>{if(page<Math.ceil(matchedTools().length/pageSize)){page++;renderTools();}});
+      document.addEventListener('keydown',event=>{
+        if(event.key!=='/'||document.getElementById('tools').hidden||event.ctrlKey||event.metaKey||event.altKey||
+          ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||
+          document.activeElement?.isContentEditable)return;
         event.preventDefault();
         search.focus();
       });

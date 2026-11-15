@@ -1,87 +1,82 @@
-// Preview-only browser QA. No external requests, no changes to real tools.
-// This file is excluded from production by the build's preview-only copy rule.
+// Preview-only interactive Tool Launcher checks; not shipped to production.
 const qa=document.createElement('pre');
 qa.id='yorphives-library-qa';
 qa.dataset.status='running';
-qa.textContent='Running library checks';
+qa.textContent='Checking launcher';
 document.body.append(qa);
 const steps=[];
-const assert=(v,message)=>{if(!v)throw Error(message);};
-const check=async(name,fn)=>{
- try{await fn();steps.push({name,ok:true});}
- catch(error){steps.push({name,ok:false,error:String(error?.message||error)});}
+const assert=(ok,message)=>{if(!ok)throw Error(message);};
+const check=async(name,fn)=>{try{await fn();steps.push({name,ok:true});}catch(error){steps.push({name,ok:false,error:String(error?.message||error)});}};
+const wait=async(predicate,timeout=9000)=>{
+ const start=performance.now();while(performance.now()-start<timeout){if(predicate())return;await new Promise(r=>setTimeout(r,60));}
+ throw Error('Tool Launcher did not load');
 };
-const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-const wait=async(fn,ms=8000)=>{const start=performance.now();while(performance.now()-start<ms){if(fn())return;await sleep(50);}throw Error('Timed out waiting for library');};
-const query=selector=>document.querySelector(selector);
-const cards=()=>[...document.querySelectorAll('#tools-items .tool-mini-card')];
-const category=name=>[...document.querySelectorAll('#tool-categories button')].find(x=>x.dataset.category===name);
-const currentCount=()=>query('#tool-count')?.textContent||'';
+const q=id=>document.getElementById(id);
+const rows=()=>[...document.querySelectorAll('.launcher-tool-row')];
+const nav=name=>[...document.querySelectorAll('#tool-categories button')].find(button=>button.dataset.group===name);
 try{
- await wait(()=>cards().length===12);
- await check('initial page has twelve compact results and all twelve catalog categories',async()=>{
-  assert(cards().length===12,'Expected 12 cards, found '+cards().length);
-  assert(document.querySelectorAll('#tool-categories button').length===14,'Expected 12 categories + All + Saved');
-  assert(currentCount().includes('92'),'Expected 92 tools in the count');
-  assert(!query('#tool-more-wrap').hidden,'Show more should be available');
-  assert(cards().every(x=>x.querySelector('a.tool-mini-link')?.href.includes('/tools/')),'Tool link missing');
+ await wait(()=>rows().length===8);
+ await check('eight compact rows and seven main category groups',async()=>{
+  assert(rows().length===8,'Expected 8 tool rows');
+  assert(q('tool-page-number').textContent==='1 / 12','Expected 12 result pages');
+  assert(document.querySelectorAll('#tool-categories button').length===9,'Expected Discover + 7 groups + My tools');
+  assert(rows().every(row=>row.querySelector('a.launcher-tool-link')?.href.includes('/tools/')),'Missing direct links');
  });
- await check('name sorting changes order without losing items',async()=>{
-  const select=query('#tool-sort');select.value='az';select.dispatchEvent(new Event('change',{bubbles:true}));
-  const names=cards().map(x=>x.querySelector('h3').textContent);
-  assert(names.length===12,'Sort lost cards');
-  assert([...names].sort((a,b)=>a.localeCompare(b))[0]===names[0],'A–Z sort failed');
+ await check('pagination changes pages without making the page longer',async()=>{
+  const first=rows()[0].querySelector('strong').textContent;
+  q('tool-next').click();
+  assert(rows().length===8,'Second page must also show 8');
+  assert(q('tool-page-number').textContent==='2 / 12','Wrong page indicator');
+  assert(rows()[0].querySelector('strong').textContent!==first,'Page did not change');
+  q('tool-prev').click();
+  assert(rows()[0].querySelector('strong').textContent===first,'Previous page failed');
  });
- await check('meaning-based search finds the PDF merger',async()=>{
-  const input=query('#tool-search');input.value='combine pdf';input.dispatchEvent(new Event('input',{bubbles:true}));
-  assert(cards().length>0,'No PDF merge results');
-  assert(cards().some(x=>x.textContent.includes('Merge PDF')),'Search did not find PDF merger');
+ await check('task search finds PDF Merge',async()=>{
+  const search=q('tool-search');search.value='combine pdf';search.dispatchEvent(new Event('input',{bubbles:true}));
+  assert(rows().some(row=>row.textContent.includes('Merge PDF')),'PDF merger not found');
  });
- await check('unmatched query shows helpful empty state',async()=>{
-  const input=query('#tool-search');input.value='no-such-tool-zzzz';input.dispatchEvent(new Event('input',{bubbles:true}));
-  assert(cards().length===0,'Expected zero results');
-  assert(!query('#tool-no-results').hidden,'No-results help should be visible');
+ await check('no-results view and clear search',async()=>{
+  q('tool-search').value='not-a-real-tool-zzzz';q('tool-search').dispatchEvent(new Event('input',{bubbles:true}));
+  assert(rows().length===0&&!q('tool-no-results').hidden,'Empty state not shown');
+  q('tool-clear').click();
+  assert(rows().length===8,'Clear did not reset');
  });
- await check('reset restores initial results',async()=>{
-  query('#tool-reset').click();
-  assert(cards().length===12,'Reset did not restore 12 results');
-  assert(query('#tool-search').value==='','Reset did not clear search');
+ await check('Documents category includes PDF, spreadsheets and presentations',async()=>{
+  nav('documents').click();
+  assert(q('tool-view-title').textContent==='Documents','Wrong heading');
+  assert(q('tool-count').textContent.includes('10 tools'),'Expected 10 document tools');
+  assert(rows().length===8,'Category should be paginated');
+  assert(q('tool-page-number').textContent==='1 / 2','Wrong group page count');
  });
- await check('category chips show exact category subset',async()=>{
-  category('Files').click();
-  assert(cards().length===8,'File category has 8 tools; found '+cards().length);
-  assert(currentCount().includes('8'),'Category count mismatch');
-  assert(query('#tool-more-wrap').hidden,'No more files should exist');
+ await check('Files category and My tools work with local favorites',async()=>{
+  nav('files').click();assert(rows().length===8,'Expected eight file tools');
+  rows()[0].querySelector('.launcher-save').click();
+  nav('__saved__').click();
+  assert(rows().length===1,'Expected one saved tool');
+  rows()[0].querySelector('.launcher-save').click();
+  assert(rows().length===0,'Unsave should update list');
+  assert(!q('tool-no-results').hidden,'Empty My tools state missing');
  });
- await check('saved tools filter works, and removing the star removes it',async()=>{
-  const first=cards()[0].querySelector('.tool-favorite');first.click();
-  category('__saved__').click();
-  assert(cards().length===1,'Expected exactly one saved card');
-  assert(cards()[0].querySelector('.tool-favorite').getAttribute('aria-pressed')==='true','Saved star not active');
-  cards()[0].querySelector('.tool-favorite').click();
-  assert(cards().length===0,'Unfavorite did not update saved view');
-  assert(!query('#tool-no-results').hidden,'Empty favorites message missing');
+ await check('Back returns to Discover, sorting works',async()=>{
+  q('tool-back').click();assert(rows().length===8,'Back did not restore Discover');
+  q('tool-sort').value='az';q('tool-sort').dispatchEvent(new Event('change',{bubbles:true}));
+  const names=rows().map(row=>row.querySelector('strong').textContent);
+  assert(names[0]===[...names].sort((a,b)=>a.localeCompare(b))[0],'Sort A–Z failed');
  });
- await check('Show more grows progressively without duplicate links',async()=>{
-  query('#tool-clear').click();
-  assert(cards().length===12,'Clear filters did not reset');
-  query('#tool-more').click();
-  assert(cards().length===24,'Expected 24 cards after Show more');
-  for(let i=0;i<6;i++)query('#tool-more').click();
-  assert(cards().length===92,'Expected all 92 cards after six further clicks; found '+cards().length);
-  const urls=cards().map(x=>x.querySelector('a.tool-mini-link')?.getAttribute('href'));
-  assert(new Set(urls).size===92,'Duplicate or missing URLs');
-  assert(query('#tool-more-wrap').hidden,'Show more should be hidden when finished');
+ await check('mobile category shortcut matches sidebar group',async()=>{
+  const button=[...document.querySelectorAll('#tool-mobile-categories button')].find(x=>x.dataset.group==='images');
+  assert(!!button,'Images shortcut missing');
+  button.click();
+  assert(q('tool-view-title').textContent==='Images & Design','Mobile category selection failed');
+  assert(q('tool-count').textContent.includes('12 tools'),'Images group count mismatch');
  });
- await check('top and footer Ko-fi remain disabled',async()=>{
-  assert(document.querySelectorAll('#header-kofi[disabled],#footer-kofi[disabled]').length===2,
-    'Ko-fi button unexpectedly enabled');
+ await check('Ko-fi still disabled',async()=>{
+  assert(document.querySelectorAll('#header-kofi:disabled,#footer-kofi:disabled').length===2,'Ko-fi changed');
  });
- await check('free-tools UI fits browser width',async()=>{
-  assert(document.documentElement.scrollWidth<=innerWidth+2,
-    'Horizontal overflow: '+document.documentElement.scrollWidth+' versus '+innerWidth);
+ await check('no horizontal overflow at current viewport',async()=>{
+  assert(document.documentElement.scrollWidth<=innerWidth+2,'Horizontal overflow at '+innerWidth+'px');
  });
-} catch(error){steps.push({name:'Library test setup',ok:false,error:String(error?.message||error)});}
-const failures=steps.filter(x=>!x.ok);
-qa.dataset.status=failures.length?'failed':'passed';
-qa.textContent=JSON.stringify({viewport:innerWidth,tests:steps.length,passed:steps.length-failures.length,failed:failures.length,steps},null,2);
+} catch(error){steps.push({name:'Setup',ok:false,error:String(error?.message||error)});}
+const failed=steps.filter(s=>!s.ok);
+qa.dataset.status=failed.length?'failed':'passed';
+qa.textContent=JSON.stringify({width:innerWidth,passed:steps.length-failed.length,failed:failed.length,steps},null,2);

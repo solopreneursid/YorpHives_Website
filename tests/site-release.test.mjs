@@ -64,22 +64,28 @@ test('Ko-fi is consistently disabled in the main navigation across all homepage 
 });
 
 
-test('Free Tools library is compact, self-contained, and leaves studio/explore cards separate',async()=>{
+test('Tool Launcher only replaces Free Tools browsing and keeps the hero',async()=>{
  const html=await read('index.html'),js=await read('app.js'),css=await read('style.css');
- assert.match(html,/<section class="page" id="tools"/);
+ assert.match(html,/<div class="page-hero tools-hero">[\s\S]*?Little tools<br><em>Big momentum<\/em>/);
  assert.match(html,/id="tool-search" type="search"/);
- assert.match(html,/id="tool-categories" role="group"/);
- assert.match(html,/id="tool-sort"/);
- assert.match(html,/id="tool-more"/);
- assert.match(html,/id="tool-no-results"/);
- assert.match(js,/const batchSize = 12/);
- assert.match(js,/visibleLimit \+= batchSize/);
- assert.match(js,/selectedCategory === '__saved__'/);
+ assert.match(html,/class="launcher-workspace"/);
+ assert.match(html,/id="tool-categories" aria-label="Tool categories"/);
+ assert.match(html,/id="tool-mobile-categories"/);
+ assert.match(html,/id="tool-prev"/);
+ assert.match(html,/id="tool-next"/);
+ assert.match(html,/id="tool-back"/);
+ assert.match(html,/id="tool-count" role="status"/);
+ assert.doesNotMatch(html,/id="tool-more"/);
+ assert.match(js,/const pageSize = 8/);
+ assert.match(js,/Math\.ceil\(matches\.length\/pageSize\)/);
+ assert.match(js,/launcher-tool-row/);
+ assert.match(js,/storageKey = 'yorphives\.tool-favorites\.v1'/);
  assert.match(js,/localStorage\.setItem\(storageKey/);
- assert.match(js,/tool-mini-card/);
+ assert.match(js,/if \(!assigned\.has\(category\)\) groups\.push/);
  assert.match(js,/catalog\.slice\(0, 3\)/);
  assert.match(css,/#tools \.page-hero\{min-height:315px/);
- assert.match(css,/@media\(max-width:540px\)/);
+ assert.match(css,/\.launcher-workspace\{display:grid;grid-template-columns:232px minmax\(0,1fr\)/);
+ assert.match(css,/@media\(max-width:800px\)\{[\s\S]*?\.launcher-sidebar\{display:none\}/);
 });
 test('All tools directory stays fully crawlable while categories collapse by default',async()=>{
  const dir=await read('tools/index.html',resolve(root,'dist')),style=await read('tools/tool.css');
