@@ -9,7 +9,7 @@ import {WAVE2_IDS,inspectPdfFields,processWave2,parseCsv,cleanCsv} from '../tool
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 test('new tools are independently registered and have local entry pages',async()=>{
  const catalog=JSON.parse(await readFile(resolve(root,'catalog.json'),'utf8'));
- assert.equal(catalog.items.filter(x=>x.type==='tool').length,118);
+ assert.equal(catalog.items.filter(x=>x.type==='tool').length,126);
  assert.equal(new Set(WAVE2_IDS).size,6);
  const directory=await readFile(resolve(root,'tools/index.html'),'utf8');
  for(const id of WAVE2_IDS){
