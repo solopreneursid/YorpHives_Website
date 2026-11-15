@@ -62,3 +62,33 @@ test('Ko-fi is consistently disabled in the main navigation across all homepage 
  assert.doesNotMatch(css,/\.is-home \.header-kofi\{display:inline-flex\}/);
  assert.doesNotMatch(js,/showingSupport|showSupportStatus/);
 });
+
+
+test('Free Tools library is compact, self-contained, and leaves studio/explore cards separate',async()=>{
+ const html=await read('index.html'),js=await read('app.js'),css=await read('style.css');
+ assert.match(html,/<section class="page" id="tools"/);
+ assert.match(html,/id="tool-search" type="search"/);
+ assert.match(html,/id="tool-categories" role="group"/);
+ assert.match(html,/id="tool-sort"/);
+ assert.match(html,/id="tool-more"/);
+ assert.match(html,/id="tool-no-results"/);
+ assert.match(js,/const batchSize = 12/);
+ assert.match(js,/visibleLimit \+= batchSize/);
+ assert.match(js,/selectedCategory === '__saved__'/);
+ assert.match(js,/localStorage\.setItem\(storageKey/);
+ assert.match(js,/tool-mini-card/);
+ assert.match(js,/catalog\.slice\(0, 3\)/);
+ assert.match(css,/#tools \.page-hero\{min-height:315px/);
+ assert.match(css,/@media\(max-width:540px\)/);
+});
+test('All tools directory stays fully crawlable while categories collapse by default',async()=>{
+ const dir=await read('tools/index.html'),style=await read('tools/tool.css');
+ const catalog=JSON.parse(await read('catalog.json'));
+ const toolUrls=catalog.items.filter(x=>x.type==='tool').map(x=>x.url);
+ assert.equal((dir.match(/<details class="directory-section">/g)||[]).length,12);
+ assert.equal((dir.match(/<summary>/g)||[]).length,12);
+ assert.equal((dir.match(/class="directory-card"/g)||[]).length,toolUrls.length);
+ for(const url of toolUrls)assert.ok(dir.includes('href="../'+url+'"'),url);
+ assert.match(dir,/href="\.\.\/#tools">⌕/);
+ assert.match(style,/details\.directory-section>summary/);
+});

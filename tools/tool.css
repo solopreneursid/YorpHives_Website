@@ -7,3 +7,23 @@
 .utility-shadow{width:110px;height:110px;margin:38px auto;border-radius:18px;background:#a8f8df}
 [data-utility="qr-code-generator"] #utility-result>.tool-field,[data-utility="qr-code-generator"] #utility-copy{display:none}
 .file-list{list-style:none;padding:0;margin:14px 0;display:grid;gap:8px}.file-list li{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid #d5e2d8;border-radius:8px;background:#f7faf6;font-size:13px;overflow-wrap:anywhere}.file-list li span{flex:1;min-width:0}.file-order{border:1px solid #b5c8bc;border-radius:6px;background:#fff;color:#194636;min-width:30px;min-height:30px;cursor:pointer}.file-order:disabled{opacity:.35;cursor:default}.file-preview{display:block;max-width:min(100%,520px);max-height:400px;object-fit:contain;border:1px solid #d5e2d8;border-radius:8px;background:#fff;margin:14px auto}.file-result{margin-top:20px}.file-result[hidden],.file-preview[hidden],.file-list[hidden]{display:none}.file-note{font-size:13px;color:#62766d;line-height:1.5;margin:8px 0}
+
+
+/* Semantic, crawlable category accordion keeps the directory short at any scale. */
+.directory-search-link{display:inline-flex;align-items:center;justify-content:center;gap:7px;margin-top:17px;padding:11px 17px;border:1px solid #96c5ad;background:#effbf3;color:#1b694e;font-size:13px;font-weight:750;border-radius:999px}
+.directory-search-link:hover{background:#d7f4e4}
+details.directory-section{margin:12px 0 0;border:1px solid #d1e3d8;border-radius:12px;overflow:hidden;background:#fff}
+details.directory-section:first-of-type{margin-top:35px}
+details.directory-section>summary{display:flex;align-items:center;gap:15px;padding:19px 23px;cursor:pointer;list-style:none;font-size:18px;font-weight:780;color:#18382a;background:#fff}
+details.directory-section>summary::-webkit-details-marker{display:none}
+details.directory-section>summary:hover{background:#f4faf5}
+details.directory-section>summary:focus-visible{outline:3px solid #45bfa8;outline-offset:-3px}
+details.directory-section>summary small{font-size:12px;font-weight:650;color:#648071;margin-left:auto}
+.directory-chevron{font-size:23px;color:#407a60;transform:rotate(0);transition:transform .2s}
+details.directory-section[open] .directory-chevron{transform:rotate(180deg)}
+details.directory-section .directory-grid{border-top:1px solid #e0eae2;padding:15px;gap:9px;margin:0;background:#f8faf8}
+details.directory-section .directory-card{padding:15px;border-radius:9px;min-height:93px;gap:6px}
+details.directory-section .directory-card strong{font-size:14px}
+details.directory-section .directory-card span{font-size:12px;line-height:1.45}
+@media(max-width:480px){details.directory-section>summary{padding:16px;font-size:16px}details.directory-section .directory-grid{padding:10px}}
+@media(prefers-reduced-motion:reduce){.directory-chevron{transition:none}}
