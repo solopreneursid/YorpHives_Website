@@ -80,7 +80,8 @@ export async function loadBackgroundModel(onProgress=()=>{}){
  })().catch(e=>{sessionPromise=null;throw e;});
  return sessionPromise;
 }
-export async function segmentImage(file,{onProgress=()=>{}}={}){
+export async function segmentImage(file,{onProgress=()=>{},mode='general'}={}){
+ if(!['general','portrait'].includes(mode))fail('Choose a supported free model.');
  if(!(file instanceof Blob)||file.size<64||file.size>MAX_BYTES)
   fail('Choose one JPG, PNG or WebP image up to 10 MB.');
  const name=String(file.name||'');
@@ -98,6 +99,10 @@ export async function segmentImage(file,{onProgress=()=>{}}={}){
  }
  let canvas;
  try{
+  if(mode==='portrait'){
+   const {segmentPortrait}=await import('./background-portrait-core.mjs');
+   return await segmentPortrait(bitmap,{onProgress});
+  }
   canvas=document.createElement('canvas');canvas.width=canvas.height=SIZE;
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
   if(!ctx)fail('Canvas image processing is unavailable.');
@@ -126,7 +131,9 @@ export async function segmentImage(file,{onProgress=()=>{}}={}){
 }
 export async function renderTransparentPng(segmentation,options={}){
  const {bitmap,mask,width,height}=segmentation||{};
- if(!bitmap||mask?.length!==SIZE*SIZE||!width||!height)
+ const maskWidth=segmentation?.maskWidth||SIZE,maskHeight=segmentation?.maskHeight||SIZE;
+ if(!bitmap||mask?.length!==maskWidth*maskHeight||!width||!height||
+  ![SIZE,512].includes(maskWidth)||maskWidth!==maskHeight)
   fail('First select and segment an image.');
  const cutoff=Number(options.cutoff??.5),softness=Number(options.softness??.18);
  maskAlpha(.5,{cutoff,softness});
@@ -134,9 +141,9 @@ export async function renderTransparentPng(segmentation,options={}){
  if(![800,1200,1600].includes(edge))fail('Choose a supported export resolution.');
  const scale=Math.min(1,edge/Math.max(width,height)),w=Math.max(1,Math.round(width*scale)),h=Math.max(1,Math.round(height*scale));
  if(w*h>3_000_000)fail('The final image exceeds this device’s memory limit.');
- const maskCanvas=document.createElement('canvas');maskCanvas.width=maskCanvas.height=SIZE;
+ const maskCanvas=document.createElement('canvas');maskCanvas.width=maskWidth;maskCanvas.height=maskHeight;
  const mc=maskCanvas.getContext('2d',{willReadFrequently:true});if(!mc)fail('Mask rendering is unavailable.');
- const md=mc.createImageData(SIZE,SIZE);
+ const md=mc.createImageData(maskWidth,maskHeight);
  for(let i=0;i<mask.length;i++){
   const offset=i*4;md.data[offset]=md.data[offset+1]=md.data[offset+2]=255;
   md.data[offset+3]=Math.round(maskAlpha(mask[i],{cutoff,softness})*255);
@@ -152,7 +159,7 @@ export async function renderTransparentPng(segmentation,options={}){
   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b&&b.size?resolve(b):reject(Error('PNG export failed.')),'image/png'));
   if(blob.size>20*1048576)fail('PNG exceeds 20 MB. Try 800px output.');
   return {blob,filename:'yorphives-background-removed.png',
-   summary:'Background removed locally using '+MODEL_INFO.name+'. Transparent PNG: '+w+'×'+h+' px.',
+   summary:'Background removed locally using '+(segmentation.modelName||MODEL_INFO.name)+'. Transparent PNG: '+w+'×'+h+' px.',
    inferenceMs:segmentation.inferenceMs,width:w,height:h};
  }finally{canvas.width=canvas.height=0;}
 }
