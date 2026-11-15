@@ -32,13 +32,13 @@ if(new URLSearchParams(location.search).get('qa')==='wave7'){
   const clean=await core.cleanPdfMetadata(pdfFile);
   const parsed=await PDFDocument.load(await clean.blob.arrayBuffer(),{updateMetadata:false});
   check('Metadata cleaner clears standard Info fields',parsed.getAuthor()===''&&parsed.getTitle()==='');
-  const xlsxBytes=await csvToXlsx('id,category\\n1,Events\\n2,Design');
-  const csv=new File(['id,category\\n3,Marketing\\n1,Events'],'new.csv',{type:'text/csv'});
+  const xlsxBytes=await csvToXlsx('id,category\n1,Events\n2,Design');
+  const csv=new File(['id,category\n3,Marketing\n1,Events'],'new.csv',{type:'text/csv'});
   const xlsx=new File([xlsxBytes],'old.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const merged=await core.mergeSpreadsheetFiles([csv,xlsx],{dedupe:'on',format:'csv'});
   const text=await merged.blob.text();
   check('CSV/XLSX merger reads both files',text.includes('Marketing')&&text.includes('Design'));
-  check('CSV/XLSX merger removes exact duplicate rows',text.trim().split(/\\r?\\n/).length===4);
+  check('CSV/XLSX merger removes exact duplicate rows',text.trim().split(/\r?\n/).length===4);
   const wave=new File([wav.wavFromAudioChannels([Float32Array.from({length:22050},(_,i)=>.11*Math.sin(i/50))],44100)],
    'synthetic.wav',{type:'audio/wav'});
   const mixed=await audio.mergeAudioFiles([wave,wave]);
@@ -48,7 +48,7 @@ if(new URLSearchParams(location.search).get('qa')==='wave7'){
   check('Password analyzer flags obvious weak patterns',analysis.score<=1&&analysis.hasPatterns);
   const proposal=await business.createBusinessProposal({company:'YorpHives',client:'Synthetic Client',
    project:'Improve an existing website',overview:'Create a usable product and verify all controls.',
-   deliverables:'Plan\\nImplement\\nTest',timeline:'Three working weeks.',cost:25000,currency:'INR'});
+   deliverables:'Plan\nImplement\nTest',timeline:'Three working weeks.',cost:25000,currency:'INR'});
   const proposalDoc=await PDFDocument.load(await proposal.blob.arrayBuffer());
   check('Business proposal exports readable PDF',proposalDoc.getPageCount()>=1);
   // Synthetic stream: replaces getUserMedia temporarily, never activates real microphone.
