@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 sys.dont_write_bytecode = True
@@ -89,6 +90,18 @@ class ReviewChecks(unittest.TestCase):
         bot.atomic_json(output, {'status': 'test'})
         self.assertEqual(output.stat().st_mode & 0o777, 0o600)
 
+    def test_watcher_saves_private_plain_language_report_with_skips(self):
+        state = self.base / 'reports-state'
+        report = bot.collect(self.source, revision='test-revision')
+        bot.save_report(state, report)
+        plain = state / 'reports' / 'latest.txt'
+        text = plain.read_text(encoding='utf-8')
+        self.assertIn('YorpHives website review', text)
+        self.assertIn('test-revision', text)
+        self.assertIn('not run', text)
+        self.assertIn('Skipped checks are listed above', text)
+        self.assertEqual(plain.stat().st_mode & 0o777, 0o600)
+
     def test_sandbox_unavailable_does_not_run_tests_on_host(self):
         (self.source / 'tests').mkdir()
         (self.source / 'tests' / 'example.test.mjs').write_text('throw new Error("should not run")')
@@ -97,6 +110,52 @@ class ReviewChecks(unittest.TestCase):
             result = sandbox.run_sandboxed_tests(self.source)
         self.assertEqual(result['status'], 'not_run')
         execution.assert_not_called()
+
+    def test_browser_without_configured_runtime_is_not_run(self):
+        with patch.dict(os.environ, {'YH_PLAYWRIGHT_NODE_MODULES': '', 'YH_PLAYWRIGHT_BROWSERS': ''}), \
+             patch.object(sandbox.subprocess, 'run') as execution:
+            result = sandbox.run_sandboxed_browser(self.source)
+        self.assertEqual(result['status'], 'not_run')
+        execution.assert_not_called()
+
+    def test_browser_sandbox_failure_never_runs_browser_on_host(self):
+        modules = self.base / 'modules'
+        (modules / 'playwright').mkdir(parents=True)
+        (modules / 'playwright' / 'package.json').write_text('{"version":"1.62.1"}')
+        browsers = self.base / 'browsers'
+        browsers.mkdir()
+        env = {'YH_PLAYWRIGHT_NODE_MODULES': str(modules), 'YH_PLAYWRIGHT_BROWSERS': str(browsers)}
+        with patch.dict(os.environ, env), \
+             patch.object(sandbox.subprocess, 'run', return_value=SimpleNamespace(returncode=1)) as execution:
+            result = sandbox.run_sandboxed_browser(self.source)
+        self.assertEqual(result['status'], 'not_run')
+        self.assertEqual(execution.call_count, 1)
+        command = execution.call_args.args[0]
+        self.assertIn('--unshare-all', command)
+        self.assertIn('--ro-bind', command)
+        self.assertEqual(command[-1], '--version')
+
+    def test_browser_failure_is_included_in_overall_review(self):
+        failed = {'id': 'browser', 'status': 'failed', 'label': 'Website browser tests',
+                  'details': 'A browser check failed.', 'cases': []}
+        with patch.object(bot, 'run_sandboxed_browser', return_value=failed):
+            report = bot.collect(self.source, include_browser=True)
+        self.assertEqual(report['status'], 'attention')
+        self.assertTrue(any(f['check'] == 'browser' for f in report['findings']))
+        self.assertEqual(next(c for c in report['checks'] if c['id'] == 'browser')['status'], 'failed')
+
+    def test_incomplete_browser_result_cannot_be_reported_as_passed(self):
+        modules = self.base / 'modules'
+        (modules / 'playwright').mkdir(parents=True)
+        (modules / 'playwright' / 'package.json').write_text('{"version":"1.62.1"}')
+        browsers = self.base / 'browsers'
+        browsers.mkdir()
+        env = {'YH_PLAYWRIGHT_NODE_MODULES': str(modules), 'YH_PLAYWRIGHT_BROWSERS': str(browsers)}
+        fake = {'status': 'passed', 'cases': [{'name': 'Mobile navigation', 'status': 'passed'}] * 5}
+        calls = [SimpleNamespace(returncode=0), SimpleNamespace(returncode=0, stdout=json.dumps(fake).encode())]
+        with patch.dict(os.environ, env), patch.object(sandbox.subprocess, 'run', side_effect=calls):
+            result = sandbox.run_sandboxed_browser(self.source)
+        self.assertEqual(result['status'], 'not_run')
 
     def test_git_url_restrictions(self):
         bot.valid_repo('https://github.com/test/project.git')
@@ -151,6 +210,15 @@ class ReviewChecks(unittest.TestCase):
         self.assertEqual(report['revision'], commit)
         self.assertEqual(before, bot.fingerprint(self.source))
         self.assertEqual(run_git(self.source, 'status', '--porcelain'), '')
+
+    def test_failed_fetch_does_not_leave_a_stale_success_message(self):
+        state = self.base / 'remote-state'
+        with patch.object(bot, 'fetch_commit', side_effect=ValueError('offline')), \
+             contextlib.redirect_stderr(io.StringIO()):
+            ok = bot.watch_git('https://github.com/test/project.git', 'main', state, 1, False, once=True)
+        self.assertFalse(ok)
+        self.assertIn('Review unavailable', (state / 'reports' / 'latest.txt').read_text())
+        self.assertFalse((state / 'reports' / 'latest.json').exists())
 
     def test_incomplete_or_modified_git_archives_are_refused(self):
         for attribute, extra in [('catalog.json export-ignore\n', None),

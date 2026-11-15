@@ -5,7 +5,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-VERSION = '0.1.0'
+VERSION = '0.2.0'
 SKIP = {'.git', '.openai', 'node_modules', '.venv', '__pycache__', '.cache'}
 MAX_FILE = 5 * 1024 * 1024
 SOURCE_TYPES = {'.html', '.js', '.mjs', '.cjs', '.json', '.css', '.yml', '.yaml', '.py', '.md', '.txt', '.toml'}
@@ -145,7 +145,7 @@ def scan(root):
     check('security','Security signals','incomplete' if skipped else 'completed',f'Inspected {inspected} text files; skipped {skipped}. This is not a full vulnerability or secret scan.')
     check('vulnerabilities','Dependency vulnerability scan','not_run','Trivy and its database are not configured.')
     check('secrets','Dedicated secret scan','not_run','Betterleaks is not configured.')
-    check('browser','Browser and accessibility tests','not_run','Playwright tests are not configured.')
+    check('browser','Browser tests','not_run','Isolated browser testing was not requested.')
     check('ai','AI code review','not_run','PR-Agent and a local model are not configured.')
     errors=sum(f['severity'] in ('error','high') for f in findings);warnings=sum(f['severity']=='warning' for f in findings)
     return {'reviewer':'YorpHives Read-Only Reviewer','version':VERSION,'status':'attention' if errors or warnings else 'no_findings_in_completed_checks','summary':{'errors_or_high':errors,'warnings':warnings,'informational':sum(f['severity']=='info' for f in findings),'files_seen':len(files)},'checks':checks,'findings':findings}

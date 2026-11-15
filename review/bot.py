@@ -8,7 +8,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 sys.dont_write_bytecode=True
 from checks import scan,iter_files,VERSION
-from sandbox import run_sandboxed_tests
+from sandbox import run_sandboxed_tests,run_sandboxed_browser
 
 MAX_SNAPSHOT=100*1024*1024
 MAX_ENTRY=5*1024*1024
@@ -30,12 +30,17 @@ def fingerprint(root):
             for chunk in iter(lambda:stream.read(65536),b''):digest.update(chunk)
     return digest.hexdigest()
 
-def collect(root,include_tests=False,revision=None):
+def collect(root,include_tests=False,revision=None,include_browser=False):
     report=scan(root);report['generated_at']=datetime.now(timezone.utc).isoformat();report['revision']=revision
     test=run_sandboxed_tests(root) if include_tests else {'id':'tests','label':'Isolated unit tests','status':'not_run','details':'Isolated test execution was not requested.'}
     report['checks'].append(test)
-    if test['status']=='failed':
-        report['findings'].append({'check':'tests','severity':'error','path':'tests','line':None,'description':'Isolated unit tests failed.','recommendation':'Inspect tests in a controlled environment.'});report['summary']['errors_or_high']+=1;report['status']='attention'
+    if include_browser:
+        browser=run_sandboxed_browser(root)
+        report['checks']=[browser if item['id']=='browser' else item for item in report['checks']]
+    else:browser={'status':'not_run'}
+    for item,name in ((test,'tests'),(browser,'browser')):
+        if item['status']=='failed':
+            report['findings'].append({'check':name,'severity':'error','path':'tests' if name=='tests' else 'website','line':None,'description':'Isolated '+name+' checks failed.','recommendation':'Inspect the named failed checks in a controlled environment.'});report['summary']['errors_or_high']+=1;report['status']='attention'
     return report
 
 def atomic_json(path,data):
@@ -46,9 +51,38 @@ def atomic_json(path,data):
     finally:
         if os.path.exists(tmp):os.unlink(tmp)
 
+def atomic_text(path,text):
+    path.parent.mkdir(parents=True,exist_ok=True);fd,tmp=tempfile.mkstemp(prefix='.review-',suffix='.tmp',dir=path.parent)
+    try:
+        with os.fdopen(fd,'w',encoding='utf-8') as stream:stream.write(text)
+        os.chmod(tmp,0o600);os.replace(tmp,path)
+    finally:
+        if os.path.exists(tmp):os.unlink(tmp)
+
+def human_report(report):
+    clean=lambda value:' '.join(str(value).split())[:300]
+    summary=report['summary'];lines=['YorpHives website review',f"Reviewed: {report.get('generated_at', 'unknown')}",
+        f"Revision: {report.get('revision') or 'unknown'}",f"Result: {report['status'].replace('_',' ')}",
+        f"Findings: {summary['errors_or_high']} errors/high, {summary['warnings']} warnings, {summary['informational']} informational",'', 'Checks:']
+    for check in report['checks']:
+        lines.append(f"- {check['label']}: {check['status'].replace('_',' ')} — {check['details']}")
+        for case in check.get('cases',[]):lines.append(f"    {case['name']}: {case['status']}")
+    if report['findings']:
+        lines.extend(['','Findings:'])
+        for finding in report['findings']:
+            lines.append(f"- {finding['severity'].upper()}: {finding['description']} ({clean(finding['path'])})")
+            lines.append(f"  Suggested follow-up: {finding['recommendation']}")
+    else:lines.extend(['','No findings in the checks that ran. Skipped checks are listed above.'])
+    return '\n'.join(lines)+'\n'
+
 def save_report(state,report):
     reports=state/'reports';reports.mkdir(parents=True,exist_ok=True);atomic_json(reports/'latest.json',report)
+    atomic_text(reports/'latest.txt',human_report(report))
     stamp=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ');atomic_json(reports/f'{stamp}.json',report)
+
+def save_unavailable(state):
+    checked=datetime.now(timezone.utc).isoformat()
+    atomic_text(state/'reports'/'latest.txt',f'YorpHives website review\nChecked: {checked}\n\nReview unavailable: the latest source could not be checked. A previous JSON report may be out of date.\n')
 
 def valid_repo(url):
     parsed=urlsplit(url)
@@ -127,7 +161,7 @@ def state_lock(state):
         try:yield
         finally:fcntl.flock(handle,fcntl.LOCK_UN)
 
-def watch_local(root,state,interval,include_tests,once=False):
+def watch_local(root,state,interval,include_tests,once=False,include_browser=False):
     root=Path(root).resolve(strict=True);state=external_path(state,root);state.mkdir(parents=True,exist_ok=True);last=None
     with state_lock(state):
         while True:
@@ -135,15 +169,19 @@ def watch_local(root,state,interval,include_tests,once=False):
             try:
                 current=fingerprint(root)
                 if current!=last:
-                    report=collect(root,include_tests,revision=current)
+                    report=collect(root,include_tests,revision=current,include_browser=include_browser)
                     if fingerprint(root)!=current:raise ValueError('Source changed during review; retrying on the next check.')
                     report['source']={'kind':'directory','revision_kind':'sha256'};save_report(state,report);last=current
                     print(json.dumps({'event':'review_complete','status':report['status'],'revision':current}),flush=True)
-            except (OSError,ValueError) as exc:success=False;print(json.dumps({'event':'review_error','error':str(exc)}),file=sys.stderr,flush=True)
+            except (OSError,ValueError) as exc:
+                success=False
+                try:save_unavailable(state)
+                except OSError:pass
+                print(json.dumps({'event':'review_error','error':str(exc)}),file=sys.stderr,flush=True)
             if once:return success
             time.sleep(interval)
 
-def watch_git(repo,branch,state,interval,include_tests,once=False):
+def watch_git(repo,branch,state,interval,include_tests,once=False,include_browser=False):
     state=Path(state).expanduser().resolve()
     if any((ancestor/'.git').exists() for ancestor in (state,*state.parents)):raise ValueError('State must be outside any Git checkout.')
     state.mkdir(parents=True,exist_ok=True);last=None
@@ -154,28 +192,32 @@ def watch_git(repo,branch,state,interval,include_tests,once=False):
                 mirror,commit=fetch_commit(repo,branch,state)
                 if commit!=last:
                     with tempfile.TemporaryDirectory(prefix='snapshot-',dir=state) as temporary:
-                        root=Path(temporary);extract_snapshot(mirror,commit,root);report=collect(root,include_tests,revision=commit);report['source']={'kind':'public_git','repository':repo,'branch':branch};save_report(state,report)
+                        root=Path(temporary);extract_snapshot(mirror,commit,root);report=collect(root,include_tests,revision=commit,include_browser=include_browser);report['source']={'kind':'public_git','repository':repo,'branch':branch};save_report(state,report)
                     last=commit;print(json.dumps({'event':'review_complete','status':report['status'],'revision':commit}),flush=True)
-            except (OSError,ValueError,subprocess.SubprocessError,tarfile.TarError,UnicodeError) as exc:success=False;print(json.dumps({'event':'review_error','error':type(exc).__name__,'message':'Fetch or review failed; no success report was written.'}),file=sys.stderr,flush=True)
+            except (OSError,ValueError,subprocess.SubprocessError,tarfile.TarError,UnicodeError) as exc:
+                success=False
+                try:save_unavailable(state)
+                except OSError:pass
+                print(json.dumps({'event':'review_error','error':type(exc).__name__,'message':'Fetch or review failed; no success report was written.'}),file=sys.stderr,flush=True)
             if once:return success
             time.sleep(interval)
 
 def main():
     parser=argparse.ArgumentParser(description='Read-only website reviewer; never edits source or deploys.');parser.add_argument('--version',action='version',version=VERSION);sub=parser.add_subparsers(dest='command',required=True)
-    scanp=sub.add_parser('scan');scanp.add_argument('--root',required=True);scanp.add_argument('--output');scanp.add_argument('--sandboxed-tests',action='store_true')
-    watch=sub.add_parser('watch');watch.add_argument('--root',required=True);watch.add_argument('--state-dir',required=True);watch.add_argument('--interval',type=float,default=60);watch.add_argument('--once',action='store_true');watch.add_argument('--sandboxed-tests',action='store_true')
-    remote=sub.add_parser('watch-git');remote.add_argument('--repo',required=True);remote.add_argument('--branch',required=True);remote.add_argument('--state-dir',required=True);remote.add_argument('--interval',type=float,default=300);remote.add_argument('--once',action='store_true');remote.add_argument('--sandboxed-tests',action='store_true')
+    scanp=sub.add_parser('scan');scanp.add_argument('--root',required=True);scanp.add_argument('--output');scanp.add_argument('--sandboxed-tests',action='store_true');scanp.add_argument('--sandboxed-browser',action='store_true')
+    watch=sub.add_parser('watch');watch.add_argument('--root',required=True);watch.add_argument('--state-dir',required=True);watch.add_argument('--interval',type=float,default=60);watch.add_argument('--once',action='store_true');watch.add_argument('--sandboxed-tests',action='store_true');watch.add_argument('--sandboxed-browser',action='store_true')
+    remote=sub.add_parser('watch-git');remote.add_argument('--repo',required=True);remote.add_argument('--branch',required=True);remote.add_argument('--state-dir',required=True);remote.add_argument('--interval',type=float,default=300);remote.add_argument('--once',action='store_true');remote.add_argument('--sandboxed-tests',action='store_true');remote.add_argument('--sandboxed-browser',action='store_true')
     args=parser.parse_args()
     if getattr(args,'interval',1)<=0:parser.error('Interval must be positive.')
     try:
         if args.command=='scan':
-            root=Path(args.root).resolve(strict=True);output=external_path(args.output,root) if args.output else None;before=fingerprint(root);report=collect(root,args.sandboxed_tests,revision=before)
+            root=Path(args.root).resolve(strict=True);output=external_path(args.output,root) if args.output else None;before=fingerprint(root);report=collect(root,args.sandboxed_tests,revision=before,include_browser=args.sandboxed_browser)
             if fingerprint(root)!=before:raise ValueError('Source changed during review; retry the scan.')
             if output:atomic_json(output,report)
             else:print(json.dumps(report,ensure_ascii=False,indent=2))
             return 1 if report['status']=='attention' else 0
-        if args.command=='watch':success=watch_local(args.root,args.state_dir,args.interval,args.sandboxed_tests,args.once)
-        else:success=watch_git(args.repo,args.branch,args.state_dir,args.interval,args.sandboxed_tests,args.once)
+        if args.command=='watch':success=watch_local(args.root,args.state_dir,args.interval,args.sandboxed_tests,args.once,args.sandboxed_browser)
+        else:success=watch_git(args.repo,args.branch,args.state_dir,args.interval,args.sandboxed_tests,args.once,args.sandboxed_browser)
         return 0 if success else 2
     except (OSError,ValueError) as exc:print(f'Reviewer error: {exc}',file=sys.stderr);return 2
 if __name__=='__main__':sys.exit(main())
