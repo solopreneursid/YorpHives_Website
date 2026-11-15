@@ -36,8 +36,9 @@ test('homepage displays Ko-fi support action in the top header, with a smaller s
  assert.doesNotMatch(header,/<a[^>]+href="https:\/\/ko-fi\.com\//i,'Do not invent a payment destination.');
  const js=await read('app.js'),css=await read('style.css');
  assert.match(js,/getElementById\('header-kofi'\).*addEventListener\('click'/);
- assert.match(js,/classList.toggle\('is-home', active === 'home'\)/);
- assert.match(css,/\.is-home \.header-kofi\{display:inline-flex\}/);
+ assert.match(js,/const showingSupport = hash === 'support'/);
+ assert.match(css,/\.header-kofi\{order:3;flex:none;display:inline-flex/);
+ assert.doesNotMatch(css,/\.is-home \.header-kofi\{display:inline-flex\}/);
  assert.match(css,/@media\(max-width:480px\)/);
 });
 
@@ -57,4 +58,14 @@ test('footer Ko-fi CTA shares the header style and only shows an honest support 
  assert.match(css,/\.footer-support \.support-feedback\[hidden\]\{display:none!important\}/);
  assert.match(js,/footerKofi\?\.addEventListener\('click', showSupportStatus\)/);
  assert.match(js,/supportFeedback\.textContent = 'Ko-fi support coming soon'/);
+});
+
+test('compact Ko-fi action stays visible in Home, Tools, Explore and For Builders navigation',async()=>{
+ const html=await read('index.html'),css=await read('style.css'),js=await read('app.js');
+ assert.match(html,/<header class="site-header">[\s\S]*?<button class="header-kofi"/);
+ assert.match(html,/class="footer-col footer-support" id="support"/);
+ assert.match(js,/const showingSupport = hash === 'support'/);
+ assert.match(js,/document\.getElementById\('support'\)\?\.scrollIntoView/);
+ assert.match(css,/\.header-kofi\{order:3;flex:none;display:inline-flex/);
+ assert.doesNotMatch(css,/\.is-home \.header-kofi\{display:inline-flex\}/);
 });

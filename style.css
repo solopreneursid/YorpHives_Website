@@ -13,8 +13,7 @@
 /* Compact homepage Ko-fi support CTA — unobtrusive and responsive. */
 .site-header{gap:14px}
 .site-nav{margin-left:auto}
-.header-kofi{order:3;flex:none;display:none;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:98px;min-height:44px;padding:6px 10px;border:1px solid #86e9ce73;border-radius:12px;background:linear-gradient(145deg,#102d2b,#122824);box-shadow:inset 0 1px 0 #ffffff0b;color:#d8fff0;text-align:center;line-height:1.12;transition:border-color .2s,background .2s,transform .2s,box-shadow .2s}
-.is-home .header-kofi{display:inline-flex}
+.header-kofi{order:3;flex:none;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:98px;min-height:44px;padding:6px 10px;border:1px solid #86e9ce73;border-radius:12px;background:linear-gradient(145deg,#102d2b,#122824);box-shadow:inset 0 1px 0 #ffffff0b;color:#d8fff0;text-align:center;line-height:1.12;transition:border-color .2s,background .2s,transform .2s,box-shadow .2s}
 .header-kofi strong{font-size:13px;letter-spacing:.005em;font-weight:750}
 .header-kofi small{font-size:8px;letter-spacing:.015em;font-weight:600;color:#b8d5cc;white-space:nowrap}
 .header-kofi:hover{background:linear-gradient(145deg,#1b4440,#15352e);border-color:#a9f6d8;box-shadow:0 3px 12px #0003, inset 0 1px 0 #ffffff10;transform:translateY(-1px)}
@@ -47,3 +46,16 @@
 .footer-support .support-feedback{margin:9px 0 0;font-size:11px;line-height:1.4;color:#a8c7b8}
 .footer-support .support-feedback[hidden]{display:none!important}
 @media(max-width:480px){.footer-support .footer-kofi{min-width:85px;min-height:40px;padding:5px 6px;border-radius:10px}}
+
+/* Universal compact support link in standalone tools and directory headers. */
+.tool-page .site-header .tool-kofi{display:inline-flex;flex:none;margin-left:0;text-decoration:none}
+.tool-page .tool-nav{margin-left:auto}
+@media(max-width:480px){
+ .tool-page .site-header{padding:0 3%;gap:6px}
+ .tool-page .brand{gap:5px}
+ .tool-page .brand img{height:30px;width:30px}
+ .tool-page .brand-name{font-size:15px}
+ .tool-page .tool-nav{gap:6px;font-size:10px}
+ .tool-page .tool-nav a:not(.tool-home){white-space:nowrap}
+ .tool-page .site-header .tool-kofi{min-width:80px;min-height:40px;padding:5px 5px}
+}

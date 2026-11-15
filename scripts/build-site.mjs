@@ -51,6 +51,18 @@ function injectHead(html,metadata){
    .replace(/<script\b[^>]*id=["']yorphives-discovery-schema["'][\s\S]*?<\/script>/gi,'');
  return html.replace(/<\/head>/i,metadata+'</head>');
 }
+
+// Add the same navigation action to every direct-entry page, including future
+// registered apps and products. Use the home support section until a verified
+// Ko-fi profile URL exists; never invent a payment destination.
+function injectSiteSupport(html,page){
+ const header=html.match(/<header\b[^>]*>[\s\S]*?<\/header>/i)?.[0];
+ if(!header)throw Error('Public page lacks navigation header: '+page);
+ if(header.includes('header-kofi'))return html;
+ const action='<a class="header-kofi tool-kofi" href="/#support" aria-label="Ko-fi — support my work; coming soon"><strong>Ko-fi</strong><small>support my work</small></a>';
+ return html.replace(header,header.replace(/<\/header>$/i,action+'</header>'));
+}
+
 function metadata(url,graph){
  return '<link rel="canonical" href="'+esc(url)+'">'+
  '<meta property="og:url" content="'+esc(url)+'">'+
@@ -81,6 +93,7 @@ for(const item of published){
   entity
  ];
  html=injectHead(html,metadata(url,graph));
+ html=injectSiteSupport(html,path);
  await write(path,html);
 }
 // A directory stays crawlable and provides standard links to every item.
@@ -101,6 +114,7 @@ for(const directory of directories){
   }))}
  ];
  html=injectHead(html,metadata(url,graph));
+ html=injectSiteSupport(html,path);
  await write(path,html);
 }
 const canonicalPaths=[...new Set(['',...directories,...published.map(x=>x.url)])];

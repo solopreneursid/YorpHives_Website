@@ -18,16 +18,22 @@
     let hash = window.location.hash.slice(1);
     try { hash = decodeURIComponent(hash); } catch (_) { hash = ''; }
     const section = hash === 'post' || hash === 'opportunities' ? hash : null;
+    const showingSupport = hash === 'support';
     const active = section ? 'builders' : Object.hasOwn(names, hash) ? hash : 'home';
     pages.forEach(page => { page.hidden = page.id !== active; });
-    document.body.classList.toggle('is-home', active === 'home');
     document.querySelectorAll('[data-nav]').forEach(link => {
       if (link.dataset.nav === active) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
     });
     document.title = active === 'home' ? 'YorpHives — Ideas in motion' : `${names[active]} — YorpHives`;
     closeMenu();
-    if (section) {
+    if (showingSupport) {
+      requestAnimationFrame(() => {
+        showSupportStatus();
+        document.getElementById('support')?.scrollIntoView({block:'center'});
+        footerKofi?.focus({preventScroll:true});
+      });
+    } else if (section) {
       requestAnimationFrame(() => document.getElementById(section)?.scrollIntoView({ block: 'start' }));
     } else if (active !== previousPage) {
       window.scrollTo({ top: 0, behavior: 'instant' });

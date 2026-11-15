@@ -63,3 +63,16 @@ test('future web apps, desktop apps, products and services get truthful discover
  const service=createEntity({type:'service',name:'New service',description:'A published service'},'https://yorphives.com/services/new/');
  assert.equal(service['@type'],'Service');assert.equal(service.offers,undefined);
 });
+
+test('all standalone tool and directory pages have Ko-fi support in their navigation',async()=>{
+ const items=JSON.parse(await read('catalog.json')).items.filter(x=>x.published!==false&&x.visibility!=='private');
+ for(const item of items){
+  const page=item.url.endsWith('/')?item.url+'index.html':item.url;
+  const html=await read(page,dest);
+  const header=html.match(/<header\b[^>]*>[\s\S]*?<\/header>/i)?.[0]||'';
+  assert.match(header,/<a class="header-kofi tool-kofi" href="\/#support"/,page);
+  assert.match(header,/<strong>Ko-fi<\/strong><small>support my work<\/small>/,page);
+ }
+ const directory=await read('tools/index.html',dest);
+ assert.match(directory,/<a class="header-kofi tool-kofi" href="\/#support"/);
+});
