@@ -77,7 +77,6 @@
 
   // A single public JSON catalog powers the collections, homepage, and agent discovery.
   const types = ['tool', 'app', 'product'];
-  const recent = document.getElementById('recent-items');
   function statusCard(text, label = 'THE COLLECTION') {
     const box = document.createElement('div'); box.className = 'catalog-empty';
     const tag = document.createElement('span'); tag.className = 'status-label'; tag.textContent = label;
@@ -219,8 +218,50 @@
     paint();
   }
 
+  // Build the homepage ribbon from current published categories, not a manual list.
+  // The second visual copy enables a continuous, seamless scroll; it is hidden
+  // from keyboard and screen readers to avoid redundant announcements.
+  function setupCategoryRibbon(items, onSelect) {
+    const track = document.getElementById('category-ribbon-track');
+    const section = document.querySelector('#home .category-ribbon');
+    if (!track || !section) return;
+    const categories = [...new Set(items.map(item =>
+      typeof item.category === 'string' && item.category.trim() ? item.category.trim() : 'Other'
+    ))].sort((a,b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    section.hidden = categories.length === 0;
+    if (!categories.length) { track.replaceChildren(); return; }
+    section.classList.toggle('is-single', categories.length === 1);
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function makeSet(duplicate) {
+      const set = document.createElement(duplicate ? 'div' : 'nav');
+      set.className = 'category-ribbon-set';
+      if (duplicate) set.setAttribute('aria-hidden','true');
+      else set.setAttribute('aria-label','Browse categories');
+      for (const name of categories) {
+        const link = document.createElement('a');
+        link.href = '#tools';
+        link.className = 'category-ribbon-pill';
+        link.textContent = name;
+        link.dataset.category = name;
+        if (duplicate) link.tabIndex = -1;
+        link.addEventListener('click', () => onSelect(name));
+        set.append(link);
+      }
+      return set;
+    }
+
+    const paint = () => {
+      const single = categories.length === 1 || reducedMotion.matches;
+      section.classList.toggle('is-single', single);
+      track.replaceChildren(makeSet(false), ...(single ? [] : [makeSet(true)]));
+    };
+    if (typeof reducedMotion.addEventListener === 'function')
+      reducedMotion.addEventListener('change', paint);
+    paint();
+  }
+
   async function loadCatalog() {
-    recent.replaceChildren(statusCard('Loading the latest tools and products…'));
     try {
       const response = await fetch('catalog.json');
       if (!response.ok) throw new Error('Catalog unavailable');
@@ -231,10 +272,6 @@
       const catalog = data.items.map((item, index) => ({ item, index })).filter(entry => validItem(entry.item))
         .sort((a, b) => b.item.date.localeCompare(a.item.date) || b.index - a.index).map(entry => entry.item);
       const products = qualifiedProducts(catalog);
-      const visibleCatalog = catalog.filter(item => item.type === 'tool' || products.includes(item));
-      recent.replaceChildren();
-      if (visibleCatalog.length) visibleCatalog.slice(0, 3).forEach(item => recent.append(card(item)));
-      else recent.append(statusCard('Our first tools and products are taking shape. New additions will appear here.', 'THE FIRST CHAPTER'));
       const tools = catalog.filter(item => item.type === 'tool');
       // Eight-row Tool Launcher: new categories are included automatically.
       // Every tool retains its independent direct-entry URL and SEO metadata.
@@ -296,6 +333,7 @@
         'json-formatter':'pretty print json beautify'
       };
       let active = '';
+      let activeCategory = '';
       let page = 1;
       const groupItems = group => tools.filter(item => group.categories.includes(item.category || 'Other'));
       const makeCategory = (id,name,icon,amount,mobile=false) => {
@@ -317,6 +355,7 @@
         button.append(symbol,label,number);
         button.addEventListener('click', () => {
           active = id;
+          activeCategory = '';
           page = 1;
           search.value = '';
           renderTools();
@@ -376,6 +415,7 @@
       function matchedTools() {
         const words=normalize(search.value).split(/\s+/).filter(Boolean);
         let matches=tools.filter(item=>{
+          if (activeCategory && (item.category || 'Other') !== activeCategory) return false;
           if (active==='__saved__' && !favorites.has(item.url)) return false;
           if (active && active!=='__saved__' &&
             !groups.find(group=>group.id===active)?.categories.includes(item.category||'Other')) return false;
@@ -407,15 +447,15 @@
         page=Math.min(page,pages);
         toolGrid.replaceChildren(...matches.slice((page-1)*pageSize,page*pageSize).map(makeRow));
         noResults.hidden=matches.length>0;
-        const discovering=!searching&&!active;
+        const discovering=!searching&&!active&&!activeCategory;
         mobileBrowse.hidden=!discovering;
         back.hidden=discovering;
         clear.hidden=!searching;
-        eyebrow.textContent=searching?'SEARCH RESULTS':active==='__saved__'?'YOUR SHORTCUTS':current?'BROWSE CATEGORY':'DISCOVER';
-        heading.textContent=searching?'Matching tools':active==='__saved__'?'My saved tools':current?current.name:'Recently added';
+        eyebrow.textContent=searching?'SEARCH RESULTS':active==='__saved__'?'YOUR SHORTCUTS':activeCategory||current?'BROWSE CATEGORY':'DISCOVER';
+        heading.textContent=searching?'Matching tools':active==='__saved__'?'My saved tools':activeCategory||current?.name||'Recently added';
         caption.textContent=searching?'Tools that match what you need.':
           active==='__saved__'?'Your favorites are saved on this device.':
-          current?matches.length+' useful '+(matches.length===1?'tool':'tools')+' in this collection.':
+          activeCategory||current?matches.length+' useful '+(matches.length===1?'tool':'tools')+' in this collection.':
           'A small selection from the latest additions.';
         const message=noResults.querySelector('h3');
         const details=noResults.querySelector('p');
@@ -431,6 +471,7 @@
       const resetFilters=()=>{
         search.value='';
         active='';
+        activeCategory='';
         sort.value='newest';
         page=1;
         renderTools();
@@ -438,7 +479,7 @@
       back.addEventListener('click',()=>{resetFilters();search.focus();});
       reset.addEventListener('click',()=>{resetFilters();search.focus();});
       clear.addEventListener('click',()=>{search.value='';page=1;renderTools();search.focus();});
-      search.addEventListener('input',()=>{active='';page=1;renderTools();});
+      search.addEventListener('input',()=>{active='';activeCategory='';page=1;renderTools();});
       sort.addEventListener('change',()=>{page=1;renderTools();});
       prev.addEventListener('click',()=>{if(page>1){page--;renderTools();}});
       next.addEventListener('click',()=>{if(page<Math.ceil(matchedTools().length/pageSize)){page++;renderTools();}});
@@ -450,13 +491,22 @@
         search.focus();
       });
       renderTools();
+      setupCategoryRibbon(tools, category => {
+        active = '';
+        activeCategory = category;
+        search.value = '';
+        sort.value = 'newest';
+        page = 1;
+        renderTools();
+      });
       const productGrid = document.getElementById('explore-items'); productGrid.replaceChildren();
       document.getElementById('explore-empty').hidden = products.length > 0;
       products.forEach(item => productGrid.append(card(item)));
       setupExploreFeatureSpotlight(products, 'home');
       setupExploreFeatureSpotlight(products, 'explore');
     } catch (_) {
-      recent.replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
+      const ribbon = document.querySelector('#home .category-ribbon');
+      if (ribbon) ribbon.hidden = true;
       for (const id of ['tools', 'explore']) document.getElementById(`${id}-items`).replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
     }
   }
