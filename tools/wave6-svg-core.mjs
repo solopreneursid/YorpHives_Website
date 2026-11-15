@@ -4,7 +4,7 @@ const MB=1048576;
 const safeElements=new Set([
  'svg','g','path','rect','circle','ellipse','line','polyline','polygon','defs','symbol',
  'use','lineargradient','radialgradient','stop','clippath','mask','pattern','marker',
- 'text','tspan','title','desc','filter','fegaussianblur','fecolormatrix','feblend',
+ 'text','tspan','title','desc','metadata','filter','fegaussianblur','fecolormatrix','feblend',
  'fecomposite','feoffset','feflood','femerge','femergenode','femorphology',
  'feturbulence','fedisplacementmap','fecomponenttransfer','fefuncr','fefuncg',
  'fefuncb','fefunca','feimage','feconvolvematrix'
