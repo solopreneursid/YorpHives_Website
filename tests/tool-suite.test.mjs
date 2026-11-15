@@ -5,7 +5,7 @@ import {resolve} from 'node:path';
 const root=process.cwd(),dist=resolve(root,'dist'),read=(base,path)=>readFile(resolve(base,path),'utf8');
 const items=JSON.parse(await read(root,'catalog.json')).items.filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
 test('the shared UI is applied to every non-compressor tool, not just sample pages',async()=>{
- assert.equal(items.length,126);
+ assert.equal(items.length,134);
  let count=0;
  for(const item of items){
   const html=await read(dist,item.url+'index.html');
@@ -14,9 +14,9 @@ test('the shared UI is applied to every non-compressor tool, not just sample pag
    assert.match(html,/compressor-ui-v3\.css/);
    continue;
   }
-  if(['tools/wave2-core.mjs','tools/wave3-core.mjs','tools/pdf-redaction-core.mjs','tools/ocr-pdf-core.mjs','tools/video-trim-core.mjs','tools/wave4-core.mjs','tools/image-mask-core.mjs','tools/pdf-compare-core.mjs','tools/screen-record-core.mjs'].includes(item.module?.url)){
+  if(['tools/wave2-core.mjs','tools/wave3-core.mjs','tools/pdf-redaction-core.mjs','tools/ocr-pdf-core.mjs','tools/video-trim-core.mjs','tools/wave4-core.mjs','tools/image-mask-core.mjs','tools/pdf-compare-core.mjs','tools/screen-record-core.mjs','tools/wave6-svg-core.mjs','tools/wave6-video-core.mjs','tools/wave6-scanner-core.mjs','tools/wave6-image-core.mjs','tools/wave6-audio-core.mjs'].includes(item.module?.url)){
    assert.match(html,/wave2\.css/);
-   assert.match(html,/data-wave2=|data-wave3=|data-redaction=|data-ocr=|data-video=|data-wave4=|data-wave4-special=/);
+   assert.match(html,/data-wave2=|data-wave3=|data-redaction=|data-ocr=|data-video=|data-wave4=|data-wave4-special=|data-wave6=|data-wave6-scanner=/);
    assert.doesNotMatch(html,/tool-suite-v1\.mjs/);
    continue;
   }
