@@ -99,20 +99,25 @@
 
   <section class="page" id="tools" aria-label="Free tools" hidden>
     <div class="page-hero tools-hero"><div class="page-hero-copy"><p class="eyebrow"><span></span> FREE TOOLS</p><h1>Little tools<br><em>Big momentum</em></h1><p>Free, practical tools for the things you're working on. We're building this collection one useful idea at a time.</p><a class="text-link light-link" href="#connect">Suggest a tool <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg></a></div><div class="page-graphic tool-graphic" aria-hidden="true"><div class="graphic-frame frame-one"></div><div class="graphic-frame frame-two"></div><div class="graphic-core"><svg class="icon"><use href="#icon-plus"></use></svg></div></div></div>
-    <section class="listing-section section-shell"><div class="listing-heading"><div><div class="section-kicker"><span class="kicker-number">01</span><span>THE COLLECTION</span></div><h2>Made to be <em>useful</em></h2></div><p>Practical by design, free to explore.</p></div><div class="tool-library" aria-label="Free tool library">
-      <div class="tool-finder" id="tool-controls" hidden>
-        <div class="tool-finder-top">
-          <div class="tool-search-wrap"><label for="tool-search">Find the right tool</label><div class="tool-search-field"><span class="tool-search-icon" aria-hidden="true">⌕</span><input id="tool-search" type="search" autocomplete="off" spellcheck="false" placeholder="Search PDF, images, text, code…"><kbd aria-hidden="true">/</kbd></div></div>
-          <div class="tool-sort-wrap"><label for="tool-sort">Sort results</label><select id="tool-sort"><option value="newest">Recently added</option><option value="az">Name A–Z</option><option value="za">Name Z–A</option></select></div>
-        </div>
-        <div class="tool-finder-note"><span class="tool-privacy-mark" aria-hidden="true">◈</span> Free to use · Runs in your browser · No account needed <a href="tools/">Complete A–Z directory <span aria-hidden="true">↗</span></a></div>
-        <div class="tool-category-scroller" aria-label="Tool category filters"><div class="tool-category-chips" id="tool-categories" role="group" aria-label="Choose a tool category"></div></div>
+    <section class="listing-section section-shell"><div class="listing-heading"><div><div class="section-kicker"><span class="kicker-number">01</span><span>THE COLLECTION</span></div><h2>Made to be <em>useful</em></h2></div><p>Practical by design, free to explore.</p></div><div class="tool-launcher" aria-label="YorpHives tool launcher">
+      <div class="launcher-intro" id="tool-controls" hidden>
+        <div class="launcher-intro-head"><div><span class="launcher-kicker">YOUR DIGITAL TOOLBOX</span><h3>What do you want to do?</h3><p>Find the right tool, then get straight to work.</p></div><span class="launcher-total" id="tool-total">Free tools</span></div>
+        <div class="launcher-search-shell"><span class="launcher-magnifier" aria-hidden="true">⌕</span><label class="launcher-screenreader" for="tool-search">Search tools by name or task</label><input id="tool-search" type="search" autocomplete="off" spellcheck="false" placeholder="Try “combine PDFs” or “find duplicate files”…"><span class="launcher-search-shortcut" aria-hidden="true">/</span><button type="button" id="tool-clear" class="launcher-clear" aria-label="Clear search" hidden>×</button></div>
+        <p class="launcher-trust">✦ Free to use <span aria-hidden="true">·</span> Private browser-based tools <span aria-hidden="true">·</span> No account needed</p>
       </div>
-      <div class="tool-library-meta"><p id="tool-count" role="status" aria-live="polite"></p><button type="button" id="tool-clear" class="tool-clear" hidden>Clear filters <span aria-hidden="true">×</span></button></div>
-      <div id="tools-items" class="tool-library-grid" aria-label="Tool search results"></div>
-      <div id="tool-no-results" class="tool-no-results" hidden><span aria-hidden="true">⌕</span><h3>No matching tools yet</h3><p>Try a different name, task or category.</p><button type="button" id="tool-reset">View all tools</button></div>
-      <div class="tool-library-more" id="tool-more-wrap" hidden><div class="tool-more-track"><span id="tool-more-progress"></span></div><button type="button" class="tool-more-button" id="tool-more">Show more tools <span aria-hidden="true">↓</span></button></div>
-      </div><div class="empty-state" id="tools-empty" hidden><span class="empty-symbol" aria-hidden="true">+</span><div><span class="status-label">IN THE WORKS</span><h3>The first tools are taking shape</h3><p>Have an everyday problem you'd love a tool to solve? We'd like to hear about it.</p><a class="text-link dark-link" href="#connect">Share your idea <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg></a></div></div></section>
+      <div class="launcher-workspace">
+        <aside class="launcher-sidebar" aria-label="Browse tools by category"><div class="launcher-sidebar-label">BROWSE</div><nav class="launcher-nav" id="tool-categories" aria-label="Tool categories"></nav><div class="launcher-side-note"><span>✧</span><p>Looking for something specific?<br><a href="tools/">Open the complete directory ↗</a></p></div></aside>
+        <div class="launcher-main">
+          <button type="button" id="tool-back" class="launcher-back" hidden>← All categories</button>
+          <div class="launcher-main-head"><div><span class="launcher-kicker" id="tool-eyebrow">DISCOVER</span><h3 id="tool-view-title">Recently added</h3><p id="tool-view-caption">A few useful tools to get you started.</p></div><div class="launcher-sort"><label for="tool-sort">Sort</label><select id="tool-sort"><option value="newest">Newest</option><option value="az">Name A–Z</option><option value="za">Name Z–A</option></select></div></div>
+          <div class="launcher-mobile-browse" id="tool-mobile-browse"><div class="launcher-mobile-title"><span>Browse by category</span><small>Pick a task</small></div><div class="launcher-mobile-grid" id="tool-mobile-categories"></div></div>
+          <div class="launcher-rows" id="tools-items" role="list" aria-label="Free tool results"></div>
+          <div class="launcher-no-results" id="tool-no-results" hidden><span aria-hidden="true">⌕</span><h3>Nothing found for that search</h3><p>Try different words or browse a category.</p><button type="button" id="tool-reset">Browse all tools</button></div>
+          <div class="launcher-footer"><p id="tool-count" role="status" aria-live="polite"></p><nav class="launcher-pagination" aria-label="Tool result pages"><button type="button" id="tool-prev" aria-label="Previous page" disabled>← <span>Previous</span></button><span id="tool-page-number" aria-live="polite">1 / 1</span><button type="button" id="tool-next" aria-label="Next page" disabled><span>Next</span> →</button></nav></div>
+          <a class="launcher-all-link" href="tools/">Browse all tools in the A–Z directory ↗</a>
+        </div>
+      </div>
+    </div><div class="empty-state" id="tools-empty" hidden><span class="empty-symbol" aria-hidden="true">+</span><div><span class="status-label">IN THE WORKS</span><h3>The first tools are taking shape</h3><p>Have an everyday problem you'd love a tool to solve? We'd like to hear about it.</p><a class="text-link dark-link" href="#connect">Share your idea <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg></a></div></div></section>
   </section>
 
   <section class="page" id="explore" aria-label="Explore products" hidden>
