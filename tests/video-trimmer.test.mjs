@@ -20,7 +20,11 @@ test('Video Trimmer is a standalone first-party tool with clear output limitatio
  assert.match(html,/id="video-file"/);
  assert.match(html,/id="video-run"/);
  assert.match(html,/takes roughly as long/);
+ const fixer=await stat(resolve(dist,'tools/vendor/webm/fix-webm-duration.js'));
+ assert.ok(fixer.size>1000,'Seekable WebM metadata patcher must be locally bundled.');
  const src=await readFile(resolve(root,'tools/video-trim-core.mjs'),'utf8');
+ assert.match(src,/loadWebmDurationFix/);
+ assert.match(src,/stop\('tab hidden'\)/);
  assert.doesNotMatch(src,/ffmpeg|fetch\(|https:\/\/|api\.|XMLHttpRequest/);
 });
 test('Unavailable input fails without opening any capture stream',async()=>{
