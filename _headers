@@ -15,3 +15,8 @@
   Cache-Control: no-store
 /app.js
   Cache-Control: no-cache, max-age=0, must-revalidate
+
+# The verified ONNX model filename includes its content hash; cache only this immutable version.
+/tools/models/u2netp-309c8469.onnx
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
