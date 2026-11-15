@@ -79,7 +79,7 @@ function injectSiteSupport(html,page){
 }
 
 function injectToolSuite(html,item){
- if(item.type!=='tool'||!item.url.startsWith('tools/')||(item.url==='tools/pdf-compressor/'||item.module?.url==='tools/wave2-core.mjs'))return html;
+ if(item.type!=='tool'||!item.url.startsWith('tools/')||(item.url==='tools/pdf-compressor/'||['tools/wave2-core.mjs','tools/wave3-core.mjs','tools/pdf-redaction-core.mjs'].includes(item.module?.url)))return html;
  if(!/<body\b[^>]*class="tool-page"/.test(html))throw Error('Unexpected tool HTML: '+item.url);
  const family=html.includes('id="file-tool-form"')?'file':html.includes('id="utility-form"')?'utility':html.includes('id="wave1-form"')?'wave1':html.includes('id="image-file"')?'image':html.includes('id="json-input"')?'json':'general';
  const css='<link rel="stylesheet" href="../tool-suite-v1.css">';
