@@ -139,9 +139,10 @@ test('interactive Free Tools QA module only ships in noindex preview builds',asy
  }
 });
 
-test('no direct legacy routing depends on a deleted Pages project',async()=>{
+test('no direct legacy routing depends on the retired Pages prototype',async()=>{
  const redirects=await read('_redirects',dest);
- assert.doesNotMatch(redirects,/yorphives\\.pages\\.dev/);
+ assert.equal(redirects.includes('yorphives.pages.dev'),false);
+ const lines=redirects.split('\n').map(line=>line.trim());
  for(const path of ['/free-tools/file-studio/','/free-tools/grayscale-image/','/free-tools/split-pdf/'])
-  assert.match(redirects,new RegExp('^'+path.replace(/\\//g,'\\\\/')+' \\/tools\\/ 302$','m'));
+  assert.ok(lines.includes(path+' /tools/ 302'),path+' needs safe first-party fallback');
 });
