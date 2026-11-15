@@ -90,7 +90,7 @@ form.addEventListener('submit',async event=>{
    segmentation=modelOutput;
   }
   await redraw(current);
- }catch(error){if(current===token)say(error?.message||'Background removal failed.',true);}
+ }catch(error){if(current===token)say((error?.message||'Background removal failed.')+(model.value==='portrait'?' If this device cannot run Portrait mode, select the Lightweight model and try again.':''),true);}
  finally{busy=false;available();}
 });
 refine.addEventListener('click',async()=>{
