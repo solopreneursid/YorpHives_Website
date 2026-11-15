@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "events": [
+    {
+      "id": "page:builders",
+      "kind": "builders",
+      "title": "Builders membership information updated",
+      "url": "#builders",
+      "timestamp": "2026-11-15T12:00:00.000Z",
+      "source": "founder-visible-page"
+    },
+    {
+      "id": "page:explore",
+      "kind": "explore",
+      "title": "Explore research-first collection updated",
+      "url": "#explore",
+      "timestamp": "2026-11-15T11:00:00.000Z",
+      "source": "founder-visible-page"
+    }
+  ]
+}
