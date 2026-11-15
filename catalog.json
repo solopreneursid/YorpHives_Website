@@ -4332,6 +4332,229 @@
           "Self-hosted assets, local processing. No paid APIs or file uploads."
         ]
       }
+    },
+    {
+      "name": "SVG Optimizer",
+      "description": "Optimize safe SVG code with a locally hosted SVGO browser engine.",
+      "type": "tool",
+      "category": "Design",
+      "date": "2026-11-15",
+      "url": "tools/svg-optimizer/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave6-svg-core.mjs",
+        "export": "optimizeSvg",
+        "toolId": "svg-optimizer",
+        "arguments": [
+          "SVG source text"
+        ],
+        "inputs": [
+          {
+            "name": "source",
+            "type": "file-or-form",
+            "description": "SVG file or XML markup"
+          }
+        ],
+        "requirements": [
+          "Self-hosted browser processing; no paid API, third-party CDN or uploaded files."
+        ]
+      }
+    },
+    {
+      "name": "Video to GIF Converter",
+      "description": "Create short silent animated GIFs from browser-playable videos.",
+      "type": "tool",
+      "category": "Video",
+      "date": "2026-11-15",
+      "url": "tools/video-to-gif/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave6-video-core.mjs",
+        "export": "videoToGif",
+        "toolId": "video-to-gif",
+        "arguments": [
+          "local File",
+          "options object"
+        ],
+        "inputs": [
+          {
+            "name": "source",
+            "type": "file-or-form",
+            "description": "MP4, MOV or WebM file"
+          }
+        ],
+        "requirements": [
+          "Self-hosted browser processing; no paid API, third-party CDN or uploaded files."
+        ]
+      }
+    },
+    {
+      "name": "Document Scanner from Photo",
+      "description": "Scan a photographed document using manual four-corner perspective correction and local PDF export.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/document-scanner/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave6-scanner-core.mjs",
+        "export": "scanDocument",
+        "toolId": "document-scanner",
+        "arguments": [
+          "local image File",
+          "options with four corners"
+        ],
+        "inputs": [
+          {
+            "name": "source",
+            "type": "file-or-form",
+            "description": "Photo plus four corner coordinates"
+          }
+        ],
+        "requirements": [
+          "Self-hosted browser processing; no paid API, third-party CDN or uploaded files."
+        ]
+      }
+    },
+    {
+      "name": "Meme Maker",
+      "description": "Add top and bottom captions to photos and download local PNG memes.",
+      "type": "tool",
+      "category": "Creator",
+      "date": "2026-11-15",
+      "url": "tools/meme-maker/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave6-image-core.mjs",
+        "export": "createMeme",
+        "toolId": "meme-maker",
+        "arguments": [
+          "local File",
+          "options object"
+        ],
+        "inputs": [
+          {
+            "name": "source",
+            "type": "file-or-form",
+            "description": "JPG, PNG or WebP photo"
+          }
+        ],
+        "requirements": [
+          "Self-hosted browser processing; no paid API, third-party CDN or uploaded files."
+        ]
+      }
+    },
+    {
+      "name": "Color Picker from Image",
+      "description": "Tap image pixels to obtain HEX, RGB and HSL color values.",
+      "type": "tool",
+      "category": "Design",
+      "date": "2026-11-15",
+      "url": "tools/image-color-picker/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave6-image-core.mjs",
+        "export": "pickImageColor",
+        "toolId": "image-color-picker",
+        "arguments": [
+          "local File",
+          "options object"
+        ],
+        "inputs": [
+          {
+            "name": "source",
+            "type": "file-or-form",
+            "description": "Photo and pixel coordinates"
+          }
+        ],
+        "requirements": [
+          "Self-hosted browser processing; no paid API, third-party CDN or uploaded files."
+        ]
+      }
+    },
+    {
+      "name": "Pixel Art Maker",
+      "description": "Transform photos into retro color-limited pixel artwork.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/pixel-art-maker/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave6-image-core.mjs",
+        "export": "makePixelArt",
+        "toolId": "pixel-art-maker",
+        "arguments": [
+          "local File",
+          "options object"
+        ],
+        "inputs": [
+          {
+            "name": "source",
+            "type": "file-or-form",
+            "description": "Photo and pixel/palette options"
+          }
+        ],
+        "requirements": [
+          "Self-hosted browser processing; no paid API, third-party CDN or uploaded files."
+        ]
+      }
+    },
+    {
+      "name": "Audio Volume Booster & Normalizer",
+      "description": "Boost, lower, normalize and locally export audio as WAV with a limiter.",
+      "type": "tool",
+      "category": "Audio",
+      "date": "2026-11-15",
+      "url": "tools/audio-volume-adjuster/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave6-audio-core.mjs",
+        "export": "adjustAudioVolume",
+        "toolId": "audio-volume-adjuster",
+        "arguments": [
+          "local File",
+          "options object"
+        ],
+        "inputs": [
+          {
+            "name": "source",
+            "type": "file-or-form",
+            "description": "Browser-decodable audio and gain"
+          }
+        ],
+        "requirements": [
+          "Self-hosted browser processing; no paid API, third-party CDN or uploaded files."
+        ]
+      }
+    },
+    {
+      "name": "Video Thumbnail Extractor",
+      "description": "Extract a JPG or PNG thumbnail from a selected video time without uploads.",
+      "type": "tool",
+      "category": "Video",
+      "date": "2026-11-15",
+      "url": "tools/video-thumbnail-extractor/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave6-video-core.mjs",
+        "export": "extractVideoFrame",
+        "toolId": "video-thumbnail-extractor",
+        "arguments": [
+          "local File",
+          "options object"
+        ],
+        "inputs": [
+          {
+            "name": "source",
+            "type": "file-or-form",
+            "description": "Video and frame timestamp"
+          }
+        ],
+        "requirements": [
+          "Self-hosted browser processing; no paid API, third-party CDN or uploaded files."
+        ]
+      }
     }
   ]
 }
