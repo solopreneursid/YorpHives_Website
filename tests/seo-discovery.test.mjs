@@ -107,3 +107,13 @@ test('all 23 old public tool routes remain functional entry points without alter
  }
  assert.doesNotMatch(redirects,/^\/tools\//m,'Existing new tool URLs must never be redirected.');
 });
+
+test('real-browser QA harness is packaged only on noindex preview builds',async()=>{
+ const headers=await read('_headers',dest);
+ const preview=/X-Robots-Tag:\s*noindex/i.test(headers);
+ const smoke=await stat(resolve(dest,'browser-smoke.mjs')).then(x=>x.isFile()).catch(()=>false);
+ assert.equal(smoke,preview,'The browser smoke module must never appear in a production build.');
+ if(preview){const code=await read('browser-smoke.mjs',dest);
+  assert.match(code,/processFileTool/);assert.match(code,/dataset\.status=failures/);
+ }
+});
