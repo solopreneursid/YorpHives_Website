@@ -46,7 +46,7 @@ test('SEO publishing preserves homepage markup outside the generated YHpulse fee
    return html.slice(0,i+start.length)+html.slice(j);
  };
  assert.equal(strip(built),strip(source));
- assert.match(built,/LATEST 10 UPDATES/);
+ assert.match(built,/LATEST 20 UPDATES/);
 });
 test('test source, secrets and internal documents cannot leak into static output',async()=>{
  for(const path of ['scripts/build-site.mjs','tests/seo-discovery.test.mjs','RELEASE.md','SEO.md','.git/config'])
