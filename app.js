@@ -4,7 +4,7 @@
   const pages = [...document.querySelectorAll('.page')];
   const navigation = document.querySelector('.site-nav');
   const menu = document.querySelector('.menu-toggle');
-  const names = { home: 'Home', tools: 'Free tools', explore: 'Explore', builders: 'For builders', connect: 'Connect' };
+  const names = { home: 'Home', tools: 'Free tools', explore: 'Explore', builders: 'Builders', connect: 'Connect' };
   let previousPage = null;
 
   function closeMenu() {
@@ -17,7 +17,7 @@
   function route() {
     let hash = window.location.hash.slice(1);
     try { hash = decodeURIComponent(hash); } catch (_) { hash = ''; }
-    const section = hash === 'post' || hash === 'opportunities' ? hash : null;
+    const section = ['post', 'opportunities', 'membership', 'partners'].includes(hash) ? hash : null;
     const active = section ? 'builders' : Object.hasOwn(names, hash) ? hash : 'home';
     pages.forEach(page => { page.hidden = page.id !== active; });
     document.querySelectorAll('[data-nav]').forEach(link => {
@@ -27,7 +27,7 @@
     document.title = active === 'home' ? 'YorpHives — Ideas in motion' : `${names[active]} — YorpHives`;
     closeMenu();
     if (section) {
-      requestAnimationFrame(() => document.getElementById(section)?.scrollIntoView({ block: 'start' }));
+      requestAnimationFrame(() => document.getElementById(section === 'post' ? 'membership' : section)?.scrollIntoView({ block: 'start' }));
     } else if (active !== previousPage) {
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
@@ -68,7 +68,7 @@
   document.querySelectorAll('[data-form]').forEach(form => {
     form.addEventListener('submit', event => {
       event.preventDefault();
-      const subject = form.dataset.form === 'opportunity' ? 'Paid opportunity for YorpHives' : 'Project enquiry for YorpHives';
+      const subject = 'Project enquiry for YorpHives';
       const body = [...new FormData(form)].filter(([, value]) => String(value).trim()).map(([key, value]) => `${key}: ${value}`).join('\n\n');
       window.location.href = `mailto:connect@yorphives.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     });
@@ -77,7 +77,6 @@
 
   // A single public JSON catalog powers the collections, homepage, and agent discovery.
   const types = ['tool', 'app', 'product'];
-  const recent = document.getElementById('recent-items');
   function statusCard(text, label = 'THE COLLECTION') {
     const box = document.createElement('div'); box.className = 'catalog-empty';
     const tag = document.createElement('span'); tag.className = 'status-label'; tag.textContent = label;
@@ -107,19 +106,172 @@
     }
     return element;
   }
+  // The same qualification gate is enforced by the static build and the public UI.
+  // HQ can evaluate and recommend; the final approval is always founder-controlled.
+  // Shared logo-card spotlight, mounted once on Home and once on Explore.
+  function setupExploreFeatureSpotlight(products, location = 'explore') {
+    const prefix = location === 'home' ? 'home-feature-' : 'explore-feature-';
+    const root = document.getElementById(prefix + 'window');
+    const empty = document.getElementById(prefix + 'empty');
+    const productLink = document.getElementById(prefix + 'product');
+    const logo = document.getElementById(prefix + 'logo');
+    const title = document.getElementById(prefix + 'name');
+    const type = document.getElementById(prefix + 'type');
+    const counter = document.getElementById(prefix + 'count');
+    const prev = document.getElementById(prefix + 'prev');
+    const next = document.getElementById(prefix + 'next');
+    const pause = document.getElementById(prefix + 'pause');
+    if (!root || !empty || !productLink || !logo || !title || !counter ||
+        !prev || !next || !pause) return;
+
+    const available = Array.isArray(products) ? products : [];
+    const ready = available.length > 0;
+    empty.hidden = ready;
+    productLink.hidden = !ready;
+    if (location === 'home') {
+      const note = document.getElementById('explore-qualification-note');
+      const footer = document.querySelector('#home .explore-evaluation-foot span:last-child');
+      const badge = document.getElementById('explore-showcase-label');
+      if (note) note.textContent = ready
+        ? 'Every product earns its place through HQ research, business analysis and founder approval.'
+        : 'No HQ-qualified products have been released yet. Here is what every product must pass:';
+      if (footer) footer.textContent = ready
+        ? 'Only products reviewed by Yorphives HQ and approved by the founder go live in Explore.'
+        : 'Qualified launches will appear here after founder approval.';
+      if (badge) badge.textContent = ready ? 'FOUNDER-APPROVED PRODUCTS' : 'EVIDENCE BEFORE LAUNCH';
+    }
+    if (!ready) return;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let index = 0;
+    let paused = reducedMotion.matches;
+    let onscreen = typeof IntersectionObserver === 'undefined';
+    const canMove = () => available.length > 1;
+
+    function paint() {
+      const item = available[index];
+      productLink.href = new URL(item.url, document.baseURI).href;
+      productLink.setAttribute('aria-label', 'Explore ' + item.name);
+      title.textContent = item.name;
+      type.textContent = item.type === 'app' ? 'APP · APPROVED LAUNCH' : 'PRODUCT · APPROVED LAUNCH';
+      counter.textContent = 'PRODUCT ' + (index + 1) + ' / ' + available.length;
+      logo.replaceChildren();
+      // Product logos are first-party files in the released catalog, never remote assets.
+      // Graceful monogram fallback keeps old products visually complete.
+      const initials = item.name.trim().split(/\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase();
+      if (typeof item.logo === 'string' &&
+          /^(?:apps|products|assets)\/[a-z0-9][a-z0-9/_-]*\.(?:svg|png|webp|jpe?g)$/.test(item.logo)) {
+        const image = document.createElement('img');
+        image.alt = '';
+        image.loading = 'lazy';
+        image.decoding = 'async';
+        image.src = new URL(item.logo, document.baseURI).href;
+        image.onerror = () => logo.replaceChildren(document.createTextNode(initials));
+        logo.append(image);
+      } else {
+        logo.textContent = initials;
+      }
+      prev.disabled = !canMove();
+      next.disabled = !canMove();
+      pause.disabled = !canMove() || reducedMotion.matches;
+      pause.setAttribute('aria-pressed', String(paused));
+      pause.setAttribute('aria-label', paused ? 'Resume automatic product rotation' : 'Pause automatic product rotation');
+      pause.textContent = paused ? '▶' : 'Ⅱ';
+      productLink.classList.remove('is-entering');
+      if (!reducedMotion.matches) {
+        void productLink.offsetWidth; // Restart the entrance animation on every change.
+        productLink.classList.add('is-entering');
+      }
+    }
+    prev.addEventListener('click', () => {
+      if (!canMove()) return;
+      index = (index - 1 + available.length) % available.length;
+      paint();
+    });
+    next.addEventListener('click', () => {
+      if (!canMove()) return;
+      index = (index + 1) % available.length;
+      paint();
+    });
+    pause.addEventListener('click', () => {
+      if (pause.disabled) return;
+      paused = !paused;
+      paint();
+    });
+    if (typeof reducedMotion.addEventListener === 'function') {
+      reducedMotion.addEventListener('change', () => {
+        if (reducedMotion.matches) paused = true;
+        paint();
+      });
+    }
+    if (typeof IntersectionObserver !== 'undefined') {
+      new IntersectionObserver(entries => {
+        onscreen = entries.some(entry => entry.isIntersecting);
+      }, {threshold: .15}).observe(root);
+    }
+    if (canMove()) window.setInterval(() => {
+      if (paused || reducedMotion.matches || !onscreen ||
+          document.hidden || document.getElementById(location).hidden) return;
+      index = (index + 1) % available.length;
+      paint();
+    }, 4500);
+    paint();
+  }
+
+  // Build the homepage ribbon from current published categories, not a manual list.
+  // The second visual copy enables a continuous, seamless scroll; it is hidden
+  // from keyboard and screen readers to avoid redundant announcements.
+  function setupCategoryRibbon(items, onSelect) {
+    const track = document.getElementById('category-ribbon-track');
+    const section = document.querySelector('#home .category-ribbon');
+    if (!track || !section) return;
+    const categories = [...new Set(items.map(item =>
+      typeof item.category === 'string' && item.category.trim() ? item.category.trim() : 'Other'
+    ))].sort((a,b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    section.hidden = categories.length === 0;
+    if (!categories.length) { track.replaceChildren(); return; }
+    section.classList.toggle('is-single', categories.length === 1);
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function makeSet(duplicate) {
+      const set = document.createElement(duplicate ? 'div' : 'nav');
+      set.className = 'category-ribbon-set';
+      if (duplicate) set.setAttribute('aria-hidden','true');
+      else set.setAttribute('aria-label','Browse categories');
+      for (const name of categories) {
+        const link = document.createElement('a');
+        link.href = '#tools';
+        link.className = 'category-ribbon-pill';
+        link.textContent = name;
+        link.dataset.category = name;
+        if (duplicate) link.tabIndex = -1;
+        link.addEventListener('click', () => onSelect(name));
+        set.append(link);
+      }
+      return set;
+    }
+
+    const paint = () => {
+      const single = categories.length === 1 || reducedMotion.matches;
+      section.classList.toggle('is-single', single);
+      track.replaceChildren(makeSet(false), ...(single ? [] : [makeSet(true)]));
+    };
+    if (typeof reducedMotion.addEventListener === 'function')
+      reducedMotion.addEventListener('change', paint);
+    paint();
+  }
+
   async function loadCatalog() {
-    recent.replaceChildren(statusCard('Loading the latest tools and products…'));
     try {
       const response = await fetch('catalog.json');
       if (!response.ok) throw new Error('Catalog unavailable');
       const data = await response.json();
       if (!Array.isArray(data.items)) throw new Error('Invalid catalog');
+      const { qualifiedProducts } = await import('./product-policy.mjs');
       // For additions on the same day, later catalog entries are newer.
       const catalog = data.items.map((item, index) => ({ item, index })).filter(entry => validItem(entry.item))
         .sort((a, b) => b.item.date.localeCompare(a.item.date) || b.index - a.index).map(entry => entry.item);
-      recent.replaceChildren();
-      if (catalog.length) catalog.slice(0, 3).forEach(item => recent.append(card(item)));
-      else recent.append(statusCard('Our first tools and products are taking shape. New additions will appear here.', 'THE FIRST CHAPTER'));
+      const products = qualifiedProducts(catalog);
       const tools = catalog.filter(item => item.type === 'tool');
       // Eight-row Tool Launcher: new categories are included automatically.
       // Every tool retains its independent direct-entry URL and SEO metadata.
@@ -181,6 +333,7 @@
         'json-formatter':'pretty print json beautify'
       };
       let active = '';
+      let activeCategory = '';
       let page = 1;
       const groupItems = group => tools.filter(item => group.categories.includes(item.category || 'Other'));
       const makeCategory = (id,name,icon,amount,mobile=false) => {
@@ -202,6 +355,7 @@
         button.append(symbol,label,number);
         button.addEventListener('click', () => {
           active = id;
+          activeCategory = '';
           page = 1;
           search.value = '';
           renderTools();
@@ -261,6 +415,7 @@
       function matchedTools() {
         const words=normalize(search.value).split(/\s+/).filter(Boolean);
         let matches=tools.filter(item=>{
+          if (activeCategory && (item.category || 'Other') !== activeCategory) return false;
           if (active==='__saved__' && !favorites.has(item.url)) return false;
           if (active && active!=='__saved__' &&
             !groups.find(group=>group.id===active)?.categories.includes(item.category||'Other')) return false;
@@ -292,15 +447,15 @@
         page=Math.min(page,pages);
         toolGrid.replaceChildren(...matches.slice((page-1)*pageSize,page*pageSize).map(makeRow));
         noResults.hidden=matches.length>0;
-        const discovering=!searching&&!active;
+        const discovering=!searching&&!active&&!activeCategory;
         mobileBrowse.hidden=!discovering;
         back.hidden=discovering;
         clear.hidden=!searching;
-        eyebrow.textContent=searching?'SEARCH RESULTS':active==='__saved__'?'YOUR SHORTCUTS':current?'BROWSE CATEGORY':'DISCOVER';
-        heading.textContent=searching?'Matching tools':active==='__saved__'?'My saved tools':current?current.name:'Recently added';
+        eyebrow.textContent=searching?'SEARCH RESULTS':active==='__saved__'?'YOUR SHORTCUTS':activeCategory||current?'BROWSE CATEGORY':'DISCOVER';
+        heading.textContent=searching?'Matching tools':active==='__saved__'?'My saved tools':activeCategory||current?.name||'Recently added';
         caption.textContent=searching?'Tools that match what you need.':
           active==='__saved__'?'Your favorites are saved on this device.':
-          current?matches.length+' useful '+(matches.length===1?'tool':'tools')+' in this collection.':
+          activeCategory||current?matches.length+' useful '+(matches.length===1?'tool':'tools')+' in this collection.':
           'A small selection from the latest additions.';
         const message=noResults.querySelector('h3');
         const details=noResults.querySelector('p');
@@ -316,6 +471,7 @@
       const resetFilters=()=>{
         search.value='';
         active='';
+        activeCategory='';
         sort.value='newest';
         page=1;
         renderTools();
@@ -323,7 +479,7 @@
       back.addEventListener('click',()=>{resetFilters();search.focus();});
       reset.addEventListener('click',()=>{resetFilters();search.focus();});
       clear.addEventListener('click',()=>{search.value='';page=1;renderTools();search.focus();});
-      search.addEventListener('input',()=>{active='';page=1;renderTools();});
+      search.addEventListener('input',()=>{active='';activeCategory='';page=1;renderTools();});
       sort.addEventListener('change',()=>{page=1;renderTools();});
       prev.addEventListener('click',()=>{if(page>1){page--;renderTools();}});
       next.addEventListener('click',()=>{if(page<Math.ceil(matchedTools().length/pageSize)){page++;renderTools();}});
@@ -335,12 +491,22 @@
         search.focus();
       });
       renderTools();
-      const products = catalog.filter(item => item.type !== 'tool');
+      setupCategoryRibbon(tools, category => {
+        active = '';
+        activeCategory = category;
+        search.value = '';
+        sort.value = 'newest';
+        page = 1;
+        renderTools();
+      });
       const productGrid = document.getElementById('explore-items'); productGrid.replaceChildren();
       document.getElementById('explore-empty').hidden = products.length > 0;
       products.forEach(item => productGrid.append(card(item)));
+      setupExploreFeatureSpotlight(products, 'home');
+      setupExploreFeatureSpotlight(products, 'explore');
     } catch (_) {
-      recent.replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
+      const ribbon = document.querySelector('#home .category-ribbon');
+      if (ribbon) ribbon.hidden = true;
       for (const id of ['tools', 'explore']) document.getElementById(`${id}-items`).replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
     }
   }
