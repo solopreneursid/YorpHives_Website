@@ -4075,6 +4075,42 @@
           "No paid APIs or uploads. English OCR only; up to five pages per document."
         ]
       }
+    },
+    {
+      "name": "Video Trimmer",
+      "description": "Trim short video clips privately using native browser recording without paid APIs or uploading files.",
+      "type": "tool",
+      "category": "Video",
+      "date": "2026-11-15",
+      "url": "tools/video-trimmer/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/video-trim-core.mjs",
+        "export": "trimVideo",
+        "toolId": "video-trimmer",
+        "arguments": [
+          "local video File",
+          "object with start/end seconds"
+        ],
+        "inputs": [
+          {
+            "name": "file",
+            "type": "file",
+            "accept": "video/*"
+          },
+          {
+            "name": "start",
+            "type": "number"
+          },
+          {
+            "name": "end",
+            "type": "number"
+          }
+        ],
+        "requirements": [
+          "Browser MediaRecorder and Canvas capture. Output is WebM or MP4 depending on browser."
+        ]
+      }
     }
   ]
 }
