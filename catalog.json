@@ -2927,6 +2927,119 @@
           "Modern browser with File and Blob APIs; JSZip bundled locally for archive creation."
         ]
       }
+    },
+    {
+      "name": "Open-Source Conversion Command Builder",
+      "description": "Make copyable commands for free desktop conversion tools.",
+      "type": "tool",
+      "category": "Files",
+      "date": "2026-11-15",
+      "url": "tools/conversion-command-builder/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: conversion-command-builder",
+          "object of named form inputs"
+        ],
+        "toolId": "conversion-command-builder",
+        "inputs": [
+          {
+            "name": "mode",
+            "type": "select",
+            "default": "docx-pdf",
+            "options": [
+              "docx-pdf",
+              "xlsx-csv",
+              "mp4-webm",
+              "wav-mp3",
+              "png-webp",
+              "pdf-png"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "JSON Key Sorter",
+      "description": "Sort nested JSON object keys while preserving array order.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/json-key-sorter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: json-key-sorter",
+          "object of named form inputs"
+        ],
+        "toolId": "json-key-sorter",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": "{\"z\":1,\"a\":2}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CSV Column Extractor",
+      "description": "Select a CSV column by header, preserving quoted fields and newlines.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/csv-column-extractor/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: csv-column-extractor",
+          "object of named form inputs"
+        ],
+        "toolId": "csv-column-extractor",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": "Name,Score\nAva,20\nKai,18"
+          },
+          {
+            "name": "header",
+            "type": "text",
+            "default": "Score"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CSV to HTML Table",
+      "description": "Generate properly escaped HTML table markup from a CSV.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/csv-to-html-table/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: csv-to-html-table",
+          "object of named form inputs"
+        ],
+        "toolId": "csv-to-html-table",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": "Name,Role\nAva,Designer"
+          }
+        ]
+      }
     }
   ]
 }

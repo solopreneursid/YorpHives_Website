@@ -40,3 +40,5 @@ From the website root, run `node --test tests/*.test.mjs` with a recent Node.js 
 File Format Inspector reads only a file header; it does not prove file safety. ZIP Contents Viewer validates central-directory structure without extracting contents. ZIP File Creator and Batch File Renamer use the bundled JSZip, preserve originals and generate a downloaded ZIP. All run locally with per-file, total-input and ZIP-size limits.
 
 To regenerate page templates and catalog entries, edit `scripts/file-tool-specs.mjs` and run `node scripts/generate-file-tools.mjs`. These four tools execute through `tools/batch-file-core.mjs` and the shared `processFileTool` dispatcher.
+
+The additional CSV, JSON and conversion-command helper tools are maintained via `scripts/extra-tool-specs.mjs` and the shared browser-local `runEverydayTool` interface. Conversion commands are only guidance and are never run by the site.

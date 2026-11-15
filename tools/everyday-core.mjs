@@ -162,6 +162,60 @@ export async function runEverydayTool(id, data = {}) {
     case 'box-shadow-generator': {const x=number(data,'x','horizontal offset',-200,200),y=number(data,'y','vertical offset',-200,200),blur=number(data,'blur','blur radius',0,200),spread=number(data,'spread','spread',-200,200),opacity=number(data,'opacity','opacity',0,100),hex=required(data,'color',7).trim();if(!/^#[\da-f]{6}$/i.test(hex))throw new Error('Choose a 6-digit hex color.');const rgb=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)),value=`${x}px ${y}px ${blur}px ${spread}px rgba(${rgb.join(', ')}, ${opacity/100})`;output=`box-shadow: ${value};`;preview={boxShadow:value};break;}
     case 'px-to-rem-converter': {const value=number(data,'value','value'),root=number(data,'root','root font size',1,200);if(data.mode==='to-rem')output=`${format(value)}px = ${format(value/root,6)}rem (root ${format(root)}px)`;else if(data.mode==='to-px')output=`${format(value)}rem = ${format(value*root,6)}px (root ${format(root)}px)`;else throw new Error('Choose a conversion direction.');break;}
     case 'css-grid-generator': {const columns=number(data,'columns','column count',1,12,true),gap=number(data,'gap','gap in pixels',0,200);output=`display: grid;\ngrid-template-columns: repeat(${columns}, minmax(0, 1fr));\ngap: ${gap}px;`;break;}
+    case 'conversion-command-builder': {
+      const options={
+        'docx-pdf':['LibreOffice','libreoffice --headless --convert-to pdf --outdir . -- input.docx'],
+        'xlsx-csv':['LibreOffice','libreoffice --headless --convert-to csv --outdir . -- input.xlsx'],
+        'mp4-webm':['FFmpeg','ffmpeg -i input.mp4 -c:v libvpx-vp9 -crf 32 -b:v 0 -c:a libopus output.webm'],
+        'wav-mp3':['FFmpeg','ffmpeg -i input.wav -codec:a libmp3lame -qscale:a 3 output.mp3'],
+        'png-webp':['ImageMagick','magick input.png -quality 82 output.webp'],
+        'pdf-png':['Poppler','pdftoppm -png -r 150 input.pdf output']
+      };
+      const selected=options[text(data,'mode')];
+      if(!selected)throw new Error('Choose a supported conversion.');
+      output='Requires locally installed: '+selected[0]+'\nLinux/macOS example:\n'+selected[1]+
+        '\n\nUse real filenames and consult the tool help before running. YorpHives does not execute commands.';
+      break;
+    }
+    case 'json-key-sorter': {
+      const source=json(required(data,'text',200000));
+      const ordered=(value,depth=0)=>{
+        if(depth>64)throw new Error('JSON is nested too deeply.');
+        if(Array.isArray(value))return value.map(item=>ordered(item,depth+1));
+        if(value&&typeof value==='object'){
+          const result=Object.create(null);
+          for(const key of Object.keys(value).sort())result[key]=ordered(value[key],depth+1);
+          return result;
+        }
+        return value;
+      };
+      output=JSON.stringify(ordered(source),null,2);
+      break;
+    }
+    case 'csv-column-extractor': {
+      const rows=parseCsv(required(data,'text',200000));
+      const header=required(data,'header',120).trim();
+      if(rows.length<2||rows.length>2000||rows[0].length>40)throw new Error('Use 1–1999 CSV data rows and no more than 40 columns.');
+      if(rows.some(row=>row.length!==rows[0].length))throw new Error('Every CSV row needs the same number of columns.');
+      const count=rows[0].filter(x=>x===header).length;
+      if(count!==1)throw new Error(count?'The header is duplicated.':'Column header not found.');
+      const index=rows[0].indexOf(header);
+      const csvCell=value=>{
+        const safe=/^\s*[=+\-@]/.test(value)?"'"+value:value;
+        return /[",\r\n]/.test(safe)?'"'+safe.replace(/"/g,'""')+'"':safe;
+      };
+      output=rows.map(row=>csvCell(row[index])).join('\r\n');
+      break;
+    }
+    case 'csv-to-html-table': {
+      const rows=parseCsv(required(data,'text',150000));
+      if(rows.length<2||rows.length>200||rows[0].length>30)throw new Error('Use 1–199 CSV data rows and no more than 30 columns.');
+      if(rows.some(row=>row.length!==rows[0].length))throw new Error('Every CSV row needs the same number of columns.');
+      const row=(cells,tag)=>'  <tr>'+cells.map(v=>'<'+tag+'>'+escapeHtml(v)+'</'+tag+'>').join('')+'</tr>';
+      output=['<table>','<thead>',row(rows[0],'th'),'</thead>','<tbody>',
+        ...rows.slice(1).map(cells=>row(cells,'td')),'</tbody>','</table>'].join('\n');
+      break;
+    }
     default: throw new Error('This tool is unavailable.');
   }
   return {text:output, preview};
