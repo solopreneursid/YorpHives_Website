@@ -18,6 +18,9 @@ await copy('tesseract.js/dist/worker.min.js','ocr/worker.min.js');
 await copy('@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz','ocr/lang/eng.traineddata.gz');
 await copy('jsqr/dist/jsQR.js','qr/jsQR.js');
 await copy('jsbarcode/dist/JsBarcode.all.min.js','barcode/JsBarcode.all.min.js');
+await copy('heic2any/dist/heic2any.min.js','heic/heic2any.min.js');
+await copy('fix-webm-duration/fix-webm-duration.js','webm/fix-webm-duration.js');
+
 const core='tesseract.js-core',files=await readdir(resolve(root,'node_modules',core));
 const runtime=files.filter(name=>/^tesseract-core.*\.(?:js|wasm)$/.test(name));
 if(runtime.length<4)throw Error('Tesseract WebAssembly components not found.');
@@ -26,4 +29,8 @@ for(const [pkg,license] of [['pdfjs-dist','LICENSE'],['tesseract.js','LICENSE'],
  const path=resolve(root,'node_modules',pkg,license);
  if(await stat(path).then(x=>x.isFile()).catch(()=>false))await copy(pkg+'/'+license,'wave1-licenses/'+pkg.replace('/','-')+'-LICENSE.txt');
 }
+const heicLicense=resolve(root,'node_modules/heic2any/LICENSE.md');
+if(await stat(heicLicense).then(x=>x.isFile()).catch(()=>false))await copy('heic2any/LICENSE.md','wave1-licenses/heic2any-LICENSE.md');
+const webmLicense=resolve(root,'node_modules/fix-webm-duration/LICENSE');
+if(await stat(webmLicense).then(x=>x.isFile()).catch(()=>false))await copy('fix-webm-duration/LICENSE','wave1-licenses/fix-webm-duration-LICENSE.txt');
 console.log('WAVE1 VENDOR ASSETS COPIED: '+runtime.length+' OCR core files, local PDF rendering, QR and barcodes.');

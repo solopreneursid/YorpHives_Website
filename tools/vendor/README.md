@@ -20,3 +20,7 @@ The site does **not** load scripts or submit files to external processing servic
 - PDF editing and invoice generation reuse the existing MIT-licensed pdf-lib library. Do not represent typed PDF signatures as cryptographic signatures.
 - No recurring paid API, remote OCR inference, or external conversion backend is required. The npm registry is a build-time source; no third-party requests are made by these tools at runtime.
 - Re-evaluate browser and WebAssembly compatibility and package licenses before updating pinned dependencies. Maintain relevant attribution and original licenses when distributing dependency assets.
+
+## Wave 2 and Wave 3 — browser-local additions
+
+The latest tools use first-party sources only: PDF form filling and flattening, ZIP extraction, CSV cleaning, photo collages, resume PDFs, HEIC-to-JPG/PNG, WAV audio trimming, pixel-based PDF redaction, searchable scanned-PDF OCR and short video trimming. Each has its own private HTML entry page and catalog entry; PDF redaction rasterizes all pages and removes selectable source content. Video trimming is browser-dependent and records in real time. HEIC conversion relies on `heic2any` (MIT); WebM clip finalization uses `fix-webm-duration` (MIT). Both are copied locally at build time with licenses. See `tools/vendor/wave1-licenses/` in built output for included license notices.

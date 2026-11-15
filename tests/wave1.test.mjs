@@ -14,7 +14,7 @@ async function pdfFile(){
 const view=async result=>PDFDocument.load(await result.blob.arrayBuffer());
 test('Wave 1 contains fifteen independently registered direct-entry tools',async()=>{
  const catalog=JSON.parse(await readFile(resolve(root,'catalog.json'),'utf8'));
- assert.equal(catalog.items.filter(x=>x.type==='tool').length,107);
+ assert.equal(catalog.items.filter(x=>x.type==='tool').length,118);
  assert.equal(WAVE1_IDS.length,15);assert.equal(new Set(WAVE1_IDS).size,15);
  for(const id of WAVE1_IDS){
   const item=catalog.items.find(x=>x.url==='tools/'+id+'/');
