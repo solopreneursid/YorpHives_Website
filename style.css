@@ -285,3 +285,6 @@
  .launcher-pagination>span{font-size:10px;min-width:38px}
  .launcher-footer>p{font-size:10px}
 }
+
+/* Hide the fixed-height results panel when a search has zero matches. */
+.launcher-rows:empty{display:none;min-height:0}

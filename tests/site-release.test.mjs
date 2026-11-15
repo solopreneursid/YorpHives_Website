@@ -85,6 +85,7 @@ test('Tool Launcher only replaces Free Tools browsing and keeps the hero',async(
  assert.match(js,/catalog\.slice\(0, 3\)/);
  assert.match(css,/#tools \.page-hero\{min-height:315px/);
  assert.match(css,/\.launcher-workspace\{display:grid;grid-template-columns:232px minmax\(0,1fr\)/);
+ assert.match(css,/\.launcher-rows:empty\{display:none;min-height:0\}/);
  assert.match(css,/@media\(max-width:800px\)\{[\s\S]*?\.launcher-sidebar\{display:none\}/);
 });
 test('All tools directory stays fully crawlable while categories collapse by default',async()=>{

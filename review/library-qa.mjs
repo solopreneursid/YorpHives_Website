@@ -38,6 +38,7 @@ try{
  await check('no-results view and clear search',async()=>{
   q('tool-search').value='not-a-real-tool-zzzz';q('tool-search').dispatchEvent(new Event('input',{bubbles:true}));
   assert(rows().length===0&&!q('tool-no-results').hidden,'Empty state not shown');
+  assert(getComputedStyle(q('tools-items')).display==='none','Blank tool list should collapse when there are no matches');
   q('tool-clear').click();
   assert(rows().length===8,'Clear did not reset');
  });
