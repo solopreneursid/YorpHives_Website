@@ -34,7 +34,7 @@ for(const item of published){
 }
 await rm(dest,{recursive:true,force:true});
 await mkdir(dest,{recursive:true});
-for(const file of ['index.html','app.js','style.css','catalog.json','_headers','robots.txt','llms.txt'])
+for(const file of ['index.html','app.js','style.css','catalog.json','_headers','_redirects','robots.txt','llms.txt'])
  await cp(resolve(root,file),resolve(dest,file));
 const roots=new Set(['tools',...published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0])]);
 for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory()).catch(()=>false))

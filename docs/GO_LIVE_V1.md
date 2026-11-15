@@ -48,3 +48,13 @@
 - Google Search Console property verification and submission of `https://yorphives.com/sitemap.xml`; monitor indexing of individual tools (no guaranteed search ranking).
 - Passive availability and error monitoring, dependency checks and observed performance with no paid processing APIs.
 - Retain operational records for rollback. HQ agents are observation-only and must never gain repository-write, Pages-deployment, domain-edit, or credential-management permissions.
+
+## Legacy URLs and functions discovered by read-only browser inspection (2026-11-15)
+
+- The current public `/free-tools/` directory contains **21 individual tool links** plus a link to File Studio. Cloudflare Pages Functions dynamically serve many of those paths, even though their HTML assets do not appear in the static manifest.
+- `yorphives.pages.dev` has been independently checked to serve the preserved old homepage, File Studio, `/free-tools/split-pdf/`, and `/free-tools/grayscale-image/`.
+- The candidate adds **23 reversible, temporary 302 redirects** in `_redirects` to protect the directory, 21 tool URLs and File Studio. It redirects 20 old links to functionally matching modern tool pages; File Studio, grayscale-image, and split-pdf remain accessible through the preserved old Pages domain (3 redirects).
+- Do not delete, repurpose, or remove the old `yorphives` Pages project or disable its Functions during launch. Keep `yorphives.pages.dev` functional.
+- The Cloudflare Pages preview project has no Functions; `_redirects` is served from its static `dist/` output. No redirects are applied to modern `/tools/` URLs.
+- Legacy routes have only been verified individually for a subset of tools using Browser Rendering. The complete route set and old PDF/image actions still require browser acceptance testing.
+- `api.yorphives.com` is routed to an existing, separate worker `yorphives-processing-api`; migration must preserve that worker's domain and its R2/Durable Object bindings. No changes to this worker are authorized.

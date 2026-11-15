@@ -77,3 +77,33 @@ test('every direct-entry page keeps Ko-fi disabled in its own navigation',async(
  const directory=await read('tools/index.html',dest);
  assert.match(directory,/<button class="header-kofi tool-kofi" type="button" disabled/);
 });
+
+test('all 23 old public tool routes remain functional entry points without altering new paths',async()=>{
+ const redirects=await read('_redirects',dest);
+ const rules=redirects.split('\n').filter(x=>x.trim()&&!x.trim().startsWith('#')).map(x=>x.trim().split(/\s+/));
+ assert.equal(rules.length,23);
+ assert.equal(new Set(rules.map(x=>x[0])).size,23);
+ const oldPaths=['/free-tools/','/free-tools/file-studio/',
+  '/free-tools/png-to-jpg/','/free-tools/jpg-to-png/','/free-tools/png-to-webp/',
+  '/free-tools/jpg-to-webp/','/free-tools/webp-to-png/','/free-tools/webp-to-jpg/',
+  '/free-tools/image-resizer/','/free-tools/image-rotator/','/free-tools/grayscale-image/',
+  '/free-tools/jpg-to-pdf/','/free-tools/png-to-pdf/','/free-tools/merge-pdf/',
+  '/free-tools/split-pdf/','/free-tools/extract-pdf-pages/',
+  '/free-tools/json-formatter/','/free-tools/json-minifier/',
+  '/free-tools/base64-encoder/','/free-tools/base64-decoder/',
+  '/free-tools/url-encoder/','/free-tools/url-decoder/','/free-tools/sha256-generator/'];
+ assert.deepEqual(rules.map(x=>x[0]),oldPaths);
+ for(const [src,target,code] of rules){
+  assert.equal(code,'302',src);
+  assert.match(src,/^\/free-tools\/(?:[a-z0-9-]+\/)?$/);
+  assert.ok(target.startsWith('/tools/')||target.startsWith('https://yorphives.pages.dev/free-tools/'),src);
+  if(target.startsWith('/tools/')){
+   const page=target.slice(1)+'index.html';
+   const html=await read(page,dest);
+   assert.match(html,/<h1\b/,page);
+  }else{
+   assert.ok(['/free-tools/file-studio/','/free-tools/grayscale-image/','/free-tools/split-pdf/'].includes(src));
+  }
+ }
+ assert.doesNotMatch(redirects,/^\/tools\//m,'Existing new tool URLs must never be redirected.');
+});
