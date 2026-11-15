@@ -57,16 +57,19 @@ test('homepage positions qualification before the carousel and provides truthful
   assert.match(html,/id="explore-spotlight"/);
   assert.match(html,/Yorphives HQ must evaluate market demand/);
   assert.match(html,/Only qualified opportunities with final founder approval become launches/);
-  assert.match(html,/id="qualified-showcase-cards"/);
-  assert.match(html,/id="qualified-showcase-empty"/);
-  assert.match(html,/No HQ-qualified applications have been released yet/);
-  assert.match(html,/id="qualified-showcase-pause"/);
+  assert.match(html,/id="home-feature-product"/);
+  assert.match(html,/id="home-feature-logo"/);
+  assert.match(html,/id="home-feature-empty"/);
+  assert.match(html,/No HQ-qualified products have been released yet/);
+  assert.doesNotMatch(html,/every candidate must pass/i);
+  assert.match(html,/id="home-feature-pause"/);
   assert.match(js,/qualifiedProducts\(catalog\)/);
-  assert.match(js,/setupQualifiedShowcase\(products\)/);
-  assert.match(js,/6500/);
+  assert.match(js,/setupExploreFeatureSpotlight\(products, 'home'\)/);
+  assert.match(js,/setupExploreFeatureSpotlight\(products, 'explore'\)/);
+  assert.match(js,/4500/);
   assert.match(js,/IntersectionObserver/);
   assert.match(js,/prefers-reduced-motion/);
-  assert.match(css,/\.explore-product-card\.entering/);
+  assert.match(css,/home-feature-widget \.explore-feature-product\.is-entering/);
   assert.match(css,/prefers-reduced-motion:reduce/);
 });
 
