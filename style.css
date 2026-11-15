@@ -298,7 +298,7 @@
 #home .studio-copy{position:relative;z-index:3;min-width:0;padding:66px 0 64px clamp(32px,5vw,100px)}
 #home .studio-badge{display:inline-flex;align-items:center;gap:8px;margin:0 0 24px;padding:9px 13px;border:1px solid #b8fce436;border-radius:99px;background:#ffffff09;color:#d4efec;letter-spacing:0;font-size:11px;font-weight:650}
 #home .studio-badge span{font-size:17px;color:#81ffe2}
-#home .studio-hero h1{font-size:clamp(44px,4.45vw,75px);font-weight:780;line-height:1.07;letter-spacing:-.056em;white-space:normal;margin:0;color:#f6faf8;max-width:760px}
+#home .studio-hero h1{font-size:clamp(43px,4vw,68px);font-weight:780;line-height:1.07;letter-spacing:-.056em;white-space:normal;margin:0;color:#f6faf8;max-width:760px}
 #home .studio-hero h1 span{background:linear-gradient(110deg,#68ffc8,#b8ffeb 70%,#96edff);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 13px #24f6cb42)}
 #home .studio-description{max-width:530px;margin:28px 0 0;font-size:clamp(14px,1.08vw,17px);line-height:1.7;color:#b9cacf}
 #home .studio-actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:28px}
@@ -330,7 +330,7 @@
 #home .studio-step small{font-size:10px;line-height:1.38;margin-top:8px;color:#d5e8e7}
 #home .stage-done{position:absolute;top:-17px;right:-12px;border-radius:50%;width:29px;height:29px;display:grid;place-items:center;background:#bfffe7;color:#087252;font-size:18px;font-weight:900;box-shadow:0 0 19px #baffef}
 #home .studio-swipe{display:none}
-#home .studio-laptop{position:absolute;z-index:2;bottom:22px;right:2%;width:min(475px,73%);transform:rotate(-5deg);filter:drop-shadow(15px 25px 21px #000a)}
+#home .studio-laptop{position:absolute;z-index:2;bottom:22px;right:7%;width:min(460px,70%);transform:rotate(-5deg);filter:drop-shadow(15px 25px 21px #000a)}
 #home .studio-laptop-lid{padding:7px 7px 10px;border:1px solid #afffefa6;border-radius:16px 16px 5px 5px;background:linear-gradient(120deg,#81fff1,#b1d5f0 33%,#09262f 55%,#d6fff8);transform:perspective(900px) rotateY(-12deg) rotateX(3deg);transform-origin:bottom center;box-shadow:0 0 26px #44ffe34b}
 #home .studio-screen{height:240px;border-radius:9px 9px 3px 3px;border:1px solid #397577;overflow:hidden;background:linear-gradient(130deg,#071820,#102b34)}
 #home .studio-screen-top{height:33px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;background:#0b222a;border-bottom:1px solid #b7f9e21d}
@@ -360,12 +360,12 @@
 #home .studio-benefit span{display:block;font-size:10px;color:#b8d1cd;line-height:1.5;margin-top:3px}
 @media(max-width:1200px){
  #home .studio-copy{padding-left:5vw}
- #home .studio-hero h1{font-size:clamp(42px,4.45vw,62px)}
+ #home .studio-hero h1{font-size:clamp(40px,4vw,56px)}
  #home .studio-visual{height:568px}
  #home .studio-step{width:clamp(88px,8.8vw,111px);min-height:132px;padding:12px 5px}
  #home .studio-step strong{font-size:12px}
  #home .studio-step small{font-size:9px}
- #home .studio-laptop{width:min(420px,77%)}
+ #home .studio-laptop{width:min(414px,74%)}
  #home .studio-benefit{gap:10px;padding:0 10px}
 }
 @media(max-width:980px){
