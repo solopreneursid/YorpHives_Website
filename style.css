@@ -1408,3 +1408,28 @@
   #home .studio-benefit{padding-inline:6px;gap:7px}
   #home .closing h2{font-size:40px}
 }
+
+/* Last narrow-phone typography and action alignment refinements. */
+@media(max-width:480px){
+  #home .studio-primary,#home .studio-secondary{
+    width:100%;justify-content:center
+  }
+  #tools .launcher-main-head{align-items:flex-start}
+}
+@media(max-width:380px){
+  #tools .launcher-main-head{
+    display:flex;flex-wrap:wrap;gap:6px 8px;margin-bottom:14px
+  }
+  #tools .launcher-main-head>div{flex:1 0 100%}
+  #tools .launcher-main-head h3{font-size:20px;white-space:nowrap}
+  #tools .launcher-sort{margin-left:auto}
+  #tools .launcher-mobile-title{
+    align-items:center;gap:6px;flex-wrap:nowrap
+  }
+  #tools .launcher-mobile-title>span{font-size:12px;white-space:nowrap}
+  #tools .launcher-mobile-title small::after{content:"Swipe →"}
+  #home .studio-step,#home .stage-idea,#home .stage-research,
+  #home .stage-strategy,#home .stage-build,#home .stage-product{
+    min-height:115px
+  }
+}
