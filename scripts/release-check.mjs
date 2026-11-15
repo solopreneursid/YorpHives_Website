@@ -14,8 +14,52 @@ if(tools.length<90)problems.push('Expected at least the 90 established tools.');
 if(new Set(items.map(x=>x.url)).size!==items.length)problems.push('Duplicate public URL.');
 const directory=await read('tools/index.html');
 const homepage=await read('index.html');
-if(!homepage.includes('One founder'))problems.push('Homepage identity was unexpectedly altered.');
+if(!homepage.includes('You bring the idea.')||!homepage.includes('real product.')||
+   !homepage.includes('href="#connect"'))problems.push('Idea-to-product homepage identity or contact CTA missing.');
+if((homepage.match(/<li class="studio-step stage-/g)||[]).length!==5)
+ problems.push('The five-stage idea-to-product journey is incomplete.');
 if(!homepage.includes('href="#tools"'))problems.push('Homepage tool navigation missing.');
+if(!homepage.includes('id="category-ribbon-track"')||
+   homepage.includes('id="recent-items"')||
+   homepage.includes('FROM THE HIVE'))
+ problems.push('Homepage must show the compact category-only strip, not the old recent cards.');
+
+// No stale hard-coded tool links, draft activity, private jobs or absent targets.
+const activityData=JSON.parse(await read('activity.json'));
+if(!Array.isArray(activityData.items)||activityData.items.length>20||
+   activityData.items.length===0)
+ problems.push('Public activity rail must contain 1–20 verified updates.');
+else {
+ const ids=new Set(),urls=new Set(items.map(x=>x.url));
+ for(const event of activityData.items){
+  if(typeof event?.id!=='string'||ids.has(event.id)||!['tools','builders','explore'].includes(event.kind))
+   problems.push('Duplicate or invalid public activity type.');
+  ids.add(event.id);
+  if(event.kind==='tools'&&!urls.has(event.url))problems.push('Activity points at an unpublished tool.');
+  if(event.kind==='builders'&&event.url!=='#builders')problems.push('Builder activity leaks a private URL.');
+  if(event.kind==='explore'&&event.url!=='#explore')problems.push('Explore activity points at an unapproved URL.');
+  if(typeof event.title!=='string'||event.title.includes('<')||event.title.includes('>'))
+   problems.push('Activity has unsafe public title.');
+  if(!homepage.includes('href="'+event.url+'"'))
+   problems.push('Activity shortcut absent from built footer: '+event.url);
+ }
+ if(!homepage.includes('LATEST '+activityData.items.length+' UPDATES'))
+  problems.push('Activity counter does not match the published feed.');
+}
+if(!homepage.includes('id="footer-pulse"')||
+   homepage.includes('<nav class="footer-directory"'))
+ problems.push('Legacy footer tool shortcuts must be replaced by public Pulse.');
+
+if(!homepage.includes('id="builders-home-title"')||!homepage.includes('Find work. Post work.')||
+   !homepage.includes('id="builders-membership-title"')||
+   !homepage.includes('id="partners"'))
+ problems.push('Builders paid membership landing page is incomplete.');
+if(/data-form="opportunity"|<form[^>]*id="post"|id="job-listings"|id="post"/i.test(homepage))
+ problems.push('Public job listing or job-posting form is forbidden without membership enforcement.');
+if(!homepage.includes('Jobs and posting require verified paid membership.')||
+   !homepage.includes('Enrollment is not open yet.'))
+ problems.push('Builders paid-access disclosure missing.');
+
 const sitemap=await read('sitemap.xml');
 const headers=await read('_headers');
 const robots=await read('robots.txt');
