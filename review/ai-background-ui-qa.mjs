@@ -1,5 +1,6 @@
 // Noindex preview only: exercise the same controls used by real visitors.
-if(new URLSearchParams(location.search).get('qa')==='background-ui'){
+const qaMode=new URLSearchParams(location.search).get('qa');
+if(qaMode==='background-ui'||qaMode==='portrait-ui'){
  const node=document.createElement('pre');node.id='background-ui-qa';node.dataset.status='running';document.body.append(node);
  const start=performance.now(),checks=[],check=(name,ok,detail='')=>{
   checks.push({name,pass:!!ok,detail});if(!ok)throw Error(name+': '+detail);
@@ -10,6 +11,11 @@ if(new URLSearchParams(location.search).get('qa')==='background-ui'){
  };
  try{
   const $=id=>document.getElementById(id);
+  if(qaMode==='portrait-ui'){
+   $('ai-model').value='portrait';$('ai-model').dispatchEvent(new Event('change',{bubbles:true}));
+   check('Free portrait mode is user-selectable',$('ai-model').value==='portrait');
+   check('Portrait model has not downloaded before processing',!performance.getEntriesByType('resource').some(x=>x.name.includes('modnet-int8-92e49898.onnx')));
+  }
   const canvas=document.createElement('canvas');canvas.width=480;canvas.height=360;
   const ctx=canvas.getContext('2d');ctx.fillStyle='#ecf5f6';ctx.fillRect(0,0,480,360);
   ctx.fillStyle='#334a5b';ctx.beginPath();ctx.ellipse(240,185,100,135,0,0,Math.PI*2);ctx.fill();
@@ -45,6 +51,7 @@ if(new URLSearchParams(location.search).get('qa')==='background-ui'){
   check('Preview background change is visibly selectable',$('ai-processed-frame').classList.contains('ai-charcoal'));
   $('ai-reset').click();
   check('Reset clears local photo and output',$('ai-file').files.length===0&&$('ai-result').hidden&&$('ai-run').disabled);
+  check('Reset restores lightweight default model',$('ai-model').value==='general');
   const overflow=document.documentElement.scrollWidth-innerWidth;
   check('No horizontal scrolling in this viewport',overflow<=1,'overflow='+overflow);
   const remote=performance.getEntriesByType('resource').filter(e=>{
