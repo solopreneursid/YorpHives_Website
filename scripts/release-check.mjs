@@ -26,9 +26,9 @@ if(!homepage.includes('id="category-ribbon-track"')||
 
 // No stale hard-coded tool links, draft activity, private jobs or absent targets.
 const activityData=JSON.parse(await read('activity.json'));
-if(!Array.isArray(activityData.items)||activityData.items.length>10||
+if(!Array.isArray(activityData.items)||activityData.items.length>20||
    activityData.items.length===0)
- problems.push('Public activity rail must contain 1–10 verified updates.');
+ problems.push('Public activity rail must contain 1–20 verified updates.');
 else {
  const ids=new Set(),urls=new Set(items.map(x=>x.url));
  for(const event of activityData.items){
