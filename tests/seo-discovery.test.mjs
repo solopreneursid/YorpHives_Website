@@ -117,3 +117,14 @@ test('real-browser QA harness is packaged only on noindex preview builds',async(
   assert.match(code,/processFileTool/);assert.match(code,/dataset\.status=failures/);
  }
 });
+
+test('actual tool-interface browser test is available only on protected preview',async()=>{
+ const headers=await read('_headers',dest);
+ const preview=/X-Robots-Tag:\s*noindex/i.test(headers);
+ const present=await stat(resolve(dest,'browser-interaction.mjs')).then(x=>x.isFile()).catch(()=>false);
+ assert.equal(present,preview,'End-to-end browser UI test must not ship in production.');
+ if(preview){const code=await read('browser-interaction.mjs',dest);
+  assert.match(code,/form\.requestSubmit\(\)/);
+  assert.match(code,/download\.href\.startsWith\('blob:'\)/);
+ }
+});

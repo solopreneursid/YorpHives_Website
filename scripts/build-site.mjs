@@ -142,6 +142,7 @@ if(target==='preview'){
  await write('_headers',headers.replace(/^\/\*$/m,'/*\n  X-Robots-Tag: noindex, nofollow'));
  // Browser smoke harness is intentionally preview-only, excluded from production assets.
  await cp(resolve(root,'review/browser-smoke.mjs'),resolve(dest,'browser-smoke.mjs'));
+ await cp(resolve(root,'review/browser-interaction.mjs'),resolve(dest,'browser-interaction.mjs'));
 }else{
  await write('robots.txt','User-agent: *\nAllow: /\nSitemap: '+origin+'sitemap.xml\n');
  const headers=await output('_headers');
