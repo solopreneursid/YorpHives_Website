@@ -1,8 +1,9 @@
 # YorpHives legacy URL preservation. Keep all routes reversible until after launch.
 # 302 preserves legacy links while allowing corrections. No new /tools/ pages are redirected.
-# File Studio, grayscale conversion and individual PDF splitting remain on the old preserved Pages project.
+# Retired prototype-only utilities go to the current directory (no false equivalence).
+# All redirects stay first-party. No prototype hosting or API required.
 /free-tools/ /tools/ 302
-/free-tools/file-studio/ https://yorphives.pages.dev/free-tools/file-studio/ 302
+/free-tools/file-studio/ /tools/ 302
 /free-tools/png-to-jpg/ /tools/image-resizer/ 302
 /free-tools/jpg-to-png/ /tools/image-resizer/ 302
 /free-tools/png-to-webp/ /tools/image-resizer/ 302
@@ -11,11 +12,11 @@
 /free-tools/webp-to-jpg/ /tools/image-resizer/ 302
 /free-tools/image-resizer/ /tools/image-resizer/ 302
 /free-tools/image-rotator/ /tools/image-rotate-flip/ 302
-/free-tools/grayscale-image/ https://yorphives.pages.dev/free-tools/grayscale-image/ 302
+/free-tools/grayscale-image/ /tools/ 302
 /free-tools/jpg-to-pdf/ /tools/images-to-pdf/ 302
 /free-tools/png-to-pdf/ /tools/images-to-pdf/ 302
 /free-tools/merge-pdf/ /tools/pdf-merge/ 302
-/free-tools/split-pdf/ https://yorphives.pages.dev/free-tools/split-pdf/ 302
+/free-tools/split-pdf/ /tools/ 302
 /free-tools/extract-pdf-pages/ /tools/pdf-extract-pages/ 302
 /free-tools/json-formatter/ /tools/json-formatter/ 302
 /free-tools/json-minifier/ /tools/json-formatter/ 302

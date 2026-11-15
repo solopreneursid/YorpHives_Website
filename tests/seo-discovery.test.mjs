@@ -78,7 +78,7 @@ test('every direct-entry page keeps Ko-fi disabled in its own navigation',async(
  assert.match(directory,/<button class="header-kofi tool-kofi" type="button" disabled/);
 });
 
-test('all 23 old public tool routes remain functional entry points without altering new paths',async()=>{
+test('all 23 older public URLs stay on first-party tools after prototype retirement',async()=>{
  const redirects=await read('_redirects',dest);
  const rules=redirects.split('\n').filter(x=>x.trim()&&!x.trim().startsWith('#')).map(x=>x.trim().split(/\s+/));
  assert.equal(rules.length,23);
@@ -96,14 +96,11 @@ test('all 23 old public tool routes remain functional entry points without alter
  for(const [src,target,code] of rules){
   assert.equal(code,'302',src);
   assert.match(src,/^\/free-tools\/(?:[a-z0-9-]+\/)?$/);
-  assert.ok(target.startsWith('/tools/')||target.startsWith('https://yorphives.pages.dev/free-tools/'),src);
-  if(target.startsWith('/tools/')){
-   const page=target.slice(1)+'index.html';
-   const html=await read(page,dest);
-   assert.match(html,/<h1\b/,page);
-  }else{
-   assert.ok(['/free-tools/file-studio/','/free-tools/grayscale-image/','/free-tools/split-pdf/'].includes(src));
-  }
+  assert.ok(target.startsWith('/tools/'),src);
+  assert.doesNotMatch(target,/^https?:\/\//i,'No redirect may depend on retired prototype hosting.');
+  const page=target.slice(1)+'index.html';
+  const html=await read(page,dest);
+  assert.match(html,/<h1\b/,page);
  }
  assert.doesNotMatch(redirects,/^\/tools\//m,'Existing new tool URLs must never be redirected.');
 });
@@ -140,4 +137,11 @@ test('interactive Free Tools QA module only ships in noindex preview builds',asy
   assert.match(qa,/nav\('documents'\)\.click\(\)/);
   assert.match(qa,/q\('tool-next'\)\.click\(\)/);
  }
+});
+
+test('no direct legacy routing depends on a deleted Pages project',async()=>{
+ const redirects=await read('_redirects',dest);
+ assert.doesNotMatch(redirects,/yorphives\\.pages\\.dev/);
+ for(const path of ['/free-tools/file-studio/','/free-tools/grayscale-image/','/free-tools/split-pdf/'])
+  assert.match(redirects,new RegExp('^'+path.replace(/\\//g,'\\\\/')+' \\/tools\\/ 302$','m'));
 });

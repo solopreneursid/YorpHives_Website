@@ -115,3 +115,13 @@ Release gate remains: founder authorization and prudent production cutover while
 - Cloudflare staging `yorphives-v1-review`: production build **135 Node tests passed / 0 failed**, preview build **135 passed / 0 failed**, valid 94-URL sitemap, 23 legacy redirects, and staging `noindex`.
 - Preview-only real Chromium interface QA passed **10/10 at widths 1280, 768, 375 and 320px** (40 checks), covering page navigation, search, no results, category groups, favorites, sorting, mobile shortcut selection, disabled Ko-fi and horizontal-overflow verification.
 - This development build is not yet authorized for `yorphives.com`. Founder-controlled cutover and preservation of the old Cloudflare Pages project remain mandatory.
+
+## RC6 — remove unused prototype references (2026-11-15)
+
+Founder explicitly confirmed the old `yorphives` Pages project and separate `yorphives-processing-api` Worker are testing prototypes and approved deletion of unnecessary infrastructure. This replaces the historical rule to preserve the prototype. The active website uses the separate `yorphives-v1-live` project; the developer test project is `yorphives-v1-review`.
+
+- Update the three old cross-domain redirects (`/free-tools/file-studio/`, `/free-tools/grayscale-image/`, `/free-tools/split-pdf/`) to the current first-party `/tools/` directory. This does **not** claim an unavailable prototype tool is provided under a different name.
+- Keep the other 20 locally functional redirect routes, all 92 tool pages, original homepage, sitemap, catalog, headings and disabled Ko-fi buttons unchanged.
+- First deploy this update as a preview, verify it, publish a pinned RC6 to the live site, then delete the retired `yorphives` Pages project. Do not delete the preview or production project.
+- The old processing Worker binds the R2 bucket `yorphives-processing-temp`, but that bucket contains **five Headquarters staging backup/migration files**. It must be preserved even if the old Worker and its API domain are retired.
+- Keep Headquarters Worker `yorphives-hq-free-pilot`, its D1 database, all email DNS records, and R2 backups intact. Reassess old Durable Object namespace independently before considering deletion.
