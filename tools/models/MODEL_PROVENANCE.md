@@ -34,3 +34,15 @@
 4. Keep model and engine versioned, swappable, checksummed, with a graceful fallback and no user file uploads.
 
 This provenance file accompanies the source under `tools/models/`; the full Apache-2.0 license is at `tools/models/u2netp-APACHE-2.0-LICENSE.txt`.
+
+## Optional portrait mode (v1.8.1)
+- MODNet: *Trimap-Free Portrait Matting in Real Time*; original project: https://github.com/ZHKKKe/MODNet (Apache-2.0).
+- Quantized ONNX export by Xenova: https://huggingface.co/Xenova/modnet (Apache-2.0 model card).
+- Immutable conversion revision: `7e0f55f28727b43369531f75e0539ecc4912af82`, file `onnx/model_quantized.onnx`.
+- Exactly **6,632,188 bytes**, SHA-256 `92e49898c3e05a6d7a944fc67a8cb87c4aad754ffb6ebd949528c7d1105fee3a`.
+- Runtime weights are self-hosted in `/tools/models/modnet-int8-92e49898.onnx`; no image data or inference requests leave the browser.
+- Browser preprocessing: RGB, CHW, 512×512, normalized into [-1,1]. Output alpha matte is used directly rather than min/max-stretched.
+- Portrait mode is optional and targeted at people/hair; lightweight U²-Net-small remains default. Results vary with lighting and subject complexity.
+- Both models run in ONNX Runtime Web's CPU WebAssembly execution provider; no paid AI service, GPU cloud compute, Pages Functions, Workers, subscription, or proprietary API.
+- Cloudflare Pages static file requests are documented as free and unlimited. This does not guarantee that unrelated account services or a changed future pricing policy cannot generate charges.
+- The optional model is downloaded to a visitor's device only after selecting Portrait and starting processing; no forced 6.6 MB download.
