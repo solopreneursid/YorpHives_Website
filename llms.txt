@@ -8,6 +8,8 @@ YorpHives is an independent digital studio with free browser-local tools for wri
 - Machine-readable catalog: /catalog.json
 - JSON formatting and campaign URL JavaScript functions: /tools/toolkit.mjs
 - Additional utility functions: /tools/utility-core.mjs; export `runUtility(toolId, inputs)`
+- Additional developer, business and creator utilities: /tools/everyday-core.mjs; export `runEverydayTool(toolId, inputs)`
+- Third-party library notices: /tools/vendor/README.md
 - Module usage and catalog instructions: /tools/README.md
 
 These are static browser-local tools. Agents can fetch the modules to use locally; no hosted execution API is currently provided. User inputs are not uploaded by these tools.

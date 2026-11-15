@@ -1151,6 +1151,1115 @@
       "execution": "browser-local",
       "module": null,
       "category": "Creator"
+    },
+    {
+      "name": "QR Code Generator",
+      "description": "Create a downloadable QR code for a link or text without uploading your data.",
+      "type": "tool",
+      "category": "Creator",
+      "date": "2026-11-15",
+      "url": "tools/qr-code-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: qr-code-generator",
+          "object of named form inputs"
+        ],
+        "toolId": "qr-code-generator",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": ""
+          },
+          {
+            "name": "correction",
+            "type": "select",
+            "default": "M",
+            "options": [
+              "L",
+              "M",
+              "Q",
+              "H"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Markdown to HTML Converter",
+      "description": "Convert Markdown into HTML locally using the open-source Marked parser.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/markdown-to-html/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: markdown-to-html",
+          "object of named form inputs"
+        ],
+        "toolId": "markdown-to-html",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "Regular Expression Tester",
+      "description": "Find regular-expression matches and capture groups in text, privately in your browser.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/regex-tester/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: regex-tester",
+          "object of named form inputs"
+        ],
+        "toolId": "regex-tester",
+        "inputs": [
+          {
+            "name": "pattern",
+            "type": "text",
+            "default": "\\b\\w+\\b"
+          },
+          {
+            "name": "flags",
+            "type": "text",
+            "default": "i"
+          },
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": "Cats and dogs"
+          }
+        ]
+      }
+    },
+    {
+      "name": "JSON Pointer Explorer",
+      "description": "Select a value from a JSON document using an RFC 6901 JSON Pointer.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/json-pointer/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: json-pointer",
+          "object of named form inputs"
+        ],
+        "toolId": "json-pointer",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": ""
+          },
+          {
+            "name": "pointer",
+            "type": "text",
+            "default": "/user/name"
+          }
+        ]
+      }
+    },
+    {
+      "name": "JSON Merge Patch",
+      "description": "Apply an RFC 7396 merge patch to a JSON document without sending your data away.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/json-merge-patch/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: json-merge-patch",
+          "object of named form inputs"
+        ],
+        "toolId": "json-merge-patch",
+        "inputs": [
+          {
+            "name": "target",
+            "type": "textarea",
+            "default": ""
+          },
+          {
+            "name": "patch",
+            "type": "textarea",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "JSON Lines Converter",
+      "description": "Convert JSON Lines to a JSON array or a JSON array to JSON Lines.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/json-lines-converter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: json-lines-converter",
+          "object of named form inputs"
+        ],
+        "toolId": "json-lines-converter",
+        "inputs": [
+          {
+            "name": "mode",
+            "type": "select",
+            "default": "to-array",
+            "options": [
+              "to-array",
+              "to-lines"
+            ]
+          },
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "Number Base Converter",
+      "description": "Convert whole numbers between binary, octal, decimal, and hexadecimal with arbitrary precision.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/number-base-converter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: number-base-converter",
+          "object of named form inputs"
+        ],
+        "toolId": "number-base-converter",
+        "inputs": [
+          {
+            "name": "value",
+            "type": "text",
+            "default": "255"
+          },
+          {
+            "name": "from",
+            "type": "select",
+            "default": "10",
+            "options": [
+              "2",
+              "8",
+              "10",
+              "16"
+            ]
+          },
+          {
+            "name": "to",
+            "type": "select",
+            "default": "16",
+            "options": [
+              "2",
+              "8",
+              "10",
+              "16"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Text to Hex Converter",
+      "description": "Encode text as UTF-8 hexadecimal bytes or decode valid UTF-8 hex back to text.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/text-to-hex/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: text-to-hex",
+          "object of named form inputs"
+        ],
+        "toolId": "text-to-hex",
+        "inputs": [
+          {
+            "name": "mode",
+            "type": "select",
+            "default": "encode",
+            "options": [
+              "encode",
+              "decode"
+            ]
+          },
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "IPv4 Subnet Calculator",
+      "description": "Calculate an IPv4 network, subnet mask, address range, and usable hosts from a CIDR prefix.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/ipv4-subnet-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: ipv4-subnet-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "ipv4-subnet-calculator",
+        "inputs": [
+          {
+            "name": "address",
+            "type": "text",
+            "default": "192.168.1.10"
+          },
+          {
+            "name": "prefix",
+            "type": "number",
+            "default": "24",
+            "min": 0,
+            "max": 32
+          }
+        ]
+      }
+    },
+    {
+      "name": "Word Frequency Counter",
+      "description": "Find the most frequently used words in a piece of text.",
+      "type": "tool",
+      "category": "Writing",
+      "date": "2026-11-15",
+      "url": "tools/word-frequency-counter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: word-frequency-counter",
+          "object of named form inputs"
+        ],
+        "toolId": "word-frequency-counter",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": ""
+          },
+          {
+            "name": "limit",
+            "type": "number",
+            "default": "20",
+            "min": 1,
+            "max": 100
+          }
+        ]
+      }
+    },
+    {
+      "name": "Lorem Ipsum Generator",
+      "description": "Generate placeholder paragraphs for mockups, prototypes, and layouts.",
+      "type": "tool",
+      "category": "Writing",
+      "date": "2026-11-15",
+      "url": "tools/lorem-ipsum-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: lorem-ipsum-generator",
+          "object of named form inputs"
+        ],
+        "toolId": "lorem-ipsum-generator",
+        "inputs": [
+          {
+            "name": "count",
+            "type": "number",
+            "default": "3",
+            "min": 1,
+            "max": 20
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reverse Text",
+      "description": "Reverse text while preserving emoji and combined characters where supported.",
+      "type": "tool",
+      "category": "Writing",
+      "date": "2026-11-15",
+      "url": "tools/reverse-text/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: reverse-text",
+          "object of named form inputs"
+        ],
+        "toolId": "reverse-text",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "Unicode Code Point Inspector",
+      "description": "Inspect the Unicode code point for each character in a string.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/unicode-inspector/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: unicode-inspector",
+          "object of named form inputs"
+        ],
+        "toolId": "unicode-inspector",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "List and Delimiter Converter",
+      "description": "Join lines with a separator or split separated text into a list.",
+      "type": "tool",
+      "category": "Writing",
+      "date": "2026-11-15",
+      "url": "tools/list-to-delimited/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: list-to-delimited",
+          "object of named form inputs"
+        ],
+        "toolId": "list-to-delimited",
+        "inputs": [
+          {
+            "name": "mode",
+            "type": "select",
+            "default": "join",
+            "options": [
+              "join",
+              "split"
+            ]
+          },
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": ""
+          },
+          {
+            "name": "delimiter",
+            "type": "text",
+            "default": ", "
+          },
+          {
+            "name": "trim",
+            "type": "checkbox",
+            "checkedValue": "on",
+            "defaultChecked": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "CSV to Markdown Table",
+      "description": "Turn CSV data into a Markdown table while preserving quoted commas and line breaks.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/csv-to-markdown/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: csv-to-markdown",
+          "object of named form inputs"
+        ],
+        "toolId": "csv-to-markdown",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "URL Tracking Parameter Remover",
+      "description": "Remove common tracking parameters from a link without visiting the destination.",
+      "type": "tool",
+      "category": "Marketing",
+      "date": "2026-11-15",
+      "url": "tools/url-tracking-remover/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: url-tracking-remover",
+          "object of named form inputs"
+        ],
+        "toolId": "url-tracking-remover",
+        "inputs": [
+          {
+            "name": "url",
+            "type": "text",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "URL Query Parameter Builder",
+      "description": "Add or replace URL query parameters safely without manually encoding them.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/query-string-builder/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: query-string-builder",
+          "object of named form inputs"
+        ],
+        "toolId": "query-string-builder",
+        "inputs": [
+          {
+            "name": "url",
+            "type": "text",
+            "default": ""
+          },
+          {
+            "name": "params",
+            "type": "textarea",
+            "default": ""
+          },
+          {
+            "name": "mode",
+            "type": "select",
+            "default": "replace",
+            "options": [
+              "replace",
+              "append"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Email Link Generator",
+      "description": "Create a mailto link with an optional subject and message.",
+      "type": "tool",
+      "category": "Marketing",
+      "date": "2026-11-15",
+      "url": "tools/mailto-link-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: mailto-link-generator",
+          "object of named form inputs"
+        ],
+        "toolId": "mailto-link-generator",
+        "inputs": [
+          {
+            "name": "email",
+            "type": "text",
+            "default": ""
+          },
+          {
+            "name": "subject",
+            "type": "text",
+            "default": ""
+          },
+          {
+            "name": "body",
+            "type": "textarea",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "SEO and Open Graph Meta Tag Generator",
+      "description": "Create basic page title, description, canonical, and Open Graph tags.",
+      "type": "tool",
+      "category": "Marketing",
+      "date": "2026-11-15",
+      "url": "tools/meta-tag-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: meta-tag-generator",
+          "object of named form inputs"
+        ],
+        "toolId": "meta-tag-generator",
+        "inputs": [
+          {
+            "name": "title",
+            "type": "text",
+            "default": ""
+          },
+          {
+            "name": "description",
+            "type": "textarea",
+            "default": ""
+          },
+          {
+            "name": "url",
+            "type": "text",
+            "default": ""
+          },
+          {
+            "name": "image",
+            "type": "text",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "Robots.txt Generator",
+      "description": "Build a basic robots.txt file with optional disallowed paths and sitemap.",
+      "type": "tool",
+      "category": "Marketing",
+      "date": "2026-11-15",
+      "url": "tools/robots-txt-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: robots-txt-generator",
+          "object of named form inputs"
+        ],
+        "toolId": "robots-txt-generator",
+        "inputs": [
+          {
+            "name": "paths",
+            "type": "textarea",
+            "default": ""
+          },
+          {
+            "name": "sitemap",
+            "type": "text",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "XML Sitemap Generator",
+      "description": "Create an XML sitemap from a list of page URLs on one website.",
+      "type": "tool",
+      "category": "Marketing",
+      "date": "2026-11-15",
+      "url": "tools/xml-sitemap-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: xml-sitemap-generator",
+          "object of named form inputs"
+        ],
+        "toolId": "xml-sitemap-generator",
+        "inputs": [
+          {
+            "name": "urls",
+            "type": "textarea",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "Business Days Calculator",
+      "description": "Count weekdays between two dates, with an optional list of holidays.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-15",
+      "url": "tools/business-days-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: business-days-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "business-days-calculator",
+        "inputs": [
+          {
+            "name": "start",
+            "type": "date"
+          },
+          {
+            "name": "end",
+            "type": "date"
+          },
+          {
+            "name": "holidays",
+            "type": "textarea",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "Add or Subtract Days",
+      "description": "Add or subtract calendar days from a date.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-15",
+      "url": "tools/date-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: date-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "date-calculator",
+        "inputs": [
+          {
+            "name": "date",
+            "type": "date"
+          },
+          {
+            "name": "days",
+            "type": "number",
+            "default": "30",
+            "min": -36500,
+            "max": 36500
+          }
+        ]
+      }
+    },
+    {
+      "name": "Compound Interest Calculator",
+      "description": "Estimate the growth of savings with monthly compounding and contributions.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-15",
+      "url": "tools/compound-interest-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: compound-interest-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "compound-interest-calculator",
+        "inputs": [
+          {
+            "name": "principal",
+            "type": "number",
+            "default": "10000",
+            "min": 0,
+            "max": 1000000000000
+          },
+          {
+            "name": "monthly",
+            "type": "number",
+            "default": "100",
+            "min": 0,
+            "max": 1000000000000
+          },
+          {
+            "name": "rate",
+            "type": "number",
+            "default": "5",
+            "min": 0,
+            "max": 1000
+          },
+          {
+            "name": "years",
+            "type": "number",
+            "default": "10",
+            "min": 0,
+            "max": 60
+          }
+        ]
+      }
+    },
+    {
+      "name": "Loan Payment Calculator",
+      "description": "Estimate a fixed-rate monthly loan payment and total interest.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-15",
+      "url": "tools/loan-payment-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: loan-payment-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "loan-payment-calculator",
+        "inputs": [
+          {
+            "name": "principal",
+            "type": "number",
+            "default": "100000",
+            "min": 0,
+            "max": 1000000000000
+          },
+          {
+            "name": "rate",
+            "type": "number",
+            "default": "6",
+            "min": 0,
+            "max": 1000
+          },
+          {
+            "name": "months",
+            "type": "number",
+            "default": "120",
+            "min": 1,
+            "max": 600
+          }
+        ]
+      }
+    },
+    {
+      "name": "Return on Investment Calculator",
+      "description": "Calculate net gain and return on investment from a cost and total return value.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-15",
+      "url": "tools/roi-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: roi-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "roi-calculator",
+        "inputs": [
+          {
+            "name": "cost",
+            "type": "number",
+            "default": "1000",
+            "min": 1e-8,
+            "max": 1000000000000
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "default": "1200",
+            "min": 0,
+            "max": 1000000000000
+          }
+        ]
+      }
+    },
+    {
+      "name": "Break-even Calculator",
+      "description": "Estimate the number of units needed to cover fixed costs.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-15",
+      "url": "tools/break-even-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: break-even-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "break-even-calculator",
+        "inputs": [
+          {
+            "name": "fixed",
+            "type": "number",
+            "default": "1000",
+            "min": 0,
+            "max": 1000000000000
+          },
+          {
+            "name": "price",
+            "type": "number",
+            "default": "25",
+            "min": 0,
+            "max": 1000000000000
+          },
+          {
+            "name": "variable",
+            "type": "number",
+            "default": "10",
+            "min": 0,
+            "max": 1000000000000
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reverse Sales Tax Calculator",
+      "description": "Find the pre-tax amount and tax included in a total price.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-15",
+      "url": "tools/reverse-sales-tax-calculator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: reverse-sales-tax-calculator",
+          "object of named form inputs"
+        ],
+        "toolId": "reverse-sales-tax-calculator",
+        "inputs": [
+          {
+            "name": "total",
+            "type": "number",
+            "default": "110",
+            "min": 0,
+            "max": 1000000000000
+          },
+          {
+            "name": "rate",
+            "type": "number",
+            "default": "10",
+            "min": 0,
+            "max": 1000
+          }
+        ]
+      }
+    },
+    {
+      "name": "Currency Converter with Manual Rate",
+      "description": "Convert a currency amount using an exchange rate you provide.",
+      "type": "tool",
+      "category": "Calculators",
+      "date": "2026-11-15",
+      "url": "tools/manual-currency-converter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: manual-currency-converter",
+          "object of named form inputs"
+        ],
+        "toolId": "manual-currency-converter",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "number",
+            "default": "100",
+            "min": 0,
+            "max": 1000000000000
+          },
+          {
+            "name": "rate",
+            "type": "number",
+            "default": "1.25",
+            "min": 1e-12,
+            "max": 1000000000000
+          }
+        ]
+      }
+    },
+    {
+      "name": "CSS Box Shadow Generator",
+      "description": "Create CSS box-shadow code and preview the effect.",
+      "type": "tool",
+      "category": "Design",
+      "date": "2026-11-15",
+      "url": "tools/box-shadow-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: box-shadow-generator",
+          "object of named form inputs"
+        ],
+        "toolId": "box-shadow-generator",
+        "inputs": [
+          {
+            "name": "x",
+            "type": "number",
+            "default": "0",
+            "min": -200,
+            "max": 200
+          },
+          {
+            "name": "y",
+            "type": "number",
+            "default": "12",
+            "min": -200,
+            "max": 200
+          },
+          {
+            "name": "blur",
+            "type": "number",
+            "default": "28",
+            "min": 0,
+            "max": 200
+          },
+          {
+            "name": "spread",
+            "type": "number",
+            "default": "0",
+            "min": -200,
+            "max": 200
+          },
+          {
+            "name": "opacity",
+            "type": "number",
+            "default": "30",
+            "min": 0,
+            "max": 100
+          },
+          {
+            "name": "color",
+            "type": "text",
+            "default": "#000000"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PX to REM Converter",
+      "description": "Convert CSS pixel and rem values using your chosen root font size.",
+      "type": "tool",
+      "category": "Design",
+      "date": "2026-11-15",
+      "url": "tools/px-to-rem-converter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: px-to-rem-converter",
+          "object of named form inputs"
+        ],
+        "toolId": "px-to-rem-converter",
+        "inputs": [
+          {
+            "name": "value",
+            "type": "number",
+            "default": "24",
+            "min": -1000000000000,
+            "max": 1000000000000
+          },
+          {
+            "name": "root",
+            "type": "number",
+            "default": "16",
+            "min": 1,
+            "max": 200
+          },
+          {
+            "name": "mode",
+            "type": "select",
+            "default": "to-rem",
+            "options": [
+              "to-rem",
+              "to-px"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "CSS Grid Generator",
+      "description": "Generate a responsive-friendly CSS grid declaration with equal columns.",
+      "type": "tool",
+      "category": "Design",
+      "date": "2026-11-15",
+      "url": "tools/css-grid-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/everyday-core.mjs",
+        "export": "runEverydayTool",
+        "arguments": [
+          "tool id: css-grid-generator",
+          "object of named form inputs"
+        ],
+        "toolId": "css-grid-generator",
+        "inputs": [
+          {
+            "name": "columns",
+            "type": "number",
+            "default": "3",
+            "min": 1,
+            "max": 12
+          },
+          {
+            "name": "gap",
+            "type": "number",
+            "default": "16",
+            "min": 0,
+            "max": 200
+          }
+        ]
+      }
     }
   ]
 }

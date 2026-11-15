@@ -59,6 +59,7 @@ if (document.body.dataset.tool === 'campaign-url-builder') {
   });
   copy.addEventListener('click', () => copyFrom(output, 'utm-status'));
   form.addEventListener('reset', () => { copy.disabled = true; message('utm-status', ''); });
+  const submit = $('utm-run'); submit.textContent = 'Build link'; submit.disabled = false;
 }
 
 if (document.body.dataset.tool === 'image-resizer') {

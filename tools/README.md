@@ -1,6 +1,6 @@
 # YorpHives free tools
 
-The collection is a set of dependency-free static pages. Processing happens in the visitor's browser without paid APIs or a hosted execution backend. Hosting and bandwidth still require infrastructure.
+The collection is a set of static pages. Processing happens in the visitor's browser without paid APIs or a hosted execution backend. Two permissively licensed libraries for QR codes and Markdown are bundled locally; their license notices are in `tools/vendor/`. Hosting and bandwidth still require infrastructure.
 
 ## Catalog and discovery
 
@@ -15,14 +15,19 @@ The catalog identifies each locally executable module and its named inputs. A fe
 ```js
 import { formatJson, buildCampaignUrl } from './tools/toolkit.mjs';
 import { runUtility } from './tools/utility-core.mjs';
+import { runEverydayTool } from './tools/everyday-core.mjs';
 
 const formatted = formatJson('{"count":900719925474099312345}', 2);
 const campaign = buildCampaignUrl('https://example.com/page', {source: 'newsletter', medium: 'email'});
 const slug = await runUtility('slug-generator', {text: 'A useful idea'});
+const base = await runEverydayTool('number-base-converter', {value:'255', from:'10', to:'16'});
 // slug.text is "a-useful-idea"
+// base.text is "FF"
 ```
 
 `runUtility` returns `{text, preview}` and throws an error for invalid inputs. Its supported `toolId` and named string fields are documented on each entry in `catalog.json`. Send checkbox value `"on"` when selected and omit it when not. Random generation and SHA hashing require a modern secure environment with Web Crypto. The image tool additionally requires browser Canvas APIs. Fetch or copy modules to execute locally; there is no hosted HTTP execution endpoint or MCP server.
+
+The newer utilities can also be called through `runEverydayTool(toolId, inputs)` in `tools/everyday-core.mjs`. QR and Markdown functions load their locally bundled libraries only when needed; the regex tester also requires its worker modules. Markdown output is HTML source and is not sanitized. For maintainers, run `node scripts/generate-extra-tools.mjs` from the project source root after editing `scripts/extra-tool-specs.mjs` to regenerate the additional pages, catalog entries, and directory.
 
 ## Checks
 

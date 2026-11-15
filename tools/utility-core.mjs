@@ -108,7 +108,7 @@ export async function runUtility(id, data) {
     case 'aspect-ratio-calculator': {const w=number(data,'width','width',{min:1,max:1000000,integer:true}),h=number(data,'height','height',{min:1,max:1000000,integer:true}),target=number(data,'target','target width',{min:1,max:1000000});let a=w,b=h;while(b){[a,b]=[b,a%b]}output=`Aspect ratio: ${w/a}:${h/a}\nAt width ${formatNumber(target)}: height ${formatNumber(target*h/w,2)}\nOriginal dimensions: ${w} × ${h}`;break;}
     case 'color-palette': {const rgb=hexRgb(val(data,'color')), [h,s,l]=rgbToHsl(rgb);const colors=[0,1,2,3,4].map(i=>`hsl(${(h+i*72)%360}, ${s}%, ${l}%)`);output=colors.join('\n');preview={colors};break;}
     case 'password-generator': {const len=number(data,'length','length from 8 to 128',{min:8,max:128,integer:true}),sets=[];if(data.lower==='on')sets.push('abcdefghijklmnopqrstuvwxyz');if(data.upper==='on')sets.push('ABCDEFGHIJKLMNOPQRSTUVWXYZ');if(data.numbers==='on')sets.push('0123456789');if(data.symbols==='on')sets.push('!@#$%^&*_-+=?');if(!sets.length)throw new Error('Select at least one character set.');output=makePassword(len,sets);break;}
-    default: throw new Error('This tool is unavailable.');
+    default: return (await import('./everyday-core.mjs')).runEverydayTool(id, data);
   }
   return {text:output,preview};
 }
