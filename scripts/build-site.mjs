@@ -6,6 +6,7 @@ import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createEntity} from './discovery-schema.mjs';
 import {isQualifiedProduct} from '../product-policy.mjs';
+import {collectPublicActivity,discoverPublicPageUpdates,discoverToolEditTimes,loadActivityNotes,renderFooterPulse} from './activity-feed.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const dest=resolve(root,'dist');
@@ -51,6 +52,27 @@ await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
 const roots=new Set(['tools',...published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0])]);
 for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory()).catch(()=>false))
  await cp(resolve(root,dir),resolve(dest,dir),{recursive:true});
+// Generate the public-only activity feed from published pages, catalog data and
+// versioned release notes. The website itself has no scheduled polling or remote API.
+const activity=collectPublicActivity({
+  published,
+  notes:await loadActivityNotes(root),
+  pageChanges:discoverPublicPageUpdates(root),
+  toolEditTimes:discoverToolEditTimes(root),
+});
+if(!activity.length)throw Error('No verified public activity available for release.');
+const mainPage=await output('index.html');
+const pulseStart='<!-- PULSE_START -->';
+const pulseEnd='<!-- PULSE_END -->';
+const begin=mainPage.indexOf(pulseStart),finish=mainPage.indexOf(pulseEnd,begin+pulseStart.length);
+if(begin<0||finish<begin||mainPage.indexOf(pulseStart,begin+1)>=0||
+   mainPage.indexOf(pulseEnd,finish+1)>=0)
+ throw Error('Footer activity template markers are missing or duplicated.');
+await write('index.html',mainPage.slice(0,begin+pulseStart.length)+
+  renderFooterPulse(activity)+mainPage.slice(finish));
+await write('activity.json',JSON.stringify({version:1,items:activity},null,2)+'\n');
+console.log('PUBLIC ACTIVITY BUILT: '+activity.length+' verified published shortcuts; mode='+target+'.');
+
 // After static copying, vendor the heavyweight open-source libraries under our origin.
 await import('./copy-wave1-vendors.mjs');
 for(const item of published)if(!item.url.includes('/'))
