@@ -7,7 +7,7 @@ const MODEL_SHA='309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd
 let cachedSession=null,sessionPromise=null,engine=null;
 function fail(message){throw Error(message);}
 export const MODEL_INFO=Object.freeze({
- id:'u2netp-309c8469',
+ id:'u2netp-309c8469',name:'U²-Net-small',
  file:'u2netp-309c8469.onnx',
  bytes:4574861,sha256:MODEL_SHA,license:'Apache-2.0',
  input:[1,3,SIZE,SIZE],output:[1,1,SIZE,SIZE],execution:'browser-wasm'
