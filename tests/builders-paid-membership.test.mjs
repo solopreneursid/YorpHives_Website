@@ -72,3 +72,13 @@ test('Release gate prevents reintroducing public jobs and opportunitity forms',a
  assert.match(release,/Public job listing or job-posting form is forbidden/);
  assert.match(release,/data-form="opportunity"/);
 });
+
+test('Builders homepage uses dark forest teal with readable mint-on-dark cards',async()=>{
+ const css=await load('style.css');
+ assert.match(css,/#home \.builders-home\{[^}]*#0b303a,#103f41 55%,#092f3a/);
+ assert.match(css,/#home \.builders-home h2\{[^}]*color:#f4fff9/);
+ assert.match(css,/#home \.builders-home h2 em\{[^}]*color:#9dfadd/);
+ assert.match(css,/#home \.builders-home-card\{[^}]*#175358,#10424d/);
+ assert.match(css,/#home \.builders-home-card h3\{[^}]*color:#f4fff9/);
+ assert.match(css,/#home \.builders-home-cta\{[^}]*#b4ffe9,#80eed4/);
+});
