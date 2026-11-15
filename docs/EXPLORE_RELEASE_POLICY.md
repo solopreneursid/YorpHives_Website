@@ -31,13 +31,15 @@ An app without all requirements is excluded from the public catalog, Explore pag
 
 ## How the showcase operates
 - Both homepage and Explore page are driven from the same local `catalog.json`; a shared `product-policy.mjs` enforces qualification.
-- The homepage shows two approved products on wider screens, one on phones. If more exist, cards advance automatically every 6.5 seconds while the section is visible.
-- Controls include previous, next, and pause/resume; the rotation does not run when hidden or under reduced-motion preference.
-- With no approved products, the display shows the research and business criteria instead of fake applications.
+- The **homepage** displays the two compact research and business qualification tiles followed by its own **Explore Spotlight** showing **one actual approved product at a time**, with the same first-party logo and product name presentation as the Explore page.
+- **Both the homepage and Explore** use the same reusable carousel code, with independent timers. If two or more approved products exist, each card advances automatically **every 4.5 seconds**, with no click required.
+- Previous, next and pause controls are optional. Rotation does not run in a background tab, when that page is hidden, or with reduced-motion enabled.
+- With no approved products, the website truthfully displays the qualification checks plus **First launch pending**. It never invents applications or displays unreviewed product recommendations as launches.
+- In public UI copy, use **Yorphives HQ / HQ** and refer to qualifying **products**, not “candidates”.
 - Current content requires **no API, paid dependency or HQ-to-public write permission**.
 
 ## Explore spotlight autoplay and product logos
-- The Explore page's compact right-side spotlight uses the *same* approved catalog as the homepage and product collection. No individual product is hard-coded in the carousel.
+- The homepage spotlight and Explore page's compact right-side spotlight use the *same* approved catalog and shared renderer as the product collection. No individual product is hard-coded in the carousel.
 - Once two or more founder-approved launches are published, the spotlight advances one product **every 4.5 seconds automatically** while the Explore section is visible. It shows **one product at a time**, wraps continuously, and slides the next card into view.
 - The product's name and a first-party logo are shown. The optional `logo` catalog field is a first-party file such as `apps/product-name/logo.svg`, stored inside that product's source directory. Allowed formats: SVG, PNG, JPEG, and WebP. Remote/logo-as-a-service URLs are not loaded. Without a valid logo, the card shows the product's initials.
 - The Previous, Next, and Pause controls are optional: visitors **do not need to click anything**. Autoplay pauses for reduced-motion preferences, hidden browser tabs and hidden views.
