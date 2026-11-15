@@ -179,6 +179,7 @@ if(target==='preview'){
  await cp(resolve(root,'review/browser-interaction.mjs'),resolve(dest,'browser-interaction.mjs'));
  await cp(resolve(root,'review/library-qa.mjs'),resolve(dest,'library-qa.mjs'));
  await cp(resolve(root,'review/wave1-qa.mjs'),resolve(dest,'wave1-qa.mjs'));
+ await cp(resolve(root,'review/wave1-ui-qa.mjs'),resolve(dest,'wave1-ui-qa.mjs'));
 }else{
  await write('robots.txt','User-agent: *\nAllow: /\nSitemap: '+origin+'sitemap.xml\n');
  const headers=await output('_headers');
