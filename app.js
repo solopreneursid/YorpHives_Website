@@ -107,6 +107,94 @@
     }
     return element;
   }
+  // The same qualification gate is enforced by the static build and the public UI.
+  // HQ can evaluate and recommend; the final approval is always founder-controlled.
+  function setupQualifiedShowcase(products) {
+    const panel = document.getElementById('qualified-showcase');
+    const empty = document.getElementById('qualified-showcase-empty');
+    const cards = document.getElementById('qualified-showcase-cards');
+    const count = document.getElementById('qualified-showcase-count');
+    const previous = document.getElementById('qualified-showcase-prev');
+    const next = document.getElementById('qualified-showcase-next');
+    const pause = document.getElementById('qualified-showcase-pause');
+    const badge = document.getElementById('explore-showcase-label');
+    if (!panel || !empty || !cards) return;
+    const ready = products.length > 0;
+    panel.hidden = !ready;
+    empty.hidden = ready;
+    badge.textContent = ready ? 'RESEARCH-QUALIFIED · FOUNDER-APPROVED' : 'EVIDENCE BEFORE LAUNCH';
+    if (!ready) return;
+
+    const small = window.matchMedia('(max-width:540px)');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion:reduce)');
+    let start = 0;
+    let paused = reducedMotion.matches;
+    let onscreen = typeof IntersectionObserver === 'undefined';
+    const visibleCount = () => Math.min(products.length, small.matches ? 1 : 2);
+
+    function productCard(product, index) {
+      const link = document.createElement('a');
+      link.className = 'explore-product-card palette-' + (index % 4) + ' entering';
+      link.href = new URL(product.url, document.baseURI).href;
+      link.setAttribute('aria-label', 'Explore ' + product.name);
+      const art = document.createElement('div');
+      art.className = 'explore-product-art';
+      // This illustration contains no product-specific claims and needs no external assets.
+      art.innerHTML = '<div class="explore-product-screen" aria-hidden="true"><b></b><i></i></div>';
+      const body = document.createElement('div');
+      body.className = 'explore-product-copy';
+      const label = document.createElement('span');
+      label.className = 'explore-product-type';
+      label.textContent = (product.type === 'app' ? 'APP' : 'PRODUCT') + ' · LAUNCHED';
+      const title = document.createElement('h3');
+      title.textContent = product.name;
+      const description = document.createElement('p');
+      description.textContent = product.description;
+      const action = document.createElement('span');
+      action.className = 'explore-product-cta';
+      action.textContent = 'Explore product ↗';
+      body.append(label, title, description, action);
+      link.append(art, body);
+      return link;
+    }
+
+    function paint() {
+      const visible = visibleCount();
+      const selection = Array.from({length: visible}, (_, offset) => {
+        const index = (start + offset) % products.length;
+        return productCard(products[index], index);
+      });
+      cards.replaceChildren(...selection);
+      count.textContent = (start + 1) + '–' + (Math.min(products.length, start + visible)) + ' of ' + products.length + ' products';
+      const canRotate = products.length > visible;
+      previous.disabled = !canRotate;
+      next.disabled = !canRotate;
+      pause.disabled = !canRotate || reducedMotion.matches;
+      pause.setAttribute('aria-pressed', String(paused));
+      pause.textContent = paused ? '▶' : 'Ⅱ';
+      pause.setAttribute('aria-label', paused ? 'Resume automatic product rotation' : 'Pause automatic product rotation');
+      if (reducedMotion.matches) cards.querySelectorAll('.entering').forEach(card => card.classList.remove('entering'));
+    }
+
+    previous.addEventListener('click', () => { start = (start - 1 + products.length) % products.length; paint(); });
+    next.addEventListener('click', () => { start = (start + 1) % products.length; paint(); });
+    pause.addEventListener('click', () => { if (pause.disabled) return; paused = !paused; paint(); });
+    if (typeof small.addEventListener === 'function') small.addEventListener('change', paint);
+    if (typeof reducedMotion.addEventListener === 'function') reducedMotion.addEventListener('change', () => { if (reducedMotion.matches) paused = true; paint(); });
+    if (typeof IntersectionObserver !== 'undefined') {
+      new IntersectionObserver(entries => { onscreen = entries.some(entry => entry.isIntersecting); }, {threshold: .15}).observe(panel);
+    }
+    if (products.length > 1) window.setInterval(() => {
+      if (paused || reducedMotion.matches || !onscreen || document.hidden ||
+          document.getElementById('home').hidden || document.activeElement?.closest('.explore-showcase')) return;
+      if (products.length > visibleCount()) {
+        start = (start + visibleCount()) % products.length;
+        paint();
+      }
+    }, 6500);
+    paint();
+  }
+
   async function loadCatalog() {
     recent.replaceChildren(statusCard('Loading the latest tools and products…'));
     try {
@@ -114,11 +202,14 @@
       if (!response.ok) throw new Error('Catalog unavailable');
       const data = await response.json();
       if (!Array.isArray(data.items)) throw new Error('Invalid catalog');
+      const { qualifiedProducts } = await import('./product-policy.mjs');
       // For additions on the same day, later catalog entries are newer.
       const catalog = data.items.map((item, index) => ({ item, index })).filter(entry => validItem(entry.item))
         .sort((a, b) => b.item.date.localeCompare(a.item.date) || b.index - a.index).map(entry => entry.item);
+      const products = qualifiedProducts(catalog);
+      const visibleCatalog = catalog.filter(item => item.type === 'tool' || products.includes(item));
       recent.replaceChildren();
-      if (catalog.length) catalog.slice(0, 3).forEach(item => recent.append(card(item)));
+      if (visibleCatalog.length) visibleCatalog.slice(0, 3).forEach(item => recent.append(card(item)));
       else recent.append(statusCard('Our first tools and products are taking shape. New additions will appear here.', 'THE FIRST CHAPTER'));
       const tools = catalog.filter(item => item.type === 'tool');
       // Eight-row Tool Launcher: new categories are included automatically.
@@ -335,10 +426,10 @@
         search.focus();
       });
       renderTools();
-      const products = catalog.filter(item => item.type !== 'tool');
       const productGrid = document.getElementById('explore-items'); productGrid.replaceChildren();
       document.getElementById('explore-empty').hidden = products.length > 0;
       products.forEach(item => productGrid.append(card(item)));
+      setupQualifiedShowcase(products);
     } catch (_) {
       recent.replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
       for (const id of ['tools', 'explore']) document.getElementById(`${id}-items`).replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
