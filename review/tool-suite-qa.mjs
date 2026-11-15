@@ -25,6 +25,8 @@ try{
  if(inputs&&getComputedStyle(inputs).display==='grid'&&innerWidth<681){
   verify('inputs fit narrow mobile',getComputedStyle(inputs).gridTemplateColumns.split(' ').length===1,{columns:getComputedStyle(inputs).gridTemplateColumns});
  }
+ const panelRect=panel.getBoundingClientRect();
+ verify('workspace stays inside viewport',panelRect.left>=0&&panelRect.right<=innerWidth+2,{left:Math.round(panelRect.left),right:Math.round(panelRect.right),width:innerWidth});
  verify('no horizontal scrolling',document.documentElement.scrollWidth<=innerWidth+2,{overflow:document.documentElement.scrollWidth-innerWidth});
  pre.dataset.status='passed';
 }catch(e){checks.push({name:'error',ok:false,error:String(e.stack||e)});pre.dataset.status='failed';}
