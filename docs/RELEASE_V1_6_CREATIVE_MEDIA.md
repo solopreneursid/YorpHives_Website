@@ -36,3 +36,6 @@ Public tools: 126 → **134**
 - Verify live catalog = 134, new tool URLs serve HTTP 200, YHpulse remains intact.
 - Disable automatic production deployments after success.
 - Prior production deployment is kept available for rollback.
+
+## Production release trigger
+Founder-authorized deployment after 232 passing automated tests, 10 browser acceptance checks, healthy preview, and a verified prior v1.5 production release. Temporarily enable production builds for this single release; disable them after the new deployment succeeds and live URLs are checked.
