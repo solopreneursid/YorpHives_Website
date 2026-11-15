@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "intent": "Read source and produce evidence or recommendations; no repository writes, deployments, remote comments, or credential changes.",
+  "tools": [
+    {"name":"YorpHives read-only reviewer","role":"Checks static source, links, catalog, JavaScript syntax, and limited security signals; watches a local directory or public Git branch.","status":"included","version":"0.1.0","license":"Project source; no separate license specified.","external_network":"Only public Git fetch if the operator starts Git-watch.","outputs":"Private local reports outside the source tree."},
+    {"name":"Playwright","role":"Browser behavior and visual-flow tests.","status":"not_integrated","version":null,"license":"Apache-2.0","external_network":"None required for local tests; block unintended outbound requests.","notes":"Test code runs the site and must be isolated; no browser bot is configured yet."},
+    {"name":"Reviewdog","role":"Aggregate and filter output from other analyzers against changed code.","status":"not_installed","version":null,"license":"MIT","notes":"Use local reporter; GitHub comments and checks require extra write permissions and are not enabled."},
+    {"name":"Betterleaks","role":"Detect exposed credentials in files and Git history.","status":"not_installed","version":null,"license":"MIT","notes":"Pin and verify a stable version; use redacted output, disable credential validation and analysis, and do not run revoke."},
+    {"name":"Trivy","role":"Inspect dependency vulnerabilities, misconfigurations, and licenses.","status":"not_installed","version":null,"license":"Apache-2.0","notes":"Scanning needs locally available and refreshed vulnerability databases; database updates are a separate network operation."},
+    {"name":"PR-Agent","role":"Optional AI-assisted review suggestions.","status":"not_installed","version":null,"license":"MIT","notes":"Use a local model and local Git provider with output outside the project. Disable publishing and any write or auto-improve actions; model and policy enforcement are not configured."}
+  ]
+}
