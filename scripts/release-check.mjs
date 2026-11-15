@@ -19,6 +19,11 @@ if(!homepage.includes('You bring the idea.')||!homepage.includes('real product.'
 if((homepage.match(/<li class="studio-step stage-/g)||[]).length!==5)
  problems.push('The five-stage idea-to-product journey is incomplete.');
 if(!homepage.includes('href="#tools"'))problems.push('Homepage tool navigation missing.');
+if(!homepage.includes('id="category-ribbon-track"')||
+   homepage.includes('id="recent-items"')||
+   homepage.includes('FROM THE HIVE'))
+ problems.push('Homepage must show the compact category-only strip, not the old recent cards.');
+
 if(!homepage.includes('id="builders-home-title"')||!homepage.includes('Find work. Post work.')||
    !homepage.includes('id="builders-membership-title"')||
    !homepage.includes('id="partners"'))
