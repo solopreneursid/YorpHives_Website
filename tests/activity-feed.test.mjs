@@ -69,7 +69,7 @@ test('when Git detects a newer page change it replaces the fallback event',()=>{
 test('generated footer is clickable, escaped and has a non-focusable duplicate set',()=>{
  const samples=collectPublicActivity({published:[tool('Writer & Reader',4)],notes,now:instant});
  const html=renderFooterPulse(samples);
- assert.match(html,/YORPHIVES <b>PULSE<\/b>/);
+ assert.match(html,/<b>YHpulse<\/b>/);
  assert.match(html,/LATEST 3 UPDATES/);
  assert.match(html,/href="#builders"/);
  assert.match(html,/href="#explore"/);
@@ -94,7 +94,7 @@ test('source has compact footer template and avoids old hard-coded free-tool dir
  assert.match(build,/discoverPublicPageUpdates\(root\)/);
  assert.match(css,/grid-template-columns:190px minmax\(0,1fr\)/);
  assert.match(css,/@keyframes pulse-marquee/);
- assert.match(css,/\\.footer-pulse:hover \\.pulse-track/);
+ assert.match(css,/\.footer-pulse:hover \.pulse-track/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  const fallback=await loadActivityNotes(root);
  assert.ok(fallback.every(x=>['builders','explore'].includes(x.kind)));
