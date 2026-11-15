@@ -82,7 +82,7 @@ test('Tool Launcher only replaces Free Tools browsing and keeps the hero',async(
  assert.match(js,/storageKey = 'yorphives\.tool-favorites\.v1'/);
  assert.match(js,/localStorage\.setItem\(storageKey/);
  assert.match(js,/if \(!assigned\.has\(category\)\) groups\.push/);
- assert.match(js,/visibleCatalog\.slice\(0, 3\)/);
+ assert.match(js,/setupCategoryRibbon\(tools, category => \{/);
  assert.match(css,/#tools \.page-hero\{min-height:315px/);
  assert.match(css,/\.launcher-workspace\{display:grid;grid-template-columns:232px minmax\(0,1fr\)/);
  assert.match(css,/\.launcher-rows:empty\{display:none;min-height:0\}/);
