@@ -91,7 +91,7 @@ test('PDF Compressor offers exactly three friendly choices and no technical cont
  const html=await readFile(resolve(root,'tools/pdf-compressor/index.html'),'utf8');
  assert.match(html,/<h1>PDF Compressor<\/h1>/);
  assert.match(html,/id="pdf-compressor-file"/);
- assert.match(html,/compressor-ui-v3\\.css/);
+ assert.ok(html.includes('compressor-ui-v3.css'));
  assert.match(html,/cpx-dropzone/);
  assert.match(html,/cpx-result-heading/);
  assert.match(html,/cpx-file-sizes/);
@@ -134,10 +134,10 @@ test('PDF compressor preview-only interactive acceptance harness never ships pub
 
 test('PDF Compressor layout styles are isolated and included in both releases',async()=>{
  const page=await readFile(resolve(dist,'tools/pdf-compressor/index.html'),'utf8');
- assert.match(page,/compressor-ui-v3\\.css/);
+ assert.ok(page.includes('compressor-ui-v3.css'));
  const css=await readFile(resolve(dist,'tools/pdf-compressor/compressor-ui-v3.css'),'utf8');
- assert.match(css,/grid-template-columns:repeat\\(3,minmax\\(0,1fr\\)\\)/);
- assert.match(css,/@media\\(max-width:660px\\)/);
+ assert.ok(css.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));
+ assert.ok(css.includes('@media(max-width:660px)'));
  assert.match(css,/compression-option>input:checked/);
  assert.match(css,/cpx-dropzone/);
  assert.match(css,/cpx-file-sizes/);
