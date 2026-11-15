@@ -4,6 +4,7 @@
 import {cp,mkdir,readFile,readdir,rm,stat,writeFile} from 'node:fs/promises';
 import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {createEntity} from './discovery-schema.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const dest=resolve(root,'dist');
@@ -40,15 +41,6 @@ for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory())
  await cp(resolve(root,dir),resolve(dest,dir),{recursive:true});
 for(const item of published)if(!item.url.includes('/'))
  await cp(resolve(root,item.url),resolve(dest,item.url));
-const appCategory=category=>{
- const c=String(category||'').toLowerCase();
- if(/developer|code|programming/.test(c))return 'DeveloperApplication';
- if(/design|image|color/.test(c))return 'DesignApplication';
- if(/business|marketing|finance|calculator/.test(c))return 'BusinessApplication';
- if(/security|password/.test(c))return 'SecurityApplication';
- if(/video|audio|media|presentation/.test(c))return 'MultimediaApplication';
- return 'UtilitiesApplication';
-};
 const dataJson=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026');
 function injectHead(html,metadata){
  if(!/<\/head>/i.test(html)||!/<h1\b/i.test(html))throw Error('Public page lacks a <head> or <h1>.');
@@ -81,20 +73,7 @@ for(const item of published){
  if(item.url.includes('/')&&await exists(top+'index.html'))
   ancestors.push({'@type':'ListItem',position:ancestors.length+1,name:top==='tools/'?'Free tools':top.slice(0,-1),item:origin+top});
  ancestors.push({'@type':'ListItem',position:ancestors.length+1,name:item.name,item:url});
- const entity={'@id':id,'@type':item.type==='product'?'Product':item.type==='service'?'Service':
-  item.type==='tool'||item.type==='app'?'WebApplication':'Thing',
-  name:item.name,description:item.description,url};
- if(['tool','app'].includes(item.type)){
-  entity.applicationCategory=appCategory(item.category);
-  entity.operatingSystem=item.execution==='browser-local'?'Any modern web browser':item.operatingSystem||'Web browser';
-  if(item.type==='tool'||item.isFree===true){
-   entity.isAccessibleForFree=true;
-   entity.offers={'@type':'Offer',price:'0',priceCurrency:'USD'};
-  }
- }
- if(typeof item.price==='number'&&Number.isFinite(item.price)&&item.price>=0&&/^[A-Z]{3}$/.test(item.currency||'')){
-  entity.offers={'@type':'Offer',price:String(item.price),priceCurrency:item.currency};
- }
+ const entity=createEntity(item,url);
  const graph=[
   {'@type':'WebPage','@id':url+'#webpage',url,name:item.name+' | YorpHives',description:item.description,
    inLanguage:'en',mainEntity:{'@id':id},breadcrumb:{'@id':bread}},
@@ -105,7 +84,10 @@ for(const item of published){
  await write(path,html);
 }
 // A directory stays crawlable and provides standard links to every item.
-const directories=[...new Set(published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0]+'/'))];
+const candidateDirectories=[...new Set(published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0]+'/'))];
+const directories=[];
+for(const directory of candidateDirectories)
+ if(await exists(directory+'index.html'))directories.push(directory);
 for(const directory of directories){
  const path=directory+'index.html';
  if(!await exists(path))continue;
@@ -121,9 +103,18 @@ for(const directory of directories){
  html=injectHead(html,metadata(url,graph));
  await write(path,html);
 }
-const urls=['',...directories.filter(async()=>true),...published.map(x=>x.url)];
-const canonicalPaths=[...new Set(urls)].filter(p=>p===''||p.endsWith('/')&&
- (p===''||published.some(x=>x.url===p)||directories.includes(p)));
+const canonicalPaths=[...new Set(['',...directories,...published.map(x=>x.url)])];
+// Fail if any future public HTML route is forgotten in catalog.json.
+const publicPages=new Set(['index.html',...directories.map(x=>x+'index.html'),...published.map(x=>fileFor(x.url))]);
+async function auditHtml(dir=''){
+ for(const entry of await readdir(resolve(dest,dir),{withFileTypes:true})){
+  const path=join(dir,entry.name).replaceAll('\\','/');
+  if(entry.isDirectory())await auditHtml(path);
+  else if(entry.isFile()&&path.endsWith('.html')&&!publicPages.has(path))
+   throw Error('Public HTML page is not registered for direct discovery: '+path);
+ }
+}
+await auditHtml();
 const sitemap='<?xml version="1.0" encoding="UTF-8"?>\n'+
  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+
  canonicalPaths.map(p=>'  <url><loc>'+xml(origin+p)+'</loc></url>').join('\n')+'\n</urlset>\n';

@@ -49,3 +49,17 @@ test('agent and search discovery remain first-party static files',async()=>{
  const xml=await read('sitemap.xml',dest);
  assert.equal((xml.match(/<loc>/g)||[]).length>=92,true);
 });
+
+test('future web apps, desktop apps, products and services get truthful discovery metadata',async()=>{
+ const {createEntity}=await import('../scripts/discovery-schema.mjs');
+ const app=createEntity({type:'app',name:'New web app',description:'A useful application',platform:'web',isFree:true},'https://yorphives.com/apps/new-web-app/');
+ assert.equal(app['@type'],'WebApplication');assert.equal(app.offers.price,'0');
+ const native=createEntity({type:'app',name:'Desktop editor',description:'A locally installed app',operatingSystem:'Linux'},'https://yorphives.com/apps/editor/');
+ assert.equal(native['@type'],'SoftwareApplication');assert.equal(native.offers,undefined);assert.equal(native.operatingSystem,'Linux');
+ const product=createEntity({type:'product',name:'New product',description:'A published product'},'https://yorphives.com/products/new-product/');
+ assert.equal(product['@type'],'Product');assert.equal(product.offers,undefined);
+ const priced=createEntity({type:'product',name:'Priced product',description:'A priced product',price:49,currency:'USD'},'https://yorphives.com/products/priced/');
+ assert.equal(priced.offers.price,'49');assert.equal(priced.offers.priceCurrency,'USD');
+ const service=createEntity({type:'service',name:'New service',description:'A published service'},'https://yorphives.com/services/new/');
+ assert.equal(service['@type'],'Service');assert.equal(service.offers,undefined);
+});
