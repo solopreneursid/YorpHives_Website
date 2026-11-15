@@ -10,6 +10,8 @@ async function pdfFiles(){
  const make=async i=>{const pdf=await PDFDocument.create();const font=await pdf.embedFont(StandardFonts.Helvetica);pdf.addPage([250,340]).drawText('TEST FILE '+i,{x:22,y:280,size:19,font});return new File([await pdf.save()],'test-'+i+'.pdf',{type:'application/pdf'});};
  return [await make(1),await make(2)];
 }
+const blobs=[],nativeCreateURL=URL.createObjectURL;
+URL.createObjectURL=function(blob){blobs.push(blob);return nativeCreateURL.call(URL,blob);};
 const lines=[];
 try{
  if(id==='word-counter'||id==='loan-payment-calculator'){
@@ -31,13 +33,13 @@ try{
   form.requestSubmit();
   await wait(()=>!document.getElementById('file-download').hidden,26000);
   const url=document.getElementById('file-download').href;
-  const blob=await (await fetch(url)).blob();check('output file downloaded',blob.size>30);
+  const blob=blobs.at(-1);check('output file downloaded',blob instanceof Blob&&blob.size>30);
   if(id==='pdf-merge'){const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');const pdf=await PDFDocument.load(await blob.arrayBuffer());check('PDF contains both source pages',pdf.getPageCount()===2);}
  }
  if(id==='invoice-generator'){
   const form=document.getElementById('wave1-form');form.requestSubmit();
   await wait(()=>!document.getElementById('wave1-download').hidden,22000);
-  const data=new Uint8Array(await (await (await fetch(document.getElementById('wave1-download').href)).blob()).arrayBuffer());
+  const data=new Uint8Array(await blobs.at(-1).arrayBuffer());
   check('invoice PDF generated',String.fromCharCode(...data.slice(0,4))==='%PDF');
  }
  if(id==='image-resizer'){
@@ -60,10 +62,11 @@ try{
   file(document.getElementById('wave1-file'),f);
   document.getElementById('wave1-form').requestSubmit();
   await wait(()=>!document.getElementById('wave1-download').hidden,24000);
-  const blob=await (await fetch(document.getElementById('wave1-download').href)).blob();
+  const blob=blobs.at(-1);
   check('PDF rendered as image',blob.size>100);
  }
  check('enhanced UI still appears',!!document.querySelector('.tui-workspace-head'));
  pre.dataset.status='passed';
 }catch(e){checks.push({name:'failure',ok:false,error:String(e.stack||e)});pre.dataset.status='failed';}
+URL.createObjectURL=nativeCreateURL;
 pre.textContent=JSON.stringify({id,passed:checks.filter(x=>x.ok).length,failed:checks.filter(x=>!x.ok).length,checks},null,2);
