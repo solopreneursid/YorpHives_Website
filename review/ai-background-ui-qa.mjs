@@ -26,7 +26,8 @@ if(new URLSearchParams(location.search).get('qa')==='background-ui'){
    $('ai-status').textContent);
   check('Transparent image preview replaces placeholder',!$('ai-processed').hidden&&$('ai-output').hidden);
   const firstLink=$('ai-download').href;
-  const img=await createImageBitmap(await(await fetch(firstLink)).blob());
+  await $('ai-processed').decode();
+  const img=await createImageBitmap($('ai-processed'));
   const pc=document.createElement('canvas');pc.width=img.width;pc.height=img.height;
   const pixels=pc.getContext('2d');pixels.drawImage(img,0,0);
   const data=pixels.getImageData(0,0,pc.width,pc.height).data;
