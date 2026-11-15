@@ -1,6 +1,21 @@
 // Browser-native video trimming: no FFmpeg download, paid API, file upload or server worker.
 // Playback is re-recorded locally in real time; supported output is WebM or MP4.
 const MB=1048576;
+let webmFixPromise;
+function loadWebmDurationFix(){
+ if(typeof globalThis.ysFixWebmDuration==='function')return Promise.resolve(globalThis.ysFixWebmDuration);
+ if(!webmFixPromise)webmFixPromise=new Promise((resolve,reject)=>{
+  const script=document.createElement('script');
+  script.src=new URL('./vendor/webm/fix-webm-duration.js',import.meta.url).href;
+  script.async=true;
+  script.onload=()=>typeof globalThis.ysFixWebmDuration==='function'
+   ? resolve(globalThis.ysFixWebmDuration)
+   : reject(Error('The local video metadata tool could not start.'));
+  script.onerror=()=>reject(Error('The local video metadata tool could not load.'));
+  document.head.append(script);
+ }).catch(e=>{webmFixPromise=null;throw e;});
+ return webmFixPromise;
+}
 export function validateVideoTrim(start,end,duration){
  const a=Number(start),b=Number(end),d=Number(duration);
  if(![a,b,d].every(Number.isFinite)||a<0||b<=a||d<=0||b>d+.06||b-a>.001+30||b-a<.25)
@@ -80,36 +95,44 @@ export async function trimVideo(file,{start,end,onProgress}={}){
    recorder.addEventListener('error',()=>reject(Error('Local recording failed.')),{once:true});
    recorder.addEventListener('stop',resolve,{once:true});
   });
-  let stopping=false;
-  function stop(){
-   if(stopping)return;stopping=true;
+  let stopping=false,stopReason='',startedAt=0,elapsedMs=0;
+  function stop(reason=''){
+   if(stopping)return;
+   stopping=true;stopReason=reason;
+   elapsedMs=startedAt?Math.max(1,performance.now()-startedAt):0;
    cancelAnimationFrame(raf);clearInterval(timer);clearTimeout(safety);video.pause();
    if(recorder?.state==='recording')recorder.stop();
   }
   function draw(){
    if(stopping)return;
    try{ctx.drawImage(video,0,0,width,height);}
-   catch{stop();return;}
+   catch{stop('frame rendering failed');return;}
    if(video.currentTime>=times.end-.015||video.ended){stop();return;}
    raf=requestAnimationFrame(draw);
   }
   ctx.drawImage(video,0,0,width,height);
-  recorder.start(350);
+  recorder.start(350);startedAt=performance.now();
   try{await video.play();}
-  catch{stop();throw Error('This browser blocked local video playback. Click Trim again or try another browser.');}
+  catch{stop('playback blocked');throw Error('This browser blocked local video playback. Click Trim again or try another browser.');}
   raf=requestAnimationFrame(draw);
   timer=setInterval(()=>{
    if(typeof onProgress==='function')onProgress(Math.max(0,Math.min(times.length,video.currentTime-times.start)));
    if(video.currentTime>=times.end-.015||video.ended)stop();
-   if(document.visibilityState==='hidden')stop();
+   if(document.visibilityState==='hidden')stop('tab hidden');
   },120);
-  safety=setTimeout(stop,Math.ceil((times.length+15)*1000));
+  safety=setTimeout(()=>stop('recording timeout'),Math.ceil((times.length+15)*1000));
   await withTimeout(done,Math.ceil((times.length+18)*1000),'Local video recording timed out.');
   const ext=mime.includes('mp4')?'mp4':'webm';
-  const blob=new Blob(parts,{type:ext==='mp4'?'video/mp4':'video/webm'});
+  let blob=new Blob(parts,{type:ext==='mp4'?'video/mp4':'video/webm'});
+  if(stopReason)throw Error('Video trimming stopped early ('+stopReason+'). Keep this tab visible and try again.');
   if(blob.size<500)throw Error('No playable clip was recorded.');
+  if(ext==='webm'){
+   const fix=await loadWebmDurationFix();
+   try{blob=await fix(blob,Math.max(250,Math.round(elapsedMs)),undefined,{logger:false});}
+   catch{throw Error('The video could not be finalized as a seekable WebM file. Try another browser.');}
+  }
   return {blob,filename:'yorphives-trimmed-video.'+ext,
-   summary:'Created an approximately '+times.length.toFixed(1)+'-second '+ext.toUpperCase()+' clip locally. Exact frame boundaries and quality depend on the browser.'};
+   summary:'Created an approximately '+(elapsedMs/1000).toFixed(1)+'-second '+ext.toUpperCase()+' clip locally. Exact frame boundaries and quality depend on the browser.'};
  }finally{
   cancelAnimationFrame(raf);clearInterval(timer);clearTimeout(safety);
   video.pause();
