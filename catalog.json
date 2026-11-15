@@ -4777,6 +4777,37 @@
           "No file uploads, no paid inference, processing on the visitor’s device."
         ]
       }
+    },
+    {
+      "name": "AI Background Remover",
+      "description": "Remove photo backgrounds using an open-weight, self-hosted U²-Net-small model inside your browser. Refine edges and download a transparent PNG, without uploading images.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-16",
+      "url": "tools/ai-background-remover/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/background-removal-core.mjs",
+        "export": "segmentImage",
+        "toolId": "ai-background-remover",
+        "arguments": [
+          "local JPG/PNG/WebP File",
+          "optional progress callbacks"
+        ],
+        "inputs": [
+          {
+            "name": "image",
+            "type": "local-file",
+            "description": "JPG, PNG, or WebP up to 10 MB / 12 MP"
+          }
+        ],
+        "requirements": [
+          "Self-hosted Apache-2.0 U2Netp weights verified by SHA-256",
+          "Self-hosted MIT ONNX Runtime Web WASM",
+          "Browser-local AI inference; no uploads or external inference APIs",
+          "Browser WebAssembly, secure context, and image decoding"
+        ]
+      }
     }
   ]
 }
