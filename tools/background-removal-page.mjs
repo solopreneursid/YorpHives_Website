@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id);
 const form=$('ai-form'),file=$('ai-file'),run=$('ai-run'),refine=$('ai-refine'),reset=$('ai-reset'),
  status=$('ai-status'),original=$('ai-source'),processed=$('ai-processed'),output=$('ai-output'),
  result=$('ai-result'),download=$('ai-download'),imageInfo=$('ai-image-info'),
- cutoff=$('ai-cutoff'),softness=$('ai-softness'),edge=$('ai-resolution'),background=$('ai-background'),
+ cutoff=$('ai-cutoff'),softness=$('ai-softness'),edge=$('ai-resolution'),background=$('ai-background'),model=$('ai-model'),
  cutoffLabel=$('ai-cutoff-label'),softnessLabel=$('ai-softness-label');
 let sourceUrl='',outputUrl='',segmentation=null,token=0,busy=false;
 const say=(text,error=false)=>{status.textContent=text;status.classList.toggle('error',error);};
@@ -26,7 +26,12 @@ function available(){
  run.disabled=busy||!file.files?.length;
  refine.disabled=busy||!segmentation;
  reset.disabled=busy;
+ model.disabled=busy;
 }
+model.addEventListener('change',()=>{
+ token++;clearSegmentation();available();
+ say(model.value==='portrait'?'Portrait mode selected. The 6.6 MB model loads only when you process a photo.':'Lightweight mode selected. The 4.6 MB model loads only when you process a photo.');
+});
 const formatSliders=()=>{
  cutoffLabel.textContent=cutoff.value+'%';
  softnessLabel.textContent=softness.value+'%';
@@ -69,7 +74,7 @@ async function redraw(current){
  processed.src=outputUrl;processed.hidden=false;
  download.href=outputUrl;download.download=resultData.filename;
  $('ai-result-text').textContent=resultData.summary;
- $('ai-result-size').textContent='PNG · '+(resultData.blob.size/1048576).toFixed(2)+' MB · AI inference '+segmentation.inferenceMs+' ms';
+ $('ai-result-size').textContent='PNG · '+(resultData.blob.size/1048576).toFixed(2)+' MB · '+(segmentation.modelName||'U²-Net-small')+' inference '+segmentation.inferenceMs+' ms';
  result.hidden=false;
  say('Done! Check the edges and download your transparent PNG. Adjust and refresh the preview if needed.');
 }
@@ -80,7 +85,7 @@ form.addEventListener('submit',async event=>{
   if(!segmentation){
    const image=file.files[0];
    say('Starting private AI…');
-   const modelOutput=await segmentImage(image,{onProgress:message=>{if(current===token)say(message);}});
+   const modelOutput=await segmentImage(image,{mode:model.value,onProgress:message=>{if(current===token)say(message);}});
    if(current!==token){disposeSegmentation(modelOutput);return;}
    segmentation=modelOutput;
   }
@@ -97,7 +102,7 @@ refine.addEventListener('click',async()=>{
 reset.addEventListener('click',()=>{
  if(busy)return;
  token++;clearSegmentation();clearPreview();
- file.value='';cutoff.value='50';softness.value='18';edge.value='1600';background.value='checkerboard';
+ file.value='';model.value='general';cutoff.value='50';softness.value='18';edge.value='1600';background.value='checkerboard';
  background.dispatchEvent(new Event('change'));formatSliders();
  say('Choose a photo to begin. The local AI model loads only when you start processing.');
  available();
