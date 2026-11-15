@@ -43,8 +43,14 @@ if(file)file.addEventListener('change',()=>{
 if(sourcePreview&&id==='image-color-picker'){
  sourcePreview.addEventListener('click',event=>{
   const r=sourcePreview.getBoundingClientRect();
-  const u=(event.clientX-r.left)/r.width,v=(event.clientY-r.top)/r.height;
-  if(!Number.isFinite(u)||!Number.isFinite(v))return;
+  // object-fit: contain may letterbox tall/wide photos in a constrained preview.
+  const naturalRatio=sourcePreview.naturalWidth/sourcePreview.naturalHeight;
+  if(!Number.isFinite(naturalRatio)||naturalRatio<=0)return;
+  let iw=r.width,ih=r.height,offsetX=0,offsetY=0;
+  if(iw/ih>naturalRatio){iw=ih*naturalRatio;offsetX=(r.width-iw)/2;}
+  else{ih=iw/naturalRatio;offsetY=(r.height-ih)/2;}
+  const u=(event.clientX-r.left-offsetX)/iw,v=(event.clientY-r.top-offsetY)/ih;
+  if(!Number.isFinite(u)||!Number.isFinite(v)||u<0||u>1||v<0||v>1)return;
   form.elements.namedItem('x').value=Math.min(1,Math.max(0,u)).toFixed(5);
   form.elements.namedItem('y').value=Math.min(1,Math.max(0,v)).toFixed(5);
   if(colorMark){
