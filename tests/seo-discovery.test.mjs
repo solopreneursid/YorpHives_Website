@@ -136,8 +136,8 @@ test('interactive Free Tools QA module only ships in noindex preview builds',asy
  assert.equal(exists,preview,'Library QA must not ship on production website');
  if(preview){
   const qa=await read('library-qa.mjs',dest);
-  assert.match(qa,/cards\(\)\.length===12/);
-  assert.match(qa,/category\('Files'\)/);
-  assert.match(qa,/query\('#tool-more'\)\.click\(\)/);
+  assert.match(qa,/rows\(\)\.length===8/);
+  assert.match(qa,/nav\('documents'\)\.click\(\)/);
+  assert.match(qa,/q\('tool-next'\)\.click\(\)/);
  }
 });
