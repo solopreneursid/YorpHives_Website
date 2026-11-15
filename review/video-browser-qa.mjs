@@ -22,7 +22,7 @@ if(new URLSearchParams(location.search).get('qa')==='video'){
   check('Correct media output type',result.blob.type.startsWith('video/'),result.blob.type);
   const player=document.createElement('video');player.src=URL.createObjectURL(result.blob);player.preload='metadata';
   await new Promise((resolve,reject)=>{player.onloadedmetadata=resolve;player.onerror=()=>reject(Error('Output video does not play.'));});
-  check('Trimmed video metadata is readable',Number.isFinite(player.duration)&&player.duration>0);
+  check('Trimmed video metadata is readable',Number.isFinite(player.duration)&&player.duration>0,'duration='+player.duration+' readyState='+player.readyState+' size='+result.blob.size+' globalFix='+typeof globalThis.ysFixWebmDuration);
   URL.revokeObjectURL(player.src);
   pre.dataset.status='done';pre.textContent=JSON.stringify({pass:true,checks},null,2);
  }catch(error){pre.dataset.status='failed';pre.textContent=JSON.stringify({pass:false,checks,error:error?.stack||String(error)},null,2);}
