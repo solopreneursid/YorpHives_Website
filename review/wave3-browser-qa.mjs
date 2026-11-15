@@ -1,3 +1,4 @@
+if(new URLSearchParams(location.search).get('qa')==='wave3'){
 // Preview-only browser integration QA for new audio and PDF engines. Synthetic data only.
 // This file is not copied into production builds.
 const pre=document.createElement('pre');pre.id='wave3-qa';pre.dataset.status='running';document.body.append(pre);
@@ -38,3 +39,5 @@ try{
  check('HEIC converter rejects unsupported files locally',invalid);
  pre.dataset.status='done';pre.textContent=JSON.stringify({pass:true,checks},null,2);
 }catch(e){pre.dataset.status='failed';pre.textContent=JSON.stringify({pass:false,checks,error:e?.stack||String(e)},null,2);}
+
+}
