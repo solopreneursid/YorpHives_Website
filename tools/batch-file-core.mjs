@@ -1,5 +1,4 @@
 // Local file utilities. Never upload or execute selected files.
-import JSZip from './vendor/jszip.mjs';
 import {inspectZip} from './safe-zip.mjs';
 
 const outputText=(text,filename,summary)=>({blob:new Blob([text],{type:'text/plain;charset=utf-8'}),filename,summary,text:text.slice(0,10000)});
@@ -17,15 +16,15 @@ function uniqueName(raw,used){
   while(used.has(candidate.toLowerCase()))candidate=stem.slice(0,75)+'-'+n+++ext;
   used.add(candidate.toLowerCase());return candidate;
 }
-function validate(files,max){
+function validate(files,max,maxEach=12*1048576,maxTotal=30*1048576){
   if(!Array.isArray(files)||files.length<1||files.length>max)throw Error(max===1?'Choose one file.':'Choose 1 to 20 files.');
   let total=0;
   for(const file of files){
     if(!file||typeof file.arrayBuffer!=='function'||typeof file.slice!=='function'||
-      !Number.isFinite(file.size)||file.size<0||file.size>12*1048576)
-      throw Error('Every file must be 12 MB or smaller.');
+      !Number.isFinite(file.size)||file.size<0||file.size>maxEach)
+      throw Error('Each file must be '+Math.floor(maxEach/1048576)+' MB or smaller.');
     total+=file.size;
-    if(total>30*1048576)throw Error('Selected files must total 30 MB or less.');
+    if(total>maxTotal)throw Error('Selected files must total '+Math.floor(maxTotal/1048576)+' MB or less.');
   }
 }
 function signature(b){
@@ -57,7 +56,7 @@ async function identify(file){
 }
 async function inspectArchive(file){
   if(file.size===0)throw Error('Choose a nonempty ZIP archive.');
-  const zip=inspectZip(await file.arrayBuffer());
+  const zip=inspectZip(await file.arrayBuffer(),{maxCompressedBytes:36*1048576});
   const entries=[...zip.entries.values()];
   const count=entries.filter(e=>!e.name.endsWith('/')).length;
   const lines=entries.slice(0,250).map(e=>e.name.replace(/[\x00-\x1f\x7f]/g,'_')+
@@ -69,6 +68,7 @@ async function inspectArchive(file){
   return outputText(result,'yorphives-zip-contents.txt','Listed '+entries.length+' ZIP entries without extracting files.');
 }
 async function makeArchive(files,rename,data){
+  const {default:JSZip}=await import('./vendor/jszip.mjs');
   const prefix=String(data.prefix??'file').trim();
   if(rename&&!/^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$/.test(prefix))
     throw Error('Use a 1–32 character prefix of letters, digits, _ or -.');
@@ -87,7 +87,8 @@ async function makeArchive(files,rename,data){
 export async function processBatchFileTool(id,files,data={}){
   const one=id==='file-format-inspector'||id==='zip-contents-viewer';
   if(!one&&!['batch-file-renamer','zip-file-creator'].includes(id))throw Error('Unknown file utility.');
-  validate(files,one?1:20);
+  if(id==='zip-contents-viewer')validate(files,1,36*1048576,36*1048576);
+  else validate(files,one?1:20);
   if(id==='file-format-inspector')return identify(files[0]);
   if(id==='zip-contents-viewer')return inspectArchive(files[0]);
   return makeArchive(files,id==='batch-file-renamer',data);

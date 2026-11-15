@@ -37,7 +37,7 @@ From the website root, run `node --test tests/*.test.mjs` with a recent Node.js 
 
 ## Additional local file utilities
 
-File Format Inspector reads only a file header; it does not prove file safety. ZIP Contents Viewer validates central-directory structure without extracting contents. ZIP File Creator and Batch File Renamer use the bundled JSZip, preserve originals and generate a downloaded ZIP. All run locally with per-file, total-input and ZIP-size limits.
+File Format Inspector reads only a file header; it does not prove file safety. ZIP Contents Viewer validates central-directory structure without extracting contents. ZIP File Creator and Batch File Renamer use the bundled JSZip (loaded on demand), preserve originals and generate a downloaded ZIP. ZIP Contents Viewer accepts up to 36 MB so it can inspect ordinary archives generated from 30 MB input batches; Office document parsing retains its stricter 12 MB limit. All run locally with per-file, total-input and ZIP-size limits.
 
 To regenerate page templates and catalog entries, edit `scripts/file-tool-specs.mjs` and run `node scripts/generate-file-tools.mjs`. These four tools execute through `tools/batch-file-core.mjs` and the shared `processFileTool` dispatcher.
 

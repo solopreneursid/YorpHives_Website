@@ -20,3 +20,17 @@ test('CSV to HTML escapes untrusted markup',async()=>{
  assert.match(x,/&lt;script&gt;/);assert.ok(!x.includes('<script>'));
  await assert.rejects(()=>runEverydayTool('csv-to-html-table',{text:'a,b\n1'}));
 });
+test('JSON key sorter uses lexical order even for numeric-looking keys',async()=>{
+ const text=(await runEverydayTool('json-key-sorter',{text:'{"2":"two","10":"ten","a":{"3":3,"12":12}}'})).text;
+ assert.ok(text.indexOf('"10"')<text.indexOf('"2"'),'numeric-looking keys must sort lexically');
+ assert.ok(text.indexOf('"12"')<text.indexOf('"3"'),'nested keys must also sort lexically');
+ assert.equal(JSON.parse(text)['10'],'ten');
+});
+test('CSV column exporter preserves signed numbers while blocking formulas',async()=>{
+ const result=(await runEverydayTool('csv-column-extractor',{
+   text:'Item,Value\nnegative,-50\ndecimal,-.5\nexponent,-1.5e3\nformula,-cmd\nsum,=1+1\nplus,+SUM(1)',
+   header:'Value'
+ })).text;
+ assert.match(result,/\r\n-50\r\n-\.5\r\n-1\.5e3\r\n/);
+ assert.match(result,/\r\n'-cmd\r\n'=1\+1\r\n'\+SUM\(1\)/);
+});

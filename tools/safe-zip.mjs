@@ -10,9 +10,14 @@ for (let n = 0; n < 256; n++) { let c=n; for(let k=0;k<8;k++) c=(c&1)?0xedb88320
 function crc32(chunks) { let crc=0xffffffff; for(const chunk of chunks)for(const b of chunk)crc=table[(crc^b)&255]^(crc>>>8);return (crc^0xffffffff)>>>0; }
 function invalid() { throw new Error('This file is not a supported, unencrypted Office document.'); }
 
-export function inspectZip(buffer) {
+export function inspectZip(buffer, {maxCompressedBytes=MAX_COMPRESSED}={}) {
+  // Office-document callers retain their original 12 MB limit. The dedicated
+  // ZIP directory viewer may opt into 36 MB without ever extracting entries.
+  if(!Number.isInteger(maxCompressedBytes)||maxCompressedBytes<22||maxCompressedBytes>36*1024*1024)
+    throw new Error('The ZIP size limit is invalid.');
   const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
-  if(bytes.length<22||bytes.length>MAX_COMPRESSED)throw new Error('Choose an Office file no larger than 12 MB.');
+  if(bytes.length<22||bytes.length>maxCompressedBytes)
+    throw new Error('Choose a supported archive no larger than '+Math.floor(maxCompressedBytes/1048576)+' MB.');
   const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),u16=i=>view.getUint16(i,true),u32=i=>view.getUint32(i,true);
   let end=-1;
   for(let i=bytes.length-22;i>=Math.max(0,bytes.length-65557);i--)if(u32(i)===0x06054b50 && i+22+u16(i+20)===bytes.length){end=i;break;}

@@ -179,17 +179,23 @@ export async function runEverydayTool(id, data = {}) {
     }
     case 'json-key-sorter': {
       const source=json(required(data,'text',200000));
+      // JSON.stringify reorders integer-like object keys numerically. Build the text
+      // directly so *all* keys, including "2" and "10", stay in lexical order.
       const ordered=(value,depth=0)=>{
         if(depth>64)throw new Error('JSON is nested too deeply.');
-        if(Array.isArray(value))return value.map(item=>ordered(item,depth+1));
-        if(value&&typeof value==='object'){
-          const result=Object.create(null);
-          for(const key of Object.keys(value).sort())result[key]=ordered(value[key],depth+1);
-          return result;
+        const indent='  '.repeat(depth),inner='  '.repeat(depth+1);
+        if(Array.isArray(value)){
+          if(!value.length)return '[]';
+          return '[\n'+value.map(v=>inner+ordered(v,depth+1)).join(',\n')+'\n'+indent+']';
         }
-        return value;
+        if(value&&typeof value==='object'){
+          const keys=Object.keys(value).sort();
+          if(!keys.length)return '{}';
+          return '{\n'+keys.map(key=>inner+JSON.stringify(key)+': '+ordered(value[key],depth+1)).join(',\n')+'\n'+indent+'}';
+        }
+        return JSON.stringify(value);
       };
-      output=JSON.stringify(ordered(source),null,2);
+      output=ordered(source);
       break;
     }
     case 'csv-column-extractor': {
@@ -201,7 +207,10 @@ export async function runEverydayTool(id, data = {}) {
       if(count!==1)throw new Error(count?'The header is duplicated.':'Column header not found.');
       const index=rows[0].indexOf(header);
       const csvCell=value=>{
-        const safe=/^\s*[=+\-@]/.test(value)?"'"+value:value;
+        // A leading minus is safe when the entire cell is a numeric literal.
+        // Keep a protective apostrophe for formulas, commands and other text.
+        const ordinaryNumber=/^-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(value);
+        const safe=!ordinaryNumber&&/^\s*[=+\-@]/.test(value)?"'"+value:value;
         return /[",\r\n]/.test(safe)?'"'+safe.replace(/"/g,'""')+'"':safe;
       };
       output=rows.map(row=>csvCell(row[index])).join('\r\n');

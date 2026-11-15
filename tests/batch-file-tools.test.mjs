@@ -34,3 +34,15 @@ test('invalid selections are rejected',async()=>{
  for(const id of ['file-format-inspector','zip-file-creator','batch-file-renamer','zip-contents-viewer'])
   await assert.rejects(()=>processFileTool(id,[]));
 });
+test('ZIP viewer accepts larger output ZIPs without increasing Office limits',async()=>{
+ const zip=new JSZip();
+ zip.file('one.bin',new Uint8Array(8*1048576));
+ zip.file('two.bin',new Uint8Array(6*1048576));
+ const bytes=await zip.generateAsync({type:'uint8array',compression:'STORE'});
+ assert.ok(bytes.length>12*1048576);
+ assert.throws(()=>inspectZip(bytes),/12 MB/);
+ const result=await processFileTool('zip-contents-viewer',[new File([bytes],'large.zip')]);
+ assert.match(result.text,/Files: 2/);
+ assert.match(result.text,/one\.bin/);
+ assert.match(result.text,/two\.bin/);
+});
