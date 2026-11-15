@@ -234,9 +234,9 @@
       logo.replaceChildren();
       // Product logos are first-party files in the released catalog, never remote assets.
       // Graceful monogram fallback keeps old products visually complete.
-      const initials = item.name.trim().split(/\\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase();
+      const initials = item.name.trim().split(/\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase();
       if (typeof item.logo === 'string' &&
-          /^(?:apps|products|assets)\\/[a-z0-9][a-z0-9/_-]*\\.(?:svg|png|webp|jpe?g)$/.test(item.logo)) {
+          /^(?:apps|products|assets)\/[a-z0-9][a-z0-9/_-]*\.(?:svg|png|webp|jpe?g)$/.test(item.logo)) {
         const image = document.createElement('img');
         image.alt = '';
         image.loading = 'lazy';
