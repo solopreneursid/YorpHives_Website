@@ -100,26 +100,39 @@
       </div>
       <div class="explore-showcase" aria-label="Qualified product launches">
         <div class="explore-showcase-head"><div><span class="explore-head-dot" aria-hidden="true"></span><span>THE EXPLORE COLLECTION</span></div><span class="explore-showcase-label" id="explore-showcase-label">EVIDENCE BEFORE LAUNCH</span></div>
-        <div id="qualified-showcase" class="explore-carousel" aria-roledescription="carousel" aria-label="HQ-qualified, founder-approved product launches" hidden>
-          <div id="qualified-showcase-cards" class="explore-carousel-cards" aria-live="off"></div>
-          <div class="explore-carousel-controls">
-            <span id="qualified-showcase-count" class="explore-carousel-count" aria-live="off"></span>
-            <div class="explore-carousel-buttons">
-              <button id="qualified-showcase-prev" type="button" aria-label="Previous products">←</button>
-              <button id="qualified-showcase-pause" type="button" aria-label="Pause automatic product rotation" aria-pressed="false">Ⅱ</button>
-              <button id="qualified-showcase-next" type="button" aria-label="Next products">→</button>
-            </div>
-          </div>
-        </div>
         <div id="qualified-showcase-empty" class="explore-evaluation">
           <div class="explore-evaluation-top"><span class="explore-eval-icon" aria-hidden="true">✦</span><span>CURATED, NOT CROWDED</span></div>
           <h3>Every launch<br>must earn its place.</h3>
-          <p>No HQ-qualified applications have been released yet. Here's what every candidate must pass:</p>
+          <p id="explore-qualification-note">No HQ-qualified applications have been released yet. Here's what every candidate must pass:</p>
           <div class="explore-eval-grid" aria-label="Evaluation requirements">
             <div class="explore-eval-card"><span class="explore-eval-number">01 / RESEARCH</span><span class="explore-eval-art" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>Real market need</strong><small>Demand · Users · Competition</small></div>
             <div class="explore-eval-card"><span class="explore-eval-number">02 / BUSINESS</span><span class="explore-eval-art explore-eval-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>A viable business case</strong><small>Value · Feasibility · Growth</small></div>
           </div>
           <div class="explore-evaluation-foot"><span class="explore-status-pulse" aria-hidden="true"></span><span>Qualified launches will appear here after founder approval.</span></div>
+          <div class="home-feature-wrap">
+            <div class="home-feature-caption"><span class="home-feature-icon" aria-hidden="true">✦</span><span>EXPLORE SPOTLIGHT</span><span class="home-feature-caption-end">APPROVED PRODUCTS</span></div>
+            <aside class="explore-feature-widget home-feature-widget" aria-label="Automatically rotating approved products on the homepage">
+              <div class="explore-feature-window" id="home-feature-window">
+                <div class="explore-feature-empty" id="home-feature-empty">
+                  <span class="explore-feature-empty-logo" aria-hidden="true">✦</span>
+                  <span><strong>First launch pending</strong><small>Qualified apps will appear here automatically.</small></span>
+                </div>
+                <a class="explore-feature-product" id="home-feature-product" href="#explore" hidden aria-label="View featured application">
+                  <span class="explore-feature-logo" id="home-feature-logo" aria-hidden="true"></span>
+                  <span class="explore-feature-info"><small id="home-feature-type">APP</small><strong id="home-feature-name"></strong><span>Explore product <span aria-hidden="true">↗</span></span></span>
+                </a>
+              </div>
+              <div class="explore-feature-bottom">
+                <span id="home-feature-count" aria-live="off">WAITING FOR FIRST LAUNCH</span>
+                <div class="explore-feature-controls" aria-label="Homepage product spotlight controls">
+                  <button id="home-feature-prev" type="button" aria-label="Previous product" disabled>←</button>
+                  <button id="home-feature-pause" type="button" aria-label="Pause product rotation" disabled aria-pressed="false">Ⅱ</button>
+                  <button id="home-feature-next" type="button" aria-label="Next product" disabled>→</button>
+                </div>
+              </div>
+            </aside>
+          </div>
+
         </div>
         <div class="explore-showcase-footer"><span>YORPHIVES <span aria-hidden="true">/</span> EXPLORE</span><a href="#explore">View collection <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg></a></div>
       </div>
