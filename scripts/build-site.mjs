@@ -76,6 +76,10 @@ function injectToolSuite(html,item){
  if(!html.includes('<link rel="stylesheet" href="../tool.css">'))throw Error('Tool CSS base missing: '+item.url);
  html=html.replace('<link rel="stylesheet" href="../tool.css">','<link rel="stylesheet" href="../tool.css">'+css);
  html=html.replace(/<body\b([^>]*)>/i,(_,attrs)=>'<body'+attrs+' data-tui-family="'+family+'" data-tui-category="'+esc(item.category||'Other')+'">');
+ // Replace generic help copy with clear steps appropriate to the current workflow.
+ const first=family==='file'?'Choose the file or files you want to work with.':family==='wave1'?'Upload a file or enter the details shown.':item.category==='Calculators'?'Enter the values you want to calculate.':item.category==='Writing'?'Paste or type the text you want to work with.':'Enter the details or content requested by this tool.';
+ html=html.replace('<li>Enter your information and choose any options.</li>','<li>'+first+'</li>');
+ html=html.replace('<li>Run the tool to see the result.</li>','<li>Choose the main action to create your result.</li>');
  return html.replace('</body>',script+'</body>');
 }
 

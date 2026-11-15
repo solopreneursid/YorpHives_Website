@@ -38,3 +38,10 @@ test('real computed-style QA exists only in preview',async()=>{
  assert.equal(available,preview);
  if(preview){const js=await read(dist,'tool-suite-qa.mjs');assert.match(js,/getComputedStyle/);assert.match(js,/getBoundingClientRect/);}
 });
+
+test('all legacy tool instructions use action-oriented, contextual steps',async()=>{
+ for(const item of items.filter(x=>x.url!=='tools/pdf-compressor/')){
+  const html=await read(dist,item.url+'index.html');
+  assert.doesNotMatch(html,/<li>Enter your information and choose any options.<\\/li>/,item.url);
+ }
+});

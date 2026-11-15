@@ -104,5 +104,36 @@ if(root?.classList.contains('tool-page')&&root.dataset.tuiFamily){
  statuses.forEach(status=>status.classList.add('tui-status'));
  // The specialized image resizer uses a sibling label/input inside a separate file box.
  const resizer=panel?.querySelector('.file-box');
- if(resizer&&family==='image')resizer.classList.add('tui-image-drop');
+ if(resizer&&family==='image'){
+  resizer.classList.add('tui-image-drop');
+  const input=resizer.querySelector('#image-file'),label=resizer.querySelector('label[for="image-file"]');
+  if(input&&label){
+   label.classList.add('tui-image-name');
+   const orig=label.textContent.trim();
+   const icon=el('span','tui-upload-icon');
+   icon.setAttribute('aria-hidden','true');
+   icon.innerHTML='<svg viewBox="0 0 28 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 2h12l7 7v19a2 2 0 0 1-2 2H6a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3Z" stroke="currentColor" stroke-width="1.7"/><path d="M18 2v8h7M9 17h10M9 22h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+   const desc=el('span','tui-image-subtitle','Choose a file or drop it here');
+   const browse=el('span','tui-image-browse','Browse file ↗');
+   browse.setAttribute('aria-hidden','true');
+   resizer.insertBefore(icon,label);
+   resizer.insertBefore(desc,input);
+   resizer.insertBefore(browse,input);
+   input.setAttribute('aria-label',orig);
+   input.addEventListener('change',()=>{
+    const file=input.files?.[0];
+    label.textContent=file?file.name:orig;
+    desc.textContent=file?(file.size/1048576).toFixed(2)+' MB · Stored on this device':'Choose a file or drop it here';
+   });
+   // Keep the legacy native input, which still triggers the original image processor.
+   for(const type of ['dragenter','dragover'])resizer.addEventListener(type,event=>{if(event.dataTransfer?.types?.includes('Files')){event.preventDefault();resizer.classList.add('tui-drag-active');}});
+   for(const type of ['dragleave','drop'])resizer.addEventListener(type,event=>{event.preventDefault();resizer.classList.remove('tui-drag-active');});
+   resizer.addEventListener('drop',event=>{
+    const file=event.dataTransfer?.files?.[0];if(!file)return;
+    if(!['image/png','image/jpeg','image/webp'].includes(file.type)){const status=document.getElementById('image-status');if(status){status.textContent='Choose a JPEG, PNG, or WebP image.';status.classList.add('error');}return;}
+    if(typeof DataTransfer!=='function')return;
+    const dt=new DataTransfer();dt.items.add(file);input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));
+   });
+  }
+ }
 }

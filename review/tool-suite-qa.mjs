@@ -11,6 +11,10 @@ try{
  verify('panel looks like card',parseFloat(getComputedStyle(panel).borderRadius)>=12,{radius:getComputedStyle(panel).borderRadius});
  const buttons=[...content.querySelectorAll('.tool-btn')];
  verify('action buttons have consistent styling',buttons.length>0&&buttons.every(x=>parseFloat(getComputedStyle(x).borderRadius)>=8),{buttons:buttons.length});
+ if(body.dataset.tuiFamily==='image'){
+  const zone=content.querySelector('.tui-image-drop'),input=zone?.querySelector('#image-file');
+  verify('resizer has styled upload card and hidden native picker',!!zone&&!!input&&getComputedStyle(input).opacity==='0');
+ }
  const picker=content.querySelector('label.tool-field>input[type=file]');
  if(picker&&body.dataset.tuiFamily!=='image'){
   const label=picker.parentElement,style=getComputedStyle(label);
