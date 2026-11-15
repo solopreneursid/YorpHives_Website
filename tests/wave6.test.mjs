@@ -3,7 +3,7 @@ import{strict as assert}from'node:assert';
 import{readFile,stat}from'node:fs/promises';
 import{dirname,resolve}from'node:path';
 import{fileURLToPath}from'node:url';
-import{GIFEncoder,quantize,applyPalette}from'gifenc';
+import{GIFEncoder,quantize,applyPalette}from'../dist/tools/vendor/gifenc/index.js';
 import{validateScanCorners,solveProjective,projectPoint}from'../tools/wave6-scanner-core.mjs';
 import{encodeHex,rgbToHsl,splitMemeCaption}from'../tools/wave6-image-core.mjs';
 import{validateVideoSettings}from'../tools/wave6-video-core.mjs';
