@@ -76,6 +76,23 @@ export function discoverPublicPageUpdates(root,limit=80){
   return [...found.values()];
 }
 
+// The last committed change to each published tool's own directory provides
+// a refresh signal even when an editor forgets to maintain updatedAt.
+export function discoverToolEditTimes(root,limit=220){
+  const log=git(root,['log','-n',String(limit),'--format=@@%cI','--name-only','--','tools/']);
+  const found=new Map();
+  let timestamp='';
+  for(const line of log.split('\n')){
+    if(line.startsWith('@@')){timestamp=line.slice(2);continue;}
+    const match=line.match(/^tools\/([a-z0-9][a-z0-9-]*)\//);
+    if(match&&Number.isFinite(isoTime(timestamp))){
+      const url='tools/'+match[1]+'/';
+      if(!found.has(url))found.set(url,timestamp);
+    }
+  }
+  return Object.fromEntries(found);
+}
+
 function validPublicEvent(item,allowed,now){
   if(!item||!['builders','explore','tools'].includes(item.kind)||!safeText(item.title))
     return false;
@@ -84,7 +101,7 @@ function validPublicEvent(item,allowed,now){
   if(item.kind==='explore')return item.url==='#explore';
   return allowed.has(item.url);
 }
-export function collectPublicActivity({published,notes=[],pageChanges=[],now=Date.now(),max=10}){
+export function collectPublicActivity({published,notes=[],pageChanges=[],toolEditTimes={},now=Date.now(),max=10}){
   const validItems=(Array.isArray(published)?published:[]).filter(x=>
     x?.type==='tool'&&typeof x.name==='string'&&x.name.trim().length>=3&&
     x.name.length<=80&&typeof x.url==='string'&&/^tools\/[a-z0-9][a-z0-9-]*\/$/.test(x.url)&&
@@ -93,11 +110,15 @@ export function collectPublicActivity({published,notes=[],pageChanges=[],now=Dat
   const toolPaths=new Set(validItems.map(x=>x.url));
   const candidates=validItems.map((tool,index)=>{
     const created=dayStart(tool.date);
-    const modified=isoTime(tool.updatedAt);
-    const updated=Number.isFinite(modified)&&modified>created&&modified<=now;
+    const explicit=isoTime(tool.updatedAt);
+    const detected=isoTime(toolEditTimes[tool.url]);
+    const recent=[explicit,detected].filter(t=>Number.isFinite(t)&&t<=now);
+    const modified=Math.max(created,...recent);
+    const updated=(Number.isFinite(explicit)&&explicit>created)||
+      (Number.isFinite(detected)&&new Date(detected).toISOString().slice(0,10)>tool.date);
     return {id:'tool:'+tool.url,kind:'tools',
       title:(updated?'Updated: ':'Added: ')+tool.name,
-      url:tool.url,timestamp:new Date(updated?modified:created).toISOString(),
+      url:tool.url,timestamp:new Date(modified).toISOString(),
       source:'published-catalog',index};
   });
   const fallback=[
@@ -130,11 +151,13 @@ export async function loadActivityNotes(root){
 }
 export function renderFooterPulse(items){
   const events=Array.isArray(items)?items:[];
-  const one=({duplicate=false})=>'<div class="pulse-items"'+(duplicate?' aria-hidden="true"':' role="list"')+'>'+
-    events.map(e=>'<a role="'+(duplicate?'presentation':'listitem')+'" class="pulse-item pulse-'+esc(e.kind)+
-      '" href="'+esc(e.url)+'"'+(duplicate?' tabindex="-1"':'')+'>'+
+  const one=({duplicate=false})=>'<div class="pulse-items"'+(duplicate?' aria-hidden="true"':'')+'>'+
+    events.map(e=>'<a class="pulse-item pulse-'+esc(e.kind)+
+      '" href="'+esc(e.url)+'" title="'+esc(e.title)+'"'+(duplicate?' tabindex="-1"':'')+'>'+
       '<span class="pulse-kind">'+esc(e.kind==='tools'?'TOOLS':e.kind.toUpperCase())+'</span>'+
       '<span class="pulse-title">'+esc(e.title)+'</span>'+
+      '<time class="pulse-date" datetime="'+esc(e.timestamp.slice(0,10))+'">'+
+        esc(new Date(e.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'}))+'</time>'+
       '<span class="pulse-arrow" aria-hidden="true">↗</span></a>').join('')+'</div>';
   const count=events.length;
   return '<div class="pulse-label"><span class="pulse-signal" aria-hidden="true"></span>'+
