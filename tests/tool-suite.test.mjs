@@ -28,7 +28,7 @@ test('the shared UI is applied to every non-compressor tool, not just sample pag
 test('modern responsive interface remains first-party and accessible',async()=>{
  const css=await read(dist,'tools/tool-suite-v1.css'),js=await read(dist,'tools/tool-suite-v1.mjs');
  for(const name of ['tui-upload-zone','tui-result-panel','tui-status','@media(max-width:680px)','@media(max-width:390px)',':focus-visible','prefers-reduced-motion'])assert.ok(css.includes(name),name);
- for(const name of ['tui-upload-zone','tui-result-head','aria-label','dispatchEvent','file-tool-form','dataTransfer'])assert.ok(js.includes(name),name);
+ for(const name of ['tui-upload-zone','tui-result-head','aria-label','dispatchEvent','label.tool-field>input[type="file"]','dataTransfer'])assert.ok(js.includes(name),name);
  assert.doesNotMatch(css,/@import|https?:\/\//);
  assert.doesNotMatch(js,/fetch\(|XMLHttpRequest|sendBeacon|eval\(|new Function\(/);
 });
