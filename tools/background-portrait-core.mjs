@@ -91,7 +91,7 @@ export async function segmentPortrait(bitmap,{onProgress=()=>{}}={}){
   outputs=await session.run({[session.inputNames[0]]:tensor},[session.outputNames[0]]);
   const prediction=outputs[session.outputNames[0]];
   const mask=normalizePortraitMask(prediction?.data);
-  return {bitmap,mask,maskSize:PORTRAIT_SIZE,maskWidth:PORTRAIT_SIZE,maskHeight:PORTRAIT_SIZE,
+  return {bitmap,width:bitmap.width,height:bitmap.height,mask,maskSize:PORTRAIT_SIZE,maskWidth:PORTRAIT_SIZE,maskHeight:PORTRAIT_SIZE,
    inferenceMs:Math.round(performance.now()-start),model:PORTRAIT_INFO.id,modelName:PORTRAIT_INFO.name};
  }finally{
   tensor.dispose?.();
