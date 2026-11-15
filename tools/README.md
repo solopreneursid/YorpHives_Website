@@ -42,3 +42,7 @@ File Format Inspector reads only a file header; it does not prove file safety. Z
 To regenerate page templates and catalog entries, edit `scripts/file-tool-specs.mjs` and run `node scripts/generate-file-tools.mjs`. These four tools execute through `tools/batch-file-core.mjs` and the shared `processFileTool` dispatcher.
 
 The additional CSV, JSON and conversion-command helper tools are maintained via `scripts/extra-tool-specs.mjs` and the shared browser-local `runEverydayTool` interface. Conversion commands are only guidance and are never run by the site.
+
+## Release metadata and security
+
+Run `node scripts/generate-sitemap.mjs` after changing the catalog. The canonical sitemap and `robots.txt` target `yorphives.com` only after release. `_headers` applies first-party Content Security Policy, disables plugin embedding, and limits browser connections to this origin while allowing local QR/image previews and ZIP worker modules. Validate these headers in a real preview, particularly any future added features.

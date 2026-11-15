@@ -30,3 +30,5 @@ The existing Cloudflare Pages project `yorphives` is connected to GitHub `solopr
 - [ ] Founder approves the final preview and deployment.
 
 Never promote a draft PR or switch the Cloudflare production source automatically.
+
+Before any live cutover, generate and validate the sitemap (`node scripts/generate-sitemap.mjs`) and verify Cloudflare Pages serves `_headers` correctly. Ensure the final preview has no CSP errors, no unavailable resources and no cross-origin file-processing requests.

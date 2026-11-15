@@ -30,5 +30,10 @@ for(const item of tools){
 for(const required of ['tools/batch-file-core.mjs','tools/safe-zip.mjs','tools/office-files.mjs','tools/vendor/jszip.mjs']){
  try {await stat(resolve(root,required));} catch {problems.push('Missing dependency: '+required);}
 }
+const sitemap=await read('sitemap.xml');
+for(const item of tools){if(!sitemap.includes('<loc>https://yorphives.com/'+item.url+'</loc>'))problems.push('Missing sitemap tool URL: '+item.url);}
+const headers=await read('_headers');
+if(!headers.includes("connect-src 'self'"))problems.push('Missing privacy-oriented connect-src header.');
+if(!headers.includes("script-src 'self'"))problems.push('Missing first-party script policy.');
 if(problems.length){console.error('RELEASE CHECK FAILED\n'+problems.map(x=>' - '+x).join('\n'));process.exitCode=1;}
 else console.log('STATIC RELEASE CHECK PASSED: '+tools.length+' local tool pages, catalog, local scripts and file dependencies verified.');
