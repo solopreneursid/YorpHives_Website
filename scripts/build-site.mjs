@@ -100,7 +100,7 @@ function injectSiteSupport(html,page){
 
 // Add one shared visual language to all free tools without changing processors or page routes.
 function injectToolSuite(html,item){
- if(item.type!=='tool'||!item.url.startsWith('tools/')||(item.url==='tools/pdf-compressor/'||['tools/wave2-core.mjs','tools/wave3-core.mjs','tools/pdf-redaction-core.mjs','tools/ocr-pdf-core.mjs','tools/video-trim-core.mjs'].includes(item.module?.url)))return html;
+ if(item.type!=='tool'||!item.url.startsWith('tools/')||(item.url==='tools/pdf-compressor/'||['tools/wave2-core.mjs','tools/wave3-core.mjs','tools/pdf-redaction-core.mjs','tools/ocr-pdf-core.mjs','tools/video-trim-core.mjs','tools/wave4-core.mjs','tools/image-mask-core.mjs','tools/pdf-compare-core.mjs','tools/screen-record-core.mjs'].includes(item.module?.url)))return html;
  if(!/<body\b[^>]*class="tool-page"/.test(html))throw Error('Unexpected tool HTML: '+item.url);
  const family=html.includes('id="file-tool-form"')?'file':html.includes('id="utility-form"')?'utility':html.includes('id="wave1-form"')?'wave1':html.includes('id="image-file"')?'image':html.includes('id="json-input"')?'json':'general';
  const css='<link rel="stylesheet" href="../tool-suite-v1.css">';
@@ -236,13 +236,15 @@ if(target==='preview'){
  await cp(resolve(root,'review/compressor-design-qa.mjs'),resolve(dest,'compressor-design-qa.mjs'));
  await cp(resolve(root,'review/tool-suite-qa.mjs'),resolve(dest,'tool-suite-qa.mjs'));
  await cp(resolve(root,'review/tool-suite-flow-qa.mjs'),resolve(dest,'tool-suite-flow-qa.mjs'));
- for(const name of ['wave2-ui-qa.mjs','wave3-browser-qa.mjs','ocr-browser-qa.mjs','video-browser-qa.mjs'])
+ for(const name of ['wave2-ui-qa.mjs','wave3-browser-qa.mjs','ocr-browser-qa.mjs','video-browser-qa.mjs','wave4-browser-qa.mjs','screen-browser-qa.mjs'])
   await cp(resolve(root,'review',name),resolve(dest,name));
  // Synthetic browser acceptance only runs on opt-in preview URLs, never in production.
  for(const [toolPath,script] of [
   ['tools/pdf-redaction/index.html','wave3-browser-qa.mjs'],
   ['tools/scanned-pdf-to-searchable-pdf/index.html','ocr-browser-qa.mjs'],
-  ['tools/video-trimmer/index.html','video-browser-qa.mjs']]){
+  ['tools/video-trimmer/index.html','video-browser-qa.mjs'],
+  ['tools/favicon-generator/index.html','wave4-browser-qa.mjs'],
+  ['tools/screen-recorder/index.html','screen-browser-qa.mjs']]){
   const current=await output(toolPath);
   await write(toolPath,current.replace('</body>','<script type="module" src="../../'+script+'"></script></body>'));
  }

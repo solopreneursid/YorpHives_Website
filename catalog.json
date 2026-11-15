@@ -4111,6 +4111,227 @@
           "Browser MediaRecorder and Canvas capture. Output is WebM or MP4 depending on browser."
         ]
       }
+    },
+    {
+      "name": "Subtitle Editor & Converter",
+      "description": "Convert SRT and WebVTT subtitle cues with local text editing and download.",
+      "type": "tool",
+      "category": "Creator",
+      "date": "2026-11-15",
+      "url": "tools/subtitle-converter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave4-core.mjs",
+        "export": "processWave4",
+        "toolId": "subtitle-converter",
+        "arguments": [
+          "tool id: subtitle-converter",
+          "array of local Files",
+          "options form object"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file-or-form"
+          }
+        ],
+        "requirements": [
+          "Self-hosted assets, local processing. No paid APIs or file uploads."
+        ]
+      }
+    },
+    {
+      "name": "Social Share Preview Builder",
+      "description": "Preview social sharing snippets and generate Open Graph and Twitter meta tags without URL scraping.",
+      "type": "tool",
+      "category": "Marketing",
+      "date": "2026-11-15",
+      "url": "tools/social-preview-builder/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave4-core.mjs",
+        "export": "processWave4",
+        "toolId": "social-preview-builder",
+        "arguments": [
+          "tool id: social-preview-builder",
+          "array of local Files",
+          "options form object"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file-or-form"
+          }
+        ],
+        "requirements": [
+          "Self-hosted assets, local processing. No paid APIs or file uploads."
+        ]
+      }
+    },
+    {
+      "name": "Quotation PDF Generator",
+      "description": "Create a professional itemized quotation PDF with optional tax and notes.",
+      "type": "tool",
+      "category": "Business",
+      "date": "2026-11-15",
+      "url": "tools/quotation-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave4-core.mjs",
+        "export": "processWave4",
+        "toolId": "quotation-generator",
+        "arguments": [
+          "tool id: quotation-generator",
+          "array of local Files",
+          "options form object"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file-or-form"
+          }
+        ],
+        "requirements": [
+          "Self-hosted assets, local processing. No paid APIs or file uploads."
+        ]
+      }
+    },
+    {
+      "name": "Certificate Generator",
+      "description": "Generate printable certificates of achievement with a clean decorative design.",
+      "type": "tool",
+      "category": "Business",
+      "date": "2026-11-15",
+      "url": "tools/certificate-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave4-core.mjs",
+        "export": "processWave4",
+        "toolId": "certificate-generator",
+        "arguments": [
+          "tool id: certificate-generator",
+          "array of local Files",
+          "options form object"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file-or-form"
+          }
+        ],
+        "requirements": [
+          "Self-hosted assets, local processing. No paid APIs or file uploads."
+        ]
+      }
+    },
+    {
+      "name": "Favicon Pack Generator",
+      "description": "Create favicon.ico and six PNG icons as a downloadable ZIP from a local logo.",
+      "type": "tool",
+      "category": "Design",
+      "date": "2026-11-15",
+      "url": "tools/favicon-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave4-core.mjs",
+        "export": "processWave4",
+        "toolId": "favicon-generator",
+        "arguments": [
+          "tool id: favicon-generator",
+          "array of local Files",
+          "options form object"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file-or-form"
+          }
+        ],
+        "requirements": [
+          "Self-hosted assets, local processing. No paid APIs or file uploads."
+        ]
+      }
+    },
+    {
+      "name": "Image Blur & Privacy Redactor",
+      "description": "Pixelate or irreversibly black out regions of JPG, PNG and WebP images.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/image-privacy-redactor/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/image-mask-core.mjs",
+        "export": "maskImage",
+        "toolId": "image-privacy-redactor",
+        "arguments": [
+          "local image File",
+          "rectangle mask array",
+          "options"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file-or-form"
+          }
+        ],
+        "requirements": [
+          "Self-hosted assets, local processing. No paid APIs or file uploads."
+        ]
+      }
+    },
+    {
+      "name": "PDF Comparison Tool",
+      "description": "Compare two PDF documents visually and download marked side-by-side image reports.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-compare/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/pdf-compare-core.mjs",
+        "export": "comparePdfs",
+        "toolId": "pdf-compare",
+        "arguments": [
+          "two local PDFs",
+          "optional progress callback"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file-or-form"
+          }
+        ],
+        "requirements": [
+          "Self-hosted assets, local processing. No paid APIs or file uploads."
+        ]
+      }
+    },
+    {
+      "name": "Screen Recorder",
+      "description": "Capture a screen, window or tab with browser permission and save the video locally.",
+      "type": "tool",
+      "category": "Creator",
+      "date": "2026-11-15",
+      "url": "tools/screen-recorder/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/screen-record-core.mjs",
+        "export": "beginScreenRecording",
+        "toolId": "screen-recorder",
+        "arguments": [
+          "browser permission and callbacks"
+        ],
+        "inputs": [
+          {
+            "name": "screenCapture",
+            "type": "browser-permission"
+          }
+        ],
+        "requirements": [
+          "Self-hosted assets, local processing. No paid APIs or file uploads."
+        ]
+      }
     }
   ]
 }
