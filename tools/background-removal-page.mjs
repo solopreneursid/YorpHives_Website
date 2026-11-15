@@ -11,6 +11,7 @@ const say=(text,error=false)=>{status.textContent=text;status.classList.toggle('
 function discardResult(){
  if(outputUrl)URL.revokeObjectURL(outputUrl);outputUrl='';
  processed.removeAttribute('src');processed.hidden=true;result.hidden=true;download.removeAttribute('href');
+ $('ai-output').hidden=false;
 }
 function clearSegmentation(){
  if(segmentation)disposeSegmentation(segmentation);segmentation=null;
@@ -64,6 +65,7 @@ async function redraw(current){
  if(current!==token)return;
  discardResult();
  outputUrl=URL.createObjectURL(resultData.blob);
+ $('ai-output').hidden=true;
  processed.src=outputUrl;processed.hidden=false;
  download.href=outputUrl;download.download=resultData.filename;
  $('ai-result-text').textContent=resultData.summary;
