@@ -239,6 +239,11 @@ if(target==='preview'){
  for(const name of ['wave2-ui-qa.mjs','wave3-browser-qa.mjs','ocr-browser-qa.mjs','video-browser-qa.mjs'])
   await cp(resolve(root,'review',name),resolve(dest,name));
  // The more invasive synthetic browser tests are opt-in and preview-only.
+ for(const slug of ['pdf-form-filler','pdf-flatten','zip-extractor','csv-cleaner','image-collage-maker','resume-builder']){
+  const path='tools/'+slug+'/index.html';
+  const html=await output(path);
+  await write(path,html.replace('</body>','<script type="module" src="../../wave2-ui-qa.mjs"></script></body>'));
+ }
  for(const [slug,qa] of [['pdf-redaction','wave3-browser-qa.mjs'],['scanned-pdf-to-searchable-pdf','ocr-browser-qa.mjs'],['video-trimmer','video-browser-qa.mjs']]){
   const path='tools/'+slug+'/index.html';
   const html=await output(path);
