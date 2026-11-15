@@ -1,3 +1,4 @@
+import {updateToolDirectory} from './tool-directory.mjs';
 // Build static pages and catalog entries from the shared definitions.
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -50,11 +51,7 @@ const updates=new Map(generated.map(item=>[item.url,item]));
 const existing=new Set(originalItems.map(item=>item.url));
 catalog.items=originalItems.map(item=>updates.get(item.url)||item).concat(generated.filter(item=>!existing.has(item.url)));
 await writeFile(catalogPath,JSON.stringify(catalog,null,2)+'\n');
-const directoryPath=resolve(root,'tools/index.html');let directory=await readFile(directoryPath,'utf8');
-const groups=[...new Set(catalog.items.filter(item=>item.type==='tool').map(item=>item.category))].sort();
-const sections=groups.map(group=>`<section class="directory-section"><h2>${esc(group)}</h2><div class="directory-grid">${catalog.items.filter(item=>item.type==='tool'&&item.category===group).map(item=>`<a class="directory-card" href="../${esc(item.url)}"><strong>${esc(item.name)}</strong><span>${esc(item.description)}</span></a>`).join('')}</div></section>`).join('');
-const sectionPattern=/<section class="directory-section">[\s\S]*?(?=<a class="tool-catalog-link")/;
-if(!sectionPattern.test(directory))throw new Error('The tool directory changed; review the generator.');
-directory=directory.replace(sectionPattern,sections);
-await writeFile(directoryPath,directory);
+const directoryPath=resolve(root,'tools/index.html');
+const currentDirectory=await readFile(directoryPath,'utf8');
+await writeFile(directoryPath,updateToolDirectory(currentDirectory,catalog.items));
 console.log(`Generated ${extraTools.length} tools. Total catalog entries: ${catalog.items.length}.`);
