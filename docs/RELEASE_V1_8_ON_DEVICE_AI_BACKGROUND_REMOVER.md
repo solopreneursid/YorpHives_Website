@@ -39,3 +39,6 @@ Public Free Tools catalog: **142 → 143**.
 ## Next upgrade
 - Benchmark and evaluate carefully licensed, optional higher-quality model(s) against natural rights-cleared photographs and physical iOS/Android devices.
 - Keep the model plug-and-play, with pinned checksums and no cross-origin runtime requests.
+
+## Production publication authorization
+Founder-authorized publication after verified release-candidate preview, 246 passing automated tests in production and preview modes, 9 real ONNX model checks and 10 real-interface checks at multiple viewport sizes. Production automation is temporarily enabled solely for this single reviewed release; it must be disabled immediately after success and public URL verification.
