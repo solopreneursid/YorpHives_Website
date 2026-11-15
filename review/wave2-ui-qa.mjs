@@ -1,3 +1,4 @@
+if(new URLSearchParams(location.search).get('qa')==='wave2'){
 // Preview-only browser interaction QA. Uses fabricated files; no user data or uploads.
 (async()=>{
  const report=document.createElement('pre');report.id='wave2-qa';report.dataset.status='running';
@@ -73,3 +74,5 @@
   report.textContent=JSON.stringify({id,ok:true,checks:results},null,2);report.dataset.status='pass';
  }catch(e){report.textContent=JSON.stringify({id,ok:false,checks:results,error:e?.message||String(e)},null,2);report.dataset.status='fail';}
 })();
+
+}
