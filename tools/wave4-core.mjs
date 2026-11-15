@@ -157,7 +157,7 @@ export function convertSubtitles(text,to='vtt'){
  return {text:to==='vtt'?'WEBVTT\n\n'+converted+'\n':converted+'\n',cues:cues.length};
 }
 async function subtitleTool(files,opts){
- const input=files?.[0],raw=input instanceof Blob?(input.size<=3*MB?await input.text():(()=>{throw Error('Subtitle file is too large.');})()):field(opts,'subtitleText',3*MB,true);
+ const input=files?.[0],raw=input instanceof Blob&&input.size>0?(input.size<=3*MB?await input.text():(()=>{throw Error('Subtitle file is too large.');})()):field(opts,'subtitleText',3*MB,true);
  const to=opts.format==='srt'?'srt':'vtt',res=convertSubtitles(raw,to);
  return output(new Blob([res.text],{type:'text/plain;charset=utf-8'}),'yorphives-subtitles.'+to,'Converted '+res.cues+' subtitle cues to '+to.toUpperCase()+'. Review cue formatting before publishing.',{text:res.text.slice(0,8000)});
 }
