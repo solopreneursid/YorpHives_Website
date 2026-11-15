@@ -32,3 +32,6 @@ Total tools unchanged: **143**.
 
 ## Deployment control
 Release only after success in a dedicated noindex review deployment. Preserve previous production for rollback and **disable automatic Cloudflare production deployments again** after verified success.
+
+## One-time deployment authorization
+Founder-authorized release after a successful noindex candidate, 251 passing automated tests in production and preview modes, real inference and interactive PNG tests for both models, and verified static-asset-only zero paid AI runtime. Cloudflare production auto-deploy is enabled only for this release and must be disabled immediately after production succeeds.
