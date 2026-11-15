@@ -5,6 +5,8 @@ import {cp,mkdir,readFile,readdir,rm,stat,writeFile} from 'node:fs/promises';
 import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createEntity} from './discovery-schema.mjs';
+import {isQualifiedProduct} from '../product-policy.mjs';
+import {collectPublicActivity,discoverPublicPageUpdates,discoverToolEditTimes,loadActivityNotes,renderFooterPulse} from './activity-feed.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const dest=resolve(root,'dist');
@@ -22,7 +24,15 @@ const write=async (path,content)=>{const file=resolve(dest,path);await mkdir(dir
 const exists=async path=>stat(resolve(dest,path)).then(s=>s.isFile()).catch(()=>false);
 const catalog=JSON.parse(await src('catalog.json'));
 if(!Array.isArray(catalog.items))throw Error('Catalog has no items.');
-const published=catalog.items.filter(item=>item.published!==false&&item.visibility!=='private');
+// Public tools keep their existing publishing rule. Products require a separate
+// verified HQ evidence review and founder approval before exposure.
+for(const item of catalog.items){
+ if(item?.type!=='tool'&&item?.published===true&&!isQualifiedProduct(item))
+   throw Error('Unqualified product cannot be published: '+String(item.name||item.url||'unknown'));
+}
+const published=catalog.items.filter(item=>item?.type==='tool'
+ ? item.published!==false&&item.visibility!=='private'
+ : isQualifiedProduct(item));
 const seen=new Set();
 for(const item of published){
  if(!item||typeof item.name!=='string'||!item.name.trim()||typeof item.description!=='string'||!item.description.trim())
@@ -34,11 +44,34 @@ for(const item of published){
 }
 await rm(dest,{recursive:true,force:true});
 await mkdir(dest,{recursive:true});
-for(const file of ['index.html','app.js','style.css','catalog.json','_headers','_redirects','robots.txt','llms.txt'])
+for(const file of ['index.html','app.js','style.css','catalog.json','product-policy.mjs','_headers','_redirects','robots.txt','llms.txt'])
  await cp(resolve(root,file),resolve(dest,file));
+// Keep private or unqualified catalog candidates out of public static assets.
+await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
 const roots=new Set(['tools',...published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0])]);
 for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory()).catch(()=>false))
  await cp(resolve(root,dir),resolve(dest,dir),{recursive:true});
+// Build YHpulse only from actual published pages and reviewed public release notes.
+// This is static and requires no paid runtime services or background polling.
+const activity=collectPublicActivity({
+  published,
+  notes:await loadActivityNotes(root),
+  pageChanges:discoverPublicPageUpdates(root),
+  toolEditTimes:discoverToolEditTimes(root),
+});
+if(!activity.length)throw Error('No verified public activity available for release.');
+const mainPage=await output('index.html');
+const pulseStart='<!-- PULSE_START -->';
+const pulseEnd='<!-- PULSE_END -->';
+const begin=mainPage.indexOf(pulseStart),finish=mainPage.indexOf(pulseEnd,begin+pulseStart.length);
+if(begin<0||finish<begin||mainPage.indexOf(pulseStart,begin+1)>=0||
+   mainPage.indexOf(pulseEnd,finish+1)>=0)
+ throw Error('Footer activity template markers are missing or duplicated.');
+await write('index.html',mainPage.slice(0,begin+pulseStart.length)+
+  renderFooterPulse(activity)+mainPage.slice(finish));
+await write('activity.json',JSON.stringify({version:1,items:activity},null,2)+'\n');
+console.log('PUBLIC ACTIVITY BUILT: '+activity.length+' verified published shortcuts; mode='+target+'.');
+
 // After static copying, vendor the heavyweight open-source libraries under our origin.
 await import('./copy-wave1-vendors.mjs');
 for(const item of published)if(!item.url.includes('/'))
