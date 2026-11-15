@@ -593,7 +593,7 @@
 #explore .explore-feature-product:hover{background:#7affdc0a}
 #explore .explore-feature-product[hidden],#explore .explore-feature-empty[hidden]{display:none}
 #explore .explore-feature-product.is-entering{animation:explore-mini-arrive .48s cubic-bezier(.17,.8,.22,1) both}
-@keyframes explore-mini-arrive{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes explore-mini-arrive{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
 #explore .explore-feature-bottom{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto}
 #explore #explore-feature-count{font-size:9px;color:#99cdc1;letter-spacing:.08em;font-weight:770}
 #explore .explore-feature-controls{display:flex;gap:7px}
