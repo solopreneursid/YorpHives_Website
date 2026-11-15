@@ -24,7 +24,7 @@ const catalogPath=resolve(root,'catalog.json');
 const catalog=JSON.parse(await readFile(catalogPath,'utf8'));
 const ids=new Set(extraTools.map(tool=>`tools/${tool.id}/`));
 if(ids.size!==extraTools.length)throw new Error('Duplicate extra tool IDs.');
-catalog.items=catalog.items.filter(item=>!ids.has(item.url));
+const originalItems=catalog.items,generated=[];
 for(const tool of extraTools){
   let html=template.replaceAll('Word &amp; Character Counter',esc(tool.name))
     .replaceAll('Word & Character Counter',tool.name)
@@ -43,9 +43,12 @@ for(const tool of extraTools){
     if(field.min!==undefined)value.min=field.min;if(field.max!==undefined)value.max=field.max;
     return value;
   });
-  catalog.items.push({name:tool.name,description:tool.description,type:'tool',category:tool.category,date:'2026-11-15',url:`tools/${tool.id}/`,execution:'browser-local',
+  generated.push({name:tool.name,description:tool.description,type:'tool',category:tool.category,date:'2026-11-15',url:`tools/${tool.id}/`,execution:'browser-local',
     module:{url:'tools/everyday-core.mjs',export:'runEverydayTool',arguments:[`tool id: ${tool.id}`,'object of named form inputs'],toolId:tool.id,inputs}});
 }
+const updates=new Map(generated.map(item=>[item.url,item]));
+const existing=new Set(originalItems.map(item=>item.url));
+catalog.items=originalItems.map(item=>updates.get(item.url)||item).concat(generated.filter(item=>!existing.has(item.url)));
 await writeFile(catalogPath,JSON.stringify(catalog,null,2)+'\n');
 const directoryPath=resolve(root,'tools/index.html');let directory=await readFile(directoryPath,'utf8');
 const groups=[...new Set(catalog.items.filter(item=>item.type==='tool').map(item=>item.category))].sort();

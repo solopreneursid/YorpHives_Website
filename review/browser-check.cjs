@@ -67,9 +67,9 @@ async function run(root, playwright) {
       try { await fn(); assert.equal(errors.length, before); cases.push({ name, status: 'passed' }); }
       catch { cases.push({ name, status: 'failed' }); }
     }
-    const expected = catalog.items.filter(item => item && ['tool', 'app', 'product'].includes(item.type) &&
-      typeof item.name === 'string' && typeof item.date === 'string' && /^\d{4}-\d\d-\d\d$/.test(item.date))
-      .sort((a, b) => b.date.localeCompare(a.date));
+    const expected = catalog.items.map((item,index)=>({item,index})).filter(entry => entry.item && ['tool', 'app', 'product'].includes(entry.item.type) &&
+      typeof entry.item.name === 'string' && typeof entry.item.date === 'string' && /^\d{4}-\d\d-\d\d$/.test(entry.item.date))
+      .sort((a, b) => b.item.date.localeCompare(a.item.date) || b.index-a.index).map(entry=>entry.item);
     await check('Home page and recent additions', async () => {
       await page.goto(ORIGIN + '/#home', { waitUntil: 'networkidle' });
       await page.locator('#home h1').waitFor({ state: 'visible' });

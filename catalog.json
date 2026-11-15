@@ -2260,6 +2260,548 @@
           }
         ]
       }
+    },
+    {
+      "name": "Merge PDF Files",
+      "description": "Combine PDF documents into one file directly in your browser.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-merge/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: pdf-merge",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "pdf-merge",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": true,
+            "accept": ".pdf,application/pdf"
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "Extract PDF Pages",
+      "description": "Create a new PDF from the pages or ranges you choose.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-extract-pages/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: pdf-extract-pages",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "pdf-extract-pages",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".pdf,application/pdf"
+          },
+          {
+            "name": "pages",
+            "type": "text",
+            "default": ""
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "Remove PDF Pages",
+      "description": "Remove selected pages and download the remaining PDF.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-remove-pages/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: pdf-remove-pages",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "pdf-remove-pages",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".pdf,application/pdf"
+          },
+          {
+            "name": "pages",
+            "type": "text",
+            "default": ""
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "Rotate PDF Pages",
+      "description": "Rotate all or selected PDF pages by a right angle.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-rotate-pages/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: pdf-rotate-pages",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "pdf-rotate-pages",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".pdf,application/pdf"
+          },
+          {
+            "name": "pages",
+            "type": "text",
+            "default": ""
+          },
+          {
+            "name": "angle",
+            "type": "select",
+            "default": "90"
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "PDF Page Counter",
+      "description": "Count PDF pages and inspect their dimensions locally.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-page-counter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: pdf-page-counter",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "pdf-page-counter",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".pdf,application/pdf"
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "Images to PDF",
+      "description": "Combine JPEG, PNG, or WebP images into a PDF, one image per page.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/images-to-pdf/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: images-to-pdf",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "images-to-pdf",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": true,
+            "accept": ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "Image Cropper",
+      "description": "Crop a JPEG, PNG, or WebP image using pixel coordinates.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/image-cropper/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: image-cropper",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "image-cropper",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+          },
+          {
+            "name": "x",
+            "type": "number",
+            "default": 0
+          },
+          {
+            "name": "y",
+            "type": "number",
+            "default": 0
+          },
+          {
+            "name": "width",
+            "type": "number",
+            "default": 0
+          },
+          {
+            "name": "height",
+            "type": "number",
+            "default": 0
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "Rotate and Flip Image",
+      "description": "Rotate an image by 90-degree increments or flip it horizontally.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/image-rotate-flip/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: image-rotate-flip",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "image-rotate-flip",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+          },
+          {
+            "name": "angle",
+            "type": "select",
+            "default": "90"
+          },
+          {
+            "name": "flip",
+            "type": "checkbox",
+            "checkedValue": "on",
+            "defaultChecked": false
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "Add Text Watermark",
+      "description": "Add a text watermark to an image without uploading it.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/image-watermark/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: image-watermark",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "image-watermark",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+          },
+          {
+            "name": "watermark",
+            "type": "text",
+            "default": ""
+          },
+          {
+            "name": "size",
+            "type": "number",
+            "default": 32
+          },
+          {
+            "name": "opacity",
+            "type": "number",
+            "default": 70
+          },
+          {
+            "name": "color",
+            "type": "text",
+            "default": "#ffffff"
+          },
+          {
+            "name": "position",
+            "type": "select",
+            "default": "bottom-right"
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "CSV File to Excel",
+      "description": "Convert a UTF-8 CSV file into an Excel XLSX workbook.",
+      "type": "tool",
+      "category": "Spreadsheets",
+      "date": "2026-11-15",
+      "url": "tools/csv-file-to-xlsx/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: csv-file-to-xlsx",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "csv-file-to-xlsx",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".csv,text/csv"
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "Excel to CSV",
+      "description": "Export a worksheet from an XLSX workbook as a CSV file.",
+      "type": "tool",
+      "category": "Spreadsheets",
+      "date": "2026-11-15",
+      "url": "tools/xlsx-file-to-csv/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: xlsx-file-to-csv",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "xlsx-file-to-csv",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          },
+          {
+            "name": "sheet",
+            "type": "number",
+            "default": 1
+          },
+          {
+            "name": "safe",
+            "type": "checkbox",
+            "checkedValue": "on",
+            "defaultChecked": true
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "Excel to JSON",
+      "description": "Convert an XLSX worksheet into a JSON array using its first row as field names.",
+      "type": "tool",
+      "category": "Spreadsheets",
+      "date": "2026-11-15",
+      "url": "tools/xlsx-file-to-json/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: xlsx-file-to-json",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "xlsx-file-to-json",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          },
+          {
+            "name": "sheet",
+            "type": "number",
+            "default": 1
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "Images to PowerPoint",
+      "description": "Create a PowerPoint presentation with one image per slide.",
+      "type": "tool",
+      "category": "Presentations",
+      "date": "2026-11-15",
+      "url": "tools/images-to-powerpoint/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: images-to-powerpoint",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "images-to-powerpoint",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": true,
+            "accept": ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "PowerPoint Text Extractor",
+      "description": "Extract visible text from PPTX slide shapes into a text file.",
+      "type": "tool",
+      "category": "Presentations",
+      "date": "2026-11-15",
+      "url": "tools/powerpoint-text-extractor/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: powerpoint-text-extractor",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "powerpoint-text-extractor",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
+    },
+    {
+      "name": "File SHA-256 Checksum",
+      "description": "Calculate the SHA-256 checksum of a file locally.",
+      "type": "tool",
+      "category": "Files",
+      "date": "2026-11-15",
+      "url": "tools/file-sha256/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: file-sha256",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "file-sha256",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ""
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; image and presentation tools also need Canvas."
+        ]
+      }
     }
   ]
 }

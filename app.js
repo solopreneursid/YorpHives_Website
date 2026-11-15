@@ -110,7 +110,9 @@
       if (!response.ok) throw new Error('Catalog unavailable');
       const data = await response.json();
       if (!Array.isArray(data.items)) throw new Error('Invalid catalog');
-      const catalog = data.items.filter(validItem).sort((a, b) => b.date.localeCompare(a.date));
+      // For additions on the same day, later catalog entries are newer.
+      const catalog = data.items.map((item, index) => ({ item, index })).filter(entry => validItem(entry.item))
+        .sort((a, b) => b.item.date.localeCompare(a.item.date) || b.index - a.index).map(entry => entry.item);
       recent.replaceChildren();
       if (catalog.length) catalog.slice(0, 3).forEach(item => recent.append(card(item)));
       else recent.append(statusCard('Our first tools and products are taking shape. New additions will appear here.', 'THE FIRST CHAPTER'));
