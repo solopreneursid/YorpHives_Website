@@ -95,6 +95,7 @@ async function renderPage(page,scale){
  return c;
 }
 async function renderPdf(id,files,data){
+ if(id==='pdf-compressor'&&data.preset!==undefined&&!Object.hasOwn(PDF_COMPRESSION_PRESETS,data.preset))throw Error('Choose Low, Best, or High compression.');
  const {pdf,task}=await renderer(files[0]);
  try{
   if(id==='pdf-to-text'){
@@ -108,7 +109,6 @@ async function renderPdf(id,files,data){
    return result(new Blob([s],{type:'text/plain;charset=utf-8'}),'yorphives-pdf-text.txt','Extracted selectable text from '+pdf.numPages+' pages; scanned pictures need OCR.',{text:s.slice(0,10000)});
   }
   const preset=id==='pdf-compressor'&&data.preset!==undefined?PDF_COMPRESSION_PRESETS[data.preset]:null;
-  if(id==='pdf-compressor'&&data.preset!==undefined&&!preset)throw Error('Choose Low, Best, or High compression.');
   const quality=preset?preset.quality/100:num(data,'quality',25,95,70)/100;
   const requested=preset?preset.scale:num(data,'scale',0.5,2,1);
   const mime=id==='pdf-to-images'&&data.format==='png'?'image/png':'image/jpeg';
