@@ -1433,3 +1433,19 @@
     min-height:115px
   }
 }
+
+/* Compact sort control beside the heading at the smallest widths. */
+@media(max-width:380px){
+  #tools .launcher-main-head{
+    display:grid;grid-template-columns:minmax(0,1fr) auto;
+    align-items:center;gap:8px
+  }
+  #tools .launcher-main-head>div{flex:initial;min-width:0}
+  #tools .launcher-main-head h3{font-size:18px;letter-spacing:-.045em;white-space:nowrap}
+  #tools .launcher-sort{margin:0;justify-content:flex-end}
+  #tools .launcher-sort label{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip-path:inset(50%);white-space:nowrap
+  }
+  #tools .launcher-sort select{min-height:40px;max-width:92px;font-size:11px}
+}
