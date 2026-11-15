@@ -1,0 +1,26 @@
+/* YorpHives Wave 4: polished, compact, responsive creator workspaces. */
+.wave4-code{width:100%;min-height:155px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.55}
+#wave4-output>a,#wave4-output>strong{display:inline-flex;margin:0 12px 12px 0}
+.wave4-social-preview{max-width:520px;border:1px solid #c7d5ce;background:#f7f9f8;border-radius:15px;margin-top:18px;padding:19px;overflow-wrap:anywhere}
+.wave4-social-preview span{display:block;color:#377b60;font-size:12px;font-weight:750}
+.wave4-social-preview h3{font-size:21px;letter-spacing:-.035em;margin:8px 0;color:#183c2f}
+.wave4-social-preview p{font-size:14px;color:#405950;line-height:1.55;margin:0 0 12px}
+.wave4-social-preview small{color:#507d69}
+.wave4-stage{position:relative;max-width:840px;margin:18px auto;border:2px solid #aacfb9;background:white;box-shadow:0 8px 28px #0e3d2033;overflow:hidden}
+.wave4-stage img{display:block;width:100%;height:100%;object-fit:fill}
+.wave4-overlay{position:absolute;inset:0;cursor:crosshair;touch-action:none}
+.mask-box,.mask-drawing{position:absolute;background:#050706b8;border:2px solid #eafef4;pointer-events:none}
+.mask-drawing{background:#13603e77;border-style:dashed}
+.wave4-area-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;list-style:none;padding:0;margin:12px 0}
+.wave4-area-list li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;background:#edf7ef;border-radius:10px;font-size:12px;color:#24563b}
+.wave4-area-list .tool-btn{padding:6px 9px;min-height:30px}
+.wave4-commands{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}
+.wave4-commands .tool-btn{min-height:38px}
+.wave4-warning{border:1px solid #eadbaf;background:#fff9e8;color:#64451e;padding:13px 16px;border-radius:12px;font-size:13px;line-height:1.6;margin:18px 0}
+.wave4-preview-video{display:block;width:100%;max-height:350px;background:#132d22;border-radius:13px;margin:14px 0}
+.wave4-record{font-variant-numeric:tabular-nums;font-weight:800;font-size:18px;color:#0f6547}
+.wave4-status-card{background:#f0f8f2;border:1px solid #c5dfce;border-radius:12px;padding:16px;margin:12px 0}
+.wave4-instructions{font-size:13px;color:#466555;line-height:1.6}
+.wave4-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media(max-width:700px){.wave4-area-list,.wave4-cols{grid-template-columns:1fr}.wave4-commands .tool-btn{flex:1}.wave4-stage{margin:14px 0}}
+@media(prefers-reduced-motion:reduce){.wave4-stage *{transition:none}}
