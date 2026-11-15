@@ -101,7 +101,7 @@ function validPublicEvent(item,allowed,now){
   if(item.kind==='explore')return item.url==='#explore';
   return allowed.has(item.url);
 }
-export function collectPublicActivity({published,notes=[],pageChanges=[],toolEditTimes={},now=Date.now(),max=10}){
+export function collectPublicActivity({published,notes=[],pageChanges=[],toolEditTimes={},now=Date.now(),max=20}){
   const validItems=(Array.isArray(published)?published:[]).filter(x=>
     x?.type==='tool'&&typeof x.name==='string'&&x.name.trim().length>=3&&
     x.name.length<=80&&typeof x.url==='string'&&/^tools\/[a-z0-9][a-z0-9-]*\/$/.test(x.url)&&
@@ -141,7 +141,7 @@ export function collectPublicActivity({published,notes=[],pageChanges=[],toolEdi
   return [...uniq.values()]
     .sort((a,b)=>isoTime(b.timestamp)-isoTime(a.timestamp)||
       (b.index??-1)-(a.index??-1)||a.title.localeCompare(b.title))
-    .slice(0,Math.max(0,Math.min(10,max)))
+    .slice(0,Math.max(0,Math.min(20,max)))
     .map(({id,kind,title,url,timestamp,source})=>({id,kind,title,url,timestamp,source}));
 }
 export async function loadActivityNotes(root){
