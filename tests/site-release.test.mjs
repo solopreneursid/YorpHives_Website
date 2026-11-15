@@ -94,8 +94,8 @@ test('All tools directory stays fully crawlable while categories collapse by def
  assert.match(source,/<!-- TOOL_DIRECTORY_START -->/);
  const catalog=JSON.parse(await read('catalog.json'));
  const toolUrls=catalog.items.filter(x=>x.type==='tool').map(x=>x.url);
- assert.equal((dir.match(/<details class="directory-section">/g)||[]).length,12);
- assert.equal((dir.match(/<summary>/g)||[]).length,12);
+ assert.equal((dir.match(/<details class="directory-section">/g)||[]).length,new Set(catalog.items.filter(x=>x.type==='tool').map(x=>x.category)).size);
+ assert.equal((dir.match(/<summary>/g)||[]).length,new Set(catalog.items.filter(x=>x.type==='tool').map(x=>x.category)).size);
  assert.equal((dir.match(/class="directory-card"/g)||[]).length,toolUrls.length);
  for(const url of toolUrls)assert.ok(dir.includes('href="../'+url+'"'),url);
  assert.match(dir,/href="\.\.\/#tools">⌕/);

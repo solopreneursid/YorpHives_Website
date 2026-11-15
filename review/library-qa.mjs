@@ -18,15 +18,15 @@ try{
  await wait(()=>rows().length===8);
  await check('eight compact rows and seven main category groups',async()=>{
   assert(rows().length===8,'Expected 8 tool rows');
-  assert(q('tool-page-number').textContent==='1 / 12','Expected 12 result pages');
-  assert(document.querySelectorAll('#tool-categories button').length===9,'Expected Discover + 7 groups + My tools');
+  assert(q('tool-page-number').textContent==='1 / 14','Expected 12 result pages');
+  assert(document.querySelectorAll('#tool-categories button').length===10,'Expected Discover + 7 groups + My tools');
   assert(rows().every(row=>row.querySelector('a.launcher-tool-link')?.href.includes('/tools/')),'Missing direct links');
  });
  await check('pagination changes pages without making the page longer',async()=>{
   const first=rows()[0].querySelector('strong').textContent;
   q('tool-next').click();
   assert(rows().length===8,'Second page must also show 8');
-  assert(q('tool-page-number').textContent==='2 / 12','Wrong page indicator');
+  assert(q('tool-page-number').textContent==='2 / 14','Wrong page indicator');
   assert(rows()[0].querySelector('strong').textContent!==first,'Page did not change');
   q('tool-prev').click();
   assert(rows()[0].querySelector('strong').textContent===first,'Previous page failed');
@@ -45,9 +45,9 @@ try{
  await check('Documents category includes PDF, spreadsheets and presentations',async()=>{
   nav('documents').click();
   assert(q('tool-view-title').textContent==='Documents','Wrong heading');
-  assert(q('tool-count').textContent.includes('10 tools'),'Expected 10 document tools');
+  assert(q('tool-count').textContent.includes('17 tools'),'Expected 10 document tools');
   assert(rows().length===8,'Category should be paginated');
-  assert(q('tool-page-number').textContent==='1 / 2','Wrong group page count');
+  assert(q('tool-page-number').textContent==='1 / 3','Wrong group page count');
  });
  await check('Files category and My tools work with local favorites',async()=>{
   nav('files').click();assert(rows().length===8,'Expected eight file tools');
@@ -69,7 +69,7 @@ try{
   assert(!!button,'Images shortcut missing');
   button.click();
   assert(q('tool-view-title').textContent==='Images & Design','Mobile category selection failed');
-  assert(q('tool-count').textContent.includes('12 tools'),'Images group count mismatch');
+  assert(q('tool-count').textContent.includes('16 tools'),'Images group count mismatch');
  });
  await check('Ko-fi still disabled',async()=>{
   assert(document.querySelectorAll('#header-kofi:disabled,#footer-kofi:disabled').length===2,'Ko-fi changed');

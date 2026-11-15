@@ -3110,6 +3110,586 @@
           "Browser File and Blob APIs; SHA-256 duplicate scanning needs HTTPS Web Crypto; archive generation uses bundled JSZip locally."
         ]
       }
+    },
+    {
+      "name": "PDF Compressor (Raster)",
+      "description": "Reduce some PDFs by rasterizing pages locally; links and selectable text may be lost.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-compressor/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: pdf-compressor",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "pdf-compressor",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".pdf,application/pdf"
+          },
+          {
+            "name": "quality",
+            "type": "number",
+            "default": "70"
+          },
+          {
+            "name": "scale",
+            "type": "number",
+            "default": "1"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "PDF to JPG or PNG",
+      "description": "Convert PDF pages to JPG or PNG images in your browser.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-to-images/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: pdf-to-images",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "pdf-to-images",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".pdf,application/pdf"
+          },
+          {
+            "name": "format",
+            "type": "select"
+          },
+          {
+            "name": "scale",
+            "type": "number",
+            "default": "1.5"
+          },
+          {
+            "name": "quality",
+            "type": "number",
+            "default": "80"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "Image to 50KB / 100KB / 200KB",
+      "description": "Reduce an image to fit a chosen file-size target in the browser.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/image-size-target/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: image-size-target",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "image-size-target",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+          },
+          {
+            "name": "kb",
+            "type": "number",
+            "default": "100"
+          },
+          {
+            "name": "format",
+            "type": "select"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "Add Page Numbers to PDF",
+      "description": "Add page numbers in a chosen position on every PDF page.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-page-numbers/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: pdf-page-numbers",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "pdf-page-numbers",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".pdf,application/pdf"
+          },
+          {
+            "name": "placement",
+            "type": "select"
+          },
+          {
+            "name": "size",
+            "type": "number",
+            "default": "12"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "PDF Text Watermark",
+      "description": "Add a diagonal text watermark to each page of a PDF.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-watermark/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: pdf-watermark",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "pdf-watermark",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".pdf,application/pdf"
+          },
+          {
+            "name": "watermark",
+            "type": "text",
+            "default": "DRAFT"
+          },
+          {
+            "name": "opacity",
+            "type": "number",
+            "default": "25"
+          },
+          {
+            "name": "size",
+            "type": "number",
+            "default": "44"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "Sign PDF (Visible Signature)",
+      "description": "Place a typed signature visibly onto a chosen PDF page.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-visual-signature/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: pdf-visual-signature",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "pdf-visual-signature",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".pdf,application/pdf"
+          },
+          {
+            "name": "signature",
+            "type": "text",
+            "default": "Your Name"
+          },
+          {
+            "name": "page",
+            "type": "number"
+          },
+          {
+            "name": "bottom",
+            "type": "number",
+            "default": "42"
+          },
+          {
+            "name": "size",
+            "type": "number",
+            "default": "26"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "Rearrange PDF Pages",
+      "description": "Reorder PDF pages by entering their new sequence.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-rearrange-pages/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: pdf-rearrange-pages",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "pdf-rearrange-pages",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".pdf,application/pdf"
+          },
+          {
+            "name": "order",
+            "type": "text"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "Remove Image EXIF Metadata",
+      "description": "Re-encode an image to omit common metadata, including GPS EXIF fields.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/image-metadata-cleaner/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: image-metadata-cleaner",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "image-metadata-cleaner",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+          },
+          {
+            "name": "format",
+            "type": "select"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "Passport Photo Size Maker",
+      "description": "Crop a portrait to common passport-photo dimensions at approximately 300 DPI.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/passport-photo-maker/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: passport-photo-maker",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "passport-photo-maker",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+          },
+          {
+            "name": "size",
+            "type": "select"
+          },
+          {
+            "name": "top",
+            "type": "number",
+            "default": "50"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "QR Code Scanner from Image",
+      "description": "Decode a QR code from an uploaded image without contacting the website.",
+      "type": "tool",
+      "category": "Creator",
+      "date": "2026-11-15",
+      "url": "tools/qr-code-scanner/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: qr-code-scanner",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "qr-code-scanner",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "Invoice PDF Generator",
+      "description": "Create a professional PDF invoice with line items, tax, and totals in your browser.",
+      "type": "tool",
+      "category": "Business",
+      "date": "2026-11-15",
+      "url": "tools/invoice-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: invoice-generator",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "invoice-generator",
+        "inputs": [
+          {
+            "name": "business",
+            "type": "text",
+            "default": "Your Business"
+          },
+          {
+            "name": "client",
+            "type": "text",
+            "default": "Client Name"
+          },
+          {
+            "name": "number",
+            "type": "text",
+            "default": "INV-001"
+          },
+          {
+            "name": "currency",
+            "type": "text",
+            "default": "USD"
+          },
+          {
+            "name": "tax",
+            "type": "number",
+            "default": "0"
+          },
+          {
+            "name": "items",
+            "type": "textarea",
+            "default": "Design work | 2 | 100\nConsultation | 1 | 75"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "Image to Text (OCR)",
+      "description": "Recognize English text in images with a locally hosted WebAssembly OCR engine.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/image-ocr/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: image-ocr",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "image-ocr",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "PDF to Text Extractor",
+      "description": "Extract selectable text from PDF pages into a TXT file without uploading.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-to-text/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: pdf-to-text",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "pdf-to-text",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".pdf,application/pdf"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "SVG to PNG Converter",
+      "description": "Convert self-contained, sanitized SVG artwork into a PNG.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/svg-to-png/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: svg-to-png",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "svg-to-png",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".svg,image/svg+xml"
+          },
+          {
+            "name": "width",
+            "type": "number",
+            "default": "512"
+          },
+          {
+            "name": "height",
+            "type": "number",
+            "default": "512"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
+    },
+    {
+      "name": "Barcode Generator",
+      "description": "Generate printable Code 128, Code 39 or EAN-13 barcodes as SVG.",
+      "type": "tool",
+      "category": "Creator",
+      "date": "2026-11-15",
+      "url": "tools/barcode-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave1-core.mjs",
+        "export": "processWave1",
+        "arguments": [
+          "tool id: barcode-generator",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "toolId": "barcode-generator",
+        "inputs": [
+          {
+            "name": "text",
+            "type": "text",
+            "default": "YRPHIVES123"
+          },
+          {
+            "name": "format",
+            "type": "select"
+          }
+        ],
+        "requirements": [
+          "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
+        ]
+      }
     }
   ]
 }
