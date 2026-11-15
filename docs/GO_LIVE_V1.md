@@ -58,3 +58,34 @@
 - The Cloudflare Pages preview project has no Functions; `_redirects` is served from its static `dist/` output. No redirects are applied to modern `/tools/` URLs.
 - Legacy routes have only been verified individually for a subset of tools using Browser Rendering. The complete route set and old PDF/image actions still require browser acceptance testing.
 - `api.yorphives.com` is routed to an existing, separate worker `yorphives-processing-api`; migration must preserve that worker's domain and its R2/Durable Object bindings. No changes to this worker are authorized.
+
+## Browser and release-gate verification evidence — 2026-11-15
+
+### Real HTTP and crawler behavior
+
+The Cloudflare Browser Rendering `snapshot` endpoint confirmed the real responses from `yorphives-v1-review.pages.dev`:
+
+- `/` and `/tools/word-counter/` respond **HTTP 200**, with `X-Robots-Tag: noindex, nofollow`, the expected first-party `Content-Security-Policy`, and `X-Content-Type-Options: nosniff`.
+- `/free-tools/json-formatter/` responds **HTTP 302** with `Location: /tools/json-formatter/`; the final page responds 200 and remains noindex in preview.
+- `/free-tools/file-studio/` responds **HTTP 302** to `https://yorphives.pages.dev/free-tools/file-studio/`, preserving the old application.
+- Browser content checks also confirmed links to old Split PDF and image converters still reach a working page.
+- The actual preview deployment logs report **23 valid redirect rules** and the correct header rule. Production-mode builds do not include the preview noindex header.
+
+### Browser acceptance checks
+
+Read-only Cloudflare headless Chromium browser checks (not Firefox):
+
+- The homepage latest-tool cards load successfully from the local catalog.
+- The Ko-fi controls are visible, semantically disabled and noninteractive in desktop (1280px) and phone (375px) accessibility trees.
+- A direct-entry file tool displays its name, input control, Process button and download affordances.
+- **9 of 9 real Chromium processing checks passed:** ZIP creation, SHA-256 duplicate detection, batch UTF-8 text replacement, CSV→XLSX→JSON roundtrip, PDF merge, PDF extract, Canvas image crop, images→PDF, images→PPTX.
+- **6 of 6 end-to-end UI checks passed:** PDF Merge, Image Cropper, CSV→Excel, Batch Find and Replace, ZIP Creator and Duplicate File Finder. A synthetic local file was selected via the actual HTML file picker; the real Process button was submitted and the generated browser download Blob was verified by signature/content.
+- Browser test modules `/browser-smoke.mjs` and `/browser-interaction.mjs` exist only in the protected preview output. Production builds fail the test gate if either would leak into public assets.
+- Automated production and preview builds each report **131 Node tests passed, zero failed**. This is additional to the browser checks.
+
+### Remaining acceptance/operations gates
+
+- Still unverified: Firefox, Safari and physical phone browser interactions, comprehensive responsive visual overlap, screen-reader/keyboard traversal, production-domain HTTP responses and complete legacy Pages Functions runtime behavior.
+- The original `yorphives` Pages deployment stays unchanged and must remain usable at `yorphives.pages.dev`. Its separate `api.yorphives.com` Worker must remain unchanged.
+- Final founder authorization is mandatory before moving custom domains, changing DNS records or production deployment sources. Use the exact frozen release SHA, not an unreviewed development branch.
+- When publishing the final production build, verify response headers no longer include `X-Robots-Tag: noindex`, verify apex and www, verify all 23 old URLs, then request sitemap indexing. Prepare immediate domain/DNS rollback to old project if critical checks fail.
