@@ -14,7 +14,10 @@ if(tools.length<90)problems.push('Expected at least the 90 established tools.');
 if(new Set(items.map(x=>x.url)).size!==items.length)problems.push('Duplicate public URL.');
 const directory=await read('tools/index.html');
 const homepage=await read('index.html');
-if(!homepage.includes('One founder'))problems.push('Homepage identity was unexpectedly altered.');
+if(!homepage.includes('You bring the idea.')||!homepage.includes('real product.')||
+   !homepage.includes('href="#connect"'))problems.push('Idea-to-product homepage identity or contact CTA missing.');
+if((homepage.match(/<li class="studio-step stage-/g)||[]).length!==5)
+ problems.push('The five-stage idea-to-product journey is incomplete.');
 if(!homepage.includes('href="#tools"'))problems.push('Homepage tool navigation missing.');
 const sitemap=await read('sitemap.xml');
 const headers=await read('_headers');
