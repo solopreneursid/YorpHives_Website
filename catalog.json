@@ -4047,6 +4047,34 @@
           "Local file processing only. No paid APIs or server uploads."
         ]
       }
+    },
+    {
+      "name": "Scanned PDF to Searchable PDF",
+      "description": "Turn scanned PDF pages into searchable PDFs using locally hosted English OCR.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/scanned-pdf-to-searchable-pdf/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/ocr-pdf-core.mjs",
+        "export": "makeSearchablePdf",
+        "toolId": "scanned-pdf-to-searchable-pdf",
+        "arguments": [
+          "local PDF File",
+          "optional local progress callback"
+        ],
+        "inputs": [
+          {
+            "name": "file",
+            "type": "file",
+            "accept": ".pdf"
+          }
+        ],
+        "requirements": [
+          "No paid APIs or uploads. English OCR only; up to five pages per document."
+        ]
+      }
     }
   ]
 }
