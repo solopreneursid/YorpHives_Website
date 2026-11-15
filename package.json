@@ -12,6 +12,8 @@
     "jsqr": "1.4.0",
     "jsbarcode": "3.12.3",
     "heic2any": "0.0.4",
-    "fix-webm-duration": "1.0.6"
+    "fix-webm-duration": "1.0.6",
+    "svgo": "4.1.0",
+    "gifenc": "1.0.3"
   }
 }
