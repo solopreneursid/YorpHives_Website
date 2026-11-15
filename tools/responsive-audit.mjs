@@ -44,13 +44,31 @@ if(new URLSearchParams(location.search).get('qa')==='responsive'){
   const a=rect(header),b=rect(nav);return a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
  };
  const directoryCards=[...document.querySelectorAll('.directory-card')];
+ const firstDetails=details[0];
+ const firstSummary=firstDetails?.querySelector('summary');
+ const before=firstDetails?.open??null;
+ if(firstSummary)firstSummary.click();
+ const afterClick=firstDetails?.open??null;
+ if(firstSummary)firstSummary.click();
+ const restored=firstDetails?.open??null;
+ const cardLinks=[...document.querySelectorAll('.directory-card')];
+ const urls=cardLinks.map(a=>a.getAttribute('href'));
+ const linkIssues=cardLinks.filter(a=>{
+  const u=new URL(a.href,location.href);
+  return u.origin!==location.origin||!u.pathname.startsWith('/tools/')||!a.querySelector('strong');
+ }).slice(0,10).map(a=>({text:a.textContent.slice(0,45),url:a.href}));
+ const functionality={summaryToggle:before===true&&afterClick===false&&restored===true,
+   toolLinks:cardLinks.length,uniqueToolLinks:new Set(urls).size,
+   badToolLinks:linkIssues,
+   searchLinkTarget:document.querySelector('.directory-search-link')?.getAttribute('href')||null,
+   searchInputOnPage:!!document.querySelector('input[type="search"]')};
  const report={
   page:location.pathname,
   viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio,coarsePointer:matchMedia('(pointer: coarse)').matches,
    narrow:matchMedia('(max-width: 480px)').matches,ua:navigator.userAgent},
   document:{htmlScrollWidth:document.documentElement.scrollWidth,bodyScrollWidth:document.body.scrollWidth,verticalHeight:document.documentElement.scrollHeight},
   headerOverlap:collides(),directory:{groups:details.length,cards:directoryCards.length,hasInlineSearch:!!document.querySelector('input[type=search]')},
-  elements,clipped,smallTargets:smallTargets.slice(0,25),
+  elements,clipped,smallTargets:smallTargets.slice(0,25),functionality,
   counts:{smallTargets:smallTargets.length,allTargets:targets.length}
  };
  const pre=document.createElement('pre');pre.id='responsive-audit';pre.dataset.status='done';
