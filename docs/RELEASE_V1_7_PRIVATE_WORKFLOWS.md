@@ -44,3 +44,6 @@ These paths intentionally require user downloads and manual file selection betwe
 2. Verify live catalog contains exactly 142 tools and all eight URLs are HTTP 200.
 3. Disable automatic Cloudflare production deployments again after success.
 4. Preserve the v1.6 release for rollback.
+
+## Founder-authorized production deployment trigger
+Production release requested after passing 240 automated checks in production and preview modes and passing the synthetic browser output and interactive UI QA. Production auto-deploy temporarily enabled solely for this verified v1.7 release, then must be disabled following live verification.
