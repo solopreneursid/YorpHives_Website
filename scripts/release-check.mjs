@@ -24,6 +24,32 @@ if(!homepage.includes('id="category-ribbon-track"')||
    homepage.includes('FROM THE HIVE'))
  problems.push('Homepage must show the compact category-only strip, not the old recent cards.');
 
+// No stale hard-coded tool links, draft activity, private jobs or absent targets.
+const activityData=JSON.parse(await read('activity.json'));
+if(!Array.isArray(activityData.items)||activityData.items.length>10||
+   activityData.items.length===0)
+ problems.push('Public activity rail must contain 1–10 verified updates.');
+else {
+ const ids=new Set(),urls=new Set(items.map(x=>x.url));
+ for(const event of activityData.items){
+  if(typeof event?.id!=='string'||ids.has(event.id)||!['tools','builders','explore'].includes(event.kind))
+   problems.push('Duplicate or invalid public activity type.');
+  ids.add(event.id);
+  if(event.kind==='tools'&&!urls.has(event.url))problems.push('Activity points at an unpublished tool.');
+  if(event.kind==='builders'&&event.url!=='#builders')problems.push('Builder activity leaks a private URL.');
+  if(event.kind==='explore'&&event.url!=='#explore')problems.push('Explore activity points at an unapproved URL.');
+  if(typeof event.title!=='string'||event.title.includes('<')||event.title.includes('>'))
+   problems.push('Activity has unsafe public title.');
+  if(!homepage.includes('href="'+event.url+'"'))
+   problems.push('Activity shortcut absent from built footer: '+event.url);
+ }
+ if(!homepage.includes('LATEST '+activityData.items.length+' UPDATES'))
+  problems.push('Activity counter does not match the published feed.');
+}
+if(!homepage.includes('id="footer-pulse"')||
+   homepage.includes('<nav class="footer-directory"'))
+ problems.push('Legacy footer tool shortcuts must be replaced by public Pulse.');
+
 if(!homepage.includes('id="builders-home-title"')||!homepage.includes('Find work. Post work.')||
    !homepage.includes('id="builders-membership-title"')||
    !homepage.includes('id="partners"'))
