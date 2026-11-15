@@ -251,7 +251,10 @@ if(target==='preview'){
   ['tools/password-strength-analyzer/index.html','wave7-ui-qa.mjs'],
   ['tools/spreadsheet-merger/index.html','wave7-ui-qa.mjs'],
   ['tools/image-publishing-pack/index.html','wave7-ui-qa.mjs'],
-  ['tools/voice-recorder/index.html','wave7-ui-qa.mjs']]){
+  ['tools/voice-recorder/index.html','wave7-ui-qa.mjs'],
+  ['tools/batch-image-converter/index.html','wave7-ui-qa.mjs'],
+  ['tools/pdf-metadata-cleaner/index.html','wave7-ui-qa.mjs'],
+  ['tools/audio-merger/index.html','wave7-ui-qa.mjs']]){
   const current=await output(toolPath);
   await write(toolPath,current.replace('</body>','<script type="module" src="../../'+script+'"></script></body>'));
  }
