@@ -42,8 +42,9 @@ test('homepage displays Ko-fi support action in the top header, with a smaller s
 
 test('Ko-fi header stays compact and readable across desktop and mobile',async()=>{
  const css=await read('style.css');
- assert.match(css,/\\.header-kofi\\{[^}]*min-width:98px;min-height:44px/);
- assert.match(css,/\\.header-kofi strong\\{font-size:13px/);
- assert.match(css,/@media\\(max-width:480px\\)\\{[\\s\\S]*?\\.header-kofi\\{min-width:85px;min-height:40px/);
- assert.match(css,/\\.header-kofi:focus-visible\\{outline:3px/);
+ assert.ok(css.includes('min-width:98px;min-height:44px'),'Desktop header button should be small');
+ assert.ok(css.includes('.header-kofi strong{font-size:13px'),'Ko-fi label should be understated');
+ const mobile=css.slice(css.lastIndexOf('@media(max-width:480px)'));
+ assert.ok(mobile.includes('.header-kofi{min-width:85px;min-height:40px'),'Phone button should be compact');
+ assert.ok(css.includes('.header-kofi:focus-visible{outline:3px'),'Button must remain keyboard accessible');
 });
