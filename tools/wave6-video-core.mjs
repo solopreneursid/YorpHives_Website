@@ -36,7 +36,17 @@ const blobFrom=(canvas,mime,quality=.9)=>new Promise((resolve,reject)=>
  canvas.toBlob(blob=>blob?resolve(blob):reject(Error('Could not export video frame.')),mime,quality));
 async function seek(video,seconds){
  if(!Number.isFinite(seconds)||seconds<0||seconds>video.duration+.01)throw Error('Requested frame is outside the video.');
- if(Math.abs(video.currentTime-seconds)<.015&&video.readyState>=2)return;
+ if(Math.abs(video.currentTime-seconds)<.015){
+  if(video.readyState>=2)return;
+  await new Promise((resolve,reject)=>{
+   const timer=setTimeout(()=>{cleanup();reject(Error('Video frame decoding timed out.'));},12000);
+   const cleanup=()=>{clearTimeout(timer);video.removeEventListener('loadeddata',loaded);video.removeEventListener('error',failed);};
+   const loaded=()=>{cleanup();resolve();},failed=()=>{cleanup();reject(Error('Video decoding failed.'));};
+   video.addEventListener('loadeddata',loaded,{once:true});
+   video.addEventListener('error',failed,{once:true});
+  });
+  return;
+ }
  await new Promise((resolve,reject)=>{
   let timer=setTimeout(()=>{cleanup();reject(Error('Seeking inside this video timed out.'));},12000);
   const done=()=>{cleanup();resolve();},failed=()=>{cleanup();reject(Error('Could not read a video frame.'));};
