@@ -16,7 +16,7 @@ export function isHeicHeader(bytes){
  // HEIF uses ISO BMFF: recognized brands identify actual HEIC/HEIF images.
  const brands=[];
  for(let i=8;i+4<=Math.min(b.length,36);i+=4)brands.push(String.fromCharCode(...b.slice(i,i+4)));
- return brands.some(x=>['heic','heix','hevc','hevx','heim','heis','mif1','msf1'].includes(x));
+ return brands.some(x=>['heic','heix','hevc','hevx','heim','heis'].includes(x));
 }
 let heicEnginePromise;
 function loadHeicEngine(){
