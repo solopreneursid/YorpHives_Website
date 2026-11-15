@@ -3040,6 +3040,76 @@
           }
         ]
       }
+    },
+    {
+      "name": "Duplicate File Finder",
+      "description": "Find byte-identical duplicate files by SHA-256 and byte comparison without uploading or deleting anything.",
+      "type": "tool",
+      "category": "Files",
+      "date": "2026-11-15",
+      "url": "tools/duplicate-file-finder/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: duplicate-file-finder",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "duplicate-file-finder",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": true,
+            "accept": ""
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; SHA-256 duplicate scanning needs HTTPS Web Crypto; archive generation uses bundled JSZip locally."
+        ]
+      }
+    },
+    {
+      "name": "Batch Find and Replace in Files",
+      "description": "Find and replace exact text across multiple UTF-8 files and download the updated copies as a ZIP.",
+      "type": "tool",
+      "category": "Files",
+      "date": "2026-11-15",
+      "url": "tools/batch-find-replace/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: batch-find-replace",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "batch-find-replace",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": true,
+            "accept": ".txt,.md,.csv,.tsv,.json,.jsonl,.xml,.html,.htm,.css,.js,.mjs,.ts,.jsx,.tsx,.py,.yaml,.yml,.ini,.cfg,.log,.svg,.sql"
+          },
+          {
+            "name": "find",
+            "type": "text",
+            "default": ""
+          },
+          {
+            "name": "replacement",
+            "type": "text",
+            "default": ""
+          }
+        ],
+        "requirements": [
+          "Browser File and Blob APIs; SHA-256 duplicate scanning needs HTTPS Web Crypto; archive generation uses bundled JSZip locally."
+        ]
+      }
     }
   ]
 }

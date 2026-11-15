@@ -84,12 +84,112 @@ async function makeArchive(files,rename,data){
   return {blob,filename:rename?'yorphives-renamed-files.zip':'yorphives-files.zip',
     summary:(rename?'Renamed and packaged ':'Packaged ')+files.length+' file(s). Originals are unchanged.'};
 }
+
+// Find identical file contents safely. Equal-size candidates are hashed only
+// in this browser, then verified byte-for-byte. Nothing is removed from disk.
+async function findDuplicateFiles(files) {
+  if(!globalThis.crypto?.subtle)throw Error('SHA-256 matching requires HTTPS and a modern browser.');
+  const sizes=new Map();
+  files.forEach((file,index)=>{
+    const indices=sizes.get(file.size)||[];
+    indices.push(index);sizes.set(file.size,indices);
+  });
+  const digests=new Map();
+  for(const indices of sizes.values()) {
+    if(indices.length<2)continue;
+    for(const index of indices) {
+      const bytes=new Uint8Array(await files[index].arrayBuffer());
+      const digest=new Uint8Array(await globalThis.crypto.subtle.digest('SHA-256',bytes));
+      const hash=Array.from(digest,n=>n.toString(16).padStart(2,'0')).join('');
+      const key=files[index].size+':'+hash;
+      if(!digests.has(key))digests.set(key,[]);
+      digests.get(key).push({index,bytes,hash});
+    }
+  }
+  const groups=[];
+  for(const bucket of digests.values()) {
+    if(bucket.length<2)continue;
+    const exact=[];
+    for(const item of bucket) {
+      const match=exact.find(g=>g[0].bytes.length===item.bytes.length &&
+        g[0].bytes.every((value,j)=>value===item.bytes[j]));
+      if(match)match.push(item);
+      else exact.push([item]);
+    }
+    groups.push(...exact.filter(group=>group.length>1));
+  }
+  let redundant=0;
+  const lines=['Duplicate File Finder','Files checked: '+files.length,
+    'Identical content groups: '+groups.length,''];
+  for(let i=0;i<groups.length;i++){
+    const group=groups[i],size=files[group[0].index].size;
+    redundant+=(group.length-1)*size;
+    lines.push('Group '+(i+1)+' — '+size.toLocaleString('en-US')+' bytes per file');
+    lines.push('SHA-256: '+group[0].hash);
+    for(const item of group)lines.push('  File '+(item.index+1)+': '+cleanName(files[item.index].name));
+    lines.push('');
+  }
+  if(!groups.length)lines.push('No exact duplicate file contents found in this selection.','');
+  lines.push('Potential duplicate bytes: '+redundant.toLocaleString('en-US'));
+  lines.push('Read-only report. No files were deleted, renamed or uploaded.');
+  return outputText(lines.join('\n')+'\n','yorphives-duplicate-file-report.txt',
+    groups.length+' duplicate group(s) found. No files changed.');
+}
+
+// Literal UTF-8 batch replacement. Originals remain on the user's device;
+// changed and unchanged copies are packaged with collision-safe names.
+async function batchFindReplace(files,data) {
+  const find=String(data.find??''),replacement=String(data.replacement??'');
+  if(!find||find.length>200||replacement.length>200||find.includes('\0')||replacement.includes('\0'))
+    throw Error('Enter search text up to 200 characters and replacement text up to 200 characters.');
+  const textFile=/\.(txt|text|md|markdown|csv|tsv|json|jsonl|xml|html|htm|css|js|mjs|ts|jsx|tsx|py|yaml|yml|ini|cfg|log|svg|sql)$/i;
+  const encoder=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true});
+  const {default:JSZip}=await import('./vendor/jszip.mjs');
+  const archive=new JSZip(),used=new Set();
+  let totalBytes=0,totalMatches=0;
+  const details=[];
+  for(const file of files){
+    if(!textFile.test(file.name))throw Error('Choose plain-text files with supported extensions (.txt, .md, .csv, .json, .html, .css, .js and others).');
+    const bytes=new Uint8Array(await file.arrayBuffer());
+    let content;
+    try {content=decoder.decode(bytes);}catch{throw Error('A selected file is not valid UTF-8 text: '+cleanName(file.name));}
+    if(content.includes('\0'))throw Error('Binary-looking file rejected: '+cleanName(file.name));
+    let matches=0,pos=0;
+    while((pos=content.indexOf(find,pos))!==-1){
+      matches++;pos+=find.length;
+      if(matches>100000)throw Error('Too many matches in a file; narrow your search.');
+    }
+    const result=matches?content.split(find).join(replacement):content;
+    const preserveBom=bytes.length>=3&&bytes[0]===239&&bytes[1]===187&&bytes[2]===191;
+    const finalBytes=encoder.encode((preserveBom?'\ufeff':'')+result);
+    if(finalBytes.byteLength>12*1048576)throw Error('An output file is larger than 12 MB.');
+    totalBytes+=finalBytes.byteLength;
+    if(totalBytes>30*1048576)throw Error('Replaced files exceed the 30 MB total limit.');
+    const name=uniqueName(file.name,used);
+    archive.file(name,finalBytes,{binary:true,createFolders:false});
+    totalMatches+=matches;
+    details.push(name+': '+matches+' replacement(s)');
+  }
+  const report='Files checked: '+files.length+'\nMatches replaced: '+totalMatches+
+    '\n\n'+details.join('\n')+'\n\nAll processing stayed in this browser. Original files are untouched.';
+  if(totalMatches===0)return outputText(report+'\n','yorphives-no-matches.txt',
+    'No matches found; no input files were changed.');
+  const blob=await archive.generateAsync({type:'blob',compression:'DEFLATE',
+    compressionOptions:{level:3},streamFiles:true,platform:'UNIX'});
+  if(blob.size>45*1048576)throw Error('The output ZIP exceeds 45 MB.');
+  return {blob,filename:'yorphives-replaced-text-files.zip',
+    summary:'Replaced '+totalMatches+' match(es) across '+files.length+' selected file(s). Originals untouched.',
+    text:report.slice(0,10000)};
+}
+
 export async function processBatchFileTool(id,files,data={}){
   const one=id==='file-format-inspector'||id==='zip-contents-viewer';
-  if(!one&&!['batch-file-renamer','zip-file-creator'].includes(id))throw Error('Unknown file utility.');
+  if(!one&&!['batch-file-renamer','zip-file-creator','duplicate-file-finder','batch-find-replace'].includes(id))throw Error('Unknown file utility.');
   if(id==='zip-contents-viewer')validate(files,1,36*1048576,36*1048576);
   else validate(files,one?1:20);
   if(id==='file-format-inspector')return identify(files[0]);
   if(id==='zip-contents-viewer')return inspectArchive(files[0]);
+  if(id==='duplicate-file-finder')return findDuplicateFiles(files);
+  if(id==='batch-find-replace')return batchFindReplace(files,data);
   return makeArchive(files,id==='batch-file-renamer',data);
 }

@@ -46,3 +46,52 @@ test('ZIP viewer accepts larger output ZIPs without increasing Office limits',as
  assert.match(result.text,/one\.bin/);
  assert.match(result.text,/two\.bin/);
 });
+
+test('duplicate file finder identifies byte-identical local files without modifying them',async()=>{
+ const files=[new File(['same'], 'copy-a.txt'),new File(['other'],'different.txt'),new File(['same'],'copy-b.txt')];
+ const result=await processFileTool('duplicate-file-finder',files);
+ assert.match(result.text,/Identical content groups: 1/);
+ assert.match(result.text,/copy-a\.txt/);
+ assert.match(result.text,/copy-b\.txt/);
+ assert.doesNotMatch(result.text,/Group \d+[\s\S]*different\.txt/);
+ assert.match(result.text,/No files were deleted, renamed or uploaded/);
+});
+test('duplicate finder checks contents, not names or sizes alone',async()=>{
+ const f=[new File(['abcd'],'same-name.txt'),new File(['wxyz'],'same-name.txt')];
+ const result=await processFileTool('duplicate-file-finder',f);
+ assert.match(result.text,/No exact duplicate file contents found/);
+});
+test('duplicate finder detects duplicate empty files',async()=>{
+ const f=[new File([],'empty-1.txt'),new File([],'empty-2.txt')];
+ const result=await processFileTool('duplicate-file-finder',f);
+ assert.match(result.text,/Identical content groups: 1/);
+});
+test('batch find and replace modifies copies but leaves original files intact',async()=>{
+ const first=new File(['red and red'],'a.txt');
+ const second=new File(['red\nblue'],'b.md');
+ const result=await processFileTool('batch-find-replace',[first,second],{find:'red',replacement:'green'});
+ const zip=await JSZip.loadAsync(await result.blob.arrayBuffer());
+ assert.deepEqual(Object.keys(zip.files).sort(),['a.txt','b.md']);
+ assert.equal(await zip.file('a.txt').async('string'),'green and green');
+ assert.equal(await zip.file('b.md').async('string'),'green\nblue');
+ assert.equal(await first.text(),'red and red');
+ assert.match(result.text,/Matches replaced: 3/);
+});
+test('batch replacement can remove strings and preserve a UTF-8 BOM',async()=>{
+ const f=new File([Uint8Array.of(239,187,191),new TextEncoder().encode('a RED b')],'bom.txt');
+ const result=await processFileTool('batch-find-replace',[f],{find:'RED',replacement:''});
+ const zip=await JSZip.loadAsync(await result.blob.arrayBuffer());
+ const bytes=await zip.file('bom.txt').async('uint8array');
+ assert.deepEqual([...bytes.slice(0,3)],[239,187,191]);
+ assert.equal(new TextDecoder().decode(bytes),'a  b');
+});
+test('batch replacement rejects invalid and unsafe inputs',async()=>{
+ await assert.rejects(()=>processFileTool('batch-find-replace',[new File(['hi'],'note.txt')],{find:'',replacement:'ok'}),/Enter search text/);
+ await assert.rejects(()=>processFileTool('batch-find-replace',[new File(['hi'],'image.png')],{find:'hi',replacement:'bye'}),/plain-text/);
+ await assert.rejects(()=>processFileTool('batch-find-replace',[new File([Uint8Array.of(0,1,2)],'binary.txt')],{find:'a',replacement:'b'}),/Binary-looking/);
+});
+test('batch find and replace reports no matches rather than changing files',async()=>{
+ const result=await processFileTool('batch-find-replace',[new File(['test'],'note.txt')],{find:'missing',replacement:'X'});
+ assert.equal(result.filename,'yorphives-no-matches.txt');
+ assert.match(result.text,/Matches replaced: 0/);
+});

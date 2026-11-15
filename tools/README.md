@@ -46,3 +46,9 @@ The additional CSV, JSON and conversion-command helper tools are maintained via 
 ## Release metadata and security
 
 Run `node scripts/generate-sitemap.mjs` after changing the catalog. The canonical sitemap and `robots.txt` target `yorphives.com` only after release. `_headers` applies first-party Content Security Policy, disables plugin embedding, and limits browser connections to this origin while allowing local QR/image previews and ZIP worker modules. Validate these headers in a real preview, particularly any future added features.
+
+## Additional traffic-focused, zero-cost file tools
+
+Duplicate File Finder compares SHA-256 hashes and then confirms matching file bytes, reads at most 20 selected files (12 MB each, 30 MB total), and never deletes or uploads files. Batch Find and Replace supports literal case-sensitive UTF-8 replacement across the same bounded number of plain-text files, leaving originals unchanged and producing an output ZIP. Neither tool uses an external API or paid service. The tools are independently addressable in `catalog.json` and have direct URLs for search and agents.
+
+These additions address uncovered needs in the new catalog. The original website's published File Studio route is confirmed by Cloudflare deployment assets, but its full feature list was not accessible for exact parity verification.
