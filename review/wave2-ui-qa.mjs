@@ -6,6 +6,9 @@ if(new URLSearchParams(location.search).get('qa')==='wave2'){
  document.body.append(report);
  const id=document.body.dataset.wave2;
  const results=[];
+ const generatedBlobs=[];
+ const createObjectURL=URL.createObjectURL.bind(URL);
+ URL.createObjectURL=(blob)=>{if(blob instanceof Blob)generatedBlobs.push(blob);return createObjectURL(blob);};
  const check=(name,ok)=>{if(!ok)throw Error(name);results.push(name);};
  const wait=async(fn,ms=20000)=>{const start=performance.now();while(performance.now()-start<ms){if(fn())return;await new Promise(r=>setTimeout(r,75));}throw Error('Timed out: '+document.getElementById('wave2-status')?.textContent);};
  const input=document.getElementById('wave2-file');
@@ -64,9 +67,10 @@ if(new URLSearchParams(location.search).get('qa')==='wave2'){
   check('Output displayed and status described',!output.hidden&&Boolean(status.textContent.trim()));
   const links=[...output.querySelectorAll('a[download]')];
   check('Real download links are provided',links.length>0);
-  const first=await fetch(links[0].href);
-  const bytes=new Uint8Array(await first.arrayBuffer());
-  check('Download contains bytes',first.ok&&bytes.length>0);
+  const blob=generatedBlobs.at(-1);
+  check('Generated download has a local Blob',blob instanceof Blob&&links[0].href.startsWith('blob:'));
+  const bytes=new Uint8Array(await blob.arrayBuffer());
+  check('Download contains bytes',bytes.length>0);
   if(id.includes('pdf')||id==='resume-builder')check('Downloaded PDF signature',new TextDecoder().decode(bytes.slice(0,5))==='%PDF-');
   if(id==='csv-cleaner')check('CSV deduplication happened',(await new Blob([bytes]).text()).split('Ada,Engineer').length===2);
   if(id==='zip-extractor')check('Archive entry extracted correctly',new TextDecoder().decode(bytes)==='Hello from YorpHives');
