@@ -30,3 +30,6 @@ Release date: 2026-11-15
 - Do not enable indefinite auto-deployments.
 - Verify the resulting live catalog count is 126 and all eight new URLs respond.
 - Keep previous deployment available for rollback.
+
+## Deployment authorization checkpoint
+Founder-authorized v1.5 publication. Production branch promoted after verified preview. Auto-deployment is temporarily enabled solely to publish this release, then must be disabled after final verification.
