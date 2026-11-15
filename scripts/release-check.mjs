@@ -19,6 +19,16 @@ if(!homepage.includes('You bring the idea.')||!homepage.includes('real product.'
 if((homepage.match(/<li class="studio-step stage-/g)||[]).length!==5)
  problems.push('The five-stage idea-to-product journey is incomplete.');
 if(!homepage.includes('href="#tools"'))problems.push('Homepage tool navigation missing.');
+if(!homepage.includes('id="builders-home-title"')||!homepage.includes('Find work. Post work.')||
+   !homepage.includes('id="builders-membership-title"')||
+   !homepage.includes('id="partners"'))
+ problems.push('Builders paid membership landing page is incomplete.');
+if(/data-form="opportunity"|<form[^>]*id="post"|id="job-listings"|id="post"/i.test(homepage))
+ problems.push('Public job listing or job-posting form is forbidden without membership enforcement.');
+if(!homepage.includes('Jobs and posting require verified paid membership.')||
+   !homepage.includes('Enrollment is not open yet.'))
+ problems.push('Builders paid-access disclosure missing.');
+
 const sitemap=await read('sitemap.xml');
 const headers=await read('_headers');
 const robots=await read('robots.txt');
