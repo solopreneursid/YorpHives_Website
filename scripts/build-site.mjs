@@ -238,7 +238,7 @@ if(target==='preview'){
  await cp(resolve(root,'review/compressor-design-qa.mjs'),resolve(dest,'compressor-design-qa.mjs'));
  await cp(resolve(root,'review/tool-suite-qa.mjs'),resolve(dest,'tool-suite-qa.mjs'));
  await cp(resolve(root,'review/tool-suite-flow-qa.mjs'),resolve(dest,'tool-suite-flow-qa.mjs'));
- for(const name of ['wave2-ui-qa.mjs','wave3-browser-qa.mjs','ocr-browser-qa.mjs','video-browser-qa.mjs','wave4-browser-qa.mjs' ,'screen-browser-qa.mjs','wave6-browser-qa.mjs','wave7-browser-qa.mjs','wave7-ui-qa.mjs'])
+ for(const name of ['wave2-ui-qa.mjs','wave3-browser-qa.mjs','ocr-browser-qa.mjs','video-browser-qa.mjs','wave4-browser-qa.mjs' ,'screen-browser-qa.mjs','wave6-browser-qa.mjs','wave7-browser-qa.mjs','wave7-ui-qa.mjs','ai-background-prototype-qa.mjs'])
   await cp(resolve(root,'review',name),resolve(dest,name));
  // Synthetic browser acceptance only runs on opt-in preview URLs, never in production.
  for(const [toolPath,script] of [
@@ -256,7 +256,8 @@ if(target==='preview'){
   ['tools/voice-recorder/index.html','wave7-ui-qa.mjs'],
   ['tools/batch-image-converter/index.html','wave7-ui-qa.mjs'],
   ['tools/pdf-metadata-cleaner/index.html','wave7-ui-qa.mjs'],
-  ['tools/audio-merger/index.html','wave7-ui-qa.mjs']]){
+  ['tools/audio-merger/index.html','wave7-ui-qa.mjs'],
+  ['tools/image-publishing-pack/index.html','ai-background-prototype-qa.mjs']]){
   const current=await output(toolPath);
   await write(toolPath,current.replace('</body>','<script type="module" src="../../'+script+'"></script></body>'));
  }
