@@ -3938,6 +3938,115 @@
           "Browser-local execution. No remote file processing or paid APIs."
         ]
       }
+    },
+    {
+      "name": "HEIC to JPG Converter",
+      "description": "Convert iPhone HEIC and HEIF photos to JPG or PNG privately in your browser.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/heic-to-jpg/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave3-core.mjs",
+        "export": "processWave3",
+        "toolId": "heic-to-jpg",
+        "arguments": [
+          "tool id: heic-to-jpg",
+          "array of local Files",
+          "object of settings"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "accept": ".heic,.heif"
+          },
+          {
+            "name": "format",
+            "type": "select",
+            "options": [
+              "jpeg",
+              "png"
+            ],
+            "default": "jpeg"
+          }
+        ],
+        "requirements": [
+          "Local file processing only. No paid APIs or server uploads."
+        ]
+      }
+    },
+    {
+      "name": "Audio Trimmer",
+      "description": "Trim MP3, WAV and other browser-decodable audio into a downloadable WAV clip.",
+      "type": "tool",
+      "category": "Audio",
+      "date": "2026-11-15",
+      "url": "tools/audio-trimmer/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave3-core.mjs",
+        "export": "processWave3",
+        "toolId": "audio-trimmer",
+        "arguments": [
+          "tool id: audio-trimmer",
+          "array of local Files",
+          "object of settings"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "accept": "audio/*"
+          },
+          {
+            "name": "start",
+            "type": "number",
+            "default": "0"
+          },
+          {
+            "name": "end",
+            "type": "number"
+          }
+        ],
+        "requirements": [
+          "Local file processing only. No paid APIs or server uploads."
+        ]
+      }
+    },
+    {
+      "name": "PDF Redaction Tool",
+      "description": "Permanently conceal selected content by creating a new rasterized PDF entirely on your device.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-redaction/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/pdf-redaction-core.mjs",
+        "export": "redactPdf",
+        "toolId": "pdf-redaction",
+        "arguments": [
+          "local PDF File",
+          "redaction rectangle array"
+        ],
+        "inputs": [
+          {
+            "name": "file",
+            "type": "file",
+            "accept": ".pdf"
+          },
+          {
+            "name": "areas",
+            "type": "array",
+            "description": "Selected redaction rectangles normalized to page coordinates"
+          }
+        ],
+        "requirements": [
+          "Local file processing only. No paid APIs or server uploads."
+        ]
+      }
     }
   ]
 }
