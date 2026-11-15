@@ -20,6 +20,7 @@
     const section = hash === 'post' || hash === 'opportunities' ? hash : null;
     const active = section ? 'builders' : Object.hasOwn(names, hash) ? hash : 'home';
     pages.forEach(page => { page.hidden = page.id !== active; });
+    document.body.classList.toggle('is-home', active === 'home');
     document.querySelectorAll('[data-nav]').forEach(link => {
       if (link.dataset.nav === active) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
@@ -35,6 +36,19 @@
   }
   window.addEventListener('hashchange', route);
   route();
+
+  // The homepage Ko-fi callout is discoverable now. Until the founder provides
+  // their actual Ko-fi profile URL, show the existing "coming soon" message
+  // instead of sending supporters to an invented or unrelated account.
+  document.getElementById('header-kofi')?.addEventListener('click', () => {
+    const support = document.querySelector('.footer-support');
+    if (!support) return;
+    support.scrollIntoView({
+      block: 'center',
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+    support.focus({preventScroll:true});
+  });
 
   menu.addEventListener('click', () => {
     const isOpen = !navigation.classList.contains('open');

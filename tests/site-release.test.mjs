@@ -25,3 +25,17 @@ test('security headers enforce privacy and local execution without blocking Blob
 test('robots points crawlers to the canonical sitemap',async()=>{
  assert.match(await read('robots.txt'),/^Sitemap: https:\/\/yorphives.com\/sitemap\.xml$/m);
 });
+
+test('homepage displays Ko-fi support action in the top header, with a smaller second line',async()=>{
+ const html=await read('index.html');
+ const header=html.match(/<header class="site-header">([\s\S]*?)<\/header>/)?.[1]||'';
+ assert.match(header,/<button class="header-kofi" id="header-kofi"/);
+ assert.match(header,/<strong>Ko-fi<\/strong>\s*<small>support my work<\/small>/);
+ assert.match(html,/id="support-note">Ko-fi support coming soon<\/small>/);
+ assert.doesNotMatch(header,/<a[^>]+href="https:\/\/ko-fi\.com\//i,'Do not invent a payment destination.');
+ const js=await read('app.js'),css=await read('style.css');
+ assert.match(js,/getElementById\('header-kofi'\).*addEventListener\('click'/);
+ assert.match(js,/classList.toggle\('is-home', active === 'home'\)/);
+ assert.match(css,/\.is-home \.header-kofi\{display:inline-flex\}/);
+ assert.match(css,/@media\(max-width:480px\)/);
+});

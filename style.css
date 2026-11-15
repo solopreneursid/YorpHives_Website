@@ -8,3 +8,36 @@
 .home-hero h1 em{font-size:.91em}
 .footer-directory{display:flex;align-items:center;flex-wrap:wrap;gap:14px 24px;border-top:1px solid #ffffff1d;margin-top:48px;padding-top:22px}.footer-directory span{font-size:9px;letter-spacing:.16em;font-weight:800;color:#7e9d91}.footer-directory a{font-size:12px;color:#b1c7bb}.footer-directory a:hover{color:#c2ffe6}.footer-directory+.footer-bottom{margin-top:25px}
 .tool-controls{display:grid;grid-template-columns:minmax(220px,1.5fr) minmax(160px,.8fr) auto;align-items:end;gap:16px;margin-top:38px}.tool-controls[hidden]{display:none}.tool-controls label{display:block;font-size:12px;color:#345b4c;font-weight:750}.tool-controls input,.tool-controls select{display:block;width:100%;margin-top:8px;background:#fff;border:1px solid #cadbd0;border-radius:6px;padding:13px 14px;color:#18362b;font:14px var(--sans);min-height:49px}.tool-controls a{font-size:12px;font-weight:750;color:#286e56;text-decoration:underline;text-underline-offset:4px;padding-bottom:15px}.tool-count{font-size:12px;color:#607c6f;margin:15px 0 -25px}.tool-controls+.tool-count+.catalog-grid{margin-top:46px}@media(max-width:800px){.tool-controls{grid-template-columns:1fr 1fr}.tool-controls a{grid-column:1/-1;padding-bottom:0}}@media(max-width:480px){.tool-controls{grid-template-columns:1fr}.tool-controls a{grid-column:auto}}
+
+
+/* Visible homepage support CTA — small secondary action beside navigation. */
+.site-header{gap:14px}
+.site-nav{margin-left:auto}
+.header-kofi{order:3;flex:none;display:none;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:116px;min-height:52px;padding:7px 12px;border:1px solid #72d9c2a6;border-radius:15px;background:#13312e;color:#c2ffe8;text-align:center;line-height:1.1;transition:border-color .2s,background .2s,transform .2s}
+.is-home .header-kofi{display:inline-flex}
+.header-kofi strong{font-size:15px;letter-spacing:-.02em;font-weight:800}
+.header-kofi small{font-size:9px;letter-spacing:.015em;font-weight:600;color:#b0d6cd;white-space:nowrap}
+.header-kofi:hover{background:#1d4b43;border-color:#b6ffe4;transform:translateY(-1px)}
+.header-kofi:focus-visible{outline:3px solid #7ce8ce;outline-offset:3px}
+.menu-toggle{order:4}
+@media(min-width:801px) and (max-width:1050px){
+  .site-header{padding:0 4%;gap:10px}
+  .site-nav{gap:13px;font-size:12px}
+  .nav-action{padding:12px 13px;gap:12px}
+  .header-kofi{min-width:104px;padding-inline:8px}
+}
+@media(max-width:800px){
+  .site-header{gap:12px}
+  .header-kofi{order:2;margin-left:auto;min-width:108px;min-height:46px;padding:6px 9px;border-radius:12px}
+  .menu-toggle{order:3;flex:none}
+}
+@media(max-width:480px){
+  .site-header{padding:0 4%;gap:7px}
+  .site-header .brand{gap:7px}
+  .site-header .brand img{width:33px;height:33px}
+  .site-header .brand-name{font-size:17px}
+  .header-kofi{min-width:95px;min-height:43px;padding:5px 7px}
+  .header-kofi strong{font-size:13px}
+  .header-kofi small{font-size:8px}
+  .site-header .menu-toggle{width:40px;height:40px}
+}
