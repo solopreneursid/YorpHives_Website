@@ -16,7 +16,7 @@ const rows=()=>[...document.querySelectorAll('.launcher-tool-row')];
 const nav=name=>[...document.querySelectorAll('#tool-categories button')].find(button=>button.dataset.group===name);
 try{
  await wait(()=>rows().length===8);
- await check('eight compact rows and seven main category groups',async()=>{
+ await check('eight compact rows and eight main category groups',async()=>{
   assert(rows().length===8,'Expected 8 tool rows');
   assert(q('tool-page-number').textContent==='1 / 14','Expected 12 result pages');
   assert(document.querySelectorAll('#tool-categories button').length===10,'Expected Discover + 7 groups + My tools');
@@ -69,7 +69,7 @@ try{
   assert(!!button,'Images shortcut missing');
   button.click();
   assert(q('tool-view-title').textContent==='Images & Design','Mobile category selection failed');
-  assert(q('tool-count').textContent.includes('16 tools'),'Images group count mismatch');
+  assert(q('tool-count').textContent.includes('17 tools'),'Images group count mismatch');
  });
  await check('Ko-fi still disabled',async()=>{
   assert(document.querySelectorAll('#header-kofi:disabled,#footer-kofi:disabled').length===2,'Ko-fi changed');

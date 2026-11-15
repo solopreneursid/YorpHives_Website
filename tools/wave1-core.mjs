@@ -1,6 +1,7 @@
 // YorpHives Wave 1 — local processing, no upload endpoints or third-party runtime requests.
 // Dependencies live under /tools/vendor; expensive engines load only on demand.
-import {PDFDocument,StandardFonts,rgb,degrees} from './vendor/pdf-lib.mjs';
+let pdfLibPromise;
+const pdfLibrary=()=>pdfLibPromise??=import('./vendor/pdf-lib.mjs');
 const MB=1048576;
 function requireFiles(files,min=1,max=1,limit=20*MB){
  if(!Array.isArray(files)||files.length<min||files.length>max)throw Error('Choose '+(min===max?String(min):min+' to '+max)+' file(s).');
@@ -8,11 +9,14 @@ function requireFiles(files,min=1,max=1,limit=20*MB){
 }
 function num(data,name,min,max,fallback){const raw=String(data[name]??fallback??'').trim(),n=Number(raw);if(!raw||!Number.isFinite(n)||n<min||n>max)throw Error('Enter a valid '+name+'.');return n;}
 function txt(data,key,max=200){const s=String(data[key]??'').trim();if(s.length>max)throw Error('The '+key+' field is too long.');return s;}
-function result(blob,name,summary,extra={}){return {blob:blob instanceof Blob?blob:new Blob([blob]),filename:name,summary,...extra};}
+function result(blob,name,summary,extra={}){
+ const type=name.endsWith('.pdf')?'application/pdf':name.endsWith('.zip')?'application/zip':name.endsWith('.txt')?'text/plain;charset=utf-8':'application/octet-stream';
+ return {blob:blob instanceof Blob?blob:new Blob([blob],{type}),filename:name,summary,...extra};
+ }
 async function loadPdf(file){
  requireFiles([file]);const bytes=new Uint8Array(await file.arrayBuffer());
  if(!new TextDecoder('latin1').decode(bytes.slice(0,1024)).includes('%PDF-'))throw Error('Choose a valid PDF.');
- try{const pdf=await PDFDocument.load(bytes,{ignoreEncryption:false,updateMetadata:false});if(pdf.getPageCount()<1||pdf.getPageCount()>100)throw Error('Choose a PDF with 1–100 pages.');return pdf;}
+ try{const {PDFDocument}=await pdfLibrary();const pdf=await PDFDocument.load(bytes,{ignoreEncryption:false,updateMetadata:false});if(pdf.getPageCount()<1||pdf.getPageCount()>100)throw Error('Choose a PDF with 1–100 pages.');return pdf;}
  catch(e){if(/1–100/.test(e.message))throw e;throw Error('Could not read this PDF (encrypted or damaged files are unsupported).');}
 }
 function pageIdx(data,count){
@@ -20,12 +24,9 @@ function pageIdx(data,count){
  if(!Number.isInteger(n)||n<1||n>count)throw Error('Choose a page from 1 to '+count+'.');return n-1;
 }
 function printText(s){return String(s).replace(/[^\x20-\x7e]/g,'?').slice(0,220);}
-function rgbHex(hex){
- if(!/^#[\da-f]{6}$/i.test(hex))throw Error('Use a color such as #333333.');
- return rgb(parseInt(hex.slice(1,3),16)/255,parseInt(hex.slice(3,5),16)/255,parseInt(hex.slice(5,7),16)/255);
-}
 async function editPdf(id,files,data){
  const pdf=await loadPdf(files[0]),count=pdf.getPageCount();
+ const {PDFDocument,StandardFonts,rgb,degrees}=await pdfLibrary();
  const font=await pdf.embedFont(id==='pdf-visual-signature'?StandardFonts.TimesRomanItalic:StandardFonts.Helvetica);
  if(id==='pdf-page-numbers'){
   const size=num(data,'size',7,32,12),placement=txt(data,'placement',24)||'bottom-center';
@@ -117,6 +118,7 @@ async function renderPdf(id,files,data){
    return result(zip,'yorphives-pdf-images.zip','Converted '+pdf.numPages+' pages to images in a ZIP.');
   }
   if(id==='pdf-compressor'){
+   const {PDFDocument}=await pdfLibrary();
    const out=await PDFDocument.create();let pages=0;
    for(let n=1;n<=pdf.numPages;n++){
     const p=await pdf.getPage(n),v=p.getViewport({scale:1}),c=await renderPage(p,requested);
@@ -272,6 +274,7 @@ async function invoice(data){
  });
  const subtotal=items.reduce((s,x)=>s+x.total,0),total=subtotal*(1+tax/100);
  if(total>1e12)throw Error('Invoice exceeds the supported amount.');
+ const {PDFDocument,StandardFonts,rgb}=await pdfLibrary();
  const pdf=await PDFDocument.create(),font=await pdf.embedFont(StandardFonts.Helvetica),bold=await pdf.embedFont(StandardFonts.HelveticaBold);
  const page=pdf.addPage([595.28,841.89]),color=rgb(.08,.2,.17);
  const text=(s,x,y,size=11,f=font)=>page.drawText(printText(s),{x,y,size,font:f,color});
