@@ -27,16 +27,19 @@ async function readPdf(file){
   throw Error('This PDF cannot be edited locally. It might be encrypted, damaged, or unsupported.');
  }
 }
-function formType(field){
- const type=field?.constructor?.name||'';
- return ({PDFTextField:'text',PDFCheckBox:'checkbox',PDFDropdown:'select',PDFOptionList:'select',PDFRadioGroup:'select'})[type]||null;
+async function formType(field){
+ const {PDFTextField,PDFCheckBox,PDFDropdown,PDFOptionList,PDFRadioGroup}=await pdfLib();
+ if(field instanceof PDFTextField)return 'text';
+ if(field instanceof PDFCheckBox)return 'checkbox';
+ if(field instanceof PDFDropdown||field instanceof PDFOptionList||field instanceof PDFRadioGroup)return 'select';
+ return null;
 }
 export async function inspectPdfFields(file){
  const pdf=await readPdf(file),fields=pdf.getForm().getFields();
  if(fields.length>80)throw Error('This PDF has more than 80 fields; use a smaller form.');
  const result=[];
  for(const f of fields){
-  const type=formType(f);
+  const type=await formType(f);
   if(!type)continue;
   const name=f.getName();
   const options=type==='select'&&typeof f.getOptions==='function'?f.getOptions():[];
@@ -51,7 +54,7 @@ async function fillPdf(files,formValues){
  if(fields.length>80)throw Error('This PDF has too many fields.');
  let updated=0;
  for(const f of fields){
-  const type=formType(f),name=f.getName();
+  const type=await formType(f),name=f.getName();
   if(!type||!Object.hasOwn(formValues,name))continue;
   const value=formValues[name];
   if(type==='text'){if(String(value).length>1800)throw Error('A form field is too long.');f.setText(String(value));updated++;}
@@ -80,7 +83,7 @@ async function extractZip(files){
  if(header[0]!==80||header[1]!==75)throw Error('Select a genuine ZIP archive.');
  const JSZip=(await import('./vendor/jszip.mjs')).default;
  let archive;
- try{archive=await JSZip.loadAsync(file,{createFolders:false});}
+ try{archive=await JSZip.loadAsync(new Uint8Array(await file.arrayBuffer()),{createFolders:false});}
  catch{throw Error('The ZIP archive could not be opened. It might be encrypted or damaged.');}
  const entries=Object.values(archive.files).filter(e=>!e.dir);
  if(!entries.length||entries.length>50)throw Error('Use an archive with 1–50 files.');
