@@ -100,7 +100,7 @@ function injectSiteSupport(html,page){
 
 // Add one shared visual language to all free tools without changing processors or page routes.
 function injectToolSuite(html,item){
- if(item.type!=='tool'||!item.url.startsWith('tools/')||(item.url==='tools/pdf-compressor/'||['tools/wave2-core.mjs','tools/wave3-core.mjs','tools/pdf-redaction-core.mjs','tools/ocr-pdf-core.mjs','tools/video-trim-core.mjs','tools/wave4-core.mjs','tools/image-mask-core.mjs','tools/pdf-compare-core.mjs','tools/screen-record-core.mjs'].includes(item.module?.url)))return html;
+ if(item.type!=='tool'||!item.url.startsWith('tools/')||(item.url==='tools/pdf-compressor/'||['tools/wave2-core.mjs','tools/wave3-core.mjs','tools/pdf-redaction-core.mjs','tools/ocr-pdf-core.mjs','tools/video-trim-core.mjs','tools/wave4-core.mjs','tools/image-mask-core.mjs','tools/pdf-compare-core.mjs','tools/screen-record-core.mjs','tools/wave6-svg-core.mjs','tools/wave6-video-core.mjs','tools/wave6-scanner-core.mjs','tools/wave6-image-core.mjs','tools/wave6-audio-core.mjs'].includes(item.module?.url)))return html;
  if(!/<body\b[^>]*class="tool-page"/.test(html))throw Error('Unexpected tool HTML: '+item.url);
  const family=html.includes('id="file-tool-form"')?'file':html.includes('id="utility-form"')?'utility':html.includes('id="wave1-form"')?'wave1':html.includes('id="image-file"')?'image':html.includes('id="json-input"')?'json':'general';
  const css='<link rel="stylesheet" href="../tool-suite-v1.css">';
