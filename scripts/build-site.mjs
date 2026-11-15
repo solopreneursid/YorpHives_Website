@@ -53,13 +53,13 @@ function injectHead(html,metadata){
 }
 
 // Add the same navigation action to every direct-entry page, including future
-// registered apps and products. Use the home support section until a verified
-// Ko-fi profile URL exists; never invent a payment destination.
+// registered apps and products. Keep it disabled until a verified donation
+// destination is approved; never invent a payment URL.
 function injectSiteSupport(html,page){
  const header=html.match(/<header\b[^>]*>[\s\S]*?<\/header>/i)?.[0];
  if(!header)throw Error('Public page lacks navigation header: '+page);
  if(header.includes('header-kofi'))return html;
- const action='<a class="header-kofi tool-kofi" href="/#support" aria-label="Ko-fi — support my work; coming soon"><strong>Ko-fi</strong><small>support my work</small></a>';
+ const action='<button class="header-kofi tool-kofi" type="button" disabled aria-label="Ko-fi — support my work (donations coming soon)" title="Donations coming soon"><strong>Ko-fi</strong><small>support my work</small></button>';
  return html.replace(header,header.replace(/<\/header>$/i,action+'</header>'));
 }
 

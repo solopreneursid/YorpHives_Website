@@ -26,22 +26,20 @@ test('robots points crawlers to the canonical sitemap',async()=>{
  assert.match(await read('robots.txt'),/^Sitemap: https:\/\/yorphives.com\/sitemap\.xml$/m);
 });
 
-test('homepage displays Ko-fi support action in the top header, with a smaller second line',async()=>{
- const html=await read('index.html');
+test('Ko-fi header and footer are visibly present but disabled until donations are configured',async()=>{
+ const html=await read('index.html'),js=await read('app.js'),css=await read('style.css');
  const header=html.match(/<header class="site-header">([\s\S]*?)<\/header>/)?.[1]||'';
- assert.match(header,/<button class="header-kofi" id="header-kofi"/);
+ assert.match(header,/<button class="header-kofi" id="header-kofi" type="button" disabled/);
  assert.match(header,/<strong>Ko-fi<\/strong>\s*<small>support my work<\/small>/);
- assert.match(html,/id="footer-kofi"[^>]*><strong>Ko-fi<\/strong><small>support my work<\/small><\/button>/);
- assert.match(html,/id="support-note" class="support-feedback" role="status" aria-live="polite" hidden>/);
- assert.doesNotMatch(header,/<a[^>]+href="https:\/\/ko-fi\.com\//i,'Do not invent a payment destination.');
- const js=await read('app.js'),css=await read('style.css');
- assert.match(js,/getElementById\('header-kofi'\).*addEventListener\('click'/);
- assert.match(js,/const showingSupport = hash === 'support'/);
- assert.match(css,/\.header-kofi\{order:3;flex:none;display:inline-flex/);
- assert.doesNotMatch(css,/\.is-home \.header-kofi\{display:inline-flex\}/);
- assert.match(css,/@media\(max-width:480px\)/);
+ assert.match(html,/<button class="header-kofi footer-kofi" id="footer-kofi" type="button" disabled/);
+ assert.match(html,/title="Donations coming soon"/);
+ assert.doesNotMatch(html,/id="support-note"/);
+ assert.doesNotMatch(js,/getElementById\('header-kofi'\)\?\.addEventListener/);
+ assert.doesNotMatch(js,/footerKofi\?\.addEventListener/);
+ assert.doesNotMatch(js,/showSupportStatus|showingSupport/);
+ assert.match(css,/\.header-kofi:disabled\{cursor:default/);
+ assert.match(css,/\.header-kofi:not\(:disabled\):hover/);
 });
-
 test('Ko-fi header stays compact and readable across desktop and mobile',async()=>{
  const css=await read('style.css');
  assert.ok(css.includes('min-width:98px;min-height:44px'),'Desktop header button should be small');
@@ -50,22 +48,17 @@ test('Ko-fi header stays compact and readable across desktop and mobile',async()
  assert.ok(css.includes('.header-kofi:focus-visible{outline:3px'),'Button must remain keyboard accessible');
 });
 
-test('footer Ko-fi CTA shares the header style and only shows an honest support status',async()=>{
+test('footer shares the compact Ko-fi styling without any payment or scrolling action',async()=>{
  const html=await read('index.html'),css=await read('style.css'),js=await read('app.js');
- assert.match(html,/<button class="header-kofi footer-kofi"/);
- assert.doesNotMatch(html,/<button class="support-button"[^>]*>Support YorpHives<\/button>/);
+ assert.match(html,/<button class="header-kofi footer-kofi" id="footer-kofi" type="button" disabled/);
+ assert.doesNotMatch(html,/Support YorpHives<\/button>/);
  assert.match(css,/\.footer-support \.footer-kofi\{display:inline-flex/);
- assert.match(css,/\.footer-support \.support-feedback\[hidden\]\{display:none!important\}/);
- assert.match(js,/footerKofi\?\.addEventListener\('click', showSupportStatus\)/);
- assert.match(js,/supportFeedback\.textContent = 'Ko-fi support coming soon'/);
+ assert.doesNotMatch(js,/support\.scrollIntoView|document\.getElementById\('support'\)\?\.scrollIntoView/);
 });
-
-test('compact Ko-fi action stays visible in Home, Tools, Explore and For Builders navigation',async()=>{
+test('Ko-fi is consistently disabled in the main navigation across all homepage sections',async()=>{
  const html=await read('index.html'),css=await read('style.css'),js=await read('app.js');
- assert.match(html,/<header class="site-header">[\s\S]*?<button class="header-kofi"/);
- assert.match(html,/class="footer-col footer-support" id="support"/);
- assert.match(js,/const showingSupport = hash === 'support'/);
- assert.match(js,/document\.getElementById\('support'\)\?\.scrollIntoView/);
+ assert.match(html,/<header class="site-header">[\s\S]*?<button class="header-kofi" id="header-kofi" type="button" disabled/);
  assert.match(css,/\.header-kofi\{order:3;flex:none;display:inline-flex/);
  assert.doesNotMatch(css,/\.is-home \.header-kofi\{display:inline-flex\}/);
+ assert.doesNotMatch(js,/showingSupport|showSupportStatus/);
 });

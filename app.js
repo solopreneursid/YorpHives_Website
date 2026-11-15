@@ -18,7 +18,6 @@
     let hash = window.location.hash.slice(1);
     try { hash = decodeURIComponent(hash); } catch (_) { hash = ''; }
     const section = hash === 'post' || hash === 'opportunities' ? hash : null;
-    const showingSupport = hash === 'support';
     const active = section ? 'builders' : Object.hasOwn(names, hash) ? hash : 'home';
     pages.forEach(page => { page.hidden = page.id !== active; });
     document.querySelectorAll('[data-nav]').forEach(link => {
@@ -27,13 +26,7 @@
     });
     document.title = active === 'home' ? 'YorpHives — Ideas in motion' : `${names[active]} — YorpHives`;
     closeMenu();
-    if (showingSupport) {
-      requestAnimationFrame(() => {
-        showSupportStatus();
-        document.getElementById('support')?.scrollIntoView({block:'center'});
-        footerKofi?.focus({preventScroll:true});
-      });
-    } else if (section) {
+    if (section) {
       requestAnimationFrame(() => document.getElementById(section)?.scrollIntoView({ block: 'start' }));
     } else if (active !== previousPage) {
       window.scrollTo({ top: 0, behavior: 'instant' });
@@ -43,26 +36,9 @@
   window.addEventListener('hashchange', route);
   route();
 
-  // Keep both support actions honest until the founder shares a real Ko-fi link.
-  // Both use the same accessible confirmation rather than an invented payment URL.
-  const footerKofi = document.getElementById('footer-kofi');
-  const supportFeedback = document.getElementById('support-note');
-  const showSupportStatus = () => {
-    if (!supportFeedback) return;
-    supportFeedback.hidden = false;
-    supportFeedback.textContent = 'Ko-fi support coming soon';
-  };
-  document.getElementById('header-kofi')?.addEventListener('click', () => {
-    const support = document.querySelector('.footer-support');
-    if (!support) return;
-    showSupportStatus();
-    support.scrollIntoView({
-      block: 'center',
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-    });
-    footerKofi?.focus({preventScroll:true});
-  });
-  footerKofi?.addEventListener('click', showSupportStatus);
+  // Ko-fi buttons are intentionally disabled until a founder-approved
+  // donation destination or payment integration is provided.
+  // There are no support click handlers or payment network requests.
 
   menu.addEventListener('click', () => {
     const isOpen = !navigation.classList.contains('open');
