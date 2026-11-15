@@ -59,3 +59,11 @@ test('production assets retain responsive fixes after static build',async()=>{
  assert.match(css,/#home \.studio-swipe\{\s*top:8px/);
  assert.match(css,/#home \.explore-eval-grid\{grid-template-columns:minmax\(0,1fr\)/);
 });
+
+test('skip navigation remains keyboard-accessible without overlaying phone content',async()=>{
+ const css=await read('style.css');
+ assert.match(css,/\.skip-link:not\(:focus\)\{/);
+ assert.match(css,/clip-path:inset\(50%\)/);
+ assert.match(css,/\.skip-link:focus\{/);
+ assert.match(css,/z-index:1000/);
+});
