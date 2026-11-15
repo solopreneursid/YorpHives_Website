@@ -16,13 +16,19 @@ if(root?.classList.contains('tool-page')&&root.dataset.tuiFamily){
   box.append(badge,content);return box;
  }
  if(panel){
-  const hasPicker=!!panel.querySelector('input[type="file"]');
-  const titles=hasPicker?
-   ['Choose your files','Select a file and prepare your output']:
+  const picker=panel.querySelector('input[type="file"]');
+  const titles=picker?
+   [picker.multiple?'Choose your files':'Choose your file','Select a file and prepare your output']:
    family==='json'?['Your JSON workspace','Edit, format and export JSON privately']:
    family==='image'?['Choose an image','Prepare your image before resizing']:
    category==='Calculators'?['Enter your values','Adjust the numbers, then calculate your result']:
-   ['Prepare your input','Enter your content, choose options and run the tool'];
+   category==='Business'?['Create your document','Fill out the details to generate your document']:
+   category==='Writing'?['Write or paste your text','Type your content and choose how to transform it']:
+   category==='Design'?['Customize your design','Set your options to create a visual result']:
+   category==='Marketing'?['Set up your details','Provide the information needed for your result']:
+   category==='Security'?['Choose your settings','Configure the secure result you want to create']:
+   category==='Creator'?['Create your content','Enter the details for your result']:
+   ['Enter your input','Paste your content or choose the options below'];
   const heading=head(...titles);
   const first=form||panel.querySelector('.tool-fields,.file-box,.utility-inputs');
   if(first)panel.insertBefore(heading,first);

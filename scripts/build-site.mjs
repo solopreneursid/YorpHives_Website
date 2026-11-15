@@ -198,6 +198,7 @@ if(target==='preview'){
  await cp(resolve(root,'review/compressor-ui-qa.mjs'),resolve(dest,'compressor-ui-qa.mjs'));
  await cp(resolve(root,'review/compressor-design-qa.mjs'),resolve(dest,'compressor-design-qa.mjs'));
  await cp(resolve(root,'review/tool-suite-qa.mjs'),resolve(dest,'tool-suite-qa.mjs'));
+ await cp(resolve(root,'review/tool-suite-flow-qa.mjs'),resolve(dest,'tool-suite-flow-qa.mjs'));
 }else{
  await write('robots.txt','User-agent: *\nAllow: /\nSitemap: '+origin+'sitemap.xml\n');
  const headers=await output('_headers');

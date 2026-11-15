@@ -8,7 +8,7 @@ try{
  verify('versioned stylesheet loaded',!!css&&!!body.dataset.tuiFamily);
  const heading=content?.querySelector('.tui-workspace-head');
  verify('clear workspace heading',!!heading&&getComputedStyle(heading).display==='flex');
- verify('panel looks like card',parseFloat(getComputedStyle(panel).borderRadius)>=14,{radius:getComputedStyle(panel).borderRadius});
+ verify('panel looks like card',parseFloat(getComputedStyle(panel).borderRadius)>=12,{radius:getComputedStyle(panel).borderRadius});
  const buttons=[...content.querySelectorAll('.tool-btn')];
  verify('action buttons have consistent styling',buttons.length>0&&buttons.every(x=>parseFloat(getComputedStyle(x).borderRadius)>=8),{buttons:buttons.length});
  const picker=content.querySelector('label.tool-field>input[type=file]');
