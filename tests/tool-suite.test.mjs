@@ -45,3 +45,9 @@ test('all legacy tool instructions use action-oriented, contextual steps',async(
   assert.equal(html.includes('<li>Enter your information and choose any options.</li>'),false,item.url);
  }
 });
+
+test('action labels explain what each tool does without replacing processors',async()=>{
+ const js=await read(dist,'tools/tool-suite-v1.mjs');
+ for(const label of ['Count words','Merge PDFs','Extract image text','Scan QR code','Create invoice PDF','primary.textContent=actionNames[toolId]||fallback'])assert.ok(js.includes(label),label);
+ assert.doesNotMatch(js,/\.addEventListener\('submit'/);
+});

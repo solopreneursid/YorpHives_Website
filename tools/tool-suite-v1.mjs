@@ -100,6 +100,44 @@ if(root?.classList.contains('tool-page')&&root.dataset.tuiFamily){
   header.append(check,content);
   result.prepend(header);
  }
+ // Describe the task in ordinary language. Existing processors and submit listeners stay untouched.
+ const toolId=location.pathname.match(/^\/tools\/([a-z0-9-]+)\/?/)?.[1]||'';
+ const actionNames={
+  'word-counter':'Count words','case-converter':'Convert case',
+  'slug-generator':'Generate slug','duplicate-line-remover':'Remove duplicate lines',
+  'line-sorter':'Sort lines','text-find-replace':'Find and replace',
+  'text-diff':'Compare text','word-frequency-counter':'Count word frequency',
+  'whitespace-cleaner':'Clean whitespace','pdf-merge':'Merge PDFs',
+  'pdf-extract-pages':'Extract PDF pages','pdf-remove-pages':'Remove PDF pages',
+  'pdf-rotate-pages':'Rotate PDF pages','pdf-page-counter':'Count PDF pages',
+  'images-to-pdf':'Create PDF','image-cropper':'Crop image',
+  'image-rotate-flip':'Rotate image','image-watermark':'Add watermark',
+  'file-sha256':'Calculate SHA-256','file-format-inspector':'Inspect file',
+  'batch-file-renamer':'Rename files','zip-file-creator':'Create ZIP',
+  'zip-contents-viewer':'View ZIP contents','duplicate-file-finder':'Find duplicates',
+  'batch-find-replace':'Replace text in files','images-to-powerpoint':'Create presentation',
+  'powerpoint-text-extractor':'Extract text','qr-code-scanner':'Scan QR code',
+  'barcode-generator':'Generate barcode','invoice-generator':'Create invoice PDF',
+  'image-ocr':'Extract image text','pdf-to-images':'Convert PDF to images',
+  'pdf-to-text':'Extract PDF text','pdf-page-numbers':'Add page numbers',
+  'pdf-watermark':'Add watermark','pdf-visual-signature':'Add visible signature',
+  'pdf-rearrange-pages':'Rearrange pages','image-size-target':'Compress image',
+  'image-metadata-cleaner':'Remove image metadata','passport-photo-maker':'Create passport photo',
+  'svg-to-png':'Convert to PNG','csv-file-to-xlsx':'Convert to XLSX',
+  'xlsx-file-to-csv':'Convert to CSV','xlsx-file-to-json':'Convert to JSON'
+ };
+ const primary=panel?.querySelector('#utility-run,#file-run,#wave1-run');
+ if(primary&&['Run tool','Process file','Process files','Create result'].includes(primary.textContent.trim())){
+  const fallback=category==='Calculators'?'Calculate result':
+   /generator|builder/.test(toolId)?'Generate result':
+   /converter|to-(?:pdf|csv|json|html|png|jpg)|-to-/.test(toolId)?'Convert content':
+   /formatter/.test(toolId)?'Format content':
+   /extract/.test(toolId)?'Extract content':
+   /checker|validator/.test(toolId)?'Check result':
+   /sorter/.test(toolId)?'Sort content':
+   family==='file'?'Process selected files':'Create result';
+  primary.textContent=actionNames[toolId]||fallback;
+ }
  const statuses=panel?.querySelectorAll('.tool-status[role="status"]')||[];
  statuses.forEach(status=>status.classList.add('tui-status'));
  // The specialized image resizer uses a sibling label/input inside a separate file box.
