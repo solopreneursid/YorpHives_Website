@@ -195,6 +195,105 @@
     paint();
   }
 
+
+  // Small Explore-page spotlight: new approved catalog entries join on the next release.
+  // Auto-advances one product at a time; controls are optional, not required.
+  function setupExploreFeatureSpotlight(products) {
+    const root = document.getElementById('explore-feature-window');
+    const empty = document.getElementById('explore-feature-empty');
+    const productLink = document.getElementById('explore-feature-product');
+    const logo = document.getElementById('explore-feature-logo');
+    const title = document.getElementById('explore-feature-name');
+    const type = document.getElementById('explore-feature-type');
+    const counter = document.getElementById('explore-feature-count');
+    const prev = document.getElementById('explore-feature-prev');
+    const next = document.getElementById('explore-feature-next');
+    const pause = document.getElementById('explore-feature-pause');
+    if (!root || !empty || !productLink || !logo || !title || !counter ||
+        !prev || !next || !pause) return;
+
+    const available = Array.isArray(products) ? products : [];
+    const ready = available.length > 0;
+    empty.hidden = ready;
+    productLink.hidden = !ready;
+    if (!ready) return;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let index = 0;
+    let paused = reducedMotion.matches;
+    let onscreen = typeof IntersectionObserver === 'undefined';
+    const canMove = () => available.length > 1;
+
+    function paint() {
+      const item = available[index];
+      productLink.href = new URL(item.url, document.baseURI).href;
+      productLink.setAttribute('aria-label', 'Explore ' + item.name);
+      title.textContent = item.name;
+      type.textContent = item.type === 'app' ? 'APP · APPROVED LAUNCH' : 'PRODUCT · APPROVED LAUNCH';
+      counter.textContent = 'PRODUCT ' + (index + 1) + ' / ' + available.length;
+      logo.replaceChildren();
+      // Product logos are first-party files in the released catalog, never remote assets.
+      // Graceful monogram fallback keeps old products visually complete.
+      const initials = item.name.trim().split(/\\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase();
+      if (typeof item.logo === 'string' &&
+          /^(?:apps|products|assets)\\/[a-z0-9][a-z0-9/_-]*\\.(?:svg|png|webp|jpe?g)$/.test(item.logo)) {
+        const image = document.createElement('img');
+        image.alt = '';
+        image.loading = 'lazy';
+        image.decoding = 'async';
+        image.src = new URL(item.logo, document.baseURI).href;
+        image.onerror = () => logo.replaceChildren(document.createTextNode(initials));
+        logo.append(image);
+      } else {
+        logo.textContent = initials;
+      }
+      prev.disabled = !canMove();
+      next.disabled = !canMove();
+      pause.disabled = !canMove() || reducedMotion.matches;
+      pause.setAttribute('aria-pressed', String(paused));
+      pause.setAttribute('aria-label', paused ? 'Resume automatic product rotation' : 'Pause automatic product rotation');
+      pause.textContent = paused ? '▶' : 'Ⅱ';
+      productLink.classList.remove('is-entering');
+      if (!reducedMotion.matches) {
+        void productLink.offsetWidth; // Restart the entrance animation on every change.
+        productLink.classList.add('is-entering');
+      }
+    }
+    prev.addEventListener('click', () => {
+      if (!canMove()) return;
+      index = (index - 1 + available.length) % available.length;
+      paint();
+    });
+    next.addEventListener('click', () => {
+      if (!canMove()) return;
+      index = (index + 1) % available.length;
+      paint();
+    });
+    pause.addEventListener('click', () => {
+      if (pause.disabled) return;
+      paused = !paused;
+      paint();
+    });
+    if (typeof reducedMotion.addEventListener === 'function') {
+      reducedMotion.addEventListener('change', () => {
+        if (reducedMotion.matches) paused = true;
+        paint();
+      });
+    }
+    if (typeof IntersectionObserver !== 'undefined') {
+      new IntersectionObserver(entries => {
+        onscreen = entries.some(entry => entry.isIntersecting);
+      }, {threshold: .15}).observe(root);
+    }
+    if (canMove()) window.setInterval(() => {
+      if (paused || reducedMotion.matches || !onscreen ||
+          document.hidden || document.getElementById('explore').hidden) return;
+      index = (index + 1) % available.length;
+      paint();
+    }, 4500);
+    paint();
+  }
+
   async function loadCatalog() {
     recent.replaceChildren(statusCard('Loading the latest tools and products…'));
     try {
@@ -430,6 +529,7 @@
       document.getElementById('explore-empty').hidden = products.length > 0;
       products.forEach(item => productGrid.append(card(item)));
       setupQualifiedShowcase(products);
+      setupExploreFeatureSpotlight(products);
     } catch (_) {
       recent.replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
       for (const id of ['tools', 'explore']) document.getElementById(`${id}-items`).replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
