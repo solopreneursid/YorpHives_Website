@@ -26,8 +26,8 @@ function showResult(out){
  }
  result.hidden=false;say(out.summary);
 }
-if(form&&file&&id!=='voice-recorder'){
- file.addEventListener('change',async()=>{
+if(form&&id!=='voice-recorder'){
+ if(file)file.addEventListener('change',async()=>{
   requestToken++;clearOutput();say('');
   if(id==='pdf-metadata-cleaner'){
    const preview=$('wave7-metadata');if(preview)preview.textContent='';
@@ -36,7 +36,7 @@ if(form&&file&&id!=='voice-recorder'){
     try{
      const report=await inspectPdfMetadata(file.files[0]);
      if(token!==requestToken)return;
-     const pre=$('wave7-metadata');if(pre)pre.textContent=report.text+'\\nPages: '+report.pageCount;
+     const pre=$('wave7-metadata');if(pre)pre.textContent=report.text+'\nPages: '+report.pageCount;
      say('Found supported PDF metadata. Choose Clean PDF to generate a copy with cleared standard fields.');
     }catch(e){say(e.message,true);}
    }
@@ -52,7 +52,7 @@ if(form&&file&&id!=='voice-recorder'){
   say('Processing privately in your browser…');
   try{
    const opts=Object.fromEntries(new FormData(form).entries());
-   let files=[...file.files];
+   let files=file?.files?[...file.files]:[];
    if(id==='audio-merger'&&audioOrder.length)files=audioOrder.slice();
    let out;
    if(id==='batch-image-converter')out=await convertImageBatch(files,opts,p=>{
