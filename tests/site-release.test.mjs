@@ -39,3 +39,11 @@ test('homepage displays Ko-fi support action in the top header, with a smaller s
  assert.match(css,/\.is-home \.header-kofi\{display:inline-flex\}/);
  assert.match(css,/@media\(max-width:480px\)/);
 });
+
+test('Ko-fi header stays compact and readable across desktop and mobile',async()=>{
+ const css=await read('style.css');
+ assert.match(css,/\\.header-kofi\\{[^}]*min-width:98px;min-height:44px/);
+ assert.match(css,/\\.header-kofi strong\\{font-size:13px/);
+ assert.match(css,/@media\\(max-width:480px\\)\\{[\\s\\S]*?\\.header-kofi\\{min-width:85px;min-height:40px/);
+ assert.match(css,/\\.header-kofi:focus-visible\\{outline:3px/);
+});
