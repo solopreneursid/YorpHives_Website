@@ -56,7 +56,7 @@ Run a reviewed and pinned copy of the reviewer from an operator-controlled direc
 
 Sandboxing depends on host kernel and bubblewrap support. Where that isolation is unavailable, unit tests are skipped. A disposable, resource-limited VM is appropriate for testing untrusted changes; do not run public pull-request code on a privileged self-hosted runner.
 
-If the additional tools are installed later, pin and verify their open-source releases. Configure Reviewdog for local output, Betterleaks for detection only with credential validation disabled, and PR-Agent with a verified local model and local output. Deny code writes and publishing independently at the operating-system level. Trivy needs a locally available vulnerability database and separately managed updates. These integrations are future work, not capabilities of this folder.
+If the additional tools are installed later, pin and verify their open-source releases. Configure Reviewdog for local output and Betterleaks for detection only with credential validation disabled; check flags against the particular Betterleaks version because its v2 release is still a prerelease. PR-Agent needs a verified local model, a trusted operator-controlled output path **outside** the repository, and separately enforced restrictions against writes and publishing: its local provider otherwise defaults to writing reports in the repository root. Trivy needs a locally available vulnerability database and separately managed updates. Check Trivy's [supply-chain incident advisory](https://github.com/aquasecurity/trivy/security/advisories/GHSA-69fq-xp46-6x23) before selecting and verifying a release. These integrations are future work, not capabilities of this folder.
 
 ## Test the reviewer
 
