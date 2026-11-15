@@ -3,6 +3,12 @@
 let pdfLibPromise;
 const pdfLibrary=()=>pdfLibPromise??=import('./vendor/pdf-lib.mjs');
 const MB=1048576;
+export const PDF_COMPRESSION_PRESETS=Object.freeze({
+ low:Object.freeze({quality:88,scale:1.3}),
+ best:Object.freeze({quality:70,scale:1}),
+ high:Object.freeze({quality:46,scale:0.7})
+});
+
 function requireFiles(files,min=1,max=1,limit=20*MB){
  if(!Array.isArray(files)||files.length<min||files.length>max)throw Error('Choose '+(min===max?String(min):min+' to '+max)+' file(s).');
  for(const f of files)if(!f||!Number.isFinite(f.size)||f.size<=0||f.size>limit)throw Error('Each file must be non-empty and at most '+Math.floor(limit/MB)+' MB.');
@@ -101,8 +107,10 @@ async function renderPdf(id,files,data){
    const s=lines.join('\n\n');
    return result(new Blob([s],{type:'text/plain;charset=utf-8'}),'yorphives-pdf-text.txt','Extracted selectable text from '+pdf.numPages+' pages; scanned pictures need OCR.',{text:s.slice(0,10000)});
   }
-  const quality=num(data,'quality',25,95,70)/100;
-  const requested=num(data,'scale',0.5,2,1);
+  const preset=id==='pdf-compressor'&&data.preset!==undefined?PDF_COMPRESSION_PRESETS[data.preset]:null;
+  if(id==='pdf-compressor'&&data.preset!==undefined&&!preset)throw Error('Choose Low, Best, or High compression.');
+  const quality=preset?preset.quality/100:num(data,'quality',25,95,70)/100;
+  const requested=preset?preset.scale:num(data,'scale',0.5,2,1);
   const mime=id==='pdf-to-images'&&data.format==='png'?'image/png':'image/jpeg';
   if(id==='pdf-to-images'){
    const JSZip=(await import('./vendor/jszip.mjs')).default;

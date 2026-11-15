@@ -3112,8 +3112,8 @@
       }
     },
     {
-      "name": "PDF Compressor (Raster)",
-      "description": "Reduce some PDFs by rasterizing pages locally; links and selectable text may be lost.",
+      "name": "PDF Compressor",
+      "description": "Compress your PDF with Low, Best or High compression. Your file stays on your device.",
       "type": "tool",
       "category": "PDF",
       "date": "2026-11-15",
