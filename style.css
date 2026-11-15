@@ -1227,3 +1227,50 @@
   #home .studio-note-rule{display:inline-block;width:3px;height:3px;flex:0 0 3px;border-radius:50%;background:#8ed3c3}
   #home .studio-note{column-gap:7px}
 }
+
+/* Free Tools launcher: narrow-screen visual polish (2026-11-16).
+   No markup or behavior changes: keep search, categories and pagination intact. */
+#tools .launcher-intro-head>div,
+#tools .launcher-main-head>div,
+#tools .launcher-mobile-tile .launcher-group-name{min-width:0}
+#tools .launcher-mobile-tile .launcher-group-name{overflow-wrap:normal}
+#tools .launcher-mobile-tile .launcher-group-count{flex:none;text-align:right}
+@media(max-width:540px){
+  #tools .launcher-mobile-browse:not([hidden]){margin-bottom:18px}
+  #tools .launcher-mobile-grid{align-items:stretch}
+  #tools .launcher-mobile-tile{min-width:0;min-height:58px}
+  #tools .launcher-mobile-tile .launcher-group-name{line-height:1.35}
+  #tools .launcher-tool-link span{
+    white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;
+    -webkit-line-clamp:2;line-clamp:2;overflow:hidden;line-height:1.4
+  }
+  #tools .launcher-tool-row{min-height:76px}
+  #tools .launcher-pagination button{
+    min-width:40px;min-height:40px;display:grid;place-items:center
+  }
+}
+/* At 320–380px, two category columns leave no safe room for a label,
+   count and icon. A compact full-width list prevents colliding text. */
+@media(max-width:380px){
+  #tools .launcher-intro-head{display:block;position:relative;margin-bottom:16px}
+  #tools .launcher-intro-head>div{padding-top:31px}
+  #tools .launcher-intro .launcher-kicker{
+    position:absolute;top:4px;left:0;max-width:150px;line-height:1.4
+  }
+  #tools .launcher-intro h3{font-size:clamp(23px,7vw,26px);margin:3px 0 5px}
+  #tools .launcher-total{position:absolute;right:0;top:0;padding:8px 10px}
+  #tools .launcher-mobile-grid{grid-template-columns:minmax(0,1fr);gap:7px}
+  #tools .launcher-mobile-tile{
+    min-height:47px;padding:8px 12px;gap:10px;justify-content:space-between
+  }
+  #tools .launcher-mobile-tile .launcher-group-symbol{width:28px;font-size:17px}
+  #tools .launcher-mobile-tile .launcher-group-name{
+    flex:1;font-size:12px;overflow-wrap:break-word
+  }
+  #tools .launcher-mobile-tile .launcher-group-count{font-size:11px;margin-left:10px}
+  #tools .launcher-search-shell{min-height:52px}
+  #tools .launcher-main{padding:15px 12px 17px}
+  #tools .launcher-main-head{gap:12px}
+  #tools .launcher-main-head h3{font-size:20px}
+  #tools .launcher-footer{gap:8px}
+}
