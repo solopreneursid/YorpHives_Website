@@ -192,7 +192,8 @@ async function imageOps(id,files,data){
   }
   if(id==='image-ocr'){
    const module=await import('./vendor/ocr/tesseract.esm.min.js');
-   const {createWorker}=module;
+   const createWorker=module.createWorker||module.default?.createWorker;
+   if(typeof createWorker!=='function')throw Error('Self-hosted OCR module is unavailable.');
    const opts={workerPath:new URL('./vendor/ocr/worker.min.js',import.meta.url).href,
      corePath:new URL('./vendor/ocr/core/',import.meta.url).href,
      langPath:new URL('./vendor/ocr/lang',import.meta.url).href,workerBlobURL:false,gzip:true};
@@ -224,9 +225,11 @@ async function svgToPng(files,data){
  const w=num(data,'width',32,2048,vb.length===4&&vb[2]>0?vb[2]:512),h=num(data,'height',32,2048,vb.length===4&&vb[3]>0?vb[3]:512);
  root.setAttribute('width',String(w));root.setAttribute('height',String(h));
  const markup=new XMLSerializer().serializeToString(doc),blob=new Blob([markup],{type:'image/svg+xml'});
- const image=await createImageBitmap(blob);
- try{const c=redraw(image,w,h);return result(await toBlob(c),'yorphives-vector.png','Converted a sanitized SVG to a '+Math.round(w)+' × '+Math.round(h)+' PNG.',{image:true});}
- finally{image.close();}
+ const objectURL=URL.createObjectURL(blob),image=new Image();
+ try{
+  await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(Error('Safe SVG could not be decoded by this browser.'));image.src=objectURL;});
+  const c=redraw(image,w,h);return result(await toBlob(c),'yorphives-vector.png','Converted a sanitized SVG to a '+Math.round(w)+' × '+Math.round(h)+' PNG.',{image:true});
+ }finally{URL.revokeObjectURL(objectURL);}
 }
 let scriptLoads=new Map();
 async function loadScript(path,key){

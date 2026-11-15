@@ -36,7 +36,7 @@ if(group==='pdf-edit'){
 }
 if(group==='pdf-render'){
  const file=await pdfFile();
- await check('PDF to text (real PDF.js)',async()=>{const r=await processWave1('pdf-to-text',[file]);assert(r.text.includes('HELLO TEST PAGE 1'),'Text extraction missing');return r.text.slice(0,80);});
+ await check('PDF to text (real PDF.js)',async()=>{const r=await processWave1('pdf-to-text',[file]);assert(/HELLO\s+TEST\s+PAGE\s+1/.test(r.text.replace(/\s+/g,' ')),'Text extraction missing: '+r.text.slice(0,220));return r.text.slice(0,80);});
  await check('PDF to images (real PDF.js)',async()=>{const r=await processWave1('pdf-to-images',[file],{format:'png',scale:1.2});assert(r.blob.size>300,'Image zip empty');assert(r.filename.endsWith('.zip'),'Expected ZIP for three pages');const {inspectZip}=await import('./tools/safe-zip.mjs');const z=inspectZip(await r.blob.arrayBuffer());assert(z.entries.size===3,'Wrong image count');return [...z.entries.keys()].join(',');});
  await check('PDF raster compression',async()=>{const r=await processWave1('pdf-compressor',[file],{quality:60,scale:.7});const d=await pdfRead(r);assert(d.getPageCount()===3,'Compressed PDF invalid');return r.summary;});
 }
