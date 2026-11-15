@@ -82,7 +82,9 @@ test('Free Tools library is compact, self-contained, and leaves studio/explore c
  assert.match(css,/@media\(max-width:540px\)/);
 });
 test('All tools directory stays fully crawlable while categories collapse by default',async()=>{
- const dir=await read('tools/index.html'),style=await read('tools/tool.css');
+ const dir=await read('tools/index.html',resolve(root,'dist')),style=await read('tools/tool.css');
+ const source=await read('tools/index.html');
+ assert.match(source,/<!-- TOOL_DIRECTORY_START -->/);
  const catalog=JSON.parse(await read('catalog.json'));
  const toolUrls=catalog.items.filter(x=>x.type==='tool').map(x=>x.url);
  assert.equal((dir.match(/<details class="directory-section">/g)||[]).length,12);
@@ -91,4 +93,17 @@ test('All tools directory stays fully crawlable while categories collapse by def
  for(const url of toolUrls)assert.ok(dir.includes('href="../'+url+'"'),url);
  assert.match(dir,/href="\.\.\/#tools">⌕/);
  assert.match(style,/details\.directory-section>summary/);
+});
+
+test('directory categories and tool counts are derived from public catalog on every build',async()=>{
+ const catalog=JSON.parse(await read('catalog.json'));
+ const items=catalog.items.filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
+ const html=await read('tools/index.html',resolve(root,'dist'));
+ const headings=[...html.matchAll(/<details class="directory-section"><summary><span>([^<]+)<\/span><small>(\d+) tools?<\/small>/g)];
+ const categories=[...new Set(items.map(x=>x.category||'Other'))].sort((a,b)=>a.localeCompare(b));
+ assert.deepEqual(headings.map(m=>m[1]),categories);
+ for(const match of headings)
+  assert.equal(Number(match[2]),items.filter(x=>(x.category||'Other')===match[1]).length,match[1]);
+ assert.equal((html.match(/class="directory-card"/g)||[]).length,items.length);
+ for(const item of items)assert.ok(html.includes('href="../'+item.url+'"'),item.url);
 });

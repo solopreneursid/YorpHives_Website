@@ -97,6 +97,30 @@ for(const item of published){
  await write(path,html);
 }
 // A directory stays crawlable and provides standard links to every item.
+
+function buildToolDirectory(items){
+ // All public tools remain linked in static HTML, including the ones
+ // not initially shown in the JS-enhanced homepage library.
+ const groups=new Map();
+ for(const tool of items.filter(x=>x.type==='tool')){
+  const category=String(tool.category||'Other').trim()||'Other';
+  const set=groups.get(category)||[];
+  set.push(tool);
+  groups.set(category,set);
+ }
+ return [...groups].sort((a,b)=>a[0].localeCompare(b[0])).map(([category,tools])=>{
+  tools.sort((a,b)=>a.name.localeCompare(b.name));
+  const cards=tools.map(tool=>
+   '<a class="directory-card" href="../'+esc(tool.url)+'"><strong>'+esc(tool.name)+
+   '</strong><span>'+esc(tool.description)+'</span></a>').join('');
+  const total=tools.length;
+  return '<details class="directory-section"><summary><span>'+esc(category)+'</span><small>'+
+    total+' '+(total===1?'tool':'tools')+
+    '</small><span class="directory-chevron" aria-hidden="true">⌄</span></summary>'+
+    '<div class="directory-grid">'+cards+'</div></details>';
+ }).join('');
+}
+
 const candidateDirectories=[...new Set(published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0]+'/'))];
 const directories=[];
 for(const directory of candidateDirectories)
@@ -106,6 +130,14 @@ for(const directory of directories){
  if(!await exists(path))continue;
  const url=origin+directory,inside=published.filter(x=>x.url.startsWith(directory));
  let html=await output(path);
+ if(directory==='tools/'){
+  const start='<!-- TOOL_DIRECTORY_START -->';
+  const end='<!-- TOOL_DIRECTORY_END -->';
+  const at=html.indexOf(start),after=html.indexOf(end,at+start.length);
+  if(at<0||after<at)throw Error('Tool directory missing stable category markers.');
+  const generated=buildToolDirectory(inside);
+  html=html.slice(0,at)+start+generated+end+html.slice(after+end.length);
+ }
  const graph=[
   {'@type':'CollectionPage','@id':url+'#webpage',url,name:directory==='tools/'?'Free tools directory | YorpHives':'YorpHives '+directory.slice(0,-1),
    mainEntity:{'@id':url+'#items'}},
