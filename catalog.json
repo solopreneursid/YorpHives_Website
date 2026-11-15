@@ -3690,6 +3690,427 @@
           "No server upload. Large conversion engines self-hosted and loaded only by tools that need them."
         ]
       }
+    },
+    {
+      "name": "Fill PDF Forms",
+      "description": "Fill editable PDF form fields locally without uploading sensitive documents.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-form-filler/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave2-core.mjs",
+        "export": "processWave2",
+        "toolId": "pdf-form-filler",
+        "arguments": [
+          "tool id: pdf-form-filler",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "accept": ".pdf,application/pdf"
+          },
+          {
+            "name": "values",
+            "type": "object",
+            "description": "PDF field names mapped to values"
+          }
+        ],
+        "requirements": [
+          "Browser-local execution. No remote file processing or paid APIs."
+        ]
+      }
+    },
+    {
+      "name": "Flatten PDF Forms",
+      "description": "Make interactive PDF form fields static for sharing and printing.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-flatten/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave2-core.mjs",
+        "export": "processWave2",
+        "toolId": "pdf-flatten",
+        "arguments": [
+          "tool id: pdf-flatten",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "accept": ".pdf,application/pdf"
+          }
+        ],
+        "requirements": [
+          "Browser-local execution. No remote file processing or paid APIs."
+        ]
+      }
+    },
+    {
+      "name": "ZIP File Extractor",
+      "description": "Extract ordinary ZIP files directly on your device with safe path and size validation.",
+      "type": "tool",
+      "category": "Files",
+      "date": "2026-11-15",
+      "url": "tools/zip-extractor/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave2-core.mjs",
+        "export": "processWave2",
+        "toolId": "zip-extractor",
+        "arguments": [
+          "tool id: zip-extractor",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "accept": ".zip,application/zip"
+          }
+        ],
+        "requirements": [
+          "Browser-local execution. No remote file processing or paid APIs."
+        ]
+      }
+    },
+    {
+      "name": "CSV Cleaner",
+      "description": "Remove duplicate and blank CSV rows and tidy whitespace locally.",
+      "type": "tool",
+      "category": "Developer",
+      "date": "2026-11-15",
+      "url": "tools/csv-cleaner/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave2-core.mjs",
+        "export": "processWave2",
+        "toolId": "csv-cleaner",
+        "arguments": [
+          "tool id: csv-cleaner",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "accept": ".csv,text/csv"
+          },
+          {
+            "name": "trim",
+            "type": "checkbox",
+            "default": true
+          },
+          {
+            "name": "dropBlank",
+            "type": "checkbox",
+            "default": true
+          },
+          {
+            "name": "dropDuplicates",
+            "type": "checkbox",
+            "default": true
+          }
+        ],
+        "requirements": [
+          "Browser-local execution. No remote file processing or paid APIs."
+        ]
+      }
+    },
+    {
+      "name": "Photo Collage Maker",
+      "description": "Make a photo collage with up to nine JPEG, PNG or WebP images, privately in your browser.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/image-collage-maker/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave2-core.mjs",
+        "export": "processWave2",
+        "toolId": "image-collage-maker",
+        "arguments": [
+          "tool id: image-collage-maker",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": true,
+            "accept": ".jpg,.jpeg,.png,.webp"
+          },
+          {
+            "name": "columns",
+            "type": "select",
+            "options": [
+              "2",
+              "3"
+            ],
+            "default": "2"
+          },
+          {
+            "name": "format",
+            "type": "select",
+            "options": [
+              "png",
+              "jpeg"
+            ],
+            "default": "png"
+          }
+        ],
+        "requirements": [
+          "Browser-local execution. No remote file processing or paid APIs."
+        ]
+      }
+    },
+    {
+      "name": "Resume / CV Builder",
+      "description": "Create a well-formatted resume as a downloadable PDF without registering.",
+      "type": "tool",
+      "category": "Business",
+      "date": "2026-11-15",
+      "url": "tools/resume-builder/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave2-core.mjs",
+        "export": "processWave2",
+        "toolId": "resume-builder",
+        "arguments": [
+          "tool id: resume-builder",
+          "array of local File objects",
+          "object of form options"
+        ],
+        "inputs": [
+          {
+            "name": "fullName",
+            "type": "text"
+          },
+          {
+            "name": "headline",
+            "type": "text"
+          },
+          {
+            "name": "email",
+            "type": "text"
+          },
+          {
+            "name": "phone",
+            "type": "text"
+          },
+          {
+            "name": "location",
+            "type": "text"
+          },
+          {
+            "name": "summary",
+            "type": "textarea"
+          },
+          {
+            "name": "skills",
+            "type": "textarea"
+          },
+          {
+            "name": "experience",
+            "type": "textarea"
+          },
+          {
+            "name": "education",
+            "type": "textarea"
+          },
+          {
+            "name": "projects",
+            "type": "textarea"
+          }
+        ],
+        "requirements": [
+          "Browser-local execution. No remote file processing or paid APIs."
+        ]
+      }
+    },
+    {
+      "name": "HEIC to JPG Converter",
+      "description": "Convert iPhone HEIC and HEIF photos to JPG or PNG privately in your browser.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/heic-to-jpg/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave3-core.mjs",
+        "export": "processWave3",
+        "toolId": "heic-to-jpg",
+        "arguments": [
+          "tool id: heic-to-jpg",
+          "array of local Files",
+          "object of settings"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "accept": ".heic,.heif"
+          },
+          {
+            "name": "format",
+            "type": "select",
+            "options": [
+              "jpeg",
+              "png"
+            ],
+            "default": "jpeg"
+          }
+        ],
+        "requirements": [
+          "Local file processing only. No paid APIs or server uploads."
+        ]
+      }
+    },
+    {
+      "name": "Audio Trimmer",
+      "description": "Trim MP3, WAV and other browser-decodable audio into a downloadable WAV clip.",
+      "type": "tool",
+      "category": "Audio",
+      "date": "2026-11-15",
+      "url": "tools/audio-trimmer/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave3-core.mjs",
+        "export": "processWave3",
+        "toolId": "audio-trimmer",
+        "arguments": [
+          "tool id: audio-trimmer",
+          "array of local Files",
+          "object of settings"
+        ],
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "accept": "audio/*"
+          },
+          {
+            "name": "start",
+            "type": "number",
+            "default": "0"
+          },
+          {
+            "name": "end",
+            "type": "number"
+          }
+        ],
+        "requirements": [
+          "Local file processing only. No paid APIs or server uploads."
+        ]
+      }
+    },
+    {
+      "name": "PDF Redaction Tool",
+      "description": "Permanently conceal selected content by creating a new rasterized PDF entirely on your device.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-redaction/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/pdf-redaction-core.mjs",
+        "export": "redactPdf",
+        "toolId": "pdf-redaction",
+        "arguments": [
+          "local PDF File",
+          "redaction rectangle array"
+        ],
+        "inputs": [
+          {
+            "name": "file",
+            "type": "file",
+            "accept": ".pdf"
+          },
+          {
+            "name": "areas",
+            "type": "array",
+            "description": "Selected redaction rectangles normalized to page coordinates"
+          }
+        ],
+        "requirements": [
+          "Local file processing only. No paid APIs or server uploads."
+        ]
+      }
+    },
+    {
+      "name": "Scanned PDF to Searchable PDF",
+      "description": "Turn scanned PDF pages into searchable PDFs using locally hosted English OCR.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/scanned-pdf-to-searchable-pdf/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/ocr-pdf-core.mjs",
+        "export": "makeSearchablePdf",
+        "toolId": "scanned-pdf-to-searchable-pdf",
+        "arguments": [
+          "local PDF File",
+          "optional local progress callback"
+        ],
+        "inputs": [
+          {
+            "name": "file",
+            "type": "file",
+            "accept": ".pdf"
+          }
+        ],
+        "requirements": [
+          "No paid APIs or uploads. English OCR only; up to five pages per document."
+        ]
+      }
+    },
+    {
+      "name": "Video Trimmer",
+      "description": "Trim short video clips privately using native browser recording without paid APIs or uploading files.",
+      "type": "tool",
+      "category": "Video",
+      "date": "2026-11-15",
+      "url": "tools/video-trimmer/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/video-trim-core.mjs",
+        "export": "trimVideo",
+        "toolId": "video-trimmer",
+        "arguments": [
+          "local video File",
+          "object with start/end seconds"
+        ],
+        "inputs": [
+          {
+            "name": "file",
+            "type": "file",
+            "accept": "video/*"
+          },
+          {
+            "name": "start",
+            "type": "number"
+          },
+          {
+            "name": "end",
+            "type": "number"
+          }
+        ],
+        "requirements": [
+          "Browser MediaRecorder and Canvas capture. Output is WebM or MP4 depending on browser."
+        ]
+      }
     }
   ]
 }
