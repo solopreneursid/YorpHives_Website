@@ -36,8 +36,8 @@ if(new URLSearchParams(location.search).get('qa')==='wave6'){
   const pixels=await image.makePixelArt(input,{block:18,colors:4});
   check('Pixel art exports PNG',pixels.blob.type==='image/png'&&pixels.blob.size>100);
   const scanned=await scan.scanDocument(input,{corners:[{x:.08,y:.08},{x:.92,y:.08},{x:.92,y:.92},{x:.08,y:.92}],mode:'grayscale',format:'pdf'});
-  const document=await PDFDocument.load(await scanned.blob.arrayBuffer());
-  check('Document scanner produces one-page PDF',document.getPageCount()===1);
+  const scannedPdf=await PDFDocument.load(await scanned.blob.arrayBuffer());
+  check('Document scanner produces one-page PDF',scannedPdf.getPageCount()===1);
   const wav=priorAudio.wavFromAudioChannels([Float32Array.from({length:22050},(_,i)=>Math.sin(i/23)*.1)],44100);
   const gain=await audio.adjustAudioVolume(new File([wav],'test.wav',{type:'audio/wav'}),{gain:'2'});
   check('Audio volume booster exports a RIFF/WAV file',gain.blob.size>1000&&
