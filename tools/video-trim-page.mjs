@@ -1,4 +1,4 @@
-import {trimVideo} from './video-trim-core.mjs';
+import {trimVideo,probeVideoDuration} from './video-trim-core.mjs';
 const byId=id=>document.getElementById(id);
 const form=byId('video-form'),file=byId('video-file'),player=byId('video-original'),
  run=byId('video-run'),start=byId('video-start'),end=byId('video-end'),status=byId('video-status'),
@@ -18,14 +18,16 @@ file.addEventListener('change',()=>{
  if(!selected)return;
  sourceUrl=URL.createObjectURL(selected);player.src=sourceUrl;player.hidden=false;player.preload='metadata';
  notice('Reading video details on this device…');const current=revision;
- player.onloadedmetadata=()=>{
+ player.onloadedmetadata=async()=>{
   if(current!==revision)return;
-  const duration=player.duration;
-  if(!Number.isFinite(duration)||duration<.25){notice('This video is too short or has an unknown length.',true);return;}
-  start.value='0';end.value=String(Math.min(15,duration).toFixed(2));
-  start.max=String(duration.toFixed(2));end.max=start.max;
-  details.textContent='Video length: '+duration.toFixed(1)+' seconds. Select a section up to 30 seconds long.';
-  notice('Choose the start and end time, then trim.');run.disabled=false;
+  try{
+   const duration=await probeVideoDuration(player);
+   if(current!==revision)return;
+   start.value='0';end.value=String(Math.min(15,duration).toFixed(2));
+   start.max=String(duration.toFixed(2));end.max=start.max;
+   details.textContent='Video length: '+duration.toFixed(1)+' seconds. Select a section up to 30 seconds long.';
+   notice('Choose the start and end time, then trim.');run.disabled=false;
+  }catch(error){if(current===revision)notice(error?.message||'Unable to inspect this video.',true);}
  };
  player.onerror=()=>{if(current===revision)notice('This browser cannot play the selected video.',true);};
 });
