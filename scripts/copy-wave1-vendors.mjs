@@ -21,6 +21,12 @@ await copy('jsbarcode/dist/JsBarcode.all.min.js','barcode/JsBarcode.all.min.js')
 await copy('heic2any/dist/heic2any.min.js','heic/heic2any.min.js');
 await copy('fix-webm-duration/fix-webm-duration.js','webm/fix-webm-duration.js');
 await copy('svgo/dist/svgo.browser.js','svgo/svgo.browser.js');
+// Pinned MIT ONNX Runtime Web with no CDN usage at runtime.
+for(const file of ['ort.wasm.bundle.min.mjs','ort-wasm-simd-threaded.mjs','ort-wasm-simd-threaded.wasm'])
+ await copy('onnxruntime-web/dist/'+file,'onnxruntime/'+file);
+const ortLicense=resolve(root,'node_modules/onnxruntime-web/LICENSE');
+if(await stat(ortLicense).then(x=>x.isFile()).catch(()=>false))
+ await copy('onnxruntime-web/LICENSE','wave1-licenses/onnxruntime-web-LICENSE.txt');
 for(const file of ['index.js','color.js','constants.js','lzwEncode.js','palettize.js','pnnquant2.js','rgb-packing.js','stream.js'])
  await copy('gifenc/src/'+file,'gifenc/'+file);
 
