@@ -39,6 +39,8 @@ for(const file of ['index.html','app.js','style.css','catalog.json','_headers','
 const roots=new Set(['tools',...published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0])]);
 for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory()).catch(()=>false))
  await cp(resolve(root,dir),resolve(dest,dir),{recursive:true});
+// After static copying, vendor the heavyweight open-source libraries under our origin.
+await import('./copy-wave1-vendors.mjs');
 for(const item of published)if(!item.url.includes('/'))
  await cp(resolve(root,item.url),resolve(dest,item.url));
 const dataJson=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026');

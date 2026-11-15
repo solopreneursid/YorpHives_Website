@@ -1,0 +1,15 @@
+{
+  "name": "yorphives-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Browser-local utilities with pinned open-source build dependencies",
+  "dependencies": {
+    "pdfjs-dist": "6.5.438",
+    "tesseract.js": "7.0.0",
+    "tesseract.js-core": "7.0.0",
+    "@tesseract.js-data/eng": "1.0.0",
+    "jsqr": "1.4.0",
+    "jsbarcode": "3.12.3"
+  }
+}
