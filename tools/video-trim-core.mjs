@@ -17,6 +17,22 @@ async function waitVideoMetadata(element){
   element.addEventListener('error',()=>reject(Error('Your browser cannot decode this video format.')),{once:true});
  }),12000,'Video metadata could not be loaded.');
 }
+export async function probeVideoDuration(video){
+ await waitVideoMetadata(video);
+ if(Number.isFinite(video.duration)&&video.duration>.2)return video.duration;
+ // MediaRecorder-created WebM files sometimes omit duration metadata.
+ const current=video.currentTime;
+ const seeked=new Promise((resolve,reject)=>{
+  video.addEventListener('seeked',resolve,{once:true});
+  video.addEventListener('error',()=>reject(Error('Video duration could not be determined.')),{once:true});
+ });
+ video.currentTime=1e9;
+ await withTimeout(seeked,7000,'Could not determine the length of this video.');
+ const duration=Number.isFinite(video.duration)&&video.duration>.2?video.duration:video.currentTime;
+ if(!Number.isFinite(duration)||duration<.25||duration>3600)throw Error('Video duration is unavailable or unsupported.');
+ video.currentTime=Number.isFinite(current)?current:0;
+ return duration;
+}
 export async function trimVideo(file,{start,end,onProgress}={}){
  if(!(file instanceof Blob)||file.size<100||file.size>30*MB)throw Error('Choose a video file between 100 bytes and 30 MB.');
  const name=String(file.name||'');
@@ -33,8 +49,8 @@ export async function trimVideo(file,{start,end,onProgress}={}){
  document.body.append(video);
  let raf=0,timer=0,safety=0,stream=null,audioCtx=null,recorder=null;
  try{
-  await waitVideoMetadata(video);
-  const times=validateVideoTrim(start,end,video.duration);
+  const fullDuration=await probeVideoDuration(video);
+  const times=validateVideoTrim(start,end,fullDuration);
   if(!video.videoWidth||!video.videoHeight)throw Error('This video has no visible frames.');
   const scale=Math.min(1,960/Math.max(video.videoWidth,video.videoHeight));
   const width=Math.max(2,Math.floor(video.videoWidth*scale/2)*2),height=Math.max(2,Math.floor(video.videoHeight*scale/2)*2);
