@@ -54,7 +54,7 @@ form.addEventListener('submit',async event=>{
  const files=picker?[...(picker.files||[])]:[];
  const options=Object.fromEntries([...new FormData(form)].filter(([key])=>key!=='files'));
  if(id==='pdf-form-filler'){
-  const values={};
+  const values=Object.create(null);
   for(const field of dynamic.querySelectorAll('[data-pdf-name]'))values[field.dataset.pdfName]=field.type==='checkbox'?field.checked:field.value;
   options.values=values;
  }
@@ -64,7 +64,7 @@ form.addEventListener('submit',async event=>{
   const output=await processWave2(id,files,options);
   if(token!==revision)return;
   const downloads=output.downloads||[{blob:output.blob,filename:output.filename}];
-  if(!downloads.length||downloads.some(item=>!(item.blob instanceof Blob)||!item.blob.size))throw Error('No valid output was produced.');
+  if(!downloads.length||downloads.some(item=>!(item.blob instanceof Blob)||(!output.downloads&&!item.blob.size)))throw Error('No valid output was produced.');
   const heading=document.createElement('strong');heading.textContent=downloads.length===1?'Your file is ready':'Your extracted files are ready';
   const list=document.createElement('div');list.className='wave2-downloads';
   for(const item of downloads){
