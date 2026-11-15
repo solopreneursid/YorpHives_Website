@@ -4555,6 +4555,228 @@
           "Self-hosted browser processing; no paid API, third-party CDN or uploaded files."
         ]
       }
+    },
+    {
+      "name": "Batch Image Converter",
+      "description": "Convert and compress up to ten images to JPEG, PNG or WebP in a local ZIP.",
+      "type": "tool",
+      "category": "Images",
+      "date": "2026-11-15",
+      "url": "tools/batch-image-converter/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave7-file-core.mjs",
+        "export": "convertImageBatch",
+        "toolId": "batch-image-converter",
+        "arguments": [
+          "local input(s)",
+          "options"
+        ],
+        "inputs": [
+          {
+            "name": "input",
+            "type": "local-file-or-form",
+            "description": "image files"
+          }
+        ],
+        "requirements": [
+          "No file uploads, no paid inference, processing on the visitor’s device."
+        ]
+      }
+    },
+    {
+      "name": "PDF Metadata Inspector & Cleaner",
+      "description": "Inspect and clear supported standard Info metadata fields in PDF documents without uploading.",
+      "type": "tool",
+      "category": "PDF",
+      "date": "2026-11-15",
+      "url": "tools/pdf-metadata-cleaner/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave7-file-core.mjs",
+        "export": "cleanPdfMetadata",
+        "toolId": "pdf-metadata-cleaner",
+        "arguments": [
+          "local input(s)",
+          "options"
+        ],
+        "inputs": [
+          {
+            "name": "input",
+            "type": "local-file-or-form",
+            "description": "PDF document"
+          }
+        ],
+        "requirements": [
+          "No file uploads, no paid inference, processing on the visitor’s device."
+        ]
+      }
+    },
+    {
+      "name": "Excel & CSV Merger",
+      "description": "Combine CSV and XLSX data, match column names, optionally deduplicate, and export locally.",
+      "type": "tool",
+      "category": "Spreadsheets",
+      "date": "2026-11-15",
+      "url": "tools/spreadsheet-merger/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave7-file-core.mjs",
+        "export": "mergeSpreadsheetFiles",
+        "toolId": "spreadsheet-merger",
+        "arguments": [
+          "local input(s)",
+          "options"
+        ],
+        "inputs": [
+          {
+            "name": "input",
+            "type": "local-file-or-form",
+            "description": "2–8 CSV or XLSX files"
+          }
+        ],
+        "requirements": [
+          "No file uploads, no paid inference, processing on the visitor’s device."
+        ]
+      }
+    },
+    {
+      "name": "Audio File Merger",
+      "description": "Join multiple browser-decodable audio clips in an adjustable order and save a WAV file.",
+      "type": "tool",
+      "category": "Audio",
+      "date": "2026-11-15",
+      "url": "tools/audio-merger/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave7-audio-core.mjs",
+        "export": "mergeAudioFiles",
+        "toolId": "audio-merger",
+        "arguments": [
+          "local input(s)",
+          "options"
+        ],
+        "inputs": [
+          {
+            "name": "input",
+            "type": "local-file-or-form",
+            "description": "2–6 audio files"
+          }
+        ],
+        "requirements": [
+          "No file uploads, no paid inference, processing on the visitor’s device."
+        ]
+      }
+    },
+    {
+      "name": "Voice Recorder",
+      "description": "Record microphone audio with browser permission and save locally without uploads.",
+      "type": "tool",
+      "category": "Audio",
+      "date": "2026-11-15",
+      "url": "tools/voice-recorder/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave7-audio-core.mjs",
+        "export": "beginVoiceRecording",
+        "toolId": "voice-recorder",
+        "arguments": [
+          "Permission request + callbacks"
+        ],
+        "inputs": [
+          {
+            "name": "input",
+            "type": "local-file-or-form",
+            "description": "browser microphone permission"
+          }
+        ],
+        "requirements": [
+          "No file uploads, no paid inference, processing on the visitor’s device."
+        ]
+      }
+    },
+    {
+      "name": "Password Strength & Pattern Analyzer",
+      "description": "Inspect password length and predictable patterns locally, with no transmitted secrets.",
+      "type": "tool",
+      "category": "Security",
+      "date": "2026-11-15",
+      "url": "tools/password-strength-analyzer/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave7-business-core.mjs",
+        "export": "assessPassword",
+        "toolId": "password-strength-analyzer",
+        "arguments": [
+          "password string, never transmitted"
+        ],
+        "inputs": [
+          {
+            "name": "input",
+            "type": "text",
+            "description": "password string (not stored)"
+          }
+        ],
+        "requirements": [
+          "No file uploads, no paid inference, processing on the visitor’s device."
+        ]
+      }
+    },
+    {
+      "name": "Business Proposal PDF Generator",
+      "description": "Create printable multi-page business proposals with scope, deliverables, timeline and budget.",
+      "type": "tool",
+      "category": "Business",
+      "date": "2026-11-15",
+      "url": "tools/business-proposal-generator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave7-business-core.mjs",
+        "export": "createBusinessProposal",
+        "toolId": "business-proposal-generator",
+        "arguments": [
+          "local input(s)",
+          "options"
+        ],
+        "inputs": [
+          {
+            "name": "input",
+            "type": "local-file-or-form",
+            "description": "business proposal fields"
+          }
+        ],
+        "requirements": [
+          "No file uploads, no paid inference, processing on the visitor’s device."
+        ]
+      }
+    },
+    {
+      "name": "Image Publishing Pack Workflow",
+      "description": "Resize, convert, compress and package web, thumbnail and social image assets in one local workflow.",
+      "type": "tool",
+      "category": "Workflows",
+      "date": "2026-11-15",
+      "url": "tools/image-publishing-pack/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/wave7-file-core.mjs",
+        "export": "makeImagePublishingPack",
+        "toolId": "image-publishing-pack",
+        "arguments": [
+          "local input(s)",
+          "options"
+        ],
+        "inputs": [
+          {
+            "name": "input",
+            "type": "local-file-or-form",
+            "description": "local image file"
+          }
+        ],
+        "requirements": [
+          "No file uploads, no paid inference, processing on the visitor’s device."
+        ]
+      }
     }
   ]
 }
