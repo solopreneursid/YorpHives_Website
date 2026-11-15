@@ -90,7 +90,7 @@ async function quotePdf(opts){
   text('NOTES',43,146,10,bold,green);
   wrap(notes,normal,10,500).slice(0,5).forEach((x,i)=>text(x,43,124-i*15));
  }
- text('Prepared with YorpHives · Estimates are not tax or legal advice.',43,31,9,normal,muted);
+ text('Prepared with YorpHives | Estimates are not tax or legal advice.',43,31,9,normal,muted);
  return output(new Blob([await doc.save()],{type:'application/pdf'}),'yorphives-quotation.pdf','Created your itemized quotation with subtotal, tax and total.');
 }
 async function certificatePdf(opts){
@@ -116,7 +116,7 @@ async function certificatePdf(opts){
  lines.forEach((s,i)=>center(s,230-i*24,15));
  center('Issued by '+organization,153,16,bold);
  center('Date: '+date,119,13,regular,muted);
- center('Created with YorpHives · Not an accredited credential',72,10,regular,muted);
+ center('Created with YorpHives | Not an accredited credential',72,10,regular,muted);
  return output(new Blob([await doc.save()],{type:'application/pdf'}),'yorphives-certificate.pdf','Created a printable landscape certificate. The template is not an official accreditation.');
 }
 const parseStamp=(part,source)=>{
