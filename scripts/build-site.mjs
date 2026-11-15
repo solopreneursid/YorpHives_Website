@@ -189,6 +189,11 @@ if(target==='preview'){
  await cp(resolve(root,'review/wave1-qa.mjs'),resolve(dest,'wave1-qa.mjs'));
  await cp(resolve(root,'review/wave1-ui-qa.mjs'),resolve(dest,'wave1-ui-qa.mjs'));
  await cp(resolve(root,'review/wave3-browser-qa.mjs'),resolve(dest,'wave3-browser-qa.mjs'));
+ // Preview-only browser acceptance: opt-in with ?qa=wave3, never bundled into production.
+ const redactionPath='tools/pdf-redaction/index.html';
+ const redactionHtml=await output(redactionPath);
+ await write(redactionPath,redactionHtml.replace('</body>','<script type="module" src="../../wave3-browser-qa.mjs"></script></body>'));
+
  await cp(resolve(root,'review/wave2-ui-qa.mjs'),resolve(dest,'wave2-ui-qa.mjs'));
  for(const file of ['tool-suite-qa.mjs','tool-suite-flow-qa.mjs','compressor-ui-qa.mjs','compressor-design-qa.mjs'])
   await cp(resolve(root,'review',file),resolve(dest,file));
