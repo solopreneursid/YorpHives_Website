@@ -60,7 +60,10 @@ test('homepage positions qualification before the carousel and provides truthful
   assert.match(html,/id="home-feature-product"/);
   assert.match(html,/id="home-feature-logo"/);
   assert.match(html,/id="home-feature-empty"/);
-  assert.match(html,/No HQ-qualified products have been released yet/);
+  assert.match(html,/<p id="explore-qualification-note">Here is what every product must pass:<\/p>/);
+  assert.match(js,/if \(note\) note\.textContent = 'Here is what every product must pass:';/);
+  assert.doesNotMatch(html,/No HQ-qualified products have been released yet/);
+  assert.doesNotMatch(js,/No HQ-qualified products have been released yet/);
   assert.doesNotMatch(html,/every candidate must pass/i);
   assert.match(html,/id="home-feature-pause"/);
   assert.match(js,/qualifiedProducts\(catalog\)/);

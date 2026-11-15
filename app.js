@@ -132,9 +132,7 @@
       const note = document.getElementById('explore-qualification-note');
       const footer = document.querySelector('#home .explore-evaluation-foot span:last-child');
       const badge = document.getElementById('explore-showcase-label');
-      if (note) note.textContent = ready
-        ? 'Every product earns its place through HQ research, business analysis and founder approval.'
-        : 'No HQ-qualified products have been released yet. Here is what every product must pass:';
+      if (note) note.textContent = 'Here is what every product must pass:';
       if (footer) footer.textContent = ready
         ? 'Only products reviewed by Yorphives HQ and approved by the founder go live in Explore.'
         : 'Qualified launches will appear here after founder approval.';
