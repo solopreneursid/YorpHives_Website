@@ -74,6 +74,8 @@ console.log('PUBLIC ACTIVITY BUILT: '+activity.length+' verified published short
 
 // After static copying, vendor the heavyweight open-source libraries under our origin.
 await import('./copy-wave1-vendors.mjs');
+// The first load of AI background remover is fully same-origin, including verified model weights.
+await import('./copy-background-model.mjs');
 for(const item of published)if(!item.url.includes('/'))
  await cp(resolve(root,item.url),resolve(dest,item.url));
 const dataJson=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026');
