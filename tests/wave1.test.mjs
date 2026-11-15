@@ -4,7 +4,7 @@ import {readFile,stat} from 'node:fs/promises';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {PDFDocument} from '../tools/vendor/pdf-lib.mjs';
-import {WAVE1_IDS,processWave1} from '../tools/wave1-core.mjs';
+import {WAVE1_IDS,processWave1,PDF_COMPRESSION_PRESETS} from '../tools/wave1-core.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),dist=resolve(root,'dist');
 async function pdfFile(){
  const doc=await PDFDocument.create();
@@ -24,8 +24,13 @@ test('Wave 1 contains fifteen independently registered direct-entry tools',async
   assert.equal(item.module.toolId,id);
   const page=await readFile(resolve(root,'tools',id,'index.html'),'utf8');
   assert.match(page,/data-wave1="/);
-  assert.match(page,/id="wave1-form"/);
-  assert.match(page,/wave1-page\.mjs/);
+  if(id==='pdf-compressor'){
+   assert.match(page,/id="pdf-compressor-form"/);
+   assert.match(page,/compressor-page\.mjs/);
+  }else{
+   assert.match(page,/id="wave1-form"/);
+   assert.match(page,/wave1-page\.mjs/);
+  }
   assert.ok(!page.includes('https://cdn.'),'must not require CDN '+id);
   const html=await readFile(resolve(dist,'tools',id,'index.html'),'utf8');
   assert.ok(html.includes('https://yorphives.com/tools/'+id+'/'),'canonical '+id);
@@ -79,4 +84,46 @@ test('self-hosted Wave 1 engines ship in dist and never in production tool sourc
  const preview=headers.includes('X-Robots-Tag: noindex, nofollow');
  const qa=await stat(resolve(dist,'wave1-qa.mjs')).then(x=>x.isFile()).catch(()=>false);
  assert.equal(qa,preview,'No browser QA assets may ship in production.');
+});
+
+
+test('PDF Compressor offers exactly three friendly choices and no technical controls',async()=>{
+ const html=await readFile(resolve(root,'tools/pdf-compressor/index.html'),'utf8');
+ assert.match(html,/<h1>PDF Compressor<\/h1>/);
+ assert.match(html,/id="pdf-compressor-file"/);
+ assert.match(html,/id="pdf-compressor-result"[^>]*hidden/);
+ assert.equal((html.match(/type="radio" name="compression"/g)||[]).length,3);
+ assert.match(html,/value="low"/);
+ assert.match(html,/value="best" checked/);
+ assert.match(html,/value="high"/);
+ assert.match(html,/Low Compression/);
+ assert.match(html,/Best Compression/);
+ assert.match(html,/High Compression/);
+ assert.doesNotMatch(html,/name="quality"|name="scale"|JPEG quality \(%\)|Image sharpness/);
+ assert.doesNotMatch(html,/<button[^>]*type="submit"/);
+ assert.match(html,/Compress your PDF in a few clicks/);
+ assert.match(html,/searchable text, links, forms/);
+ const js=await readFile(resolve(root,'tools/pdf-compressor/compressor-page.mjs'),'utf8');
+ assert.match(js,/picker.addEventListener\('change',changed\)/);
+ assert.match(js,/processWave1\('pdf-compressor',\[file\],\{preset:selected\}\)/);
+ assert.match(js,/addEventListener\('change',changed\)/);
+ assert.match(js,/current!==revision/);
+ const css=await readFile(resolve(root,'tools/tool.css'),'utf8');
+ assert.match(css,/@media\(max-width:720px\)/);
+ assert.match(css,/:focus-visible/);
+});
+test('PDF compression preset strength increases in requested order and validates choices',async()=>{
+ assert.deepEqual(Object.keys(PDF_COMPRESSION_PRESETS),['low','best','high']);
+ assert.ok(PDF_COMPRESSION_PRESETS.low.quality>PDF_COMPRESSION_PRESETS.best.quality);
+ assert.ok(PDF_COMPRESSION_PRESETS.best.quality>PDF_COMPRESSION_PRESETS.high.quality);
+ assert.ok(PDF_COMPRESSION_PRESETS.low.scale>PDF_COMPRESSION_PRESETS.best.scale);
+ assert.ok(PDF_COMPRESSION_PRESETS.best.scale>PDF_COMPRESSION_PRESETS.high.scale);
+ const pdf=await pdfFile();
+ await assert.rejects(()=>processWave1('pdf-compressor',[pdf],{preset:'ultra'}),/Low, Best, or High/);
+});
+test('PDF compressor preview-only interactive acceptance harness never ships publicly',async()=>{
+ const headers=await readFile(resolve(dist,'_headers'),'utf8');
+ const preview=headers.includes('X-Robots-Tag: noindex, nofollow');
+ const exists=await stat(resolve(dist,'compressor-ui-qa.mjs')).then(s=>s.isFile()).catch(()=>false);
+ assert.equal(exists,preview);
 });
