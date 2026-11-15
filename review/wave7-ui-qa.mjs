@@ -38,6 +38,23 @@ if(new URLSearchParams(location.search).get('qa')==='wave7-ui'){
    document.getElementById('wave7-form').requestSubmit();
    await until(()=>!document.getElementById('wave7-result').hidden);
    check('Spreadsheet page merges and downloads a CSV',document.querySelector('#wave7-result a[download]')?.download.endsWith('.csv'));
+  }else if(id==='pdf-metadata-cleaner'){
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs'),doc=await PDFDocument.create();
+   doc.addPage([100,100]);doc.setTitle('Sensitive sample');
+   loadFiles(document.getElementById('wave7-file'),[new File([await doc.save()],'sample.pdf',{type:'application/pdf'})]);
+   await until(()=>document.getElementById('wave7-metadata').textContent.includes('Sensitive sample'));
+   document.getElementById('wave7-form').requestSubmit();
+   await until(()=>!document.getElementById('wave7-result').hidden);
+   check('PDF metadata UI inspects and cleans real PDF',document.querySelector('#wave7-result a[download]')?.download.endsWith('.pdf'));
+  }else if(id==='audio-merger'){
+   const {wavFromAudioChannels}=await import('/tools/wave3-core.mjs');
+   const wav=wavFromAudioChannels([Float32Array.from({length:11025},(_,i)=>.13*Math.sin(i/44))],44100);
+   loadFiles(document.getElementById('wave7-file'),[
+    new File([wav],'first.wav',{type:'audio/wav'}),new File([wav],'second.wav',{type:'audio/wav'})]);
+   check('Audio merger UI displays adjustable clip order',document.querySelectorAll('#wave7-order li').length===2);
+   document.getElementById('wave7-form').requestSubmit();
+   await until(()=>!document.getElementById('wave7-result').hidden);
+   check('Audio merger UI exports WAV',document.querySelector('#wave7-result a[download]')?.download.endsWith('.wav'));
   }else if(id==='voice-recorder'){
    const ctx=new AudioContext(),destination=ctx.createMediaStreamDestination(),osc=ctx.createOscillator();
    osc.connect(destination);osc.start();
