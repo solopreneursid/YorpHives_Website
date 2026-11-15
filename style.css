@@ -936,3 +936,90 @@
   #home .category-ribbon-track{animation:none!important;will-change:auto}
   #home .category-ribbon-pill{transition:none}
 }
+
+
+/* YorpHives Pulse: compact footer release-activity ticker */
+.site-footer .footer-pulse{
+  display:grid;grid-template-columns:190px minmax(0,1fr);align-items:center;
+  gap:18px;margin-top:42px;padding:15px 0 14px;min-height:86px;
+  border-top:1px solid #a1e7d72c;border-bottom:1px solid #a1e7d72c;
+  position:relative;overflow:hidden;
+}
+.site-footer .footer-pulse::before{
+  content:"";position:absolute;pointer-events:none;width:280px;height:100px;top:-75px;left:170px;
+  border-radius:50%;background:#17dfb928;filter:blur(31px)
+}
+.site-footer .pulse-label{
+  z-index:3;display:flex;align-items:center;gap:11px;min-width:0;min-height:55px;
+  border-right:1px solid #92e8cd37;padding-right:15px;position:relative
+}
+.site-footer .pulse-signal{
+  flex:none;display:block;width:10px;height:10px;border-radius:50%;
+  background:#8cffd8;box-shadow:0 0 0 5px #39ebbb16,0 0 14px #76ffda92
+}
+.site-footer .pulse-heading{display:block;min-width:0;color:#e8fff7;font-size:11px;letter-spacing:.135em;line-height:1.35;font-weight:790;white-space:nowrap}
+.site-footer .pulse-heading b{color:#92ffdb;font-weight:860}
+.site-footer .pulse-heading small{display:block;color:#83ae9f;font-size:9px;margin-top:6px;letter-spacing:.095em;font-weight:650}
+.site-footer .pulse-viewport{
+  position:relative;min-width:0;overflow:hidden;padding:4px 2px;
+  mask-image:linear-gradient(90deg,transparent,#000 2.5%,#000 97%,transparent);
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 2.5%,#000 97%,transparent);
+}
+.site-footer .pulse-track{
+  display:flex;align-items:center;min-width:100%;width:max-content;
+  animation:pulse-marquee 56s linear infinite;will-change:transform
+}
+.site-footer .pulse-track.is-static{width:100%;animation:none;justify-content:flex-start;will-change:auto}
+.site-footer .pulse-items{display:flex;align-items:center;gap:11px;flex:0 0 auto;padding-right:11px}
+.site-footer .pulse-item{
+  display:inline-flex;align-items:center;gap:9px;min-height:46px;min-width:228px;max-width:294px;
+  border-radius:13px;border:1px solid #62bdaa58;background:linear-gradient(120deg,#113139,#0d252e);
+  box-shadow:inset 0 1px #befff312;padding:10px 12px;
+  text-decoration:none;color:#d8f4ed;white-space:nowrap;
+  transition:border-color .2s,background .2s,box-shadow .2s;flex:none;
+}
+.site-footer .pulse-item:hover{background:linear-gradient(120deg,#175047,#11363b);border-color:#7affe0ad;box-shadow:0 0 17px #43dabe22}
+.site-footer .pulse-item:focus-visible{outline:3px solid #a9ffe0;outline-offset:2px}
+.site-footer .pulse-kind{
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+  border-radius:6px;background:#2f9c8040;border:1px solid #65e5bd36;
+  color:#91f5ce;min-height:21px;padding:5px 6px;font-size:8px;
+  letter-spacing:.055em;font-weight:900
+}
+.site-footer .pulse-builders .pulse-kind{background:#365c8b57;color:#b2dafc;border-color:#7eaeea45}
+.site-footer .pulse-explore .pulse-kind{background:#8c58844f;color:#efbaf0;border-color:#d895d747}
+.site-footer .pulse-title{overflow:hidden;text-overflow:ellipsis;font-size:11px;line-height:1.4;font-weight:690;color:#eafff6}
+.site-footer .pulse-date{font-size:9px;color:#8aaca1;font-weight:650;flex:none;margin-left:auto}
+.site-footer .pulse-arrow{color:#91ffe0;font-size:13px;flex:none}
+.site-footer .pulse-empty{margin:0;color:#bdd7ca;font-size:12px}
+.site-footer .footer-pulse:hover .pulse-track,
+.site-footer .footer-pulse:focus-within .pulse-track{animation-play-state:paused}
+.site-footer .footer-pulse+.footer-bottom{margin-top:20px}
+@keyframes pulse-marquee{to{transform:translateX(-50%)}}
+@media(max-width:800px){
+  .site-footer .footer-pulse{grid-template-columns:155px minmax(0,1fr);gap:12px;margin-top:35px;padding:11px 0;min-height:76px}
+  .site-footer .pulse-heading{font-size:10px}
+  .site-footer .pulse-heading small{font-size:8px}
+  .site-footer .pulse-item{min-height:42px;min-width:204px;max-width:255px;padding:8px 10px}
+  .site-footer .pulse-title{font-size:10px}
+  .site-footer .pulse-track{animation-duration:49s}
+}
+@media(max-width:480px){
+  .site-footer .footer-pulse{grid-template-columns:110px minmax(0,1fr);gap:8px;margin-top:29px;min-height:69px;padding:8px 0}
+  .site-footer .pulse-label{gap:7px;padding-right:7px;min-height:49px}
+  .site-footer .pulse-signal{width:7px;height:7px;box-shadow:0 0 0 3px #39ebbb16,0 0 9px #76ffda92}
+  .site-footer .pulse-heading{font-size:8px;letter-spacing:.055em}
+  .site-footer .pulse-heading small{font-size:7px;letter-spacing:0;margin-top:4px}
+  .site-footer .pulse-items{gap:8px;padding-right:8px}
+  .site-footer .pulse-item{min-width:186px;max-width:235px;min-height:40px;padding:7px 9px;gap:6px;border-radius:10px}
+  .site-footer .pulse-title{font-size:10px}
+  .site-footer .pulse-kind{font-size:7px;padding:4px 5px;min-height:19px}
+  .site-footer .pulse-date{font-size:8px}
+  .site-footer .pulse-track{animation-duration:43s}
+}
+@media(prefers-reduced-motion:reduce){
+  .site-footer .pulse-viewport{overflow-x:auto;scrollbar-width:thin;scrollbar-color:#4bac91 #09202b}
+  .site-footer .pulse-track{animation:none!important;will-change:auto}
+  .site-footer .pulse-items[aria-hidden="true"]{display:none!important}
+  .site-footer .pulse-item{transition:none}
+}
