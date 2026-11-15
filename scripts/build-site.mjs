@@ -5,6 +5,7 @@ import {cp,mkdir,readFile,readdir,rm,stat,writeFile} from 'node:fs/promises';
 import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createEntity} from './discovery-schema.mjs';
+import {isQualifiedProduct} from '../product-policy.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const dest=resolve(root,'dist');
@@ -22,7 +23,16 @@ const write=async (path,content)=>{const file=resolve(dest,path);await mkdir(dir
 const exists=async path=>stat(resolve(dest,path)).then(s=>s.isFile()).catch(()=>false);
 const catalog=JSON.parse(await src('catalog.json'));
 if(!Array.isArray(catalog.items))throw Error('Catalog has no items.');
-const published=catalog.items.filter(item=>item.published!==false&&item.visibility!=='private');
+// Tools remain public according to their existing publication rule.
+// Apps and products must pass HQ evidence review AND separate founder approval.
+// Never generate public pages or discovery metadata for unapproved drafts.
+for(const item of catalog.items){
+ if(item?.type!=='tool'&&item?.published===true&&!isQualifiedProduct(item))
+  throw Error('Unqualified product cannot be published: '+String(item.name||item.url||'unknown'));
+}
+const published=catalog.items.filter(item=>item?.type==='tool'
+ ? item.published!==false&&item.visibility!=='private'
+ : isQualifiedProduct(item));
 const seen=new Set();
 for(const item of published){
  if(!item||typeof item.name!=='string'||!item.name.trim()||typeof item.description!=='string'||!item.description.trim())
@@ -34,8 +44,10 @@ for(const item of published){
 }
 await rm(dest,{recursive:true,force:true});
 await mkdir(dest,{recursive:true});
-for(const file of ['index.html','app.js','style.css','catalog.json','_headers','_redirects','robots.txt','llms.txt'])
+for(const file of ['index.html','app.js','style.css','catalog.json','product-policy.mjs','_headers','_redirects','robots.txt','llms.txt'])
  await cp(resolve(root,file),resolve(dest,file));
+// The shipped catalog itself must never expose private or unqualified candidates.
+await write('catalog.json',JSON.stringify({...catalog,items:published},null,2)+'\\n');
 const roots=new Set(['tools',...published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0])]);
 for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory()).catch(()=>false))
  await cp(resolve(root,dir),resolve(dest,dir),{recursive:true});
