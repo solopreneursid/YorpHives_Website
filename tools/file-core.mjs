@@ -1,3 +1,4 @@
+import {processBatchFileTool} from './batch-file-core.mjs';
 import { csvToXlsx, readXlsx, rowsToCsv, rowsToJson, extractPptxText } from './office-files.mjs';
 
 const PDF_MIME='application/pdf';
@@ -94,6 +95,7 @@ async function imagesToPptx(files){
   const blob=await pptx.write({outputType:'blob'});if(!(blob instanceof Blob))throw new Error('Could not create the presentation.');return result(blob,'yorphives-images.pptx',PPTX_MIME,`Created a presentation with ${files.length} ${plural(files.length,'slide')}.`);
 }
 export async function processFileTool(id,files,data={}){
+  if(['file-format-inspector','batch-file-renamer','zip-file-creator','zip-contents-viewer'].includes(id))return processBatchFileTool(id,files,data);
   if(id.startsWith('pdf-'))return pdfAction(id,files,data);
   if(['image-cropper','image-rotate-flip','image-watermark'].includes(id))return imageAction(id,files,data);
   if(id==='images-to-pdf')return imageToPdf(files);

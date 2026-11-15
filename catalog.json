@@ -2802,6 +2802,131 @@
           "Browser File and Blob APIs; image and presentation tools also need Canvas."
         ]
       }
+    },
+    {
+      "name": "File Format Inspector",
+      "description": "Identify common file types from actual file signatures instead of filenames.",
+      "type": "tool",
+      "category": "Files",
+      "date": "2026-11-15",
+      "url": "tools/file-format-inspector/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: file-format-inspector",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "file-format-inspector",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ""
+          }
+        ],
+        "requirements": [
+          "Modern browser with File and Blob APIs; JSZip bundled locally for archive creation."
+        ]
+      }
+    },
+    {
+      "name": "Batch File Renamer",
+      "description": "Give multiple files consistent numbered names and download one ZIP.",
+      "type": "tool",
+      "category": "Files",
+      "date": "2026-11-15",
+      "url": "tools/batch-file-renamer/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: batch-file-renamer",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "batch-file-renamer",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": true,
+            "accept": ""
+          },
+          {
+            "name": "prefix",
+            "type": "text",
+            "default": "yorphives"
+          }
+        ],
+        "requirements": [
+          "Modern browser with File and Blob APIs; JSZip bundled locally for archive creation."
+        ]
+      }
+    },
+    {
+      "name": "ZIP File Creator",
+      "description": "Create a downloadable ZIP of local files with no uploads.",
+      "type": "tool",
+      "category": "Files",
+      "date": "2026-11-15",
+      "url": "tools/zip-file-creator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: zip-file-creator",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "zip-file-creator",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": true,
+            "accept": ""
+          }
+        ],
+        "requirements": [
+          "Modern browser with File and Blob APIs; JSZip bundled locally for archive creation."
+        ]
+      }
+    },
+    {
+      "name": "ZIP Contents Viewer",
+      "description": "View ZIP filenames and uncompressed sizes without extracting anything.",
+      "type": "tool",
+      "category": "Files",
+      "date": "2026-11-15",
+      "url": "tools/zip-contents-viewer/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/file-core.mjs",
+        "export": "processFileTool",
+        "arguments": [
+          "tool id: zip-contents-viewer",
+          "array of File objects",
+          "object of options"
+        ],
+        "toolId": "zip-contents-viewer",
+        "inputs": [
+          {
+            "name": "files",
+            "type": "file",
+            "multiple": false,
+            "accept": ".zip,application/zip"
+          }
+        ],
+        "requirements": [
+          "Modern browser with File and Blob APIs; JSZip bundled locally for archive creation."
+        ]
+      }
     }
   ]
 }
