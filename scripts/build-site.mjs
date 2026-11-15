@@ -190,6 +190,7 @@ if(target==='preview'){
  await cp(resolve(root,'review/wave1-ui-qa.mjs'),resolve(dest,'wave1-ui-qa.mjs'));
  await cp(resolve(root,'review/wave3-browser-qa.mjs'),resolve(dest,'wave3-browser-qa.mjs'));
  await cp(resolve(root,'review/ocr-browser-qa.mjs'),resolve(dest,'ocr-browser-qa.mjs'));
+ await cp(resolve(root,'review/video-browser-qa.mjs'),resolve(dest,'video-browser-qa.mjs'));
  // Preview-only browser acceptance: opt-in with ?qa=wave3, never bundled into production.
  const redactionPath='tools/pdf-redaction/index.html';
  const redactionHtml=await output(redactionPath);
@@ -197,6 +198,10 @@ if(target==='preview'){
  const ocrPath='tools/scanned-pdf-to-searchable-pdf/index.html';
  const ocrHtml=await output(ocrPath);
  await write(ocrPath,ocrHtml.replace('</body>','<script type="module" src="../../ocr-browser-qa.mjs"></script></body>'));
+ const videoPath='tools/video-trimmer/index.html';
+ const videoHtml=await output(videoPath);
+ await write(videoPath,videoHtml.replace('</body>','<script type="module" src="../../video-browser-qa.mjs"></script></body>'));
+
 
 
  await cp(resolve(root,'review/wave2-ui-qa.mjs'),resolve(dest,'wave2-ui-qa.mjs'));
