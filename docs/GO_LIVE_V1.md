@@ -89,3 +89,17 @@ Read-only Cloudflare headless Chromium browser checks (not Firefox):
 - The original `yorphives` Pages deployment stays unchanged and must remain usable at `yorphives.pages.dev`. Its separate `api.yorphives.com` Worker must remain unchanged.
 - Final founder authorization is mandatory before moving custom domains, changing DNS records or production deployment sources. Use the exact frozen release SHA, not an unreviewed development branch.
 - When publishing the final production build, verify response headers no longer include `X-Robots-Tag: noindex`, verify apex and www, verify all 23 old URLs, then request sitemap indexing. Prepare immediate domain/DNS rollback to old project if critical checks fail.
+
+## RC4 — compact Tool Library UX, zero-cost growth (2026-11-15)
+
+- Replaces the long, 92-card `/#tools` listing with a search-first collection of **12 compact cards initially** and progressive **Show more** batches of 12.
+- Filters are generated from the public catalog: **12 categories**, an All tab, a locally stored Saved tab, responsive horizontally scrollable chips, a search field with phrase aliases, and recent/A–Z/Z–A sorting.
+- Favorites are **local-only** in the visitor's browser using `localStorage` with safe fallback when storage is unavailable. No account, hosted database, paid AI service, or external API is required.
+- The Free Tools hero and section spacing are reduced, scoped to `#tools`. The independent homepage visual identity, studio areas, other page sections, Ko-fi disabled controls, and **all 92 individual tool pages** are unchanged.
+- The full `/tools/` directory uses semantic `<details>` category accordions for compact browsing. Every tool link is present in the server-rendered HTML even while collapsed; the directory category groups, counts, links and descriptions are rebuilt from `catalog.json` automatically at every release. Search engines and agents continue to reach each tool independently.
+- Production and preview builds passed **135 automated Node tests each, 0 failures**. Actual Cloudflare Chromium library interactions passed **10 of 10 checks at each width of 320, 375, 768 and 1280px** (40 checks total), including search relevance, empty/reset, categories, local favorites, progressive results from 12 to 92, disabled Ko-fi and no horizontal overflow.
+- HTML response checks: 12 generated directory groups, 92 direct anchors, HTTP 200, preview `X-Robots-Tag: noindex,nofollow`.
+- Preview-only QA is `/library-qa.mjs`. The release build excludes it from production.
+- **Old live site `yorphives.com` is untouched.** This new version is staged, not yet approved for custom-domain cutover. Use the frozen `release/v1.0-rc4` SHA for review; do not merge drafts or auto-deploy from moving feature branch.
+
+Release gate remains: founder authorization and prudent production cutover while retaining the old Cloudflare Pages deployment, legacy Functions and `api.yorphives.com` worker.
