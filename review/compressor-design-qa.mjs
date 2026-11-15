@@ -31,6 +31,17 @@ try{
  const checkedStyle=getComputedStyle(cards[1]);
  const uncheckedStyle=getComputedStyle(cards[0]);
  inspect(checkedStyle.backgroundColor!==uncheckedStyle.backgroundColor&&checkedStyle.borderColor!==uncheckedStyle.borderColor,'selected state visually distinct',{checked:checkedStyle.backgroundColor,unchecked:uncheckedStyle.backgroundColor});
+ const pseudo=getComputedStyle(cards[0],'::before');
+ inspect(pseudo.content==='none'||pseudo.display==='none','no legacy pseudo-radio clutter',{content:pseudo.content,display:pseudo.display});
+ const badge=cards[1].querySelector('.compression-option-badge');
+ const badgeStyle=getComputedStyle(badge);
+ if(innerWidth<=660){
+  inspect(badgeStyle.display==='none','mobile badge does not overflow or overlap',{badgeDisplay:badgeStyle.display});
+ }else{
+  const br=badge.getBoundingClientRect(),cr=cards[1].getBoundingClientRect();
+  inspect(br.left>=cr.left&&br.right<=cr.right,'recommended badge fits inside its card',{badgeLeft:Math.round(br.left),badgeRight:Math.round(br.right),cardRight:Math.round(cr.right)});
+ }
+
  if(innerWidth>660){
   inspect(rectangles[0].x<rectangles[1].x&&rectangles[1].x<rectangles[2].x,'desktop cards are three columns',data);
   inspect(rectangles.every(x=>x.width>120&&x.height>=130),'desktop cards have sufficient space',data);

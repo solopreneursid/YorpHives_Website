@@ -106,3 +106,15 @@ body[data-wave1="pdf-compressor"] .panel-content{padding:30px 34px 35px}
  #pdf-compressor-form .cpx-download{width:100%}
 }
 @media(prefers-reduced-motion:reduce){#pdf-compressor-form .compression-option-content{transition:none}#pdf-compressor-form[aria-busy="true"] .cpx-status-icon{animation:none}}
+
+
+/* Final visual pass: remove legacy selection pseudo-radio and badge overlap. */
+#pdf-compressor-form .compression-option-content::before{content:none!important;display:none!important}
+#pdf-compressor-form .compression-option .compression-option-badge+.cpx-selected-check{visibility:hidden!important}
+@media(max-width:660px){
+ #pdf-compressor-form .compression-option-badge{display:none!important}
+ #pdf-compressor-form .cpx-selected-check{display:none!important}
+ #pdf-compressor-form .compression-option:nth-child(2) .compression-option-content>small::before{
+  content:"Recommended · ";color:#25784f;font-weight:850
+ }
+}
