@@ -3,6 +3,8 @@
  const report=document.createElement('pre');report.id='wave2-qa';report.dataset.status='running';
  report.style.cssText='white-space:pre-wrap;word-break:break-word;background:#fff;padding:16px';
  document.body.append(report);
+ const blobs=new Map(),nativeCreateURL=URL.createObjectURL;
+ URL.createObjectURL=function(blob){const url=nativeCreateURL.call(URL,blob);blobs.set(url,blob);return url;};
  const id=document.body.dataset.wave2;
  const results=[];
  const check=(name,ok)=>{if(!ok)throw Error(name);results.push(name);};
@@ -63,13 +65,15 @@
   check('Output displayed and status described',!output.hidden&&Boolean(status.textContent.trim()));
   const links=[...output.querySelectorAll('a[download]')];
   check('Real download links are provided',links.length>0);
-  const first=await fetch(links[0].href);
-  const bytes=new Uint8Array(await first.arrayBuffer());
-  check('Download contains bytes',first.ok&&bytes.length>0);
+  const savedBlob=blobs.get(links[0].href);
+  check('Download is a local Blob',savedBlob instanceof Blob);
+  const bytes=new Uint8Array(await savedBlob.arrayBuffer());
+  check('Download contains bytes',bytes.length>0);
   if(id.includes('pdf')||id==='resume-builder')check('Downloaded PDF signature',new TextDecoder().decode(bytes.slice(0,5))==='%PDF-');
   if(id==='csv-cleaner')check('CSV deduplication happened',(await new Blob([bytes]).text()).split('Ada,Engineer').length===2);
   if(id==='zip-extractor')check('Archive entry extracted correctly',new TextDecoder().decode(bytes)==='Hello from YorpHives');
   if(id==='image-collage-maker')check('Collage is a real PNG',bytes[0]===137&&bytes[1]===80);
   report.textContent=JSON.stringify({id,ok:true,checks:results},null,2);report.dataset.status='pass';
  }catch(e){report.textContent=JSON.stringify({id,ok:false,checks:results,error:e?.message||String(e)},null,2);report.dataset.status='fail';}
+ finally{URL.createObjectURL=nativeCreateURL;}
 })();
