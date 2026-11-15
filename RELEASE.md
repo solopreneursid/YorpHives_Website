@@ -32,3 +32,15 @@ The existing Cloudflare Pages project `yorphives` is connected to GitHub `solopr
 Never promote a draft PR or switch the Cloudflare production source automatically.
 
 Before any live cutover, generate and validate the sitemap (`node scripts/generate-sitemap.mjs`) and verify Cloudflare Pages serves `_headers` correctly. Ensure the final preview has no CSP errors, no unavailable resources and no cross-origin file-processing requests.
+
+## Verification evidence (2026-11-15)
+
+- All 90 tool pages passed static inspection for page titles and referenced local links; no broken local asset link was found in that inspection.
+- Targeted behavioral checks passed for JSON lexical key ordering, safe CSV number/formula handling, HTML escaping and the 14 MB ZIP-directory roundtrip.
+- The existing 12 MB Office archive limit remains active; the separate ZIP directory viewer supports up to 36 MB.
+- All canonical site and tool URLs are in the 92-entry sitemap; privacy-oriented security headers are present in source.
+- **Not yet verified:** the complete Node.js test suite, Chromium/Firefox behavior, accessibility, real Cloudflare header behavior, and production rollback. These require a runnable build and staging site.
+- **Cloudflare blocker:** An attempt to create an isolated Pages project named `yorphives-v1-review` connected to `solopreneursid/YorpHives_Website` was rejected with HTTP 401, Pages Git integration error code `8000011`. No production project or live domain was changed. The existing `yorphives` Pages project still points at `solopreneursid/YorpHives`.
+- **Founder action required:** In GitHub settings, configure the **Cloudflare Workers and Pages** GitHub App to allow access to `YorpHives_Website`. If the existing installation is inaccessible, reauthorize the Cloudflare app from the Cloudflare Pages Git integration UI, preserving the existing live project. Retry a separate staging project build with `node --test tests/*.test.mjs && node scripts/release-check.mjs` and destination `.`.
+
+**Go-live decision: HOLD until the source connection, full suite and browser preview are verified.**
