@@ -128,3 +128,16 @@ test('actual tool-interface browser test is available only on protected preview'
   assert.match(code,/download\.href\.startsWith\('blob:'\)/);
  }
 });
+
+test('interactive Free Tools QA module only ships in noindex preview builds',async()=>{
+ const headers=await read('_headers',dest);
+ const preview=/X-Robots-Tag:\s*noindex/i.test(headers);
+ const exists=await stat(resolve(dest,'library-qa.mjs')).then(s=>s.isFile()).catch(()=>false);
+ assert.equal(exists,preview,'Library QA must not ship on production website');
+ if(preview){
+  const qa=await read('library-qa.mjs',dest);
+  assert.match(qa,/cards\(\)\.length===12/);
+  assert.match(qa,/category\('Files'\)/);
+  assert.match(qa,/query\('#tool-more'\)\.click\(\)/);
+ }
+});

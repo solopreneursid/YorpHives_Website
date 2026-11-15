@@ -143,6 +143,7 @@ if(target==='preview'){
  // Browser smoke harness is intentionally preview-only, excluded from production assets.
  await cp(resolve(root,'review/browser-smoke.mjs'),resolve(dest,'browser-smoke.mjs'));
  await cp(resolve(root,'review/browser-interaction.mjs'),resolve(dest,'browser-interaction.mjs'));
+ await cp(resolve(root,'review/library-qa.mjs'),resolve(dest,'library-qa.mjs'));
 }else{
  await write('robots.txt','User-agent: *\nAllow: /\nSitemap: '+origin+'sitemap.xml\n');
  const headers=await output('_headers');
