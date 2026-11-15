@@ -1274,3 +1274,137 @@
   #tools .launcher-main-head h3{font-size:20px}
   #tools .launcher-footer{gap:8px}
 }
+
+/* Cohesive phone layout: keep desktop styling, remove unnecessary mobile
+   height and allow useful horizontal browsing instead of crowding the page. */
+@media(max-width:660px){
+  /* Five stages remain visible as swipeable cards, with the product
+     illustration given a clear area rather than stacking on top of cards. */
+  #home .studio-copy{padding-top:39px;padding-bottom:13px}
+  #home .studio-hero h1{line-height:1.13;letter-spacing:-.048em}
+  #home .studio-badge{margin-bottom:18px}
+  #home .studio-description{line-height:1.65;margin-top:19px}
+  #home .studio-actions{margin-top:23px;gap:10px}
+  #home .studio-note{margin-top:19px}
+  #home .studio-visual{height:385px}
+  #home .studio-swipe{top:9px;left:6%;right:6%;font-size:11px}
+  #home .studio-steps{inset:37px 0 auto;gap:10px;padding:8px 6% 12px}
+  #home .studio-step,#home .stage-idea,#home .stage-research,
+  #home .stage-strategy,#home .stage-build,#home .stage-product{
+    flex:0 0 112px;width:112px;min-height:121px;padding:10px 7px 9px;
+    scroll-snap-align:start
+  }
+  #home .studio-step-icon{height:32px;width:37px;margin-bottom:6px}
+  #home .studio-step-icon svg{width:28px;height:28px}
+  #home .studio-step strong{font-size:12px;line-height:1.2}
+  #home .studio-step small{font-size:9px;line-height:1.35;margin-top:5px}
+  #home .studio-laptop{right:8%;bottom:15px;width:min(335px,81%)}
+  #home .studio-screen{height:162px}
+  #home .studio-screen-body{grid-template-columns:24px minmax(0,1fr) 83px}
+  #home .studio-status span{font-size:7px;padding:7px 4px}
+  #home .studio-dash strong{font-size:15px}
+  #home .studio-benefits{padding-bottom:17px}
+  #home .studio-benefit{min-height:58px}
+  #home .explore-spotlight{padding-top:52px;padding-bottom:59px;gap:25px}
+  #home .explore-spotlight .section-kicker{margin-bottom:20px}
+  #home .explore-spotlight h2{
+    font-size:clamp(32px,8.8vw,45px);line-height:1.12;
+    margin:16px 0 17px;letter-spacing:-.048em
+  }
+  #home .explore-lead{font-size:17px;line-height:1.5}
+  #home .explore-qualification{margin:20px 0 22px}
+  #home .builders-home{padding-top:56px;padding-bottom:60px}
+  #home .builders-home .section-kicker{margin-bottom:19px}
+  #home .builders-home h2{font-size:clamp(35px,9.4vw,47px);line-height:1.11}
+  #home .builders-home-heading{margin-bottom:24px}
+  #home .builders-home-card,#home .builders-home-partner{
+    min-height:0;padding:19px 21px;border-radius:16px
+  }
+  #home .builders-home-card-icon{width:48px;height:48px;margin:14px 0 14px;border-radius:13px}
+  #home .builders-home-card-icon svg{width:25px;height:25px}
+  #home .builders-home-card h3{font-size:22px;line-height:1.25;margin-bottom:7px}
+  #home .builders-home-card p{font-size:12px;line-height:1.58;margin-bottom:13px}
+  #home .builders-home-card-foot{padding-top:11px}
+  #home .builders-home-bottom{margin-top:22px}
+  #home .closing{padding-top:58px;padding-bottom:62px}
+  #home .closing h2{font-size:clamp(41px,10.4vw,50px);line-height:1.1}
+  #home .closing-inner{gap:21px}
+  #home .closing .eyebrow{margin-bottom:22px}
+
+  /* Display the live category ribbon and footer activity as horizontally
+     scrollable rows. No animated, half-cut headlines on narrow phones. */
+  #home .category-ribbon::before,
+  #home .category-ribbon::after{display:none}
+  #home .category-ribbon-window{
+    overflow-x:auto;scrollbar-width:thin;scrollbar-color:#62bea0 #dcf8ec;
+    overscroll-behavior-x:contain;scroll-padding-left:15px
+  }
+  #home .category-ribbon-track{animation:none!important;will-change:auto;min-width:max-content}
+  #home .category-ribbon-set[aria-hidden="true"]{display:none!important}
+  .site-footer .pulse-viewport{
+    overflow-x:auto;scrollbar-width:thin;scrollbar-color:#55bea0 #112a2c;
+    overscroll-behavior-x:contain;scroll-padding-left:7px;
+    mask-image:none;-webkit-mask-image:none
+  }
+  .site-footer .pulse-track{animation:none!important;will-change:auto}
+  .site-footer .pulse-items[aria-hidden="true"]{display:none!important}
+  .site-footer .pulse-item{scroll-snap-align:start}
+
+  /* Two short, horizontally swipeable rows keep ALL categories accessible
+     while letting results appear much earlier in the phone viewport. */
+  #tools .launcher-mobile-grid{
+    display:grid;grid-template-columns:none;
+    grid-template-rows:repeat(2,minmax(52px,auto));
+    grid-auto-flow:column;grid-auto-columns:182px;
+    gap:8px;overflow-x:auto;padding:2px 2px 10px;
+    scroll-snap-type:x proximity;overscroll-behavior-x:contain;
+    scrollbar-width:thin;scrollbar-color:#98cbb4 #f3f8f4;
+    -webkit-overflow-scrolling:touch
+  }
+  #tools .launcher-mobile-tile{
+    width:100%;min-width:0;min-height:52px;padding:8px 10px;
+    gap:7px;scroll-snap-align:start
+  }
+  #tools .launcher-mobile-tile .launcher-group-symbol{width:22px;font-size:17px}
+  #tools .launcher-mobile-tile .launcher-group-name{
+    min-width:0;flex:1;font-size:11px;line-height:1.25;overflow-wrap:normal
+  }
+  #tools .launcher-mobile-tile .launcher-group-count{
+    flex:none;font-size:10px;min-width:12px;text-align:right;margin-left:1px
+  }
+  #tools .launcher-mobile-browse:not([hidden]){margin-bottom:16px}
+  #tools .launcher-mobile-title{margin-bottom:9px}
+  #tools .launcher-mobile-title small{font-size:0}
+  #tools .launcher-mobile-title small::after{
+    content:"Swipe categories →";font-size:10px;letter-spacing:.01em
+  }
+  #tools .launcher-main-head{align-items:center}
+  #tools .launcher-sort{flex-direction:row;align-items:center;gap:7px}
+  #tools .launcher-sort label{font-size:10px}
+  #tools .launcher-sort select{min-height:39px;padding:6px 7px}
+  #tools .launcher-tool-row{min-height:70px;padding:9px 9px}
+  #tools .launcher-tool-link strong{line-height:1.3}
+}
+@media(max-width:380px){
+  #tools .launcher-mobile-grid{
+    grid-template-columns:none;grid-template-rows:repeat(2,minmax(52px,auto));
+    grid-auto-flow:column;grid-auto-columns:172px;gap:8px
+  }
+  #tools .launcher-mobile-tile{min-height:52px;padding:8px 9px;justify-content:flex-start}
+  #tools .launcher-mobile-tile .launcher-group-name{
+    font-size:11px;overflow-wrap:normal
+  }
+  #tools .launcher-mobile-tile .launcher-group-count{font-size:10px;margin-left:0}
+  #tools .launcher-intro-head{margin-bottom:15px}
+  #tools .launcher-main-head{gap:8px}
+  #tools .launcher-main-head h3{font-size:20px}
+  #tools .launcher-sort label{font-size:9px}
+  #tools .launcher-sort select{max-width:93px;font-size:10px}
+}
+@media(max-width:350px){
+  #home .studio-hero h1{font-size:28px}
+  #home .studio-visual{height:370px}
+  #home .studio-laptop{width:min(305px,84%);right:7%}
+  #home .studio-benefit{padding-inline:6px;gap:7px}
+  #home .closing h2{font-size:40px}
+}
