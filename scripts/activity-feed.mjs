@@ -161,8 +161,8 @@ export function renderFooterPulse(items){
       '<span class="pulse-arrow" aria-hidden="true">↗</span></a>').join('')+'</div>';
   const count=events.length;
   return '<div class="pulse-label"><span class="pulse-signal" aria-hidden="true"></span>'+
-    '<span class="pulse-heading">YORPHIVES <b>PULSE</b><small>LATEST '+count+' UPDATES</small></span></div>'+
-    '<div class="pulse-viewport" aria-label="Latest public website updates">'+
+    '<span class="pulse-heading"><b>YHpulse</b><small>LATEST '+count+' UPDATES</small></span></div>'+
+    '<div class="pulse-viewport" aria-label="YHpulse latest public website updates">'+
       '<div class="pulse-track'+(count<2?' is-static':'')+'">'+
       (count?one({})+(count>1?one({duplicate:true}):''):
         '<p class="pulse-empty">Published updates will appear here.</p>')+
