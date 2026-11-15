@@ -4,7 +4,7 @@
   const pages = [...document.querySelectorAll('.page')];
   const navigation = document.querySelector('.site-nav');
   const menu = document.querySelector('.menu-toggle');
-  const names = { home: 'Home', tools: 'Free tools', explore: 'Explore', builders: 'For builders', connect: 'Connect' };
+  const names = { home: 'Home', tools: 'Free tools', explore: 'Explore', builders: 'Builders', connect: 'Connect' };
   let previousPage = null;
 
   function closeMenu() {
@@ -17,7 +17,7 @@
   function route() {
     let hash = window.location.hash.slice(1);
     try { hash = decodeURIComponent(hash); } catch (_) { hash = ''; }
-    const section = hash === 'post' || hash === 'opportunities' ? hash : null;
+    const section = ['post', 'opportunities', 'membership', 'partners'].includes(hash) ? hash : null;
     const active = section ? 'builders' : Object.hasOwn(names, hash) ? hash : 'home';
     pages.forEach(page => { page.hidden = page.id !== active; });
     document.querySelectorAll('[data-nav]').forEach(link => {
@@ -27,7 +27,7 @@
     document.title = active === 'home' ? 'YorpHives — Ideas in motion' : `${names[active]} — YorpHives`;
     closeMenu();
     if (section) {
-      requestAnimationFrame(() => document.getElementById(section)?.scrollIntoView({ block: 'start' }));
+      requestAnimationFrame(() => document.getElementById(section === 'post' ? 'membership' : section)?.scrollIntoView({ block: 'start' }));
     } else if (active !== previousPage) {
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
@@ -68,7 +68,7 @@
   document.querySelectorAll('[data-form]').forEach(form => {
     form.addEventListener('submit', event => {
       event.preventDefault();
-      const subject = form.dataset.form === 'opportunity' ? 'Paid opportunity for YorpHives' : 'Project enquiry for YorpHives';
+      const subject = 'Project enquiry for YorpHives';
       const body = [...new FormData(form)].filter(([, value]) => String(value).trim()).map(([key, value]) => `${key}: ${value}`).join('\n\n');
       window.location.href = `mailto:connect@yorphives.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     });
