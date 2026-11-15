@@ -47,7 +47,7 @@ await mkdir(dest,{recursive:true});
 for(const file of ['index.html','app.js','style.css','catalog.json','product-policy.mjs','_headers','_redirects','robots.txt','llms.txt'])
  await cp(resolve(root,file),resolve(dest,file));
 // The shipped catalog itself must never expose private or unqualified candidates.
-await write('catalog.json',JSON.stringify({...catalog,items:published},null,2)+'\\n');
+await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
 const roots=new Set(['tools',...published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0])]);
 for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory()).catch(()=>false))
  await cp(resolve(root,dir),resolve(dest,dir),{recursive:true});
