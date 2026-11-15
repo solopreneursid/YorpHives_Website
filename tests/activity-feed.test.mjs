@@ -17,15 +17,21 @@ const notes=[
  {id:'page:explore',kind:'explore',title:'Explore collection updated',url:'#explore',timestamp:'2026-11-15T13:00:00Z'}
 ];
 
-test('public activity selects ten verified recent changes without fixed featured-tool links',()=>{
- const items=Array.from({length:14},(_,i)=>tool('Example Tool '+i,i));
+test('public activity selects twenty verified recent changes without fixed featured-tool links',()=>{
+ const items=Array.from({length:24},(_,i)=>tool('Example Tool '+i,i));
  const result=collectPublicActivity({published:items,notes,now:instant});
- assert.equal(result.length,10);
+ assert.equal(result.length,20);
  assert.equal(result[0].kind,'builders');
  assert.equal(result[1].kind,'explore');
- assert.equal(result.filter(x=>x.kind==='tools').length,8);
+ assert.equal(result.filter(x=>x.kind==='tools').length,18);
  assert.ok(result.every(x=>x.url.startsWith('tools/')||x.url==='#builders'||x.url==='#explore'));
  assert.ok(result.every(x=>Number.isFinite(Date.parse(x.timestamp))));
+});
+
+test('YHpulse caps at twenty, even when a larger maximum is requested',()=>{
+ const published=Array.from({length:32},(_,i)=>tool('Cap Test '+i,i));
+ assert.equal(collectPublicActivity({published,now:instant,max:99}).length,20);
+ assert.equal(collectPublicActivity({published,now:instant,max:7}).length,7);
 });
 
 test('new catalog additions join feed automatically, tool updates sort by verified timestamp',()=>{
@@ -105,11 +111,11 @@ test('deployed release activity and HTML agree and link only to published public
  const activity=JSON.parse(await read('dist/activity.json'));
  const homepage=await read('dist/index.html');
  const urls=new Set(catalog.items.map(x=>x.url));
- assert.equal(activity.items.length,10);
+ assert.equal(activity.items.length,20);
  assert.ok(activity.items.every(x=>urls.has(x.url)||x.url==='#builders'||x.url==='#explore'));
  assert.ok(activity.items.every(x=>x.source==='published-catalog'||x.source==='public-page-diff'||x.source==='founder-visible-page'));
  assert.ok(activity.items.every(x=>homepage.includes('href="'+x.url+'"')));
- assert.ok(homepage.includes('LATEST 10 UPDATES'));
+ assert.ok(homepage.includes('LATEST 20 UPDATES'));
  assert.doesNotMatch(homepage,/href="catalog\.json">Tool catalog/);
  assert.doesNotMatch(homepage,/<nav class="footer-directory"/);
 });
