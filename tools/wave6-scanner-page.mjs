@@ -9,6 +9,7 @@ let corners=initial();const names=['Top-left','Top-right','Bottom-right','Bottom
 const message=(s,error=false)=>{status.textContent=s;status.classList.toggle('error',error);};
 function clearOutput(){
  if(resultUrl)URL.revokeObjectURL(resultUrl);resultUrl='';result.hidden=true;download.removeAttribute('href');
+ for(const previous of result.querySelectorAll('img.wave6-out-image'))previous.remove();
 }
 function redraw(){
  shape.setAttribute('points',corners.map(p=>(p.x*100).toFixed(2)+','+(p.y*100).toFixed(2)).join(' '));
