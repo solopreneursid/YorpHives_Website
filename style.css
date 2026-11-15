@@ -967,7 +967,7 @@
 }
 .site-footer .pulse-track{
   display:flex;align-items:center;min-width:100%;width:max-content;
-  animation:pulse-marquee 56s linear infinite;will-change:transform
+  animation:pulse-marquee 102s linear infinite;will-change:transform
 }
 .site-footer .pulse-track.is-static{width:100%;animation:none;justify-content:flex-start;will-change:auto}
 .site-footer .pulse-items{display:flex;align-items:center;gap:11px;flex:0 0 auto;padding-right:11px}
@@ -1002,7 +1002,7 @@
   .site-footer .pulse-heading small{font-size:8px}
   .site-footer .pulse-item{min-height:42px;min-width:204px;max-width:255px;padding:8px 10px}
   .site-footer .pulse-title{font-size:10px}
-  .site-footer .pulse-track{animation-duration:49s}
+  .site-footer .pulse-track{animation-duration:90s}
 }
 @media(max-width:480px){
   .site-footer .footer-pulse{grid-template-columns:110px minmax(0,1fr);gap:8px;margin-top:29px;min-height:69px;padding:8px 0}
@@ -1015,7 +1015,7 @@
   .site-footer .pulse-title{font-size:10px}
   .site-footer .pulse-kind{font-size:7px;padding:4px 5px;min-height:19px}
   .site-footer .pulse-date{font-size:8px}
-  .site-footer .pulse-track{animation-duration:43s}
+  .site-footer .pulse-track{animation-duration:82s}
 }
 @media(prefers-reduced-motion:reduce){
   .site-footer .pulse-viewport{overflow-x:auto;scrollbar-width:thin;scrollbar-color:#4bac91 #09202b}
