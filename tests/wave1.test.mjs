@@ -143,3 +143,16 @@ test('PDF Compressor layout styles are isolated and included in both releases',a
  assert.match(css,/cpx-file-sizes/);
  assert.match(css,/:focus-visible/);
 });
+
+test('PDF Compressor visual QA checks computed CSS only in staging',async()=>{
+ const headers=await readFile(resolve(dist,'_headers'),'utf8');
+ const preview=headers.includes('X-Robots-Tag: noindex, nofollow');
+ const available=await stat(resolve(dist,'compressor-design-qa.mjs')).then(x=>x.isFile()).catch(()=>false);
+ assert.equal(available,preview,'No QA script shipped to production');
+ if(preview){
+  const source=await readFile(resolve(dist,'compressor-design-qa.mjs'),'utf8');
+  assert.match(source,/getComputedStyle/);
+  assert.match(source,/getBoundingClientRect/);
+  assert.match(source,/cards are laid out using actual CSS/);
+ }
+});

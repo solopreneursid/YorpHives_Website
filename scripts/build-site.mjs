@@ -181,6 +181,7 @@ if(target==='preview'){
  await cp(resolve(root,'review/wave1-qa.mjs'),resolve(dest,'wave1-qa.mjs'));
  await cp(resolve(root,'review/wave1-ui-qa.mjs'),resolve(dest,'wave1-ui-qa.mjs'));
  await cp(resolve(root,'review/compressor-ui-qa.mjs'),resolve(dest,'compressor-ui-qa.mjs'));
+ await cp(resolve(root,'review/compressor-design-qa.mjs'),resolve(dest,'compressor-design-qa.mjs'));
 }else{
  await write('robots.txt','User-agent: *\nAllow: /\nSitemap: '+origin+'sitemap.xml\n');
  const headers=await output('_headers');
