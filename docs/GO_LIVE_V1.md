@@ -103,3 +103,15 @@ Read-only Cloudflare headless Chromium browser checks (not Firefox):
 - **Old live site `yorphives.com` is untouched.** This new version is staged, not yet approved for custom-domain cutover. Use the frozen `release/v1.0-rc4` SHA for review; do not merge drafts or auto-deploy from moving feature branch.
 
 Release gate remains: founder authorization and prudent production cutover while retaining the old Cloudflare Pages deployment, legacy Functions and `api.yorphives.com` worker.
+
+## RC5 — Tool Launcher redesign (2026-11-15)
+
+**Only the Free Tools browsing interface beneath the hero was redesigned.** The original `Little tools / Big momentum` hero HTML is byte-for-byte identical to RC4. The existing studio homepage, all 92 individual tool pages, `catalog.json`, the comprehensive HTML directory, its automatic category generation, the sitemap and 23 legacy aliases remain unchanged.
+
+- Desktop: navy category sidebar, a compact 8-row results panel, direct Open links, Previous/Next page controls, prominent natural-language task search, name sorting, and local-only `My tools` favorites.
+- Mobile/tablet: category shortcuts in a two-column launcher, context-sensitive back button and compact result rows. Browsing mode exposes seven comprehensible category groups, combining the original 12 catalog categories. Unknown future categories are automatically given their own group and are never silently dropped.
+- The results panel stays at **8 per page**, rather than growing on every click. Empty searches collapse the result panel and display a helpful prompt immediately.
+- All direct-entry URLs are still present in `/tools/` and `/sitemap.xml`, preserving Google/agent discovery without requiring an intermediary landing page.
+- Cloudflare staging `yorphives-v1-review`: production build **135 Node tests passed / 0 failed**, preview build **135 passed / 0 failed**, valid 94-URL sitemap, 23 legacy redirects, and staging `noindex`.
+- Preview-only real Chromium interface QA passed **10/10 at widths 1280, 768, 375 and 320px** (40 checks), covering page navigation, search, no results, category groups, favorites, sorting, mobile shortcut selection, disabled Ko-fi and horizontal-overflow verification.
+- This development build is not yet authorized for `yorphives.com`. Founder-controlled cutover and preservation of the old Cloudflare Pages project remain mandatory.
