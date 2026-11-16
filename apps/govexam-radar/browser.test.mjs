@@ -147,9 +147,10 @@ test("modals, saved preferences, guide and custom leads",async()=>{
    await page.locator("#modal-bookmark-btn").click();
    await page.evaluate(()=>window.closeExamModal());
    await page.evaluate(()=>window.switchTab("alerts"));
-   await page.locator("#user-email-input").fill("person@example.org");
-   await page.locator("#email-subscription-form button[type=submit]").click();
-   assert.match(await page.locator("#email-dispatch-log").innerText(),/No email|NOT being sent/);
+   assert.equal(await page.locator("#user-email-input").count(),0);
+   assert.equal(await page.locator("#email-subscription-form").count(),0);
+   assert.equal(await page.locator("#email-dispatch-log").count(),0);
+   assert.match(await page.locator("#view-alerts").innerText(),/Admit cards, results & on-device updates/i);
    await page.evaluate(()=>window.switchTab("feeds"));
    await page.locator("#custom-title").fill("QA Test Community Outreach Exam");
    await page.locator("#custom-authority").fill("Research Team");
