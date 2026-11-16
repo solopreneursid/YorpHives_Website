@@ -112,6 +112,15 @@ function renderTools(){
  $('tool-prev').disabled=page<=1;$('tool-next').disabled=page>=pages;
  $('tool-clear').hidden=!$('tool-search').value;
 }
+// The rotating category strip opens Free Tools with that real category selected.
+// The event is local to the current page; no analytics/requests are sent.
+document.addEventListener('yorphives:select-tool-category',event=>{
+ const category=event.detail?.category;
+ if(typeof category!=='string'||!tools.some(t=>(t.category||'Other')===category))return;
+ activeCategory=category;onlySaved=false;page=1;$('tool-search').value='';
+ $('saved-toggle').setAttribute('aria-pressed','false');
+ categoryChips();renderTools();location.hash='#tools';
+});
 $('tool-search-form').addEventListener('submit',e=>e.preventDefault());
 $('tool-search').addEventListener('input',()=>{page=1;renderTools()});
 $('tool-clear').addEventListener('click',()=>{$('tool-search').value='';page=1;renderTools();$('tool-search').focus()});
