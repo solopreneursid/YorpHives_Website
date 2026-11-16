@@ -60,6 +60,12 @@ jobs:
           curl --fail --show-error --silent --max-time 25 https://hqventures-govexam-radar.solopreneursid-proy.workers.dev/full.css | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{if(s.length<20000||!s.includes(".bg-indigo-600"))process.exit(1);console.log("Self-hosted production CSS verified",s.length);})'
           curl --fail --show-error --silent --max-time 25 https://hqventures-govexam-radar.solopreneursid-proy.workers.dev/ | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{if(!s.includes("Research Preview")||!s.includes("/enhance.js"))process.exit(1);console.log("Six-tab full release HTML verified");})'
 
+      - name: Verify Phase 1 source metadata and UI on isolated Cloudflare preview
+        run: |
+          curl --fail --show-error --silent --max-time 25 'https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/api/notices?country=India' | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const d=JSON.parse(s);if(d.filters?.country!=="India"||!Array.isArray(d.notices)||!d.sources?.some(x=>x.id==="india-employment-news"&&x.employerType==="government_recruitment_digest"))process.exit(1);console.log("India official summary API and source classification verified");})'
+          curl --fail --show-error --silent --max-time 25 'https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/official.js' | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{if(!s.includes("India Employment News digest")||!s.includes("India · Employment News digest"))process.exit(1);console.log("India label and mobile UI source available");})'
+          curl --fail --show-error --silent --max-time 25 'https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/api/ingestion-status' | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const d=JSON.parse(s);if(!Array.isArray(d.latest))process.exit(1);console.log("Scheduled-ingest read-only audit accessible",d.latest.length);})'
+          
       - name: Read-only official Manitoba province RSS compatibility probe
         run: node apps/govexam-radar/probe-manitoba.mjs
 
