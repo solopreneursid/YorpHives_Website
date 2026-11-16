@@ -140,3 +140,32 @@ test("modals, saved preferences, guide and custom leads",async()=>{
    assert.match(await page.locator("#guide-detail-panel").innerText(),/Module 4/);
  }finally{await page.close();}
 });
+
+
+test("community buttons expose report, data export and account controls",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:820}});
+ try{
+   await page.goto(origin,{waitUntil:"domcontentloaded"});
+   await page.locator("#exam-cards-grid article").first().waitFor({timeout:30000});
+   await page.evaluate(()=>{
+     state.communityUser="localqa";
+     state.communityPosts=[{
+       id:"11111111-1111-4111-8111-111111111111",
+       examId:state.selectedCommunityExamId,
+       username:"localqa",
+       roleBadge:"Community member",
+       tag:"#Syllabus & Strategy",
+       timestamp:"Just now",
+       content:"Visible QA discussion, not a live recruitment notice.",
+       upvotes:0,upvotedByMe:false,
+       replies:[{id:"22222222-2222-4222-8222-222222222222",username:"otherqa",text:"Sample reply",timestamp:"Now"}]
+     }];
+     window.switchTab("community");renderCommunityHub();
+   });
+   assert.equal(await page.locator('button:has-text("Report post")').count(),1);
+   assert.equal(await page.locator('button:has-text("Report reply")').count(),1);
+   assert.equal(await page.locator('button:has-text("Delete my post")').count(),1);
+   assert.equal(await page.locator("#govradar-export-account").count(),1);
+   assert.equal(await page.locator("#govradar-delete-account").count(),1);
+ }finally{await page.close();}
+});
