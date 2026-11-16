@@ -269,17 +269,11 @@
       track.replaceChildren(buildSet(false),buildSet(true));
     }
   }
-  // YHpulse is generated server-side from verified published activity. Mirror
-  // that same feed into the homepage rather than creating invented "updates".
-  function initPulse(){
-    const original=document.querySelector('#footer-pulse .pulse-track');
-    const home=document.getElementById('home-pulse-viewport');
-    if(original&&home)home.replaceChildren(original.cloneNode(true));
-  }
+  // Verified YHpulse is built into the homepage once, with no client-side duplicate.
   const pausedStates={categories:false,pulse:false};
   const applyMotion=(kind,paused)=>{
     pausedStates[kind]=paused;
-    const selector=kind==='categories'?'.category-ribbon':'.home-pulse, .footer-pulse';
+    const selector=kind==='categories'?'.category-ribbon':'.home-pulse';
     document.querySelectorAll(selector).forEach(el=>el.classList.toggle('motion-paused',paused));
     document.querySelectorAll('[data-motion-toggle="'+kind+'"]').forEach(button=>{
       button.setAttribute('aria-pressed',String(paused));
@@ -293,7 +287,6 @@
       applyMotion(kind,!pausedStates[kind]);
     });
   });
-  initPulse();
   function showProducts(products){
     const el=document.getElementById('explore-items'),empty=document.getElementById('explore-empty');
     el.replaceChildren();
