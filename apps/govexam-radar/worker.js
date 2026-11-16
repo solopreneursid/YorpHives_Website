@@ -9,12 +9,32 @@ import { OFFICIAL_UI_JS } from "./official-ui.mjs";
 import { combinedSources, filterSources, REGIONAL_SOURCES } from "./regional-sources.mjs";
 import { REGIONAL_UI_JS } from "./regional-ui.mjs";
 import { ingestManitoba } from "./manitoba-feed.mjs";
-import { ingestEmploymentNews } from "./india-employment-news.mjs";
 import {serveCollectorPlan,handleCollectorIngest} from "./collector-bridge.mjs";
 import { expireKnownDeadlines, serveNoticeChanges } from "./notice-lifecycle.mjs";
 import { handleModeration } from "./moderation-api.mjs";
 import { MODERATION_HTML, MODERATION_JS } from "./moderation-ui.mjs";
 import { PORTABLE_JS } from "./portable-bookmarks.mjs";
+// Cloudflare's scheduledTime is the *intended* UTC fire time, not when a
+// delayed invocation happens to execute. Do not use Date.now() for routing.
+// Keep the legacy three expressions until the staging schedule change sticks.
+export const GOVRADAR_SINGLE_CRON="*/20 */3 * * *";
+export function govradarScheduledTask(controller){
+ const cron=controller?.cron||"";
+ if(cron==="0 */3 * * *")return "portals";
+ if(cron==="20 */3 * * *")return "uk";
+ if(cron==="40 */3 * * *")return "manitoba";
+ // India research parser MUST NOT be activated by any Cron trigger.
+ if(cron!==GOVRADAR_SINGLE_CRON)return null;
+ const timestamp=controller?.scheduledTime;
+ if(!Number.isSafeInteger(timestamp)||timestamp<=0)return null;
+ const time=new Date(timestamp);
+ const hour=time.getUTCHours(),minute=time.getUTCMinutes();
+ if(hour%3!==0)return null;
+ if(minute===0)return "portals";
+ if(minute===20)return "uk";
+ if(minute===40)return "manitoba";
+ return null;
+}
 const VERSION = "2.5.0";
 const BASE_SOURCES = [{"id":"upsc","name":"UPSC Recruitment & Examination Notices","country":"India","flag":"🇮🇳","category":"Civil services","url":"https://www.upsc.gov.in/recruitment/recruitment-advertisement","note":"Union Public Service Commission"},{"id":"ssc","name":"Staff Selection Commission","country":"India","flag":"🇮🇳","category":"Examinations","url":"https://ssc.gov.in/","note":"Central staff recruitment and examination notices"},{"id":"rrb","name":"Railway Recruitment Boards","country":"India","flag":"🇮🇳","category":"Railways","url":"https://www.rrbcdg.gov.in/","note":"Railway recruitment notices; check your regional board"},{"id":"hal","name":"Hindustan Aeronautics Careers","country":"India","flag":"🇮🇳","category":"Engineering","url":"https://hal-india.co.in/","note":"Public-sector aerospace and engineering careers"},{"id":"ncs","name":"National Career Service","country":"India","flag":"🇮🇳","category":"Employment portal","url":"https://www.ncs.gov.in/","note":"Government-run employment portal; individual employers vary"},{"id":"jpsc","name":"Jharkhand Public Service Commission","country":"India","flag":"🇮🇳","category":"State examinations","url":"https://www.jpsc.gov.in/","note":"Jharkhand state civil-service recruitment"},{"id":"ibps","name":"Institute of Banking Personnel Selection","country":"India","flag":"🇮🇳","category":"Banking","url":"https://www.ibps.in/","note":"Bank recruitment examinations and call letters"},{"id":"usajobs","name":"USAJOBS","country":"United States","flag":"🇺🇸","category":"Federal careers","url":"https://www.usajobs.gov/","note":"Official U.S. federal employment website"},{"id":"usstate","name":"U.S. Department of State Careers","country":"United States","flag":"🇺🇸","category":"Diplomacy","url":"https://careers.state.gov/","note":"Foreign service and related career information"},{"id":"ukcivil","name":"UK Civil Service Careers","country":"United Kingdom","flag":"🇬🇧","category":"Civil service","url":"https://www.civil-service-careers.gov.uk/","note":"UK government careers and Fast Stream"},{"id":"canada","name":"Government of Canada Jobs","country":"Canada","flag":"🇨🇦","category":"Federal careers","url":"https://www.canada.ca/en/services/jobs/opportunities/government.html","note":"Federal public service and related opportunities"},{"id":"aps","name":"APS Jobs Australia","country":"Australia","flag":"🇦🇺","category":"Public service","url":"https://www.apsjobs.gov.au/","note":"Australian Public Service employment"},{"id":"germany","name":"German Federal Public Service","country":"Germany","flag":"🇩🇪","category":"Public service","url":"https://www.service.bund.de/","note":"German federal administrative and technical jobs"},{"id":"singapore","name":"Singapore Careers@Gov","country":"Singapore","flag":"🇸🇬","category":"Public service","url":"https://www.careers.gov.sg/","note":"Singapore public service recruitment"},{"id":"eu","name":"EU Careers (EPSO)","country":"European Union","flag":"🇪🇺","category":"EU institutions","url":"https://eu-careers.europa.eu/en","note":"EU institution recruitment and selection"},{"id":"nz","name":"New Zealand Government Jobs","country":"New Zealand","flag":"🇳🇿","category":"Public service","url":"https://jobs.govt.nz/","note":"New Zealand public service job board"},{"id":"japan","name":"Japan National Personnel Authority","country":"Japan","flag":"🇯🇵","category":"National examinations","url":"https://www.jinji.go.jp/","note":"Japan national public-service examinations"}];
 const SOURCES = combinedSources(BASE_SOURCES);
@@ -91,15 +111,15 @@ export default {
     return JSONResponse({ error: "not_found" }, 404, "no-store");
   },
   async scheduled(controller,env,ctx){
-    // Bounded independent source schedules. Never mistake a missing page for a withdrawn vacancy.
+    // A single Cron trigger keeps three independent 3-hour source tasks
+    // spaced 20 minutes apart; also tolerate old schedules during migration.
     const run=async()=>{
-      const cron=controller?.cron||"";
+      const task=govradarScheduledTask(controller);
       let result;
-      if(cron==="20 */3 * * *")result=await ingestDfE(env.DB);
-      else if(cron==="40 */3 * * *")result=await ingestManitoba(env.DB);
-       else if(cron==="10 */6 * * *")result=await ingestEmploymentNews(env.DB);
-      else if(cron==="0 */3 * * *")result=await runScheduledPortalChecks(env.DB,SOURCES);
-      else {console.error(JSON.stringify({event:"unrecognized_cron",cron}));return;}
+      if(task==="uk")result=await ingestDfE(env.DB);
+      else if(task==="manitoba")result=await ingestManitoba(env.DB);
+      else if(task==="portals")result=await runScheduledPortalChecks(env.DB,SOURCES);
+      else {console.error(JSON.stringify({event:"unrecognized_or_disabled_cron",cron:controller?.cron||""}));return;}
       await expireKnownDeadlines(env.DB);
       return result;
     };
