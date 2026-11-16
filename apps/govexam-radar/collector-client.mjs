@@ -101,7 +101,7 @@ export async function collectOnce({target,source="both",dryRun=true,key="",fetch
   const observedAt=Date.now();
   const body=JSON.stringify({requestId:randomUUID(),sourceId:spec.id,
    ...(name==="dfe"?{page}:{}),observedAt,upstreamBody:content});
-  const signature=await calculateCollectorSignature(key,observedAt,body);
+  const signature=await calculateCollectorSignature(key,observedAt,body,origin);
   const upload=await fetcher(origin+"/api/collector/ingest",{method:"POST",redirect:"error",
    headers:{"Content-Type":"application/json","X-GovRadar-Timestamp":String(observedAt),
      "X-GovRadar-Signature":signature},
