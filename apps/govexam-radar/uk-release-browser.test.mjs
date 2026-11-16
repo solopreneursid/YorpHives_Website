@@ -52,7 +52,9 @@ for(const width of [320,375,768,1440]){
    assert.match(await page.locator(".job-card h3").textContent(),/<img src=x/);
    assert.equal(await page.locator(".job-link").getAttribute("href"),"https://teaching-vacancies.service.gov.uk/jobs/example");
    assert.equal(await page.locator("#hero-count").textContent(),"1");
-   assert.equal(await page.locator("a[href='#about']").count(),1);
+   assert.ok((await page.locator("a[href='#about']").count())>=1);
+   assert.equal(await page.locator(".topbar .back-link").getAttribute("href"),"#about");
+   assert.equal((await page.locator(".topbar .back-link").textContent()).trim(),"About ↗");
    const metrics=await page.evaluate(()=>({documentWidth:document.documentElement.scrollWidth,viewport:innerWidth}));
    assert.ok(metrics.documentWidth<=width+2,"horizontal overflow "+JSON.stringify(metrics));
    assert.deepEqual(errors,[]);
