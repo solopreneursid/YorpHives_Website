@@ -11,11 +11,12 @@ const explore=h=>h.split('<!-- EXPLORE -->')[1]?.split('<!-- BUILDERS -->')[0]||
 test('the public story is concise: HQ operates, AI researches, founder decides',async()=>{
  const html=await read('index.html');
  const h=home(html);
- assert.match(h,/One founder\.<br>An AI team\.<br><em>Ideas in motion\.<\/em>/);
- assert.match(h,/YorpHivesHQ finds the signal/);
- assert.match(h,/I make the call/);
- assert.match(h,/class="console-decision"/);
- assert.match(h,/HUMAN CONTROL/);
+ assert.match(h,/Founder-led\.<br><span class="hero-intelligence">Intelligence-powered\.<\/span><br><em>Ideas in motion\.<\/em>/);
+ assert.match(h,/HQ runs the AI engine/);
+ assert.match(h,/The founder decides/);
+ assert.match(h,/class="hero-ambient"/);
+ assert.doesNotMatch(h,/class="hero-console"/);
+ assert.match(h,/FOUNDER/);
  assert.match(h,/HQ operates/);
  assert.match(h,/AI investigates/);
  assert.match(h,/Founder decides/);
@@ -62,9 +63,9 @@ test('free tools and real public activity use seamless accessible motion',async(
  assert.match(html,/id="category-ribbon-track"/);
  assert.match(html,/id="tool-category-rail"/);
  assert.match(html,/id="home-pulse-viewport"/);
- assert.match(html,/id="footer-pulse"/);
+ assert.doesNotMatch(html,/id="footer-pulse"/);
  assert.equal((html.match(/data-motion-toggle="categories"/g)||[]).length,2);
- assert.equal((html.match(/data-motion-toggle="pulse"/g)||[]).length,2);
+ assert.equal((html.match(/data-motion-toggle="pulse"/g)||[]).length,1);
  assert.match(css,/@keyframes rail-drift/);
  assert.match(css,/@keyframes pulse-scroll/);
  assert.match(css,/animation:rail-drift/);
@@ -88,9 +89,9 @@ test('all main pages remain navigable and genuine work remains gated',async()=>{
 });
 test('release gate verifies founder authorization and media-motion safeguards',async()=>{
  const check=await read('scripts/release-check.mjs');
- assert.match(check,/One founder/);
- assert.match(check,/YorpHivesHQ finds the signal/);
- assert.match(check,/console-decision/);
+ assert.match(check,/Founder-led/);
+ assert.match(check,/HQ runs the AI engine/);
+ assert.match(check,/hero-ambient/);
  assert.match(check,/@keyframes rail-drift/);
  assert.match(check,/@keyframes pulse-scroll/);
  assert.match(check,/Public job listing or job-posting form is forbidden/);
