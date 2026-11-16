@@ -362,6 +362,7 @@
       };
       toolsEmpty.hidden = tools.length>0;
       controls.hidden = tools.length===0;
+      document.getElementById('tool-loading')?.setAttribute('hidden', '');
       total.textContent = tools.length + ' free tools';
       sidebar.append(makeCategory('','Discover','✧',tools.length));
       for(const group of groups) {
@@ -503,6 +504,11 @@
       setupExploreFeatureSpotlight(products, 'home');
       setupExploreFeatureSpotlight(products, 'explore');
     } catch (_) {
+      const loading = document.getElementById('tool-loading');
+      if (loading) {
+        loading.classList.add('is-error');
+        loading.textContent = 'The tools could not load. Please refresh this page.';
+      }
       const ribbon = document.querySelector('#home .category-ribbon');
       if (ribbon) ribbon.hidden = true;
       for (const id of ['tools', 'explore']) document.getElementById(`${id}-items`).replaceChildren(statusCard('The catalog could not be loaded. Please try refreshing the page.'));
