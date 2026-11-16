@@ -18,9 +18,27 @@ export async function mirrorUkSnapshot(env,controller,clock=()=>Date.now()){
   throw Error("uk_mirror_binding_inventory_invalid");
  const source=env.SOURCE_DB,target=env.MIRROR_DB,now=clock();
  const runId="scheduled-uk-mirror-"+scheduledTime;
- const initial=await target.prepare(
-  "INSERT OR IGNORE INTO uk_mirror_runs (id,scheduled_at,started_at,finished_at,state,rows_upserted,error_code) VALUES (?,?,?,NULL,'running',0,'')"
- ).bind(runId,scheduledTime,now).run();
+ // A failure BEFORE the initial run INSERT previously left the audit database
+ // at "never_run". Record a bounded error in mirror state when possible.
+ // This does NOT treat a missing scheduled invocation as a successful run.
+ console.log(JSON.stringify({event:"uk_mirror_trigger_received",scheduledAt:scheduledTime}));
+ let initial;
+ try{
+  initial=await target.prepare(
+   "INSERT OR IGNORE INTO uk_mirror_runs (id,scheduled_at,started_at,finished_at,state,rows_upserted,error_code) VALUES (?,?,?,NULL,'running',0,'')"
+  ).bind(runId,scheduledTime,now).run();
+ }catch(error){
+  const code=truncate(error);
+  try{
+   await target.prepare(
+    "UPDATE uk_mirror_state SET last_attempt_at=?,status='error',error_code=? WHERE id=1"
+   ).bind(now,code).run();
+  }catch{
+   console.error(JSON.stringify({event:"uk_mirror_preflight_audit_unavailable"}));
+  }
+  console.error(JSON.stringify({event:"uk_mirror_start_failed",code}));
+  throw error;
+ }
  if(initial?.meta?.changes!==1)return{status:"duplicate_cron_ignored",rowsUpserted:0};
  let moved=0;
  let cursor=null;
