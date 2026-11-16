@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "description": "Public aggregate YorpHives Impact snapshot. No visitor identifiers, revenue amounts, customer data or simulated statistics.",
+  "publication": {
+    "status": "unpublished",
+    "approvedByFounder": false,
+    "approvedAt": null
+  },
+  "metrics": {
+    "estimatedVisitors30d": null,
+    "verifiedPartners": null
+  },
+  "revenueDirection": [],
+  "trendingApps": [],
+  "milestones": []
+}
