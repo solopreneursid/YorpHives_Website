@@ -35,7 +35,7 @@ test('a geometric logo-inspired background supports a concise founder-led hero',
  const heroText=h.match(/<p class="hero-sub">([\s\S]*?)<\/p>/)?.[1].replace(/<[^>]+>/g,'');
  assert.ok(heroText&&heroText.length<80);
 });
-test('Explore's featured project comes from founder-qualified data, never placeholders pretending to be launched',async()=>{
+test("Explore’s featured project comes from founder-qualified data, not unapproved launch claims",async()=>{
  const [html,js]=await Promise.all([read('index.html'),read('next.js')]);
  const h=home(html),page=explore(html);
  assert.match(h,/id="home-featured"/);
