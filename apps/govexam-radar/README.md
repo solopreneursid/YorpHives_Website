@@ -4,7 +4,7 @@ GovRadar is a transparent, zero-dependency government recruitment **source direc
 
 ## Honest scope (v2.2 pilot)
 
-- Full six-section founder-uploaded interface with advanced location / country / citizenship / stream / stage filters, imported example records, archived data, demo lifecycle, custom personal leads, legacy preference settings (no email delivery), and 4-part guide.
+- Full six-section founder-uploaded interface with advanced location / country / citizenship / stream / stage filters, imported example records, archived data, demo lifecycle, custom personal leads, on-device updates (email subscription interface removed), and 4-part guide.
 - 58 official national and subnational recruitment portals in 11 countries, including state, provincial, territory, devolved, municipal and prefectural government career sources.
 - 10 imported prototype opportunity *research leads*, explicitly **unverified** and not represented as live vacancies.
 - Country / keyword / technical-stream filtering, browser-local bookmarks and responsive mobile-first interface.
@@ -135,3 +135,7 @@ This remains an isolated Cloudflare staging Worker plus a **draft GitHub pull re
 - The GitHub Actions workflow `.github/workflows/govradar-portable-collector.yml` runs **read-only** in pull requests. Scheduled publishing requires that the workflow be released to the default branch and the founder install the matching Cloudflare `INGEST_HMAC_KEY` Worker secret and GitHub `GOVRADAR_COLLECTOR_KEY` Actions secret. Until then, background fallback is **not activated**.
 - Employment News India is limited to source directory and read-only parser testing because rights for commercial republication have not been established. No India ingest trigger is configured; no Indian vacancy records have been imported by this phase.
 - Existing `yorphives.com` deployment and the repository default branch are deliberately unchanged. Track release blockers and evidence in `PHASE1_RELEASE_GATE.md`.
+
+## Founder-original global product scope
+
+The six-section global app, not the UK-only candidate, is the product blueprint. See [`ORIGINAL_VISION_IMPLEMENTATION.md`](./ORIGINAL_VISION_IMPLEMENTATION.md). No email collection, mail transport or remote alert service is in scope. The UK isolated Worker remains a source/safety release proof. Existing exam sample records are research leads, not verified live announcements.
