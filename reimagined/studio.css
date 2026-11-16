@@ -31,3 +31,47 @@
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 /* Final narrow-screen composition: keep tool counter inside the viewport. */
 @media(max-width:760px){.tools-hero-inner{display:flex;flex-direction:column;align-items:flex-start;gap:19px}.tools-hero-count{align-self:flex-start}.tools-hero-inner>div:first-child{min-width:0;max-width:100%}}
+
+
+/* Ko-fi support is a future donation pathway — visible sitewide, never active. */
+.topbar .header-actions{gap:12px;flex:none}
+.kofi-support{
+ display:inline-flex;align-items:center;justify-content:center;gap:9px;
+ min-height:45px;min-width:135px;padding:7px 10px;
+ background:#baffcc12;border:1px solid #a5ffc75b;border-radius:12px;
+ color:#e6ffec;line-height:1.13;white-space:nowrap;
+ box-shadow:inset 0 1px #ffffff0c
+}
+.kofi-support:disabled{opacity:1;cursor:not-allowed}
+.kofi-support>svg{width:17px;height:17px;flex:none;color:#b1fac8}
+.kofi-support-copy{display:flex;flex-direction:column;gap:2px;align-items:start}
+.kofi-support-copy strong{font-size:12px;letter-spacing:.01em;font-weight:840}
+.kofi-support-copy small{font-size:10px;font-weight:660;color:#bde1c9}
+.kofi-support-soon{align-self:center;font-size:8px;font-weight:850;letter-spacing:.08em;color:#9dd3b0;background:#a6f6bb18;border-radius:5px;padding:4px 5px}
+@media(max-width:940px){
+ .topbar .header-actions{margin-left:auto;gap:10px}
+}
+@media(max-width:760px){
+ .topbar .header-actions{gap:9px}
+ .kofi-support{min-width:103px;padding:7px 9px}
+ .kofi-support>svg{width:16px;height:16px}
+ .kofi-support-copy strong{font-size:11px}
+ .kofi-support-copy small{font-size:9px}
+ .kofi-support-soon{display:none}
+}
+@media(max-width:390px){
+ .topbar{gap:8px}
+ .topbar .header-actions{gap:7px}
+ .topbar .logo{gap:7px}
+ .topbar .logo img{width:32px;height:32px}
+ .topbar .logo>span{font-size:18px}
+ .kofi-support{min-width:91px;width:91px;min-height:42px;padding:5px 8px;gap:0}
+ .kofi-support>svg{display:none}
+ .menu-toggle{width:40px;height:40px}
+}
+@media(max-width:350px){
+ .topbar{padding-inline:12px}
+ .topbar .logo img{width:30px;height:30px}
+ .topbar .logo>span{font-size:17px}
+ .kofi-support{min-width:84px;width:84px}
+}
