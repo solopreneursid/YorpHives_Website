@@ -167,3 +167,26 @@ test("native fresh status requires an actual scheduled import, not a signed coll
  assert.equal(validateNativeSourceStatus({state:"ok",finished_at:NOW-10000,details:'{"origin":"scheduled"}'},NOW),NOW-10000);
  assert.throws(()=>validateNativeSourceStatus({state:"ok",finished_at:NOW-10000,details:'{"origin":"signed_portable_collector"}'},NOW),/uk_native_source_not_fresh/);
 });
+
+test("first audit INSERT failure is recorded without copying source or hiding error",async()=>{
+ const f=fixture();
+ const original=f.env.MIRROR_DB.prepare.bind(f.env.MIRROR_DB);
+ f.env.MIRROR_DB.prepare=sql=>{
+  if(sql.startsWith("INSERT OR IGNORE INTO uk_mirror_runs")){
+   return {bind(){return{async run(){throw Error("initial_d1_insert_failed")}}}};
+  }
+  if(sql.startsWith("UPDATE uk_mirror_state SET last_attempt_at")){
+   return {bind(now,code){return{async run(){
+    f.state.last_attempt_at=now;f.state.status="error";f.state.error_code=code;
+    return{meta:{changes:1}};
+   }}}};
+  }
+  return original(sql);
+ };
+ await assert.rejects(()=>mirrorUkSnapshot(f.env,controller,()=>NOW),/initial_d1_insert_failed/);
+ assert.equal(f.state.status,"error");
+ assert.equal(f.state.last_attempt_at,NOW);
+ assert.match(f.state.error_code,/initial_d1_insert_failed/);
+ assert.equal(f.existing.size,0);
+ assert.equal(f.runs.size,0);
+});
