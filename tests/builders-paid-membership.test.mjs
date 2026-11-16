@@ -7,20 +7,20 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=path=>readFile(resolve(root,path),'utf8');
 const builderBody=html=>html.split('<!-- BUILDERS -->')[1]?.split('<!-- CONNECT -->')[0]||'';
 
-test('new homepage clearly introduces the Builders paid-membership concept',async()=>{
-  const h=await read('index.html');
-  assert.match(h,/id="builders-home-title"/);
-  assert.match(h,/Find work\. Post work/);
-  assert.match(h,/Build together/);
-  assert.match(h,/verified paid membership/i);
-  assert.match(h,/href="#builders"/);
-  assert.doesNotMatch(h,/data-form="opportunity"|class="job-listing"/);
+test('homepage introduces the future Builders network without pretending it is open',async()=>{
+ const h=await read('index.html');
+ assert.match(h,/href="#builders"/);
+ assert.match(h,/class="builders-teaser"/);
+ assert.match(h,/THE BUILDERS NETWORK/);
+ assert.match(h,/COMING SOON/);
+ assert.match(h,/Verified paid membership/);
+ assert.doesNotMatch(h,/data-form="opportunity"|class="job-listing"/);
 });
 test('private opportunity listings and posting are not publicly accessible',async()=>{
   const html=builderBody(await read('index.html'));
   for(const id of ['opportunities','membership','partners'])
     assert.ok(html.includes('id="'+id+'"'),id+' section missing');
-  assert.match(html,/private paid network/i);
+  assert.match(html,/future paid network/i);
   assert.match(html,/Jobs and posting require verified paid membership/);
   assert.match(html,/No job listing or posting is available to the public/);
   assert.match(html,/No jobs, applicant details, or paid-member content are published/);
