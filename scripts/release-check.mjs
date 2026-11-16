@@ -15,16 +15,17 @@ if(new Set(items.map(x=>x.url)).size!==items.length)problems.push('Duplicate pub
 const directory=await read('tools/index.html');
 const homepage=await read('index.html');
 // Minimal copy, strong visual hierarchy and founder-controlled operations.
-if(!homepage.includes('One founder.')||!homepage.includes('An AI team.')||
+if(!homepage.includes('Founder-led.')||!homepage.includes('Intelligence-powered.')||
    !homepage.includes('Ideas in motion.')||
-   !homepage.includes('YorpHivesHQ finds the signal.')||
-   !homepage.includes('I make the call.')||
+   !homepage.includes('HQ runs the AI engine.')||
+   !homepage.includes('The founder decides.')||
    !homepage.includes('href="#connect"'))
- problems.push('One-founder, HQ-led studio identity or contact route missing.');
+ problems.push('Founder-led AI OS identity or contact route missing.');
 if(!homepage.includes('id="our-ai-team"')||
    !homepage.includes('class="os-board"')||
    !homepage.includes('class="os-decision"')||
-   !homepage.includes('class="console-decision"')||
+   !homepage.includes('class="hero-ambient"')||
+   homepage.includes('class="hero-console"')||
    !homepage.includes('FOUNDER')||
    !homepage.includes('id="projects-collection"')||
    !homepage.includes('Only founder-approved work'))
@@ -40,7 +41,8 @@ if(!homepage.includes('id="tool-category-rail"')||
    !kineticCss.includes('@keyframes pulse-scroll')||
    !kineticMobileCss.includes('@media(prefers-reduced-motion:reduce)')||
    !kineticJs.includes('function renderRibbon()')||
-   !kineticJs.includes('function initPulse()'))
+   kineticJs.includes('function initPulse()'))
+
  problems.push('Accessible moving category and YHpulse rails are incomplete.');
 if((homepage.match(/<li class="studio-step stage-/g)||[]).length!==5)
  problems.push('The five-stage idea-to-product journey is incomplete.');
@@ -72,9 +74,12 @@ else {
  if(!homepage.includes('LATEST '+activityData.items.length+' UPDATES'))
   problems.push('Activity counter does not match the published feed.');
 }
-if(!homepage.includes('id="footer-pulse"')||
+if(homepage.includes('id="footer-pulse"')||
+   (homepage.match(/id="home-pulse-viewport"/g)||[]).length!==1||
+   (homepage.match(/class="pulse-track/g)||[]).length!==1||
+   (homepage.match(/>YHpulse</g)||[]).length!==1||
    homepage.includes('<nav class="footer-directory"'))
- problems.push('Legacy footer tool shortcuts must be replaced by public Pulse.');
+ problems.push('YHpulse must appear exactly once, on the homepage, with verified updates.');
 
 if(!homepage.includes('id="builders"')||
    !homepage.includes('id="opportunities"')||
