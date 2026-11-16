@@ -44,3 +44,25 @@ Status: **staging development**. Updating this document never asserts a producti
 - **Employment News** editorial guidance explicitly reserves article copyright and prohibits reproduction of published articles or parts without permission. Do not assume this journal is openly reusable just because it is operated by a government ministry: https://employmentnews.gov.in/Editorial-Guidelines.pdf
 - **Government Open Data License – India (GODL)** explicitly allows commercial and noncommercial reuse with attribution **for data actually published under that license**, not every government website or Employment News article: https://data.gov.in/Godl
 - Result: keep Employment News content ingestion disabled pending source-specific rights. Explore individually licensed OGD datasets or official notice metadata as separate adapters, with accurate attribution, evidence and consent checks.
+
+## Founder direction re-confirmed — 2026-11-17
+
+**Do not narrow or rebrand the product as a UK teacher recruitment platform, a single-country listing board, or a source-monitoring dashboard.** The original uploaded HTML remains the feature baseline, **except email notifications are permanently excluded**. All source-specific release candidates are subordinate adapters for the single global GovRadar experience.
+
+### Build criteria and feature parity
+1. **Global Radar:** Keep the original ten-country browsing intent, India-first central/state exam discovery, technical/nontechnical filters, location filters, and explicit foreign-eligibility distinctions. Display verified evidence where available; mark research leads honestly. Coverage never implies source-level validation.
+2. **Exam lifecycle:** Preserve job, exam, application, admit-card, result and archival concepts. Verified stage transitions require authoritative notice URL, authority, timestamps, evidence, and expiry/withdrawal logic. Never infer admit-card release from a general portal being reachable.
+3. **Feeds:** Each source is its own portable plug-in (adapter, rights policy, cursor, freshness ledger, error log, tests). UK, Canada and future India modules contribute records to a unified canonical notice schema.
+4. **Saved & Updates:** User-driven browser-local saved jobs/exams/searches, preference filtering and observed-change history. No email transport, email capture, browser-push promise, or external subscription.
+5. **Community & Guide:** Preserve the founder's community-preparation and help features with moderation, privacy and clear nonofficial-content labeling.
+6. **Mobile discovery:** Maintain concise searchable cards, country/state/category chips, official-link actions, and minimal navigation; no infrastructure-only panels on the primary feed.
+
+### Next engineering milestones (in original product order, not a country-specific detour)
+- **Reliability gate:** Demonstrate a real scheduled UK mirror attempt and two successful independent audit records, then prove refresh behavior. A configured Cron alone is not proof.
+- **India-first data gate:** Audit UPSC, SSC, RRB, state PSC and other relevant official sources one by one; ingest only documented permitted metadata, test chronology, citation and expiry, and show the first verified India notices in global Radar.
+- **Unified global notice gate:** Render verified records from existing allowed UK/Canada feeds alongside India in the common Radar, with separate labels for research leads and independently verified live postings. No duplicate records or silently changing eligibility.
+- **Examination event gate:** Implement independent evidence-backed admit-card/result event ingestion and state transitions; include official proof and freshness timestamps.
+- **Launch gate:** Independently inspect mobile UI, accessibility, security, community abuse controls, source rights, rate limits, backup/restore, and staging-vs-production isolation. Founder controls production approval.
+
+### Cron verification snapshot
+As of the latest check on 2026-11-17 (local India date), private UK mirror Worker `hqventures-govradar-uk-mirror-watch` has schedule `55 */3 * * *` UTC, with `MIRROR_DB` and `SOURCE_DB` D1 bindings. The mirror's state still reads `never_run`, with `last_attempt_at=0`; its `uk_mirror_runs` table is empty. **Do not label unattended synchronization as working.** Investigate and validate after the first scheduled opportunity and preserve unknown status until an actual run is recorded.
