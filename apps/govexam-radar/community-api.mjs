@@ -74,13 +74,13 @@ export async function handleCommunity(request,env,path,url){
      if(posts.length){
        const qs=posts.map(()=>'?').join(',');
        const replies=await db.prepare(
-         'SELECT r.post_id as postId,r.content as text,r.created_at as createdAt,m.handle as username '+
+         'SELECT r.id,r.post_id as postId,r.content as text,r.created_at as createdAt,m.handle as username '+
          'FROM replies r JOIN members m ON r.member_id=m.id WHERE r.hidden=0 AND r.post_id IN ('+qs+') ORDER BY r.created_at ASC LIMIT 250'
        ).bind(...posts.map(p=>p.id)).all();
        const replyById=new Map();
        for(const r of replies.results||[]){
          if(!replyById.has(r.postId))replyById.set(r.postId,[]);
-         replyById.get(r.postId).push({username:r.username,text:r.text,timestamp:new Date(r.createdAt).toLocaleString('en-GB')});
+         replyById.get(r.postId).push({id:r.id,username:r.username,text:r.text,timestamp:new Date(r.createdAt).toLocaleString('en-GB')});
        }
        return response({posts:posts.map(p=>({
          id:p.id,examId:p.examId,username:p.username,roleBadge:'Community member',tag:p.tag,
@@ -90,10 +90,58 @@ export async function handleCommunity(request,env,path,url){
      }
      return response({posts:[]});
    }
-   if(!['/api/community/post','/api/community/reply','/api/community/vote'].includes(path)||request.method!=='POST')return response({error:'not_found'},404);
+   if(path==='/api/community/export' && request.method==='GET'){
+     const member=await auth(request,db);
+     if(!member)return response({error:'not_authenticated',message:'Sign in on this device to export your community data.'},401);
+     const posts=await db.prepare('SELECT id,exam_id as examId,tag,content,created_at as createdAt FROM posts WHERE member_id=? ORDER BY created_at DESC LIMIT 1000').bind(member.id).all();
+     const replies=await db.prepare('SELECT id,post_id as postId,content,created_at as createdAt FROM replies WHERE member_id=? ORDER BY created_at DESC LIMIT 1000').bind(member.id).all();
+     return response({handle:member.handle,exportedAt:new Date().toISOString(),posts:posts.results||[],replies:replies.results||[],
+       notice:'Export contains only your own records. You may erase your account from the community controls.'});
+   }
+   if(!['/api/community/post','/api/community/reply','/api/community/vote','/api/community/report','/api/community/delete-post','/api/community/delete-account'].includes(path)||request.method!=='POST')return response({error:'not_found'},404);
    const member=await auth(request,db);
    if(!member)return response({error:'not_authenticated',message:'Join the community with a device-bound username first.'},401);
    const body=await parseBody(request);
+   if(path==='/api/community/report'){
+     const {targetType,targetId,reason}=body;
+     if(!['post','reply'].includes(targetType)||typeof targetId!=='string'||!/^[a-f0-9-]{36}$/i.test(targetId)||!['spam','harassment','personal_information','misinformation','other'].includes(reason))
+       return response({error:'invalid_report',message:'Choose a valid report reason.'},422);
+     const table=targetType==='post'?'posts':'replies';
+     const existing=await db.prepare('SELECT member_id FROM '+table+' WHERE id=? AND hidden=0').bind(targetId).first();
+     if(!existing)return response({error:'content_not_found'},404);
+     if(existing.member_id===member.id)return response({error:'own_content',message:'You cannot report your own content.'},422);
+     const count=await db.prepare('SELECT COUNT(*) as count FROM reports WHERE reporter_id=? AND created_at>?').bind(member.id,now-86400000).first();
+     if(Number(count?.count||0)>=8)return response({error:'rate_limited',message:'Reporting limit reached. Try again tomorrow.'},429);
+     const row=await db.prepare('INSERT OR IGNORE INTO reports(id,target_type,target_id,reporter_id,reason,created_at) VALUES(?,?,?,?,?,?)')
+       .bind(crypto.randomUUID(),targetType,targetId,member.id,reason,now).run();
+     return response({status:row.meta?.changes?'submitted':'already_reported',notice:'Reports are queued for founder review; submission does not automatically remove content.'},200);
+   }
+   if(path==='/api/community/delete-post'){
+     const id=body.postId;
+     if(typeof id!=='string'||!/^[a-f0-9-]{36}$/i.test(id))return response({error:'invalid_post'},422);
+     const mine=await db.prepare('SELECT id FROM posts WHERE id=? AND member_id=?').bind(id,member.id).first();
+     if(!mine)return response({error:'not_authorized',message:'Only the post author can delete it.'},403);
+     await db.batch([
+       db.prepare("DELETE FROM reports WHERE (target_type='post' AND target_id=?) OR (target_type='reply' AND target_id IN(SELECT id FROM replies WHERE post_id=?))").bind(id,id),
+       db.prepare('DELETE FROM votes WHERE post_id=?').bind(id),
+       db.prepare('DELETE FROM replies WHERE post_id=?').bind(id),
+       db.prepare('DELETE FROM posts WHERE id=? AND member_id=?').bind(id,member.id)
+     ]);
+     return response({status:'deleted',notice:'Post and its discussion thread permanently deleted.'});
+   }
+   if(path==='/api/community/delete-account'){
+     if(body.confirm!=='DELETE')return response({error:'confirmation_required',message:'Confirm account deletion explicitly.'},422);
+     // Child records first. Remove posts and their replies, then delete the member credential.
+     await db.batch([
+       db.prepare("DELETE FROM reports WHERE reporter_id=? OR (target_type='post' AND target_id IN(SELECT id FROM posts WHERE member_id=?)) OR (target_type='reply' AND target_id IN(SELECT id FROM replies WHERE member_id=? OR post_id IN(SELECT id FROM posts WHERE member_id=?)))")
+         .bind(member.id,member.id,member.id,member.id),
+       db.prepare('DELETE FROM votes WHERE member_id=? OR post_id IN(SELECT id FROM posts WHERE member_id=?)').bind(member.id,member.id),
+       db.prepare('DELETE FROM replies WHERE member_id=? OR post_id IN(SELECT id FROM posts WHERE member_id=?)').bind(member.id,member.id),
+       db.prepare('DELETE FROM posts WHERE member_id=?').bind(member.id),
+       db.prepare('DELETE FROM members WHERE id=?').bind(member.id)
+     ]);
+     return response({status:'deleted',notice:'Community account and posts deleted. Replies under your posts are also removed.'});
+   }
    if(path==='/api/community/post'){
      if(!validRoom(body.examId))return response({error:'invalid_exam',message:'Select a valid exam room.'},422);
      if(!TAGS.has(body.tag))return response({error:'invalid_topic',message:'Select a study topic.'},422);
