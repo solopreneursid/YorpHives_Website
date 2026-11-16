@@ -18,6 +18,7 @@ const wait=async(fn,ms=10000)=>{
 try{
  await wait(()=>document.getElementById('tool-total')?.textContent.includes('free tools'));
  check(document.querySelectorAll('.mobile-dock a').length===5,'five mobile destinations');
+ check(document.querySelector('.mobile-dock [data-nav="explore"]')?.textContent.includes('HQventures'),'HQventures name in mobile navigation');
  check(['home-explore','home-use','home-connect'].every(id=>!!document.getElementById(id)),'three distinct home experiences');
  check(!document.querySelector('#home .os-board')&&!document.querySelector('#home .spotlight-panel'),'old repetitive HQ diagrams are removed');
  check(!!document.querySelector('#home .hero-identity-mark'),'logo-inspired geometric animated background');
@@ -78,7 +79,7 @@ try{
  check(getComputedStyle(document.querySelector('#home-pulse-viewport .pulse-track')).animationName==='pulse-scroll','YHpulse resumes after touch');
  location.hash='#projects-collection';
  await wait(()=>!document.getElementById('explore').hidden);
- check(document.querySelector('.mobile-dock [data-nav="explore"]')?.getAttribute('aria-current')==='page','project collection deep link resolves to Explore');
+ check(document.querySelector('.mobile-dock [data-nav="explore"]')?.getAttribute('aria-current')==='page'&&document.title.startsWith('HQventures'),'legacy #explore links open HQventures');
  check(!!document.getElementById('explore-process-title'),'Explore provenance process is visible');
  location.hash=originalHash||'#home';
  check(document.documentElement.scrollWidth<=innerWidth+2,'no document overflow');
