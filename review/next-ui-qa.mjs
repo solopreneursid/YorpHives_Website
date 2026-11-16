@@ -24,7 +24,7 @@ try{
  check(document.querySelectorAll('#home-pulse-viewport .pulse-track').length===1,'only one verified YHpulse');
  const firstTools=[...document.querySelectorAll('#home-tools-list .home-tool-card')];
  check(firstTools.length>=4,'featured tools populated from the published catalog');
- check(firstTools.every(x=>/^tools\\/[a-z0-9-]+\\/$/.test(x.getAttribute('href'))),'featured links use local tool routes');
+ check(firstTools.every(x=>/^tools\/[a-z0-9-]+\/$/.test(x.getAttribute('href'))),'featured links use local tool routes');
  const homeSearch=document.getElementById('home-tool-search');
  homeSearch.value='word counter';
  document.getElementById('home-tool-search-form').requestSubmit();
