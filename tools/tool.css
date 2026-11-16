@@ -53,3 +53,36 @@ details.directory-section .directory-card span{font-size:12px;line-height:1.45}
 #pdf-compressor-status{margin-top:0}
 @media(max-width:720px){.compression-choices-grid{grid-template-columns:1fr;gap:9px}.compression-option-content{min-height:79px;padding:12px 14px;gap:5px}.compression-option-badge{position:absolute;right:43px;top:12px;margin:0}.compression-option-content strong{font-size:14px}.compression-option-content small{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.compression-option-content{transition:none}}
+
+/* Shared mobile form ergonomics for individual free tool pages.
+   This does not alter any tool logic or desktop layout. */
+@media(max-width:800px){
+ .tool-page .tool-wrap{padding:29px 5% 68px}
+ .tool-page .tool-intro{gap:14px;margin-bottom:24px}
+ .tool-page .tool-intro h1{font-size:clamp(35px,8vw,48px);line-height:1.13}
+ .tool-page .tool-intro>div>p:last-child{font-size:14px;line-height:1.6}
+ .tool-page .privacy-badge{font-size:11px;white-space:normal;border-radius:11px}
+ .tool-page .tool-panel{border-radius:17px}
+ .tool-page .panel-head{padding:17px 18px}
+ .tool-page .panel-content{padding:18px}
+ .tool-page .tool-fields{gap:16px}
+ .tool-page .tool-field{font-size:13px}
+ .tool-page .tool-field input,
+ .tool-page .tool-field select,
+ .tool-page .tool-field textarea{
+   min-width:0;font-size:16px;border-radius:10px;padding:12px 13px
+ }
+ .tool-page .tool-field input,.tool-page .tool-field select{min-height:47px}
+ .tool-page .tool-buttons{gap:9px}
+ .tool-page .tool-btn{min-height:46px;border-radius:11px;font-size:12px}
+ .tool-page .tool-help{gap:23px;margin-top:30px}
+ .tool-page .tool-help-card{padding-top:18px}
+ .tool-page .tool-related{margin-top:30px}
+}
+@media(max-width:380px){
+ .tool-page .tool-wrap{padding-inline:14px}
+ .tool-page .panel-content{padding:14px}
+ .tool-page .tool-intro h1{font-size:34px}
+ .tool-page .tool-buttons .tool-btn{flex:1 1 140px}
+ .tool-page .tool-nav{gap:9px}
+}
