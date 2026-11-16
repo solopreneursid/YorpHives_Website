@@ -8,6 +8,7 @@ GovRadar is a transparent, zero-dependency government recruitment **source direc
 - 17 government-related official portals across 10 geographic categories.
 - 10 imported prototype opportunity *research leads*, explicitly **unverified** and not represented as live vacancies.
 - Country / keyword / technical-stream filtering, browser-local bookmarks and responsive mobile-first interface.
+- Real **on-device** notification inbox in the Alerts tab: new official-source imports since your last visit and personal bookmarks within 7 days of their source closing date. No automatic email, remote push or background alert delivery.
 - On-demand and scheduled official **site reachability** checker restricted to a fixed allowlist. Reachability **does not** verify recruitment details.
 - Installable simplified PWA shell under `/lite`, and full responsive six-tab version under `/`.
 - Real shared community discussions, replies, and votes using a separate free-tier Cloudflare D1 database. Device-bound identity tokens prevent username-only impersonation; losing local browser storage loses your handle.
@@ -92,5 +93,5 @@ The Worker Free plan has request and CPU caps; zero cost applies **within free-t
 - The UK DfE official JSON feed returned HTTP 200 with a Schema.org `JobPosting` `data` array, 100 items and 62 pages. All 100 records in the first page passed strict validation in a GitHub Actions read-only probe.
 - A one-time, audited, source-provenance preserving bootstrap placed 100 official-feed records into the isolated Cloudflare D1 database. The browser and HTTP integration checks confirmed imported records can be read and bookmarked.
 - Current draft PR CI passed at 320, 375, 768, 1440px and on live preview mobile. These records remain **source-confirmed, not independently verified**, and the pilot is not yet exhaustive.
-- The bootstrap was a single operation. It does **not** prove the future Cron Trigger can fetch this source from Cloudflare; observe and independently verify the first scheduled ingestion outcome. Until then do not claim unattended recruitment synchronization is operational.
+- The bootstrap was a single operation. It does **not** prove the future Cron Trigger can fetch this source from Cloudflare; observe and independently verify the first scheduled ingestion outcome. Until then, scheduled ingestion is configured but not operationally proven. Until then do not claim unattended recruitment synchronization is operational.
 - The experimental minute-frequency schedule was removed. Only conservative 3-hour recurring checks remain enabled on the separate staging Worker. No production website files were changed.
