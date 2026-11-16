@@ -60,7 +60,13 @@ function fixture({rows=[mkRow("uk-1"),mkRow("uk-2")],sourceState="ok",
       if(runs.has(args[0]))return{meta:{changes:0}};
       runs.set(args[0],{id:args[0],state:"running"});return{meta:{changes:1}};
      }
+     if(sql.startsWith("UPDATE official_job_notices SET life_status='expired'"))
+      return{meta:{changes:0}};
      throw Error("unexpected_target_run");
+    },
+    async all(){
+     if(sql.includes("LEFT JOIN uk_withdrawal_checks"))return{results:[]};
+     throw Error("unexpected_target_all");
     },
     async first(){
      if(sql.startsWith("SELECT last_cursor_seen"))return{...state};
