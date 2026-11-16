@@ -74,6 +74,15 @@ This checklist is intentionally evidence-based. **Do not mark automatic synchron
 - Expand independently verified India/state feeds only after source terms, format and direct notice evidence are established.
 - Phase 2 (admit cards/results) must not start until this phase's reliable ingestion or a documented, tested fallback is proven.
 
+## Recovery and zero-cost verification — 2026-11-16 13:01 UTC
+
+- **Isolated Cloudflare D1 restore drill PASSED**: Created disposable D1 `govradar-phase1-restore-drill-20261116` (synthetic record only), verified one test row, captured its Time Travel bookmark, deleted the row, confirmed zero rows, restored the disposable database to that bookmark, and confirmed the exact synthetic row returned. The disposable database was **deleted** and the account returned to its original three active D1 databases. **No real community, HQ, or GovRadar data was copied, restored, or deleted.**
+- **Actual last-24-hour account-wide D1 usage** (Cloudflare Insights, UTC 2026-11-15 12:58 to 2026-11-16 12:58): **633,878 rows read**, **8,928 rows written**, **15,161 queries**, well below the published Workers Free D1 daily allowances (5,000,000 reads, 100,000 writes). GovRadar D1 used 487,159 reads, 5,313 writes and 8,808 queries; source catalogue remains 238 distinct source-observed rows. These are snapshot measurements, not a permanent $0 guarantee.
+- **Workers Cron Free plan warning**: Cloudflare returned **6 configured Cron triggers** across the account (3 GovRadar and 3 across HQ Workers), versus the published Free limit of **5 per account**. No schedules were removed or added. Account subscription and actual billed Workers request usage could not be read via the current OAuth connector (HTTP 403, Billing Read not available). **Do not mark $0 release gate as satisfied until plan, request usage, and Cron consolidation are reviewed.**
+- **Two-cycle Cron reliability signal**: `/api/ingestion-status` now exposes `automation.twoCycleCronGatePassed` and individual `recentNativeSuccessCount`/`twoCycleNativeProof`, only passing when **each** native source has 2 successful Cron imports in 8 hours, the newest native attempt is successful, and it is within 5 hours. The 13:01 UTC D1 audit showed **one native successful run per source**. This gate remains pending until real subsequent unattended imports appear; GitHub signed one-off tests are never counted.
+- Detailed verified evidence and founder-controlled incident playbook: `PHASE1_RELIABILITY_AND_RECOVERY.md`.
+- Staging Worker was securely redeployed after implementing the two-cycle status, preserving its encrypted `INGEST_HMAC_KEY` and original D1 binding with strict inheritance. The first CI smoke run expected the new status before this deployment and failed; its unit and browser tests had passed. The next CI smoke must pass against the updated staging runtime before calling the change verified.
+
 ## Evidence URLs
 - Draft PR 7: https://github.com/solopreneursid/YorpHives_Website/pull/7
 - Official India index: https://employmentnews.gov.in/newemp/AllJobs.aspx?k=All
