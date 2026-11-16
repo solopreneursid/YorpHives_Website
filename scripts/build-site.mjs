@@ -44,7 +44,7 @@ for(const item of published){
 }
 await rm(dest,{recursive:true,force:true});
 await mkdir(dest,{recursive:true});
-for(const file of ['index.html','app.js','style.css','catalog.json','product-policy.mjs','_headers','_redirects','robots.txt','llms.txt'])
+for(const file of ['index.html','app.js','style.css','mobile-first.css','catalog.json','product-policy.mjs','_headers','_redirects','robots.txt','llms.txt'])
  await cp(resolve(root,file),resolve(dest,file));
 // Keep private or unqualified catalog candidates out of public static assets.
 await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
