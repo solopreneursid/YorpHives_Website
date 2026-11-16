@@ -21,6 +21,8 @@
   Cache-Control: no-cache, max-age=0, must-revalidate
 /next-responsive.css
   Cache-Control: no-cache, max-age=0, must-revalidate
+/home-experience.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
 /tools/directory-next.css
   Cache-Control: no-cache, max-age=0, must-revalidate
 
