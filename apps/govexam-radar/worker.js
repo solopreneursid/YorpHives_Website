@@ -70,7 +70,7 @@ export default {
   },
   async scheduled(controller,env,ctx){
     // Two independent small schedules: official website reachability and DfE job listings.
-    const work=(controller?.cron==="20 */3 * * *" || controller?.cron==="* * * * *")
+    const work=(controller?.cron==="20 */3 * * *")
       ?ingestDfE(env.DB)
       :runScheduledPortalChecks(env.DB,SOURCES);
     if(ctx?.waitUntil){ctx.waitUntil(work);return;}
