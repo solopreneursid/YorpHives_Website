@@ -30,7 +30,7 @@ for(const width of [320,375,768,1440]){
      await page.goto(origin,{waitUntil:"domcontentloaded"});
      await page.locator("#exam-cards-grid article").first().waitFor({timeout:30000});
      assert.equal(await page.locator("#view-radar").isVisible(),true);
-     assert.equal(await page.locator("#exam-cards-grid article").count(),18); // 19 original reference leads: one or more native-only abroad filtered.
+     assert.equal(await page.locator("#exam-cards-grid article").count(),17); // Prototype SMART_BOTH location mode omits two native-only foreign boards.
      await page.screenshot({path:"govradar-full-"+width+".png",fullPage:true});
      const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+3);
      assert.equal(overflow,false,"page overflows viewport at "+width+"px");
