@@ -2,7 +2,7 @@
 
 GovRadar is a transparent, zero-dependency government recruitment **source directory and research-lead tracker**. Its first version transforms the uploaded GovExam & Job Radar HTML prototype into a deployable Cloudflare Worker.
 
-## Honest scope (v2.0)
+## Honest scope (v2.2 pilot)
 
 - Full six-section founder-uploaded interface with advanced location / country / citizenship / stream / stage filters, imported example records, archived data, demo lifecycle, custom personal leads, email preference settings, and 4-part guide.
 - 17 government-related official portals across 10 geographic categories.
@@ -14,7 +14,8 @@ GovRadar is a transparent, zero-dependency government recruitment **source direc
 - Community now includes report buttons, personal export, post deletion and account deletion. Reports enter an unreviewed D1 queue; **public community launch still needs human moderation operations, privacy review and abuse-volume monitoring**.
 - Self-hosted compiled Tailwind CSS 3.4.17, with source generator and portable CSS. Zero third-party browser runtime fetches.
 - OpenAPI 3.1 contract at `/openapi.json` plus JSON catalog and health endpoints, strict Content Security Policy, no third-party client scripts, and no backend collection of candidate information.
-- **Not implemented**: verified job ingestion, automatic background data updates, delivered email alerts, recoverable cross-device accounts. Do not advertise these as live.
+- **Official-feed pilot:** one source-specific, daily-to-three-hour rotating adapter for the UK DfE's Teaching Vacancies open-data API. The source returns Schema.org `JobPosting` records; GovRadar only imports records with future `validThrough`, verified official-domain URLs, and required fields. These are **source-confirmed records, not individually verified job notices**.
+- **Not implemented**: comprehensive global live vacancy coverage, verified admit-card/result ingestion, delivered email alerts, recoverable cross-device accounts. Do not advertise these as live.
 
 ## API
 
@@ -23,18 +24,20 @@ GovRadar is a transparent, zero-dependency government recruitment **source direc
 - `GET /api/catalog`: official source registry, unverified leads and an empty verified listing dataset.
 - `GET /api/check?id=upsc`: on-demand reachability for a registry entry. Public API rejects arbitrary URLs.
 - `GET /api/source-status`: persisted reachability status, freshness and last check timestamp for the 17 known source URLs.
+- `GET /api/notices`: separate DfE official-feed notice records with server-side pagination, search and inferred job category.
+- `GET /api/ingestion-status`: latest source-ingestion outcomes; a failed import never fabricates vacancy data. Read-only inspection only.
 - Community API: register / posts / post / reply / vote / report / export / delete-post / delete-account. Posts and replies are held in D1; no third-party account provider.
 
 ## Deployment
 
-Entry: `apps/govexam-radar/worker.js`. It exports the standard Fetch API Worker handler and imports five first-party runtime modules, including compiled CSS. Deploy it as an ES module Worker initially named `hqventures-govexam-parity-preview` (the deploy helper's safe default). Override `GOVRADAR_WORKER_NAME` only after review;  Cloudflare D1 binding `DB` is required for community posts, replies and votes. No paid subscription, third-party runtime CDN or AI secrets are needed within Free plan limits. This can be done using Cloudflare's Workers API multipart-module upload, the Cloudflare dashboard or the self-contained `deploy.mjs` Node helper in this folder. Never place deployment tokens in GitHub code or user-facing pages. For an ongoing CI deployment, configure protected GitHub secrets.
+Entry: `apps/govexam-radar/worker.js`. It exports the standard Fetch API Worker handler and imports seven first-party runtime modules, including compiled CSS. Deploy it as an ES module Worker initially named `hqventures-govexam-parity-preview` (the deploy helper's safe default). Override `GOVRADAR_WORKER_NAME` only after review;  Cloudflare D1 binding `DB` is required for community posts, replies and votes. No paid subscription, third-party runtime CDN or AI secrets are needed within Free plan limits. This can be done using Cloudflare's Workers API multipart-module upload, the Cloudflare dashboard or the self-contained `deploy.mjs` Node helper in this folder. Never place deployment tokens in GitHub code or user-facing pages. For an ongoing CI deployment, configure protected GitHub secrets.
 
 To deploy from a local clone with Node.js 22+, set `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in the **local environment** and run `node apps/govexam-radar/deploy.mjs`. Keep write permissions scoped to this Worker.
 
 ## Testing
 
 ```bash
-node --test apps/govexam-radar/worker.test.mjs
+node --test apps/govexam-radar/worker.test.mjs apps/govexam-radar/source-monitor.test.mjs apps/govexam-radar/official-feed.test.mjs
 ```
 
 GitHub Actions executes these tests on changes to this product. Smoke-test the independent Cloudflare URL before merging the PR or linking the product from the YorpHives site.
@@ -71,3 +74,15 @@ The Worker Free plan has request and CPU caps; zero cost applies **within free-t
 - A member may report any other member's post or reply; `reports` is a *review queue*, not a claim of automatic moderation. The founder must review reports before broad public launch.
 - Members can download their own post/reply data, delete their own thread (including its replies), or permanently delete their community account. This removes their own content and any replies by others under their threads.
 - No public administrative mutation endpoint exists. Staff moderation/abuse policy, resilience and privacy review remain launch blockers.
+
+## Official-feed pilot: UK Department for Education (DfE)
+
+- Official source: https://teaching-vacancies.service.gov.uk/api/v1/jobs.json (the public JSON read endpoint). This is **not** the DfE's authenticated ATS/publisher API. Live compatibility confirmed on 16 November 2026 via a one-shot HTTP 200 read; response includes `data` (Schema.org JobPosting) and `meta.totalPages`.
+- Licence/terms: https://teaching-vacancies.service.gov.uk/pages/terms-and-conditions and Open Government Licence v3. Listings may be reused, but no fee or commission may be charged for contacting, interviewing or hiring a respondent. Include attribution and a link to the original posting.
+- Each scheduled read requests only **one page** (up to 100 records) and rotates a persisted page cursor. This is a **limited sample**, not complete or instantaneous collection of all DfE vacancies.
+- Mandatory provenance: HTTPS URL on the exact `teaching-vacancies.service.gov.uk` host under `/jobs/`, title, employer, future closing timestamp, source ID, first/last seen, and a SHA-256 field summary. The feed is never used to infer foreign citizenship eligibility.
+- Store in `official_job_notices`, audit in `source_ingest_runs`, and page cursor in `source_feed_cursors`; all described in the portable SQLite migration `official-notices.sql`. The deployed staging Cloudflare D1 already has the migration applied.
+- Cron `20 */3 * * *` runs the official job adapter; existing `0 */3 * * *` remains exclusively for portal website reachability. D1 read endpoints do not trigger upstream requests; visitors cannot force scraping.
+- The implementation fails closed on wrong schema, non-JSON, unexpected redirect, source restriction, excessive response size, wrong domain, stale closing timestamp, or database error; prior records are not silently deleted.
+- Do **not** refer to source-confirmed imported notices as individually verified, automatically checked for right-to-work, or proof that the job is still open. All hiring conditions must be checked on the original posting.
+- The data feed does not cover UPSC, SSC, RRB, JPSC or other Indian exam notifications. Those remain directory links and historical sample leads until suitable legal, authentic public sources are integrated separately.
