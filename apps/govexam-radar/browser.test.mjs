@@ -331,7 +331,7 @@ const RELEASE_FIXTURE={
  notices:[{id:"uk-synthetic-test",sourceId:"uk-dfe-teaching-vacancies",
   title:"<img src=x onerror=alert(1)> Mathematics Teacher",employer:"Example School",
   jurisdiction:"England",region:"London",sourceUrl:"https://teaching-vacancies.service.gov.uk/jobs/example",
-  closingAt:"2026-11-27T12:00:00Z",stream:"Non-technical"}]
+  closingAt:"2026-11-27T12:00:00Z",lastSeenAt:Date.parse("2026-11-16T15:20:00Z"),stream:"Non-technical"}]
 };
 for(const width of [320,375,768,1440]){
  test("UK-only release candidate is readable, safe and responsive at "+width+"px",async()=>{
@@ -345,6 +345,7 @@ for(const width of [320,375,768,1440]){
    await page.locator("#preview-grid .job-card").first().waitFor({timeout:15000});
    assert.equal(await page.locator("#preview-grid .job-card").count(),1);
    assert.equal(await page.locator("#hero-count").textContent(),"1");
+   assert.match(await page.locator("#preview-grid .job-card").textContent(),/Last observed in source/);
    assert.equal(await page.locator("#preview-grid img").count(),0,"upstream text must not inject HTML");
    assert.ok((await page.locator("#preview-grid .job-card h3").textContent()).includes("<img"));
    assert.equal(await page.locator("#preview-grid a").first().getAttribute("href"),"https://teaching-vacancies.service.gov.uk/jobs/example");
