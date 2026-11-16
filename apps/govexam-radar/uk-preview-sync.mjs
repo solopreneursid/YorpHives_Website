@@ -42,7 +42,10 @@ export function makeUkMirrorInsert(rows){
  const values=rows.map(()=>"("+UK_MIRROR_COLUMNS.map(()=>"?").join(",")+")").join(",");
  const changed=UK_MIRROR_COLUMNS.filter(x=>x!=="id");
  const sql="INSERT INTO official_job_notices ("+columnNames+") VALUES "+values+
-  " ON CONFLICT(id) DO UPDATE SET "+changed.map(c=>c+"=excluded."+c).join(",");
+  " ON CONFLICT(id) DO UPDATE SET "+changed.map(c=>
+   c==="life_status"
+    ? "life_status=CASE WHEN official_job_notices.life_status='withdrawn_confirmed' AND excluded.last_seen_at<=official_job_notices.last_seen_at THEN 'withdrawn_confirmed' ELSE excluded.life_status END"
+    : c+"=excluded."+c).join(",");
  return{sql,params:rows.flatMap(row=>UK_MIRROR_COLUMNS.map(col=>row[col]??null))};
 }
 export function reconcileMirrorIds(source,target){
