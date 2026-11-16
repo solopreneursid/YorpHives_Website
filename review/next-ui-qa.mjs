@@ -59,10 +59,11 @@ try{
  check(getComputedStyle(document.querySelector('#category-ribbon-track')).animationName==='rail-drift','category motion resumes after touching pause button');
  const pulsePause=document.querySelector('#home [data-motion-toggle="pulse"]');
  pulsePause.click();
- check(getComputedStyle(document.querySelector('#home-pulse-viewport .pulse-track')).animationName==='pulse-scroll','YHpulse resumes after touch');
  check(pulsePause.getAttribute('aria-pressed')==='true','YHpulse pause control');
  check(getComputedStyle(document.querySelector('#home-pulse-viewport .pulse-track')).animationName==='none','YHpulse stops on pause');
  pulsePause.click();
+ check(pulsePause.getAttribute('aria-pressed')==='false','YHpulse resume control');
+ check(getComputedStyle(document.querySelector('#home-pulse-viewport .pulse-track')).animationName==='pulse-scroll','YHpulse resumes after touch');
  location.hash='#projects-collection';
  await wait(()=>!document.getElementById('explore').hidden);
  check(document.querySelector('.mobile-dock [data-nav="explore"]')?.getAttribute('aria-current')==='page','project collection deep link resolves to Explore');
