@@ -73,8 +73,8 @@ unavailable, not a fabricated figure.
 ## Database and portability
 
 - Source DDL: `analytics/schema.sql`. D1 uses SQLite SQL.
-- Production DB: `yorphives-public-insights`.
-- Preview DB: `yorphives-public-insights-preview` (never used to
+- Production DB: `yorphives-impact-analytics-live`.
+- Preview DB: `yorphives-impact-analytics-preview` (never used to
   populate production results).
 - Pages Function binding: `INSIGHTS_DB`.
 - Data tables: `visitor_sessions`, `daily_pageviews`,
@@ -112,3 +112,12 @@ replay ignored, invalid URL rejected; inspect the isolated preview D1
 for non-zero totals; check the public report, YHpulse, responsive views,
 opt-out behavior and full direct tool processing. Never seed live figures
 using staging test events.
+
+## Free-tier capacity (verified November 2026)
+
+Cloudflare D1 Workers Free provides up to **100,000 rows written/day** and
+**5 million rows read/day** across the account, subject to plan changes.
+Analytics events write multiple rows; at sustained scale, use batching,
+rate limits or the self-hosted SQLite alternative, or upgrade when revenue
+supports it. Ordinary static tools remain free of Pages Functions invocation
+through the generated `_routes.json` limitation to `/api/insights/*`.
