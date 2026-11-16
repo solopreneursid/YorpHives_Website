@@ -47,6 +47,7 @@ form.addEventListener('submit', async event => {
       preview.append(swatch); preview.hidden = false;
     } else preview.hidden = true;
     setStatus('Your result is ready.');
+    window.dispatchEvent(new Event('yorphives:tool-completed'));
   } catch (error) {
     if (token !== revision) return;
     output.value = ''; result.hidden = true; setStatus(error.message || 'Could not process this input.', true);
