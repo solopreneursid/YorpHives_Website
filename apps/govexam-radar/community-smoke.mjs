@@ -19,6 +19,14 @@ async function call(path,method="GET",body,user=users[0],expectStatus){
   return result;
 }
 const {status}=await call("/api/health");assert.equal(status,"ok");
+const noticeFeed=await call("/api/notices?limit=3", "GET", undefined, null);
+assert.ok(noticeFeed.total>=100,"Expected seeded official DfE notices");
+assert.equal(noticeFeed.notices.length,3);
+assert.ok(noticeFeed.notices.every(x=>x.sourceUrl.startsWith("https://teaching-vacancies.service.gov.uk/jobs/") && x.reviewState==="official_feed_unreviewed"));
+const importedStatus=await call("/api/ingestion-status","GET",undefined,null);
+assert.ok(importedStatus.openImportedNotices>=90);
+assert.ok(importedStatus.latest?.some(x=>x.state==="ok" && x.accepted>=100));
+console.log("SUCCESS: verified official DfE records, provenance and database audit through public API.");
 try{
   for(const user of users){
     const reg=await call("/api/community/register","POST",{handle:user.handle,token:user.token},null,201);
