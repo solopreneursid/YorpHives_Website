@@ -23,7 +23,7 @@ export function validateIsolatedStagingState({bindings,secrets,crons,tableNames,
     (bindings[0].database_id||bindings[0].id)!==x.database)throw Error("unexpected_uk_staging_binding");
  if(!Array.isArray(secrets)||secrets.length!==0)throw Error("unexpected_uk_staging_secret");
  if(!Array.isArray(crons)||crons.length!==0)throw Error("unexpected_uk_staging_cron");
- if(JSON.stringify(tableNames)!=='["official_job_notices"]')throw Error("unexpected_uk_staging_table");
+ if(JSON.stringify(tableNames)!=='["official_job_notices","uk_mirror_runs","uk_mirror_state"]')throw Error("unexpected_uk_staging_table");
  if(!Number.isSafeInteger(sourceRows)||sourceRows<1||sourceRows>10000||
     unapprovedRows!==0)throw Error("uk_snapshot_isolation_failed");
  if(!workerSubdomain||workerSubdomain.enabled!==true||
