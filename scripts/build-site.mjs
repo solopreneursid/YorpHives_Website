@@ -229,6 +229,9 @@ const sitemap='<?xml version="1.0" encoding="UTF-8"?>\n'+
  canonicalPaths.map(p=>'  <url><loc>'+xml(origin+p)+'</loc></url>').join('\n')+'\n</urlset>\n';
 await write('sitemap.xml',sitemap);
 if(target==='preview'){
+ // Full from-scratch website experience for review, copied only after the
+ // registered public-page audit. Never include it in production output.
+ await cp(resolve(root,'reimagined'),resolve(dest,'reimagined'),{recursive:true});
  // Robots must be allowed to fetch pages to see the noindex response header.
  // A blanket robots.txt Disallow would prevent verification of noindex.
  await write('robots.txt','User-agent: *\nAllow: /\n');
