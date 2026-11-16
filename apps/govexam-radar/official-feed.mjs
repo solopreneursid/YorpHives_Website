@@ -142,8 +142,8 @@ export async function ingestDfE(db,fetcher=fetch,clock=Date.now()){
    const batch=await Promise.all(parsed.valid.slice(i,i+MAX_BATCH).map(async row=>{
     const id=DFE_SOURCE.id+":"+(await digest(row.sourceRef)).slice(0,32);
     const hash=await digest(JSON.stringify([row.sourceRef,row.title,row.employer,row.closingAt,row.region,row.publishedAt]));
-    return db.prepare("INSERT INTO official_job_notices(id,source_id,source_ref,title,employer,country,region,stream,apply_url,source_page,published_at,closing_at,first_seen_at,last_seen_at,evidence_sha256,review_state,life_status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET title=excluded.title,employer=excluded.employer,region=excluded.region,stream=excluded.stream,published_at=excluded.published_at,closing_at=excluded.closing_at,last_seen_at=excluded.last_seen_at,evidence_sha256=excluded.evidence_sha256,life_status='open'")
-     .bind(id,DFE_SOURCE.id,row.sourceRef,row.title,row.employer,row.country,row.region,row.stream,row.applyUrl,row.sourcePage,row.publishedAt,row.closingAt,now,now,hash,row.reviewState,row.lifeStatus);
+    return db.prepare("INSERT INTO official_job_notices(id,source_id,source_ref,title,employer,country,region,stream,apply_url,source_page,published_at,closing_at,first_seen_at,last_seen_at,evidence_sha256,review_state,life_status,jurisdiction_code,jurisdiction_name,government_tier,employer_type) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET title=excluded.title,employer=excluded.employer,region=excluded.region,stream=excluded.stream,published_at=excluded.published_at,closing_at=excluded.closing_at,last_seen_at=excluded.last_seen_at,evidence_sha256=excluded.evidence_sha256,life_status='open'")
+     .bind(id,DFE_SOURCE.id,row.sourceRef,row.title,row.employer,row.country,row.region,row.stream,row.applyUrl,row.sourcePage,row.publishedAt,row.closingAt,now,now,hash,row.reviewState,row.lifeStatus,'GB-ENG','England','national','public_education');
    }));
    await db.batch(batch);
   }
