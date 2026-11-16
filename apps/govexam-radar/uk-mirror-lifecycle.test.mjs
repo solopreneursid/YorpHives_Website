@@ -121,6 +121,31 @@ test("two spaced 404 responses flag review but NEVER automatically withdraw",asy
  assert.equal(f.rows.get("uk-1").life_status,"open");
  assert.equal(f.checks.get("uk-1").review_required,1);
 });
+test("source refresh during an official 410 probe cannot confirm stale withdrawal",async()=>{
+ const f=fakeDB();
+ const first=await reconcileUkClosures(f.source,f.target,NOW,async()=>new Response(null,{status:410}));
+ assert.equal(first.probed,1);
+ const later=NOW+CHECK_INTERVAL_MS+1000;
+ const result=await reconcileUkClosures(f.source,f.target,later,async()=>{
+  f.rows.get("uk-1").last_seen_at+=1;
+  return new Response(null,{status:410});
+ });
+ assert.equal(result.probed,1);
+ assert.equal(result.inconclusive,1);
+ assert.equal(result.verifiedWithdrawals,0);
+ assert.equal(f.rows.get("uk-1").life_status,"open");
+ assert.equal(f.checks.get("uk-1").gone_count,1);
+});
+test("official deadline changes during probing invalidate pending withdrawal evidence",async()=>{
+ const f=fakeDB();
+ const result=await reconcileUkClosures(f.source,f.target,NOW,async()=>{
+  f.rows.get("uk-1").closing_at="2026-12-30T12:00:00Z";
+  return new Response(null,{status:410});
+ });
+ assert.equal(result.inconclusive,1);
+ assert.equal(f.checks.size,0);
+ assert.equal(f.rows.get("uk-1").life_status,"open");
+});
 test("source re-observed after first missing response invalidates old evidence",async()=>{
  const first=nextWithdrawalEvidence(null,410,NOW-3*24*HOUR,NOW);
  const again=nextWithdrawalEvidence(first,410,NOW-2*24*HOUR,NOW+CHECK_INTERVAL_MS);
