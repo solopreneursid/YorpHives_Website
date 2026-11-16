@@ -10,16 +10,16 @@ const read=file=>readFile(resolve(root,file),'utf8');
 test('homepage explicitly communicates one founder, private evolving AI workforce and final human authority',async()=>{
  const h=await read('index.html');
  assert.match(h,/One founder\.<br>An AI team\.<br><em>Ideas in motion\.<\/em>/);
- assert.match(h,/its own evolving AI business operating system/i);
- assert.match(h,/Specialist AI agents discover opportunities, investigate markets and evaluate evidence/);
- assert.match(h,/The founder decides what we pursue and build/);
- assert.match(h,/Founder-approved decisions/);
+ assert.match(h,/YorpHivesHQ \(YorpHives Headquarters\) operates this website/);
+ assert.match(h,/Its specialists monitor the platform, investigate opportunities and analyze markets/);
+ assert.match(h,/I make the final decisions based on evidence/);
+ assert.match(h,/Founder decides/);
  assert.match(h,/id="our-ai-team"/);
  assert.match(h,/private, self-hostable AI business OS/i);
  assert.match(h,/adaptable open-weight models/i);
  assert.match(h,/founder-reviewed feedback/i);
  assert.match(h,/system can evolve without being locked to one model/i);
- assert.match(h,/The final decision to pursue an idea, build a product or launch a business stays with the founder/i);
+ assert.match(h,/The final decision to pursue a venture, change the website or launch a project stays with me, the founder/i);
  assert.match(h,/HUMAN CONTROL/);
 });
 test('separate AI roles are represented without claiming they have publishing or deployment authority',async()=>{
@@ -49,11 +49,11 @@ test('Explore is the public collection of approved YorpHives OS projects, not un
  const [h,js]=await Promise.all([read('index.html'),read('next.js')]);
  const explore=h.split('<!-- EXPLORE -->')[1]?.split('<!-- BUILDERS -->')[0];
  assert.ok(explore);
- assert.match(explore,/studio's own founder-approved projects/);
- assert.match(explore,/evolving AI business OS/);
+ assert.match(explore,/YorpHives' own projects/);
+ assert.match(explore,/YorpHivesHQ operates the website/);
  assert.match(explore,/same AI research team/i);
  assert.match(explore,/The same team/);
- assert.match(explore,/YorpHives HQ/);
+ assert.match(explore,/YorpHivesHQ \(YorpHives Headquarters\)/);
  assert.match(explore,/id="projects-collection"/);
  assert.match(explore,/No qualified launches yet/);
  assert.match(explore,/Only genuinely approved and published work is listed/);
@@ -64,7 +64,7 @@ test('the OS and Explore use the same evidence and founder approval gate',async(
  for(const phrase of ['market demand','customer needs','competition','feasibility','business potential','final founder approval']){
   assert.ok(h.includes(phrase),phrase+' missing');
  }
- assert.match(h,/The founder chooses what moves forward/);
+ assert.match(h,/The founder makes the final decision/);
  assert.match(h,/Only approved work/i);
  assert.match(h,/First public launch pending/i);
 });
@@ -84,4 +84,17 @@ test('direct tool suggestion remains an optional founder-reviewed email',async()
  assert.match(h,/<option>Suggest a free tool<\/option>/);
  assert.match(js,/getAttribute\('data-contact-reason'\)/);
  assert.match(js,/mailto:connect@yorphives\.com/);
+});
+
+test('YorpHivesHQ operates the website while founder controls decisions and releases',async()=>{
+ const h=await read('index.html');
+ const home=h.split('<!-- HOME:')[1]?.split('<!-- TOOLS -->')[0]||'';
+ const explore=h.split('<!-- EXPLORE -->')[1]?.split('<!-- BUILDERS -->')[0]||'';
+ assert.match(home,/YorpHivesHQ \(YorpHives Headquarters\) operates this website/);
+ assert.match(home,/HQ coordinates website monitoring, operational analysis, market research and recommendations/);
+ assert.match(home,/It does not independently approve launches or publish code changes/);
+ assert.match(home,/The final decision to pursue a venture, change the website or launch a project stays with me, the founder/);
+ assert.match(explore,/YorpHivesHQ operates the website and coordinates opportunity research/);
+ assert.match(explore,/only approved, published projects appear here/i);
+ assert.match(h,/Operated by YorpHivesHQ\./);
 });
