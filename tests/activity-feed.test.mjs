@@ -125,8 +125,17 @@ test('deployed release activity and HTML agree and link only to published public
  assert.equal(activity.items.length,20);
  assert.ok(activity.items.every(x=>urls.has(x.url)||x.url==='#builders'||x.url==='#explore'));
  assert.ok(activity.items.every(x=>x.source==='published-catalog'||x.source==='public-page-diff'||x.source==='founder-visible-page'));
- assert.ok(activity.items.every(x=>homepage.includes('href="'+x.url+'"')));
- assert.ok(homepage.includes('LATEST 20 UPDATES'));
+ if(homepage.includes('id="home-title"')){
+  // The reimagined home renders a smaller verified feed using the local
+  // activity JSON; not all published events belong in initial HTML.
+  const js=await read('dist/studio.js');
+  assert.match(homepage,/id="home-activity"/);
+  assert.match(js,/fetch\('\.\.\/activity\.json'/);
+  assert.match(js,/renderActivity\(d\.items\)/);
+ }else{
+  assert.ok(activity.items.every(x=>homepage.includes('href="'+x.url+'"')));
+  assert.ok(homepage.includes('LATEST 20 UPDATES'));
+ }
  assert.doesNotMatch(homepage,/href="catalog\.json">Tool catalog/);
  assert.doesNotMatch(homepage,/<nav class="footer-directory"/);
 });
