@@ -28,12 +28,12 @@ test('rotating data uses genuine published categories, qualified products and ve
  assert.match(js,/qualifiedProducts\(items\)/);
  assert.match(js,/const tools=items.filter\(publicTool\)/);
  assert.match(js,/categoryCounts/);
- assert.match(js,/useCard\('ventures',products/);
+ assert.match(js,/useCard\('ventures',qualified\.map/);
  assert.match(js,/useCard\('tools',categories/);
  assert.match(js,/useCard\('builders',builderEntries/);
  assert.match(js,/builderRows.filter\(event=>event\?\.kind==='builders'/);
  assert.match(js,/\.slice\(0,10\)/);
- assert.match(js,/if\(safe.length>1\)window.setInterval/);
+ assert.match(js,/if\(card\.entries\.length<2\|\|!canMove/);
  assert.match(js,/document.hidden/);
  assert.match(js,/mql.matches/);
  assert.match(js,/ecoPaused/);
