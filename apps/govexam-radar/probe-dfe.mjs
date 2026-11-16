@@ -1,3 +1,4 @@
+import { parseOfficialFeed } from "./official-feed.mjs";
 // One-shot, read-only official UK DfE API compatibility probe.
 // Diagnostic only: does not publish, cache or store vacancies.
 const target="https://teaching-vacancies.service.gov.uk/api/v1/jobs.json?page=1";
@@ -21,4 +22,9 @@ try{
  const attrs=sample?.attributes&&typeof sample.attributes==="object"?sample.attributes:sample;
  const meta={rootType:type,rootKeys:keys,items:array.length,firstItemKeys:sample?Object.keys(sample):[],firstAttributesKeys:attrs?Object.keys(attrs):[],meta:data?.meta?Object.keys(data.meta):[],pagination:data?.pagination?Object.keys(data.pagination):[],sampleTypes:attrs?Object.fromEntries(Object.entries(attrs).slice(0,25).map(([k,v])=>[k,Array.isArray(v)?"array":v===null?"null":typeof v])):{}};
  console.log("OFFICIAL_API_SHAPE "+JSON.stringify(meta));
+ try{
+  const normalized=parseOfficialFeed(data);
+  console.log("REAL_OFFICIAL_RECORD_VALIDATION "+JSON.stringify({received:normalized.received,accepted:normalized.valid.length,rejected:normalized.rejected,totalPages:normalized.totalPages,firstValidFields:normalized.valid[0]?Object.keys(normalized.valid[0]):[]}));
+  if(normalized.received && normalized.valid.length===0)process.exitCode=1;
+ }catch(e){console.log("FEED_SCHEMA_ERROR",String(e?.message||e));process.exitCode=1;}
 }catch(e){console.log("FEED_PROBE_ERROR",String(e?.message||e).slice(0,300));}finally{clearTimeout(timer);}
