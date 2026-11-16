@@ -102,6 +102,8 @@ test("private Worker has a scheduled handler but NO public fetch entrypoint",()=
  assert.equal(UK_MIRROR_CRON,"55 */3 * * *");
  assert.equal(UK_MIRROR_COLUMNS.length,21);
  assert.match(makeMirrorUpsertSql(),/ON CONFLICT\(id\) DO UPDATE SET/);
+ assert.match(makeMirrorUpsertSql(),/withdrawn_confirmed/);
+ assert.match(makeMirrorUpsertSql(),/excluded\.last_seen_at<=official_job_notices\.last_seen_at/);
 });
 test("Cron handler refuses untrusted trigger, timestamp and extra bindings",async()=>{
  for(const wrong of [
