@@ -43,7 +43,7 @@ try{
  // New minimal, evidence-based rotator checks.
  const strips=['ventures','builders','tools'];
  for(const key of strips)ok(!!document.getElementById('eco-strip-'+key),'ecosystem '+key+' strip exists');
- ok(document.querySelector('.eco-strip-tools').textContent.includes('tool'),'tool category comes from real catalogue');
+ ok(document.querySelector('[data-strip="tools"]').textContent.includes('tool'),'tool category comes from real catalogue');
  ok(document.getElementById('eco-strip-ventures').textContent.includes('Founder-approved launches'),'no imaginary HQventures product');
  ok(document.getElementById('yh-pulse-name').textContent.includes('verified reporting'),'no false most-used claim');
  ok(document.getElementById('yh-pulse-toggle').disabled,'YHpulse pause disabled without rankings');
@@ -51,7 +51,7 @@ try{
  ecoPause.click();ok(ecoPause.getAttribute('aria-pressed')==='true','all ecosystem rotators can be paused');
  ecoPause.click();ok(ecoPause.getAttribute('aria-pressed')==='false','ecosystem rotators can be resumed');
  const movingCategory=document.getElementById('eco-strip-tools').textContent;
- document.querySelector('.eco-strip-tools').click();
+ document.querySelector('[data-strip="tools"]').click();
  await wait(()=>!document.getElementById('tools').hidden);
  ok(document.querySelector('.cat-chip.is-active')?.textContent!=='All tools','rotating category opens selected filter');
  ok(document.getElementById('tool-results-description').textContent.endsWith(' tools'),'category link loads filtered tools');
