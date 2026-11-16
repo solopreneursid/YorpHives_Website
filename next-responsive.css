@@ -202,8 +202,8 @@
  .os-visual{padding:19px}
  .os-agent{padding:11px 9px;grid-template-columns:25px minmax(0,1fr);gap:3px 7px}
  .os-agent>span{width:25px;height:25px;font-size:16px}
- .os-agent strong{font-size:10px}
- .os-agent small{font-size:9px}
+ .os-agent strong{font-size:11px}
+ .os-agent small{font-size:10px}
  .explore-process-list li{padding:16px 13px;min-height:183px}
  .explore-process-list li strong{font-size:15px}
 }
@@ -227,8 +227,8 @@
  .os-visual{padding:15px;border-radius:18px}
  .os-agents{gap:8px;margin-top:15px}
  .os-agent{padding:11px 9px}
- .os-agent strong{font-size:11px}
- .os-agent small{font-size:9.5px}
+ .os-agent strong{font-size:12px}
+ .os-agent small{font-size:10.5px}
  .os-founder{padding:12px;gap:10px}
  .os-founder strong{font-size:14px}
  .os-human{font-size:8px}
@@ -260,7 +260,10 @@
 }
 @media(max-width:350px){
  .hero h1{font-size:35px}
- .os-agent strong{font-size:9.5px}
- .os-agent small{font-size:8.5px}
+ .os-agents{grid-template-columns:1fr}
+ .os-agent{padding:12px 11px;grid-template-columns:30px minmax(0,1fr)}
+ .os-agent>span{width:30px;height:30px}
+ .os-agent strong{font-size:12px}
+ .os-agent small{font-size:11px}
  .os-founder strong{font-size:13px}
 }
