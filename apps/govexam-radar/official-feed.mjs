@@ -216,7 +216,7 @@ export async function serveOfficialNotices(db,params){
   const sources=[
    {id:DFE_SOURCE.id,name:DFE_SOURCE.name,country:"United Kingdom",jurisdiction:"England",level:"national",employerType:"public_education",licence:DFE_SOURCE.licence,licenceUrl:DFE_SOURCE.licenceUrl,termsUrl:DFE_SOURCE.termsUrl},
    {id:"manitoba-jobs",name:"Government of Manitoba Job Opportunities",country:"Canada",jurisdiction:"Manitoba",level:"province",employerType:"provincial_government",licence:"Government of Manitoba public RSS; reuse minimal factual fields with attribution",licenceUrl:"https://jobsearch.gov.mb.ca/rssFeeds.action"},
-    {id:INDIA_EMPLOYMENT_NEWS.id,name:INDIA_EMPLOYMENT_NEWS.name,country:"India",jurisdiction:"India",level:"unclassified",employerType:"government_recruitment_digest",licence:"Attributed factual index summary; application and full notice remain with original employer",licenceUrl:INDIA_EMPLOYMENT_NEWS.url}
+    {id:INDIA_EMPLOYMENT_NEWS.id,name:INDIA_EMPLOYMENT_NEWS.name,country:"India",jurisdiction:"India",level:"unclassified",employerType:"government_recruitment_digest",licence:"Commercial republication permission not established; no India import is enabled. Link to official Employment News source only",licenceUrl:INDIA_EMPLOYMENT_NEWS.url}
   ];
   return json({sources,notices:rows.results||[],total:total?.total||0,page,limit,
    filters:{source:sourceId,country,jurisdiction,level,stream,keyword},
@@ -229,6 +229,21 @@ export async function serveIngestionStatus(db){
   const latest=await db.prepare("SELECT source_id as sourceId,started_at as startedAt,finished_at as finishedAt,state,received,accepted,discarded,error_code as errorCode,details FROM source_ingest_runs ORDER BY finished_at DESC LIMIT 8").all();
   const c=await db.prepare("SELECT COUNT(*) AS total FROM official_job_notices WHERE life_status='open' AND closing_at>?").bind(new Date().toISOString()).first();
   const bySource=await db.prepare("SELECT source_id AS sourceId,country,jurisdiction_name AS jurisdiction,government_tier AS level,employer_type AS employerType,COUNT(*) AS count FROM official_job_notices WHERE life_status='open' AND closing_at>? GROUP BY source_id,country,jurisdiction_name,government_tier,employer_type").bind(new Date().toISOString()).all();
-  return json({source:"multiple official sources",openImportedNotices:c?.total||0,bySource:bySource.results||[],latest:latest.results||[],status:"official_feed_imports_not_independently_verified"});
- }catch{return json({error:"status_unavailable"},503);}
+  // Bootstrap IDs are explicitly excluded. A configured cron or one-off import is
+  // not evidence that unattended background ingestion works.
+  const observed=await db.prepare("SELECT source_id AS sourceId,MAX(CASE WHEN state='ok' AND id NOT LIKE 'bootstrap-%' THEN finished_at ELSE NULL END) AS lastSuccessfulScheduledAt,MAX(CASE WHEN id NOT LIKE 'bootstrap-%' THEN finished_at ELSE NULL END) AS lastScheduledAttemptAt FROM source_ingest_runs WHERE source_id IN (?,?) GROUP BY source_id")
+   .bind(DFE_SOURCE.id,"manitoba-jobs").all();
+  const sources=[DFE_SOURCE.id,"manitoba-jobs"].map(sourceId=>{
+   const row=(observed.results||[]).find(x=>x.sourceId===sourceId);
+   const lastSuccessfulScheduledAt=row?.lastSuccessfulScheduledAt||null;
+   return {sourceId,scheduledSuccessObserved:!!lastSuccessfulScheduledAt,
+    freshSuccess:!!lastSuccessfulScheduledAt&&Date.now()-lastSuccessfulScheduledAt<86400000,
+    lastSuccessfulScheduledAt,lastScheduledAttemptAt:row?.lastScheduledAttemptAt||null};
+  });
+  return json({source:"multiple official sources",openImportedNotices:c?.total||0,bySource:bySource.results||[],latest:latest.results||[],
+   automation:{observedForAllSources:sources.every(x=>x.scheduledSuccessObserved),
+    healthy:sources.every(x=>x.freshSuccess),sources,
+    indiaSource:"index_parser_only_not_scheduled_pending_reuse_review"},
+   status:"official_feed_imports_not_independently_verified"});
+ }catch(e){console.error(JSON.stringify({event:"ingestion_status_read_failed",reason:String(e?.message||e).slice(0,150)}));return json({error:"status_unavailable"},503);}
 }
