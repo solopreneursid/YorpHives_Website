@@ -29,3 +29,5 @@
 @media(max-width:350px){.hero-ctas .button{font-size:10px;padding:9px;gap:7px}.hero-bottom{font-size:7px}.art-node{min-width:90px}.node-evaluate{right:0}.eco-card{grid-template-columns:1fr 96px}.eco-bottom h3{font-size:24px}.eco-graphic{height:130px}.eco-v-circle{height:96px;width:96px}.eco-v-circle.small{height:75px;width:75px}.eco-v-mark{font-size:54px}.mini-tool{width:79px;height:99px}.mini-tool.second{width:57px}.metric-card{min-height:141px}.metric-card strong{font-size:39px}.metric-top{font-size:7.5px}.tool-search-form kbd{display:none}}
 @media(hover:none){.eco-card:hover,.tool-card:hover,.activity-card:hover,.button:hover{transform:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+/* Final narrow-screen composition: keep tool counter inside the viewport. */
+@media(max-width:760px){.tools-hero-inner{display:flex;flex-direction:column;align-items:flex-start;gap:19px}.tools-hero-count{align-self:flex-start}.tools-hero-inner>div:first-child{min-width:0;max-width:100%}}
