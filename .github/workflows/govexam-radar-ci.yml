@@ -71,6 +71,40 @@ jobs:
           curl --fail --show-error --silent --max-time 25 'https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/api/notices?country=India' | node -e 'let data="";process.stdin.on("data",c=>data+=c);process.stdin.on("end",()=>{const d=JSON.parse(data);if(!Array.isArray(d.sources)||!Array.isArray(d.notices)||d.notices.length!==0)process.exit(1);const byId=Object.fromEntries(d.sources.map(s=>[s.id,s]));const uk=byId["uk-dfe-teaching-vacancies"],mb=byId["manitoba-jobs"],india=byId["india-employment-news"];if(!uk||uk.reuseStatus!=="conditional_open_licence"||uk.commercialReuseApprovedForCurrentFields!==true||!uk.attribution.includes("Open Government Licence"))process.exit(1);if(!mb||mb.reuseStatus!=="source_specific_review_required"||mb.commercialReuseApprovedForCurrentFields!==false||!mb.termsUrl.includes("csc/aboutpsc/disclaim"))process.exit(1);if(!india||india.reuseStatus!=="not_approved"||india.commercialReuseApprovedForCurrentFields!==false)process.exit(1);console.log("Deployed official-source rights classified independently",d.sources.map(s=>s.id));});'
           curl --fail --show-error --silent --max-time 25 'https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/official.js' | node -e 'let data="";process.stdin.on("data",c=>data+=c);process.stdin.on("end",()=>{if(!data.includes("UK DfE listings: contains public sector information")||!data.includes("Manitoba: official RSS factual summaries")||!data.includes("source-specific commercial reuse under review")||!data.includes("India import disabled"))process.exit(1);console.log("Deployed per-source attribution and India-disabled text verified");});'
 
+      - name: Verify deployed UK-only release candidate and server-side source isolation
+        run: |
+          node --input-type=module <<'NODE'
+          const origin='https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev';
+          const [page,css,js,allow,deny,canada,bypass]=await Promise.all([
+           fetch(origin+'/release-preview'),
+           fetch(origin+'/release-preview.css'),
+           fetch(origin+'/release-preview.js'),
+           fetch(origin+'/api/release-preview/notices?limit=30'),
+           fetch(origin+'/api/release-preview/notices?source=manitoba-jobs'),
+           fetch(origin+'/api/release-preview/notices?country=Canada'),
+           fetch(origin+'/api/release-preview/notices?scope=research')
+          ]);
+          if([page,css,js,allow,canada,bypass].some(r=>r.status!==200)||deny.status!==403)
+           throw Error('release_preview_http_contract_failed');
+          const html=await page.text(),style=await css.text(),script=await js.text();
+          if(!html.includes('RELEASE CANDIDATE')||!html.includes('id="preview-grid"')||
+             !page.headers.get('x-robots-tag')?.includes('noindex')||
+             !style.includes('@media(max-width:700px)')||
+             !script.includes('/api/release-preview/notices'))throw Error('staged_uk_preview_assets_missing');
+          const approved=await allow.json(),excluded=await deny.json(),empty=await canada.json(),params=await bypass.json();
+          for(const dataset of [approved,empty,params]){
+           if(dataset.releaseProfile!=='uk_only_release_preview'||dataset.publicLaunchAuthorized!==false||
+              dataset.sources?.length!==1||dataset.sources[0]?.id!=='uk-dfe-teaching-vacancies'||
+              dataset.sources[0]?.commercialReuseApprovedForCurrentFields!==true||
+              !Array.isArray(dataset.notices)||dataset.notices.some(x=>x.sourceId!=='uk-dfe-teaching-vacancies'))
+             throw Error('release_preview_source_scope_failure');
+          }
+          if(!Number.isSafeInteger(approved.total)||approved.total<0||empty.notices.length!==0||
+              excluded.error!=='source_not_approved_for_release_preview')
+           throw Error('release_preview_filtered_query_failure');
+          console.log('UK-only staged preview HTTP, rights scope, responsive assets and query isolation verified',approved.total);
+          NODE
+
       - name: Verify real Cron provenance is distinct from signed one-off transfer
         run: |
           curl --fail --show-error --silent --max-time 25 'https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/api/ingestion-status' | node -e 'let raw="";process.stdin.on("data",c=>raw+=c);process.stdin.on("end",()=>{const d=JSON.parse(raw),a=d.automation||{},s=a.sources||[];if(s.length!==2||typeof a.signedCollectorVerified!=="boolean"||typeof a.healthy!=="boolean"||typeof a.twoCycleCronGatePassed!=="boolean")process.exit(1);for(const id of ["uk-dfe-teaching-vacancies","manitoba-jobs"]){const source=s.find(x=>x.sourceId===id);if(!source||typeof source.signedCollectorSuccessObserved!=="boolean"||!source.scheduledSuccessObserved||!source.lastSuccessfulScheduledAt||!Number.isSafeInteger(source.recentNativeSuccessCount)||typeof source.twoCycleNativeProof!=="boolean")process.exit(1);}if(!a.signedCollectorVerified)process.exit(1);console.log("Native Cron history and signed ingestion evidence",s.length,"twoCycleGate",a.twoCycleCronGatePassed);});'
