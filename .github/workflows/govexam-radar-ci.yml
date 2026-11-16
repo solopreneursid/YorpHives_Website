@@ -1,6 +1,7 @@
 name: GovRadar checks
 on:
   push:
+    branches: [main]
     paths:
       - 'apps/govexam-radar/**'
       - '.github/workflows/govexam-radar-ci.yml'
