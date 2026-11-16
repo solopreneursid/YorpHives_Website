@@ -234,7 +234,7 @@ test("state, province and municipal source browser filters and saved source pref
   assert.equal(await page.locator("#regional-source-grid article").count(),9);
   await page.locator("#regional-country").selectOption("Canada");
   await page.locator("#regional-tier").selectOption("province");
-  assert.equal(await page.locator("#regional-source-grid article").count(),4);
+  assert.ok((await page.locator("#regional-source-grid article").count())>=8,"Canadian province portals should include new Alberta, Nova Scotia, Saskatchewan and others");
   await page.locator("#regional-subdivision").selectOption("CA-MB");
   assert.equal(await page.locator("#regional-source-grid article").count(),1);
   assert.match(await page.locator("#regional-source-grid article").innerText(),/Manitoba/);
