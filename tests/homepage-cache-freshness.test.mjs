@@ -9,7 +9,7 @@ const read=p=>readFile(resolve(root,p),'utf8');
 test('redesigned Explore explains qualification without implying launches',async()=>{
  const [html,js]=await Promise.all([read('index.html'),read('next.js')]);
  assert.match(html,/id="explore-qualification-note"/);
- assert.match(html,/market demand, verified business analysis and final founder approval/i);
+ assert.match(html,/market demand, customer needs, competition, feasibility, business potential and final founder approval/i);
  assert.match(html,/No qualified launches yet/);
  assert.match(js,/qualifiedProducts\(published\)/);
  assert.doesNotMatch(html,/No HQ-qualified products have been released yet/);
