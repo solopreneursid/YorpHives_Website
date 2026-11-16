@@ -17,7 +17,7 @@ test('HQventures is the public project name, preserving old hash URLs',async()=>
  assert.match(html,/FROM HQ TO HQVENTURES/);
  assert.match(html,/— HQVENTURES/);
  assert.match(html,/href="#explore">View HQventures/);
- assert.match(html,/href="#explore"><span class="dock-icon"[^>]*>◇<\/span><span>HQventures<\/span>/);
+ assert.match(html,/href="#explore" data-nav="explore"><span class="dock-icon"[^>]*>◇<\/span><span>HQventures<\/span>/);
  assert.match(js,/explore:'HQventures'/);
  assert.match(dir,/href="\.\.\/#explore">HQventures/);
  assert.match(shell,/href="\.\.\/\.\.\/#explore">HQventures/);
