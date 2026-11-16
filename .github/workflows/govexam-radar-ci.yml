@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: '22'
       - name: Unit and API tests
-        run: node --test worker.test.mjs source-monitor.test.mjs
+        run: node --test worker.test.mjs source-monitor.test.mjs official-feed.test.mjs
       - name: Install browser test runtime
         run: |
           npm install --no-save playwright@1.56.1
@@ -52,7 +52,7 @@ jobs:
       - name: Check independent Cloudflare deployment
         run: |
           curl --fail --show-error --silent --max-time 25 --retry 2 https://hqventures-govexam-radar.solopreneursid-proy.workers.dev/api/health | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const d=JSON.parse(s);if(d.status!=="ok"||d.service!=="hqventures-govradar")process.exit(1);console.log("Cloudflare health verified",d.version);})'
-          curl --fail --show-error --silent --max-time 25 https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/api/health | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const d=JSON.parse(s);if(d.status!=="ok"||d.version!=="2.1.0")process.exit(1);console.log("Full-parity preview health verified",d.version);})'
+          curl --fail --show-error --silent --max-time 25 https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/api/health | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const d=JSON.parse(s);if(d.status!=="ok"||d.version!=="2.2.0")process.exit(1);console.log("Full-parity preview health verified",d.version);})'
           curl --fail --show-error --silent --max-time 25 https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/api/source-status | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const d=JSON.parse(s);if(d.total!==17||!Array.isArray(d.sources)||d.verifiedVacancies!==0)process.exit(1);console.log("Scheduled status catalog verified",d.total);})'
           curl --fail --show-error --silent --max-time 25 --retry 1 "https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/api/check?id=upsc" | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const d=JSON.parse(s);if(d.sourceId!=="upsc"||!["reachable","restricted","unconfirmed"].includes(d.status))process.exit(1);console.log("Real on-demand source check:",d.status);})'
           curl --fail --show-error --silent --max-time 25 https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/api/source-status | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const d=JSON.parse(s);if(d.total!==17||d.checkedSources<1)process.exit(1);console.log("Persisted source check evidence:",d.checkedSources);})'
