@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import worker from "./worker.js";
+import worker,{govradarScheduledTask,GOVRADAR_SINGLE_CRON} from "./worker.js";
 const request=(path,method="GET")=>worker.fetch(new Request("https://app.example"+path,{method}));
 test("health responds without PII or fake sync",async()=>{const r=await request("/api/health");assert.equal(r.status,200);const x=await r.json();assert.equal(x.status,"ok");assert.equal(x.service,"hqventures-govradar");});
 test("catalog is honest and has source allowlist",async()=>{const r=await request("/api/catalog");assert.equal(r.status,200);const d=await r.json();assert.equal(d.verifiedListings.length,0);assert.ok(d.leads.every(x=>d.sources.some(s=>s.id===x.sourceId)));assert.equal(new Set(d.sources.map(s=>s.country)).size,11);assert.equal(d.sources.length,58);assert.equal(d.newRegionalPortals,41);assert.ok(d.sources.every(s=>new URL(s.url).protocol==="https:"));});
@@ -59,4 +59,28 @@ test("cross-device backup script is first-party and never requests personal iden
  assert.match(script,/GovRadarBookmarkTransfer/);
  assert.match(script,/govradar_saved_sources_v1/);
  assert.match(script,/No account, email address/);
+});
+
+test("one consolidated UTC Cron preserves portal, UK, Manitoba slots without overlapping tasks",()=>{
+ const at=(iso)=>({cron:GOVRADAR_SINGLE_CRON,scheduledTime:Date.parse(iso)});
+ assert.equal(govradarScheduledTask(at("2026-11-16T12:00:00Z")),"portals");
+ assert.equal(govradarScheduledTask(at("2026-11-16T12:20:00Z")),"uk");
+ assert.equal(govradarScheduledTask(at("2026-11-16T12:40:00Z")),"manitoba");
+ assert.equal(govradarScheduledTask(at("2026-11-16T15:00:00Z")),"portals");
+ assert.equal(govradarScheduledTask(at("2026-11-16T15:20:00Z")),"uk");
+ assert.equal(govradarScheduledTask(at("2026-11-16T15:40:00Z")),"manitoba");
+});
+test("consolidated Cron rejects unexpected hour, minute, missing timestamp and India trigger",()=>{
+ for(const iso of ["2026-11-16T13:00:00Z","2026-11-16T13:20:00Z","2026-11-16T12:10:00Z"]){
+  assert.equal(govradarScheduledTask({cron:GOVRADAR_SINGLE_CRON,scheduledTime:Date.parse(iso)}),null);
+ }
+ assert.equal(govradarScheduledTask({cron:GOVRADAR_SINGLE_CRON}),null);
+ assert.equal(govradarScheduledTask({cron:GOVRADAR_SINGLE_CRON,scheduledTime:NaN}),null);
+ assert.equal(govradarScheduledTask({cron:"10 */6 * * *",scheduledTime:Date.parse("2026-11-16T12:10:00Z")}),null);
+ assert.equal(govradarScheduledTask({cron:"* * * * *",scheduledTime:Date.parse("2026-11-16T12:00:00Z")}),null);
+});
+test("legacy Cron routing stays supported through a non-disruptive scheduler migration",()=>{
+ assert.equal(govradarScheduledTask({cron:"0 */3 * * *"}),"portals");
+ assert.equal(govradarScheduledTask({cron:"20 */3 * * *"}),"uk");
+ assert.equal(govradarScheduledTask({cron:"40 */3 * * *"}),"manitoba");
 });
