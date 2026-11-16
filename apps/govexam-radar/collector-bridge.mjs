@@ -81,15 +81,25 @@ export async function handleCollectorIngest(request,env,now=Date.now()){
  if(!Number.isSafeInteger(data.observedAt)||Math.abs(now-data.observedAt)>300000)
   return reply({error:"source_snapshot_stale"},422);
  try{
-  // A stable signed request ID prevents accidental duplicate imports and audits.
-  const replay=await env.DB.prepare("SELECT id FROM source_ingest_runs WHERE id=?").bind(data.requestId).first();
-  if(replay)return reply({error:"duplicate_request"},409);
-  let result;
+  // Validate the upstream cursor/page before reserving this request ID.
   if(sourceId===DFE_SOURCE.id){
    if(!Number.isSafeInteger(data.page)||data.page<1||data.page>10000)
     return reply({error:"invalid_source_page"},422);
    const cursor=await env.DB.prepare("SELECT next_page FROM source_feed_cursors WHERE source_id=?").bind(sourceId).first();
-   if(data.page!==(Number(cursor?.next_page)||1))return reply({error:"source_cursor_changed"},409);
+   if(data.page!==(Number(cursor?.next_page)||1))
+    return reply({error:"source_cursor_changed"},409);
+  }else if(data.page!==undefined)return reply({error:"unexpected_page"},422);
+  // A read-then-insert replay check is race-prone. Reserve the UUID atomically
+  // using the existing audit table (its CHECK constraint permits 'error').
+  // Crashes leave a visible pending/error receipt, never an untracked success.
+  const claim=await env.DB.prepare(
+   "INSERT INTO source_ingest_runs(id,source_id,started_at,finished_at,state,http_status,received,accepted,discarded,error_code,details) VALUES(?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING"
+  ).bind(data.requestId,sourceId,now,now,"error",null,0,0,0,
+   "collector_claim_pending",'{"origin":"signed_portable_collector","reserved":true}').run();
+  if(claim?.meta?.changes===0)return reply({error:"duplicate_request"},409);
+  if(claim?.meta?.changes!==1)return reply({error:"collector_reservation_failed"},503);
+  let result;
+  if(sourceId===DFE_SOURCE.id){
    const fetcher=async url=>{
     const target=new URL(url);
     if(target.origin!=="https://"+DFE_SOURCE.host||target.pathname!=="/api/v1/jobs.json"||
@@ -98,7 +108,6 @@ export async function handleCollectorIngest(request,env,now=Date.now()){
    };
    result=await ingestDfE(env.DB,fetcher,now,{auditId:data.requestId,origin:"signed_portable_collector"});
   }else{
-   if(data.page!==undefined)return reply({error:"unexpected_page"},422);
    const fetcher=async url=>{
     if(url!==MANITOBA.url)throw Error("source_disagreement");
     return new Response(data.upstreamBody,{status:200,headers:{"content-type":"application/rss+xml"}});
@@ -106,7 +115,8 @@ export async function handleCollectorIngest(request,env,now=Date.now()){
    result=await ingestManitoba(env.DB,fetcher,now,{auditId:data.requestId,origin:"signed_portable_collector"});
   }
   return reply({sourceId,state:result.state,accepted:result.accepted,received:result.received,
-   errorCode:result.errorCode||null,requestId:data.requestId},result.state==="ok"?200:422);
+   errorCode:result.errorCode||null,requestId:data.requestId},
+   result.errorCode==="audit_write_failed"?503:result.state==="ok"?200:422);
  }catch{
   return reply({error:"collector_storage_unavailable"},503);
  }
