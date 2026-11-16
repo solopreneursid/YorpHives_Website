@@ -45,6 +45,17 @@ export async function reconcileUkClosures(source,target,now,fetcher=fetch){
   const status=await checkOfficialUkListing(candidate.source_page,fetcher);
   result.probed++;
   if(status===null){result.inconclusive++;continue;}
+  // Recheck the source AFTER the network probe. A scheduled source refresh
+  // can race the HTTP request; never act on a 404/410 for a superseded row.
+  const afterProbe=await source.prepare(
+   "SELECT last_seen_at,source_page,closing_at,life_status FROM official_job_notices WHERE id=? AND source_id=?"
+  ).bind(candidate.id,UK_SOURCE_ID).first();
+  if(!afterProbe||afterProbe.last_seen_at!==candidate.last_seen_at||
+   afterProbe.source_page!==candidate.source_page||afterProbe.life_status!=="open"||
+   !Number.isFinite(Date.parse(afterProbe.closing_at))||
+   afterProbe.closing_at!==candidate.closing_at||Date.parse(afterProbe.closing_at)<=now){
+   result.inconclusive++;continue;
+  }
   const evidence=nextWithdrawalEvidence(candidate,status,candidate.last_seen_at,now);
   const writes=[target.prepare(UPSERT_EVIDENCE).bind(
    candidate.id,evidence.source_seen_at,evidence.last_checked_at,
