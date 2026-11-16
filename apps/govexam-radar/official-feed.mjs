@@ -132,9 +132,9 @@ async function audit(db,outcome){
    .bind(outcome.id,DFE_SOURCE.id,outcome.startedAt,outcome.finishedAt,outcome.state,outcome.httpStatus??null,outcome.received||0,outcome.accepted||0,outcome.discarded||0,outcome.errorCode||null,outcome.details||"").run();
  }catch(e){console.error(JSON.stringify({event:"official_feed_audit_failed",reason:String(e?.message||e)}));}
 }
-export async function ingestDfE(db,fetcher=fetch,clock=Date.now()){
+export async function ingestDfE(db,fetcher=fetch,clock=Date.now(),meta={}){
  if(!db)throw Error("database_binding_required");
- const outcome={id:crypto.randomUUID(),startedAt:clock,finishedAt:clock,state:"error",httpStatus:null,received:0,accepted:0,discarded:0,errorCode:null,details:""};
+ const outcome={id:meta?.auditId||crypto.randomUUID(),startedAt:clock,finishedAt:clock,state:"error",httpStatus:null,received:0,accepted:0,discarded:0,errorCode:null,details:""};
  try{
   const cursor=await db.prepare("SELECT next_page,last_total_pages FROM source_feed_cursors WHERE source_id=?").bind(DFE_SOURCE.id).first();
   const page=Math.max(1,Number(cursor?.next_page)||1);
@@ -173,7 +173,7 @@ export async function ingestDfE(db,fetcher=fetch,clock=Date.now()){
    .bind(DFE_SOURCE.id,nextPage,parsed.totalPages,now).run();
   await db.prepare("UPDATE official_job_notices SET life_status='expired' WHERE source_id=? AND life_status='open' AND closing_at<=?")
    .bind(DFE_SOURCE.id,new Date(now).toISOString()).run();
-  outcome.state="ok";outcome.details=JSON.stringify({page,nextPage,totalPages:parsed.totalPages,rejected:parsed.rejected}).slice(0,800);
+  outcome.state="ok";outcome.details=JSON.stringify({page,nextPage,totalPages:parsed.totalPages,rejected:parsed.rejected,origin:meta?.origin||"scheduled"}).slice(0,800);
   return outcome;
  }catch(e){
   outcome.errorCode="storage_or_schema_error";outcome.details=String(e?.message||e).slice(0,250);
