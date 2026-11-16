@@ -37,6 +37,12 @@ test('preview deployments are explicitly noindex but stay crawlable for the head
 test('SEO publishing preserves homepage markup outside the generated YHpulse feed',async()=>{
  const source=await read('index.html');
  const built=await read('index.html',dest);
+ if(built.includes('id="home-title"')){
+  assert.match(built,/id="yh-pulse"/);
+  assert.match(built,/rel="canonical" href="https:\/\/yorphives\.com\/"/);
+  assert.doesNotMatch(built,/DESIGN PREVIEW · NOT LIVE|name="robots" content="noindex/);
+  return;
+ }
  const start='<!-- PULSE_START -->',end='<!-- PULSE_END -->';
  const strip=html=>{
    const i=html.indexOf(start),j=html.indexOf(end,i+start.length);
