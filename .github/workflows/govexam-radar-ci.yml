@@ -87,7 +87,7 @@ jobs:
           if([page,css,js,allow,canada,bypass].some(r=>r.status!==200)||deny.status!==403)
            throw Error('release_preview_http_contract_failed');
           const html=await page.text(),style=await css.text(),script=await js.text();
-          if(!html.includes('RELEASE CANDIDATE')||!html.includes('id="preview-grid"')||
+          if(!html.includes('RELEASE CANDIDATE')||!html.includes('OFFICIAL-SOURCE SNAPSHOT')||!html.includes('id="preview-grid"')||
              !page.headers.get('x-robots-tag')?.includes('noindex')||
              !style.includes('@media(max-width:700px)')||
              !script.includes('/api/release-preview/notices'))throw Error('staged_uk_preview_assets_missing');
@@ -135,7 +135,7 @@ jobs:
           ok('/api/notices?source=manitoba-jobs',403);
           for(const path of ['/api/collector/plan','/api/community/posts','/api/moderation/reports'])ok(path,404);
           const landing=await dict['/'].text();
-          if(!landing.includes('RELEASE CANDIDATE · STAGING ONLY')||
+          if(!landing.includes('RELEASE CANDIDATE · STAGING ONLY')||!landing.includes('OFFICIAL-SOURCE SNAPSHOT')||
              !landing.includes('id="preview-grid"')||
              !dict['/'].headers.get('x-robots-tag')?.includes('noindex'))
             throw Error('Noindex staging landing contract invalid');
