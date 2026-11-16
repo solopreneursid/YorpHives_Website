@@ -148,7 +148,7 @@ test("modals, saved preferences, guide and custom leads",async()=>{
    assert.equal(await page.locator("#user-email-input").count(),0);
    assert.equal(await page.locator("#email-subscription-form").count(),0);
    assert.equal(await page.locator("#email-dispatch-log").count(),0);
-   assert.match(await page.locator("#view-alerts").innerText(),/Admit cards, results & on-device updates/i);
+   assert.match(await page.locator("#view-alerts").innerText(),/Admit cards, results & updates/i);
    await page.evaluate(()=>window.switchTab("feeds"));
    await page.locator("#custom-title").fill("QA Test Community Outreach Exam");
    await page.locator("#custom-authority").fill("Research Team");
