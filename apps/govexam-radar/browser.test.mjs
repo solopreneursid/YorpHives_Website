@@ -378,3 +378,24 @@ test("UK-only preview search and reset remain functional without user accounts",
   assert.ok((await page.locator("body").textContent()).includes("RELEASE CANDIDATE"));
  }finally{await page.close();}
 });
+
+test("retired email preferences are purged without deleting saved opportunities",async()=>{
+ const context=await browser.newContext();
+ const page=await context.newPage();
+ try{
+  await page.addInitScript(()=>{
+   localStorage.setItem("govexam_radar_email_v2",JSON.stringify({email:"old@example.test"}));
+   localStorage.setItem("hqventures_govradar_full_v3",JSON.stringify({saved:["rrb-je"],emailIds:["rrb-je"],emailSettings:{email:"old@example.test"}}));
+  });
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  const state=await page.evaluate(()=>({
+   oldEmail:localStorage.getItem("govexam_radar_email_v2"),
+   saved:JSON.parse(localStorage.getItem("hqventures_govradar_full_v3"))
+  }));
+  assert.equal(state.oldEmail,null);
+  assert.deepEqual(state.saved.saved,["rrb-je"]);
+  assert.equal(Object.hasOwn(state.saved,"emailIds"),false);
+  assert.equal(Object.hasOwn(state.saved,"emailSettings"),false);
+ }finally{await context.close();}
+});
