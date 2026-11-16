@@ -4,7 +4,7 @@
 
 ## Communication standard
 
-**One founder. An AI team. Ideas in motion.**
+**Founder-led. Intelligence-powered. Ideas in motion.**
 
 The website is operated by YorpHivesHQ and its AI workforce. AI specialists
 observe, research, analyze opportunities and recommend. The founder approves,
@@ -31,20 +31,22 @@ There must be no fabricated opportunities, future jobs or invented revenue.
   for every direct tool, **not** a rewrite of its processing code.
 - `catalog.json` + `product-policy.mjs`: source-of-truth public tools and
   verified founder-approved product qualification.
-- `scripts/activity-feed.mjs`: only source of public YHpulse updates.
+- `scripts/activity-feed.mjs`: only source of public YHpulse updates; static
+  `renderHomePulse()` emits a single homepage stream with valid published links.
 
 No remote fonts, CDN scripts, proprietary UI kits or paid app dependencies.
 
 ## Visual hierarchy
 
-1. Mobile hero: short headline, one-line promise, two calls to action and
-   compact animated HQ→AI→founder schematic. No tall overlapping laptop art.
+1. Mobile hero: short headline, one-line promise, two small calls to action;
+   no foreground dashboard or decorative card. Animate faint intelligence
+   signals **behind** the typography with local CSS. Preserve readability.
 2. Automatically moving free tool category rail directly below the hero;
    separate manual category **filters** on Free Tools for precise taps.
 3. Three equal-purpose entry destinations (Explore, Free Tools, Builders).
 4. HQ flow diagram: six specialists, evidence stream, human go/no-go gate.
 5. Five-step research→decision→build cards.
-6. Product launch gate, small Builders intro and public YHpulse.
+6. Product launch gate, small Builders intro and **one** public YHpulse.
 7. Explore and Builders repeat the same design language without repeating
    the homepage's entire explanation.
 
@@ -55,8 +57,8 @@ Mobile gutters: 16–26px; desktop shell up to 1280px.
 ## Motion standard
 
 - `rail-drift`: moving tool-category chips; built from live catalog groups.
-- `pulse-scroll`: moving verified update feed. Footer and homepage share the
-  server-generated feed, not fabricated example events.
+- `pulse-scroll`: one verified public update feed, inserted directly into the
+  homepage during static build; **do not duplicate YHpulse in the footer**.
 - Individual pause/resume controls for category and YHpulse groups, with
   `aria-pressed` and descriptive accessible names.
 - Pause on hover/focus, and disable animation completely for
