@@ -151,3 +151,17 @@ This checklist is intentionally evidence-based. **Do not mark automatic synchron
 - DfE API: https://teaching-vacancies.service.gov.uk/api/v1/jobs.json
 - Manitoba RSS: https://jobsearch.gov.mb.ca/rss/newJobPostingsFeed.rss
 - Staging: https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/
+
+## 2026-11-17 production-readiness incident: UK private Cron reject fixed
+
+**Observed, not inferred:** Cloudflare GraphQL `workersInvocationsAdaptive` recorded one private mirror scheduled event at **2026-11-16 18:55:55 UTC**, `status=scriptThrewException`. Cloudflare Workers Observability telemetry identified `unapproved_uk_mirror_schedule` originating from `validateMirroringCron()` in `uk-mirror-core.mjs`. The runtime timestamp included **55 seconds**, whereas the old validator incorrectly required `getUTCSeconds() === 0`. The trusted Cron expression `55 */3 * * *` and UTC hour/minute were otherwise correct.
+
+**Remediation applied to the isolated private UK Worker:**
+- Schedule validation now accepts any second within the approved `HH:55` minute on three-hour boundaries, but continues to reject incorrect Cron expressions, wrong hours/minutes, and invalid timestamps.
+- Added a browser-independent regression test for `18:55:55.923 UTC`, including an actual scheduled-mirror fixture. Added audit handling for an initial D1 run-insert error, which previously left no attempt record.
+- GitHub workflows completed successfully for the corrected commit `b038979619d6be6a62838e0a5887f1422a22e73e`.
+- Redeployed **only** the existing private `hqventures-govradar-uk-mirror-watch` Worker. Verified its exact five JS modules, exactly two D1 bindings (`MIRROR_DB` staging and `SOURCE_DB` research), same approved Cron, public HTTP disabled and previews disabled. Production unchanged.
+
+**Important release gate still CLOSED:** A code fix and deployment do **not** prove the next unattended event succeeds. Require two distinct `uk_mirror_runs` entries with state `ok`, independently observed at separate three-hour scheduled slots; verify `uk_mirror_state` freshness and UK-only canonical notice contents, source importer freshness, no D1 write to research database, and no mismatch of source IDs. Retain no-launch status until observed. The next expected Cron slot after incident is 2026-11-16 21:55 UTC. Never manufacture successful run history.
+
+**Original global vision remains mandatory:** UK DfE is one reusable source adapter only. India central/state jobs, verified exam releases, other countries, local saves, community and mobile-first global discovery remain separate production gates. Email notifications are permanently removed.
