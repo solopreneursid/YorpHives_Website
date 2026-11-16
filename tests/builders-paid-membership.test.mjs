@@ -14,7 +14,20 @@ test('homepage Connect links to future Builders without inventing paid access',a
  assert.match(home,/href="#builders"/);
  assert.match(home,/Builders network · Coming soon/);
  assert.match(home,/href="#connect"/);
+ assert.match(home,/class="connection-card connection-partner" href="#partners"/);
+ assert.match(home,/Partner with us/);
  assert.doesNotMatch(home,/Pay now|Job available|Join membership now/i);
+});
+test('Partnerships has a visible independent destination and a non-application contact path',async()=>{
+ const html=await read('index.html');
+ const builders=builderBody(html);
+ assert.match(builders,/href="#partners">Partnerships/);
+ assert.match(builders,/class="partnership-section" id="partners"/);
+ assert.match(builders,/href="#connect" data-contact-reason="Partnership"/);
+ assert.match(html,/<option>Partnership<\/option>/);
+ const [css,mobile]=await Promise.all([read('next.css'),read('next-responsive.css')]);
+ assert.match(css,/\.partnership-layout\{display:grid/);
+ assert.match(mobile,/\.partnership-layout\{grid-template-columns:1fr/);
 });
 test('private opportunity listings and posting are not publicly accessible',async()=>{
   const html=builderBody(await read('index.html'));
@@ -31,7 +44,13 @@ test('communities and partner review rules remain discoverable',async()=>{
   const html=builderBody(await read('index.html'));
   for(const word of ['Developers','Creators','Individuals','Businesses','Schools','colleges','Companies','Government organizations','Builder partner'])
     assert.match(html,new RegExp(word,'i'));
-  assert.match(html,/Partner selection will be review-based/);
+  assert.match(html,/id="partners" aria-labelledby="partnership-title"/);
+  assert.match(html,/Build something/);
+  assert.match(html,/Co-build products/);
+  assert.match(html,/Grow together/);
+  assert.match(html,/Research & innovate/);
+  assert.match(html,/Formal applications are not open yet/);
+  assert.match(html,/Contact is for an initial discussion, not an application or approval/);
   assert.match(html,/subject to founder review, trust and membership status/i);
 });
 test('no artificial membership pricing or enrollment/payment workflows',async()=>{
