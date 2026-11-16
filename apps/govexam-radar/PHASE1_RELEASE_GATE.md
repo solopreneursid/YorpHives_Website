@@ -124,6 +124,16 @@ This checklist is intentionally evidence-based. **Do not mark automatic synchron
 - Added `uk-preview-sync.mjs`, a first-party **manual, dry-run-first** UK-only D1 synchronization script with explicit `GOVRADAR_UK_SYNC_APPROVED=YES` required for `--apply` (only in a private founder-operated environment). It refuses unknown account IDs, unapproved source rows, non-official URLs, unexpected destination tables, duplicate IDs, silent removals or data-integrity mismatches. Tested in CI with mocked API; a scheduled production mirror refresh is **not enabled** and remains a launch gate.
 - Follow-up release architecture: `UK_ISOLATED_RELEASE_READINESS.md`; earlier visual prototype: `UK_ONLY_RELEASE_CANDIDATE.md`. The existing production site, HQ Workers and Cloudflare billing plan were not changed.
 
+## Native two-cycle Cron release gate — PASSED (2026-11-16 15:41 UTC)
+
+- **Both official-source native Crons have now completed two unattended successful cycles**, after the one-Cron migration:
+  - UK DfE: `12:20:37 UTC` (page 2, 100 accepted), `15:20:18 UTC` (page 3, 100 accepted), `origin=scheduled`, DfE cursor advanced to page 4. Latest run audit `7958da09-c5ee-45f8-b5a7-09a1e30d540b`.
+  - Manitoba: `12:40:31 UTC` (15 accepted), `15:40:16 UTC` (15 accepted, offset 0 → 16), `origin=scheduled`. Latest run audit `e823bfde-16ec-4149-8ec3-3a21825044b6`.
+- D1 query using **the exact conditions of** `/api/ingestion-status` returned `recentNativeSuccessCount=2`, `twoCycleNativeProof=true` for **both sources**, and the aggregate `twoCycleGatePassed=true` at 15:41 UTC. Signed one-off imports and bootstraps are excluded.
+- CI's live staging smoke test is now stricter: it requires both sources to have 2 native successes and `automation.twoCycleCronGatePassed===true`; a future source failure can block further releases even if the Worker still responds.
+- UK isolated mirror was refreshed to **250 approved-source records** after the UK second Cron, matching the research UK record count. This was a founder-authorized **manual staging sync**, not automatic continuous mirroring.
+- **Remaining blockers:** automated UK-only mirror refresh with private credentials and withdrawal handling, continued long-term source reliability monitoring, Manitoba publication rights, actual public release hardening, founder domain/launch authorization, and expense monitoring. The fact that two Cron cycles passed does **not** grant permission to publish commercially.
+
 ## Evidence URLs
 - Draft PR 7: https://github.com/solopreneursid/YorpHives_Website/pull/7
 - Official India index: https://employmentnews.gov.in/newemp/AllJobs.aspx?k=All
