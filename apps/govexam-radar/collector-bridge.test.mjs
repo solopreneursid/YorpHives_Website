@@ -94,3 +94,10 @@ test("read-only plan exposes cursors without credentials or mutation",async()=>{
  assert.ok(p.sources.some(s=>s.sourceId===MANITOBA.id));
  assert.equal((await serveCollectorPlan(null)).status,503);
 });
+
+test("signed snapshot cannot be replayed against a different Worker hostname",async()=>{
+ const payloadText=JSON.stringify(payload(DFE_SOURCE.id));
+ const sig=await calculateCollectorSignature(KEY,NOW,payloadText,"https://staging.invalid");
+ assert.equal(await verifyCollectorSignature(KEY,NOW,payloadText,sig,NOW,"https://staging.invalid"),true);
+ assert.equal(await verifyCollectorSignature(KEY,NOW,payloadText,sig,NOW,"https://production.invalid"),false);
+});
