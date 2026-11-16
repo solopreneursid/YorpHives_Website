@@ -13,7 +13,7 @@ function validTarget(input){
   throw Error("collector_target_must_be_https");
  return url.origin;
 }
-async function boundedFetch(url,fetcher=fetch,maxBytes=MAX_BYTES){
+async function boundedFetchOnce(url,fetcher=fetch,maxBytes=MAX_BYTES){
  const expected=new URL(url),controller=new AbortController();
  const timer=setTimeout(()=>controller.abort(),16000);
  let current=url;
@@ -47,6 +47,18 @@ async function boundedFetch(url,fetcher=fetch,maxBytes=MAX_BYTES){
   throw Error("too_many_redirects");
  }finally{clearTimeout(timer);}
 }
+// Briefly retry only transient upstream failures; permanent policy/schema errors fail closed.
+async function boundedFetch(url,fetcher=fetch,maxBytes=MAX_BYTES){
+ for(let attempt=0;attempt<2;attempt++){
+  try{return await boundedFetchOnce(url,fetcher,maxBytes);}
+  catch(e){
+   const reason=String(e?.message||e);
+   if(attempt===1||!(/^(upstream_http_(?:429|502|503|504)|fetch failed|timeout|network_error)$/.test(reason)||e?.name==="AbortError"||e instanceof TypeError))throw e;
+   await new Promise(resolve=>setTimeout(resolve,450));
+  }
+ }
+ throw Error("fetch_retry_exhausted");
+}
 async function getPlan(origin,fetcher=fetch){
  const url=origin+"/api/collector/plan";
  const r=await fetcher(url,{method:"GET",redirect:"error",headers:{"Accept":"application/json"}});
@@ -64,8 +76,9 @@ export async function collectOnce({target,source="both",dryRun=true,key="",fetch
  if(!["both","dfe","manitoba"].includes(source))throw Error("unknown_collector_source");
  if(!dryRun&&(!key||key.length<32))throw Error("collector_key_missing");
  const plan=await getPlan(origin,fetcher),selected=source==="both"?["dfe","manitoba"]:[source];
- const results=[];
+ const results=[],failures=[];
  for(const name of selected){
+  try{
   const spec=sourceSpecs[name],entry=plan.find(x=>x.sourceId===spec.id);
   if(!entry)throw Error("missing_source_plan_"+name);
   if(!dryRun&&entry.lastSuccessAt&&now-entry.lastSuccessAt<2*3600000){
@@ -99,7 +112,14 @@ export async function collectOnce({target,source="both",dryRun=true,key="",fetch
    throw Error("invalid_ingest_acknowledgement");
   log(JSON.stringify({sourceId:spec.id,state:"published",accepted:outcome.accepted}));
   results.push({sourceId:spec.id,state:"published",accepted:outcome.accepted});
+  }catch(e){
+   const reason=String(e?.message||e).slice(0,85);
+   log(JSON.stringify({sourceId:sourceSpecs[name].id,state:"failed",reason}));
+   results.push({sourceId:sourceSpecs[name].id,state:"failed"});
+   failures.push(name+":"+reason);
+  }
  }
+ if(failures.length)throw Error("collector_sources_failed "+failures.join("; "));
  return results;
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
