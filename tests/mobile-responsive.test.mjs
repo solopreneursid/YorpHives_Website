@@ -3,67 +3,66 @@ import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>readFile(resolve(root,p),'utf8');
 
-test('viewport scales properly and does not disable device zoom',async()=>{
+test('viewport supports device sizing and browser zoom',async()=>{
  const html=await read('index.html');
- assert.match(html,/<meta name="viewport" content="width=device-width, initial-scale=1">/);
+ assert.match(html,/<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">/);
  assert.doesNotMatch(html,/user-scalable=no|maximum-scale=1/i);
 });
-
-test('narrow-phone hero has visible swipe guidance before the five-stage rail',async()=>{
- const [css,html]=await Promise.all([read('style.css'),read('index.html')]);
- assert.match(html,/<ol class="studio-steps" id="studio-steps"/);
- assert.match(html,/<p class="studio-swipe">Swipe to see every step/);
- assert.match(css,/#home \.studio-swipe\{\s*top:8px/);
- assert.match(css,/#home \.studio-steps\{\s*inset:39px 0 auto/);
- assert.match(css,/scroll-padding-left:6%;-webkit-overflow-scrolling:touch/);
+test('new three-experience homepage composes differently at phone widths',async()=>{
+ const [html,css]=await Promise.all([read('index.html'),read('home-experience.css')]);
+ for(const id of ['home-explore','home-use','home-connect'])assert.match(html,new RegExp('id="'+id+'"'));
+ assert.match(css,/@media\(max-width:760px\)/);
+ assert.match(css,/@media\(max-width:420px\)/);
+ assert.match(css,/@media\(max-width:350px\)/);
+ assert.match(css,/\.experience-layout\{grid-template-columns:1fr/);
+ assert.match(css,/scroll-snap-type:x mandatory/);
+ assert.match(css,/\.connection-paths\{grid-template-columns:1fr/);
+ assert.match(css,/\.hero-geometry\{width:145%/);
 });
-
-test('smallest common phones do not strand the hero headline or squeeze navigation',async()=>{
- const css=await read('style.css');
- assert.match(css,/@media\(max-width:420px\)\{/);
- assert.match(css,/#home \.studio-hero h1\{font-size:clamp\(31px,8\.9vw,35px\)/);
- assert.match(css,/@media\(max-width:350px\)\{/);
- assert.match(css,/\.site-header \.header-kofi\{display:none\}/);
+test('responsive rules include narrow phones, tablets and safe areas',async()=>{
+ const css=await read('next-responsive.css');
+ for(const width of [1100,900,760,420,350])
+  assert.ok(css.includes('@media(max-width:'+width+'px)'),String(width));
+ assert.match(css,/env\(safe-area-inset-bottom/);
+ assert.match(css,/\.mobile-dock/);
 });
-
-test('evaluation checks reflow into readable one-column cards on narrow phones',async()=>{
- const css=await read('style.css');
- assert.match(css,/#home \.explore-eval-grid\{grid-template-columns:minmax\(0,1fr\)/);
- assert.match(css,/#home \.explore-eval-card strong\{font-size:14px/);
- assert.match(css,/#home \.explore-eval-card small\{font-size:11px/);
- assert.match(css,/#home \.home-feature-widget \.explore-feature-empty small\{font-size:11px/);
+test('mobile tool search, categories and cards are readable and touch-friendly',async()=>{
+ const [css,html,js]=await Promise.all([read('next-responsive.css'),read('index.html'),read('next.js')]);
+ assert.match(css,/\.search-panel input\{font-size:16px/);
+ assert.match(css,/\.category-filters\{flex-wrap:nowrap;overflow-x:auto/);
+ assert.match(css,/\.tool-grid\{grid-template-columns:1fr/);
+ assert.match(css,/\.tool-open\{min-height:42px/);
+ assert.match(html,/id="tool-search"/);
+ assert.match(js,/renderCategories\(/);
 });
-
-test('mobile tools remain fully usable and names are readable',async()=>{
- const css=await read('style.css');
- assert.match(css,/#tools \.launcher-tool-link strong\{white-space:normal;overflow-wrap:anywhere/);
- assert.match(css,/#tools \.launcher-search-shell input\{font-size:16px\}/);
- assert.match(css,/#tools \.launcher-mobile-tile\{min-height:61px\}/);
- assert.match(css,/#home \.category-ribbon-pill\{min-height:44px\}/);
+test('mobile navigation and Escape to close are accessible',async()=>{
+ const [html,js]=await Promise.all([read('index.html'),read('next.js')]);
+ assert.match(html,/class="mobile-dock" aria-label="Mobile navigation"/);
+ assert.match(html,/id="menu-toggle" aria-label="Open menu"/);
+ assert.match(js,/event\.key==='Escape'/);
+ assert.match(js,/aria-expanded/);
 });
-
-test('footer activity uses full phone width with accessible readable update labels',async()=>{
- const css=await read('style.css');
- assert.match(css,/\.site-footer \.footer-pulse\{grid-template-columns:minmax\(0,1fr\);gap:8px/);
- assert.match(css,/\.site-footer \.pulse-item\{min-height:44px/);
- assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+test('public updates animate by default but remain pausable and reduced-motion-safe',async()=>{
+ const [base,mobile]=await Promise.all([read('next.css'),read('next-responsive.css')]);
+ assert.match(base,/\.pulse-track\{display:flex/);
+ assert.match(base,/\.pulse-item\{display:inline-flex/);
+ assert.match(base,/@keyframes pulse-scroll/);
+ assert.match(base,/@keyframes rail-drift/);
+ assert.match(mobile,/@media\(prefers-reduced-motion:reduce\)/);
 });
-
-test('production assets retain responsive fixes after static build',async()=>{
- const css=await read('dist/style.css');
- assert.match(css,/Mobile usability audit/);
- assert.match(css,/#home \.studio-swipe\{\s*top:8px/);
- assert.match(css,/#home \.explore-eval-grid\{grid-template-columns:minmax\(0,1fr\)/);
+test('static output includes redesigned responsive CSS and navigation',async()=>{
+ const [html,css,home]=await Promise.all([read('dist/index.html'),read('dist/next-responsive.css'),read('dist/home-experience.css')]);
+ assert.match(html,/href="next-responsive\.css"/);
+ assert.match(html,/href="home-experience\.css"/);
+ assert.match(home,/@keyframes hero-logo-float/);
+ assert.match(css,/@media\(max-width:350px\)/);
 });
-
-test('skip navigation remains keyboard-accessible without overlaying phone content',async()=>{
- const css=await read('style.css');
- assert.match(css,/\.skip-link:not\(:focus\)\{/);
- assert.match(css,/clip-path:inset\(50%\)/);
- assert.match(css,/\.skip-link:focus\{/);
- assert.match(css,/z-index:1000/);
+test('skip link works without persistent overlay',async()=>{
+ const [html,css]=await Promise.all([read('index.html'),read('next.css')]);
+ assert.match(html,/class="skip" href="#main"/);
+ assert.match(css,/\.skip\{position:fixed/);
+ assert.match(css,/\.skip:focus\{transform:none/);
 });

@@ -88,13 +88,14 @@ test('empty categories hide ribbon rather than invent labels',()=>{
  assert.equal(x.section.hidden,true);
  assert.equal(x.track.children.length,0);
 });
-test('the old oversized latest-card section is gone; ribbon exposes only categories',async()=>{
- const html=await read('index.html'),css=await read('style.css');
- const home=html.slice(html.indexOf('<section class="page" id="home"'),html.indexOf('<section class="page" id="tools"'));
- assert.match(home,/class="category-ribbon"/);
- assert.match(home,/id="category-ribbon-track"/);
- assert.doesNotMatch(home,/FROM THE HIVE|id="recent-items"|The latest <em>from us<\/em>/);
- assert.match(css,/@keyframes category-ribbon-flow/);
- assert.match(css,/#home \.category-ribbon:hover \.category-ribbon-track/);
- assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+test('categories live inside the Use experience and are not repeated on homepage',async()=>{
+ const [html,css,homeCss]=await Promise.all([read('index.html'),read('next.css'),read('home-experience.css')]);
+ const home=html.split('<!-- TOOLS:')[0];
+ assert.match(home,/id="home-use"/);
+ assert.match(home,/class="category-ribbon home-use-ribbon"/);
+ assert.equal((home.match(/id="category-ribbon-track"/g)||[]).length,1);
+ assert.doesNotMatch(home,/id="recent-items"|FROM THE HIVE/);
+ assert.match(css,/@keyframes rail-drift/);
+ assert.match(homeCss,/home-use-ribbon/);
+ assert.match(homeCss,/prefers-reduced-motion:reduce/);
 });

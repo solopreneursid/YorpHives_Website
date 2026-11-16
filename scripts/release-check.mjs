@@ -14,15 +14,49 @@ if(tools.length<90)problems.push('Expected at least the 90 established tools.');
 if(new Set(items.map(x=>x.url)).size!==items.length)problems.push('Duplicate public URL.');
 const directory=await read('tools/index.html');
 const homepage=await read('index.html');
-if(!homepage.includes('You bring the idea.')||!homepage.includes('real product.')||
-   !homepage.includes('href="#connect"'))problems.push('Idea-to-product homepage identity or contact CTA missing.');
-if((homepage.match(/<li class="studio-step stage-/g)||[]).length!==5)
- problems.push('The five-stage idea-to-product journey is incomplete.');
-if(!homepage.includes('href="#tools"'))problems.push('Homepage tool navigation missing.');
-if(!homepage.includes('id="category-ribbon-track"')||
-   homepage.includes('id="recent-items"')||
-   homepage.includes('FROM THE HIVE'))
- problems.push('Homepage must show the compact category-only strip, not the old recent cards.');
+// The homepage must do three different jobs: projects, usable tools, connection.
+// The HQ approval authority remains visible without repeating entire diagrams.
+if(!homepage.includes('Founder-led.')||!homepage.includes('Intelligence-powered.')||
+   !homepage.includes('Ideas in motion.')||!homepage.includes('HQ discovers. AI evaluates.')||
+   !homepage.includes('Founder decides.')||!homepage.includes('href="#connect"'))
+ problems.push('Founder-led AI OS identity or contact route missing.');
+const home=homepage.split('<!-- TOOLS:')[0];
+const experiences=['home-explore','home-use','home-connect'];
+if(!experiences.every(id=>home.includes('id="'+id+'"'))||
+  !(home.indexOf('id="home-explore"')<home.indexOf('id="home-use"')&&
+    home.indexOf('id="home-use"')<home.indexOf('id="home-connect"')))
+ problems.push('Distinct Explore, Use and Connect homepage experiences missing or out of order.');
+if(home.includes('class="entry-section')||home.includes('class="os-section')||
+   home.includes('class="journey-section')||home.includes('class="spotlight-section')||
+   home.includes('class="builders-teaser')||home.includes('class="cta-banner'))
+ problems.push('Retired repeating homepage explanations must not return.');
+if(!home.includes('class="hero-geometry"')||!home.includes('class="hero-identity-mark"')||
+   !home.includes('id="our-ai-team"')||home.includes('class="hero-console"'))
+ problems.push('The new logo-inspired hero background or compact founder-led identity is missing.');
+if(!home.includes('id="how-it-works"')||!home.includes('class="stage-founder"')||
+   !homepage.includes('id="projects-collection"')||!homepage.includes('Founder-approved launches only'))
+ problems.push('HQ evidence, founder gate, or approval-based Explore link is missing.');
+if(!home.includes('id="home-tools-list"')||!home.includes('id="home-tool-search-form"')||
+   !home.includes('id="category-ribbon-track"')||!home.includes('id="home-pulse-viewport"')||
+   home.includes('id="footer-pulse"'))
+ problems.push('Featured tools, working search, category rail or unique YHpulse is missing.');
+const kineticCss=await read('next.css');
+const homepageCss=await read('home-experience.css');
+const kineticMobileCss=await read('next-responsive.css');
+const kineticJs=await read('next.js');
+if(!kineticCss.includes('@keyframes rail-drift')||
+   !kineticCss.includes('@keyframes pulse-scroll')||
+   !homepageCss.includes('@keyframes hero-logo-float')||
+   !homepageCss.includes('@keyframes connection-circuit')||
+   !homepageCss.includes('prefers-reduced-motion:reduce')||
+   !kineticJs.includes('function renderRibbon()')||
+   !kineticJs.includes('function renderHomeTools(')||
+   !kineticJs.includes('function renderFeaturedProject(')||
+   !kineticJs.includes('qualifiedProducts(published)')||
+   !kineticMobileCss.includes('@media(prefers-reduced-motion:reduce)'))
+ problems.push('Interactive home discovery or accessible motion is incomplete.');
+if(homepage.includes('id="recent-items"')||homepage.includes('FROM THE HIVE'))
+ problems.push('Old oversized recent-items cards must not return.');
 
 // No stale hard-coded tool links, draft activity, private jobs or absent targets.
 const activityData=JSON.parse(await read('activity.json'));
@@ -46,14 +80,28 @@ else {
  if(!homepage.includes('LATEST '+activityData.items.length+' UPDATES'))
   problems.push('Activity counter does not match the published feed.');
 }
-if(!homepage.includes('id="footer-pulse"')||
+if(homepage.includes('id="footer-pulse"')||
+   (homepage.match(/id="home-pulse-viewport"/g)||[]).length!==1||
+   (homepage.match(/class="pulse-track/g)||[]).length!==1||
+   (homepage.match(/>YHpulse</g)||[]).length!==1||
    homepage.includes('<nav class="footer-directory"'))
- problems.push('Legacy footer tool shortcuts must be replaced by public Pulse.');
+ problems.push('YHpulse must appear exactly once, on the homepage, with verified updates.');
 
-if(!homepage.includes('id="builders-home-title"')||!homepage.includes('Find work. Post work.')||
-   !homepage.includes('id="builders-membership-title"')||
-   !homepage.includes('id="partners"'))
- problems.push('Builders paid membership landing page is incomplete.');
+if(!homepage.includes('id="builders"')||
+   !homepage.includes('id="opportunities"')||
+   !homepage.includes('id="membership"')||
+   !homepage.includes('id="partners"')||
+   !homepage.includes('Find paid work.'))
+ problems.push('Builders future paid-membership landing page is incomplete.');
+
+if(!home.includes('class="connection-card connection-partner" href="#partners"')||
+   !homepage.includes('class="partnership-section" id="partners"')||
+   !homepage.includes('href="#partners">Partnerships')||
+   !homepage.includes('data-contact-reason="Partnership"')||
+   !homepage.includes('Formal applications are not open yet.')||
+   !homepage.includes('Contact is for an initial discussion, not an application or approval.'))
+ problems.push('Partnerships must be discoverable from Home and Builders without implying open enrollment.');
+
 if(/data-form="opportunity"|<form[^>]*id="post"|id="job-listings"|id="post"/i.test(homepage))
  problems.push('Public job listing or job-posting form is forbidden without membership enforcement.');
 if(!homepage.includes('Jobs and posting require verified paid membership.')||

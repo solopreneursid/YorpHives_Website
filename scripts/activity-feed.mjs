@@ -149,9 +149,11 @@ export async function loadActivityNotes(root){
   if(!Array.isArray(parsed.events))throw Error('Public activity notes must contain events array');
   return parsed.events;
 }
-export function renderFooterPulse(items){
+// One verified activity track for the homepage. A second set supports seamless
+// looping but is hidden from assistive technology and keyboard tab order.
+function renderPulseTrack(items){
   const events=Array.isArray(items)?items:[];
-  const one=({duplicate=false})=>'<div class="pulse-items"'+(duplicate?' aria-hidden="true"':'')+'>'+
+  const set=(duplicate=false)=>'<div class="pulse-items"'+(duplicate?' aria-hidden="true"':'')+'>'+
     events.map(e=>'<a class="pulse-item pulse-'+esc(e.kind)+
       '" href="'+esc(e.url)+'" title="'+esc(e.title)+'"'+(duplicate?' tabindex="-1"':'')+'>'+
       '<span class="pulse-kind">'+esc(e.kind==='tools'?'TOOLS':e.kind.toUpperCase())+'</span>'+
@@ -160,11 +162,19 @@ export function renderFooterPulse(items){
         esc(new Date(e.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'}))+'</time>'+
       '<span class="pulse-arrow" aria-hidden="true">↗</span></a>').join('')+'</div>';
   const count=events.length;
+  return '<div class="pulse-track'+(count<2?' is-static':'')+'">'+
+    (count?set(false)+(count>1?set(true):''):
+      '<p class="pulse-empty">Published updates will appear here.</p>')+'</div>';
+}
+export function renderHomePulse(items){
+  return renderPulseTrack(items);
+}
+// Retain the renderer as a pure compatibility helper for legacy tests;
+// the new page only renders YHpulse once, in the homepage rail.
+export function renderFooterPulse(items){
+  const count=Array.isArray(items)?items.length:0;
   return '<div class="pulse-label"><span class="pulse-signal" aria-hidden="true"></span>'+
     '<span class="pulse-heading"><b>YHpulse</b><small>LATEST '+count+' UPDATES</small></span></div>'+
     '<div class="pulse-viewport" aria-label="YHpulse latest public website updates">'+
-      '<div class="pulse-track'+(count<2?' is-static':'')+'">'+
-      (count?one({})+(count>1?one({duplicate:true}):''):
-        '<p class="pulse-empty">Published updates will appear here.</p>')+
-      '</div></div>';
+    renderPulseTrack(items)+'</div>';
 }

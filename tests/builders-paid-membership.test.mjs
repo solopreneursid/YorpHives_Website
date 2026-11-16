@@ -1,84 +1,79 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
-import {dirname, resolve} from 'node:path';
+import {dirname,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
-
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
-const load=path=>readFile(resolve(root,path),'utf8');
+const read=path=>readFile(resolve(root,path),'utf8');
+const builderBody=html=>html.split('<!-- BUILDERS -->')[1]?.split('<!-- CONNECT -->')[0]||'';
 
-test('homepage replaces generic services with Builders paid membership',async()=>{
- const h=await load('index.html');
- const page=h.match(/<section class="page" id="home"[\s\S]*?(?=<section class="page" id="tools")/)?.[0]||h;
- assert.match(page,/id="builders-home-title"/);
- assert.match(page,/Find work\. Post work/);
- assert.match(page,/Build together/);
- assert.match(page,/Builders is a paid community|BUILDERS \/ PRIVATE MEMBERSHIP/);
- assert.match(page,/Find paid work/);
- assert.match(page,/Post a job or project/);
- assert.match(page,/Builder Partners/);
- assert.match(page,/Paid enrollment is being prepared/);
- assert.match(page,/href="#builders"/);
- assert.doesNotMatch(page,/WHAT WE EXPLORE|service-card|Thoughtful technology/);
+test('homepage Connect links to future Builders without inventing paid access',async()=>{
+ const h=await read('index.html');
+ const home=h.split('<!-- TOOLS:')[0];
+ assert.match(home,/id="home-connect"/);
+ assert.match(home,/href="#builders"/);
+ assert.match(home,/Builders network · Coming soon/);
+ assert.match(home,/href="#connect"/);
+ assert.match(home,/class="connection-card connection-partner" href="#partners"/);
+ assert.match(home,/Partner with us/);
+ assert.doesNotMatch(home,/Pay now|Job available|Join membership now/i);
 });
-test('Builders landing is accessible as information, while private jobs and posting remain inaccessible',async()=>{
- const h=await load('index.html');
- const b=h.slice(h.indexOf('<section class="page" id="builders"'),h.indexOf('<section class="page" id="connect"'));
- assert.match(b,/id="membership"/);
- assert.match(b,/id="partners"/);
- assert.match(b,/id="opportunities"/);
- assert.match(b,/private paid network/i);
- assert.match(b,/verified paid membership/i);
- assert.match(b,/Enrollment is not open yet/);
- assert.match(b,/No jobs, applicant details, or paid-member content are published/);
- assert.doesNotMatch(b,/<form\b|<input\b|<textarea\b|<select\b/);
- assert.doesNotMatch(b,/\bdata-form="opportunity"\b|id="post"|class="job-listing"/);
- assert.doesNotMatch(b,/Pay amount and currency|Prepare email|Share a job or project/);
+test('Partnerships has a visible independent destination and a non-application contact path',async()=>{
+ const html=await read('index.html');
+ const builders=builderBody(html);
+ assert.match(builders,/href="#partners">Partnerships/);
+ assert.match(builders,/class="partnership-section" id="partners"/);
+ assert.match(builders,/href="#connect" data-contact-reason="Partnership"/);
+ assert.match(html,/<option>Partnership<\/option>/);
+ const [css,mobile]=await Promise.all([read('next.css'),read('next-responsive.css')]);
+ assert.match(css,/\.partnership-layout\{display:grid/);
+ assert.match(mobile,/\.partnership-layout\{grid-template-columns:1fr/);
 });
-test('Visitor-facing copy includes diverse communities and review-based Builder Partners',async()=>{
- const h=await load('index.html');
- for(const phrase of ['Developers','Creators','Individuals','Businesses','Schools','colleges','Companies','Government organizations','Builder Partner']){
-  assert.ok(h.includes(phrase),phrase+' missing');
- }
- assert.match(h,/Priority consideration for suitable opportunities/);
- assert.match(h,/Subject to founder review, trust and membership status/);
- assert.match(h,/Partner selection will be review-based/);
+test('private opportunity listings and posting are not publicly accessible',async()=>{
+  const html=builderBody(await read('index.html'));
+  for(const id of ['opportunities','membership','partners'])
+    assert.ok(html.includes('id="'+id+'"'),id+' section missing');
+  assert.match(html,/future paid network/i);
+  assert.match(html,/Jobs and posting require verified paid membership/);
+  assert.match(html,/No job listing or posting is available to the public/);
+  assert.match(html,/No jobs, applicant details, or paid-member content are published/);
+  assert.doesNotMatch(html,/<form\b|<input\b|<textarea\b|<select\b/);
+  assert.doesNotMatch(html,/Pay now|Buy now|checkout|Subscription active/i);
 });
-test('Membership pricing and payment buttons are not faked until the back end is ready',async()=>{
- const h=await load('index.html');
- const b=h.slice(h.indexOf('<section class="page" id="builders"'),h.indexOf('<section class="page" id="connect"'));
- assert.match(b,/Pricing and enrollment not yet available/);
- assert.match(b,/No job listing or posting is available to the public/);
- assert.doesNotMatch(b,/stripe|checkout|Buy now|Pay now|Payment successful|Subscription active/i);
+test('communities and partner review rules remain discoverable',async()=>{
+  const html=builderBody(await read('index.html'));
+  for(const word of ['Developers','Creators','Individuals','Businesses','Schools','colleges','Companies','Government organizations','Builder partner'])
+    assert.match(html,new RegExp(word,'i'));
+  assert.match(html,/id="partners" aria-labelledby="partnership-title"/);
+  assert.match(html,/Build something/);
+  assert.match(html,/Co-build products/);
+  assert.match(html,/Grow together/);
+  assert.match(html,/Research & innovate/);
+  assert.match(html,/Formal applications are not open yet/);
+  assert.match(html,/Contact is for an initial discussion, not an application or approval/);
+  assert.match(html,/subject to founder review, trust and membership status/i);
 });
-test('Legacy /#post deep link resolves to locked membership explanation, never a posting form',async()=>{
- const js=await load('app.js');
- assert.match(js,/\['post', 'opportunities', 'membership', 'partners'\]\.includes\(hash\)/);
- assert.match(js,/section === 'post' \? 'membership' : section/);
- assert.doesNotMatch(js,/Paid opportunity for YorpHives/);
- assert.match(js,/const subject = 'Project enquiry for YorpHives'/);
+test('no artificial membership pricing or enrollment/payment workflows',async()=>{
+  const html=builderBody(await read('index.html'));
+  assert.match(html,/Pricing and enrollment not yet available/);
+  assert.match(html,/Enrollment is not open yet/);
+  assert.doesNotMatch(html,/stripe|checkout|Buy now|Pay now|Payment successful|Subscription active/i);
 });
-test('Mobile Builders layouts and reduced-motion preferences have explicit rules',async()=>{
- const css=await load('style.css');
- assert.match(css,/#home \.builders-home-grid\{[^}]*grid-template-columns:repeat\(3/);
- assert.match(css,/#builders \.builders-membership-options\{display:grid/);
- assert.match(css,/@media\(max-width:570px\)\{/);
- assert.match(css,/#home \.builders-home-grid\{grid-template-columns:1fr/);
- assert.match(css,/#builders \.builders-member-two,#builders \.builders-membership-options\{grid-template-columns:1fr/);
- assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+test('legacy #post link resolves only to membership explanation',async()=>{
+  const js=await read('next.js');
+  assert.match(js,/subpages\.has\(hash\)/);
+  assert.match(js,/hash==='post'\?'membership':hash/);
+  assert.doesNotMatch(js,/data-form="opportunity"|Paid opportunity for YorpHives/);
+  assert.match(js,/Project enquiry for YorpHives/);
 });
-test('Release gate prevents reintroducing public jobs and opportunitity forms',async()=>{
- const release=await load('scripts/release-check.mjs');
- assert.match(release,/Public job listing or job-posting form is forbidden/);
- assert.match(release,/data-form="opportunity"/);
+test('Builders interface reflows on mobile and honors reduced motion',async()=>{
+  const [css,mobile]=await Promise.all([read('next.css'),read('next-responsive.css')]);
+  assert.match(css,/\.membership-grid\{display:grid;grid-template-columns:repeat\(2/);
+  assert.match(mobile,/\.membership-grid\{grid-template-columns:1fr/);
+  assert.match(mobile,/@media\(prefers-reduced-motion:reduce\)/);
 });
-
-test('Builders homepage uses dark forest teal with readable mint-on-dark cards',async()=>{
- const css=await load('style.css');
- assert.match(css,/#home \.builders-home\{[^}]*#0b303a,#103f41 55%,#092f3a/);
- assert.match(css,/#home \.builders-home h2\{[^}]*color:#f4fff9/);
- assert.match(css,/#home \.builders-home h2 em\{[^}]*color:#9dfadd/);
- assert.match(css,/#home \.builders-home-card\{[^}]*#175358,#10424d/);
- assert.match(css,/#home \.builders-home-card h3\{[^}]*color:#f4fff9/);
- assert.match(css,/#home \.builders-home-cta\{[^}]*#b4ffe9,#80eed4/);
+test('release gate still prohibits public job posting forms',async()=>{
+  const release=await read('scripts/release-check.mjs');
+  assert.match(release,/Public job listing or job-posting form is forbidden/);
+  assert.match(release,/data-form="opportunity"/);
 });

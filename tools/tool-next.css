@@ -1,0 +1,221 @@
+/* YorpHives Next — independent direct-tool interface.
+   Self-hosted shared presentation for ALL published utility pages.
+   The existing processors, form semantics, IDs and download links are unchanged. */
+body.tool-page{
+ --nt-bg:#f4f6f0;--nt-ink:#14241e;--nt-mint:#baf7d3;
+ --nt-green:#267d59;--nt-line:#dbe5db;
+ background:var(--nt-bg);color:var(--nt-ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ font-synthesis:none;-webkit-font-smoothing:antialiased;min-height:100vh
+}
+body.tool-page *,
+body.tool-page *::before,
+body.tool-page *::after{box-sizing:border-box}
+body.tool-page a,body.tool-page button,body.tool-page input,body.tool-page textarea,body.tool-page select{-webkit-tap-highlight-color:transparent}
+body.tool-page .site-header{
+ position:sticky;z-index:60;top:0;display:flex;gap:28px;align-items:center;
+ height:74px;min-height:74px;padding:0 clamp(20px,5.5vw,94px);
+ background:#10201ff4;color:#ecfff2;border-bottom:1px solid #c6f0d11b;
+ backdrop-filter:blur(21px);-webkit-backdrop-filter:blur(21px)
+}
+body.tool-page .site-header .brand{display:inline-flex;align-items:center;flex:none;gap:10px;min-width:0}
+body.tool-page .site-header .brand img{display:block;width:38px;height:38px;object-fit:cover;border-radius:8px}
+body.tool-page .site-header .brand-name{font-size:20px;font-weight:850;color:#f5fff7;letter-spacing:-.06em;line-height:1}
+body.tool-page .site-header .brand-name span{color:#8de5bf}
+body.tool-page .site-header .brand-name small{display:block;margin-top:6px;color:#9abaae;font-size:7px;letter-spacing:.2em;line-height:1.2}
+body.tool-page .tool-nav{display:flex;gap:32px;align-items:center;margin-left:auto;min-width:0}
+body.tool-page .tool-nav a{display:grid;place-items:center;position:relative;min-height:74px;color:#adbcaf;font-size:13px;font-weight:680;white-space:nowrap}
+body.tool-page .tool-nav a:hover,body.tool-page .tool-nav a[aria-current="page"]{color:#fff}
+body.tool-page .tool-nav a[aria-current="page"]::after{
+ content:"";position:absolute;bottom:15px;left:0;right:0;height:2px;background:#a5f1ce;border-radius:2px
+}
+body.tool-page .tool-nav .tool-home{padding:0;border:0;border-radius:0;color:#adbcaf}
+body.tool-page .site-header .header-cta{
+ display:inline-flex;align-items:center;justify-content:space-between;gap:20px;
+ min-height:42px;padding:10px 15px;border-radius:10px;background:#baf7d3;color:#163d2c;font-size:12px;font-weight:820;white-space:nowrap
+}
+body.tool-page .site-header .header-cta span{font-size:18px}
+body.tool-page .header-kofi{display:none!important}
+body.tool-page .tool-header-back{display:none}
+body.tool-page .mobile-dock{display:none}
+body.tool-page .skip-link:focus-visible,body.tool-page a:focus-visible,body.tool-page button:focus-visible{
+ outline:3px solid #4fbe87;outline-offset:3px
+}
+body.tool-page .tool-wrap,
+body.tool-page[data-tui-family] .tool-wrap{
+ width:min(calc(100% - clamp(40px,11vw,188px)),1190px);max-width:1190px;
+ margin:0 auto;padding:42px 0 104px
+}
+body.tool-page .breadcrumb{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 30px;font-size:12px;color:#87988b}
+body.tool-page .breadcrumb a{font-weight:780;color:#317d58}
+body.tool-page .tool-intro,
+body.tool-page[data-tui-family] .tool-intro{
+ display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:22px;margin:0 0 32px
+}
+body.tool-page .tool-intro h1,
+body.tool-page[data-tui-family] .tool-intro h1{
+ max-width:840px;font-size:clamp(37px,4.4vw,62px);font-weight:780;letter-spacing:-.054em;line-height:1.11;color:#14241e;margin:13px 0 17px
+}
+body.tool-page .tool-kicker{font-size:10px;font-weight:840;letter-spacing:.17em;color:#267d59}
+body.tool-page .tool-intro>div>p:last-child,
+body.tool-page[data-tui-family] .tool-intro>div>p:last-child{
+ font-size:15px;line-height:1.68;max-width:680px;color:#667c6e
+}
+body.tool-page .privacy-badge,body.tool-page[data-tui-family] .privacy-badge{
+ display:inline-flex;align-items:center;justify-self:end;gap:7px;white-space:normal;
+ padding:10px 14px;border:1px solid #bddbc8;border-radius:99px;
+ background:#e1f1e6;color:#2e8156;font-size:11px;font-weight:720;line-height:1.25
+}
+body.tool-page .tool-panel,body.tool-page[data-tui-family] .tool-panel{
+ overflow:hidden;border:1px solid #d8e5db;border-radius:20px;
+ background:white;box-shadow:0 14px 40px #142d1912
+}
+body.tool-page .panel-head,body.tool-page[data-tui-family] .panel-head{
+ display:flex;align-items:center;justify-content:space-between;gap:15px;
+ padding:18px 26px;min-height:65px;background:#19352a;color:#f5fff7
+}
+body.tool-page .panel-head strong,body.tool-page[data-tui-family] .panel-head strong{
+ font-size:14px;font-weight:800;letter-spacing:-.02em;line-height:1.35
+}
+body.tool-page .panel-head span,body.tool-page[data-tui-family] .panel-head span{
+ font-size:11px;color:#b6d8c3;line-height:1.4
+}
+body.tool-page .panel-content,body.tool-page[data-tui-family] .panel-content{padding:29px 32px 34px;min-width:0}
+body.tool-page .tool-field{display:block;color:#264e39;font-size:12px;line-height:1.45;font-weight:750}
+body.tool-page .tool-field input,
+body.tool-page .tool-field select,
+body.tool-page .tool-field textarea{
+ display:block;width:100%;min-width:0;max-width:100%;
+ margin-top:9px;padding:13px 14px;
+ border:1px solid #cbded0;border-radius:11px;background:#fff;color:#163c2a;
+ font-size:15px;line-height:1.55;box-shadow:none
+}
+body.tool-page .tool-field input:focus,
+body.tool-page .tool-field select:focus,
+body.tool-page .tool-field textarea:focus{outline:2px solid #68b28b;outline-offset:2px}
+body.tool-page .tool-field textarea{min-height:220px;resize:vertical}
+body.tool-page .tool-field input[type="file"]{cursor:pointer;background:#f9fcf9}
+body.tool-page .tool-buttons{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:20px}
+body.tool-page .tool-btn{
+ display:inline-flex;align-items:center;justify-content:center;gap:9px;
+ min-height:47px;padding:12px 18px;border-radius:11px;font-size:12px;font-weight:830;
+ border:1px solid #bcd8c3;background:#f4faf5;color:#24583e
+}
+body.tool-page .tool-btn.primary{background:#1c543e;color:#f7fff9;border-color:#1c543e}
+body.tool-page .tool-btn:not(:disabled):hover{background:#e0f2e5}
+body.tool-page .tool-btn.primary:not(:disabled):hover{background:#267455;color:#fff}
+body.tool-page .tool-status{color:#357955}
+body.tool-page .tool-help{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin:23px 0 0}
+body.tool-page .tool-help-card{
+ min-width:0;background:#fff;border:1px solid #dbe5db;border-radius:16px;padding:24px;
+ color:#63776b;font-size:13px;line-height:1.7
+}
+body.tool-page .tool-help-card h2{font-size:21px;font-weight:780;color:#142f23;letter-spacing:-.035em;margin:0 0 13px}
+body.tool-page .tool-help-card ol{margin-bottom:0;padding-left:18px}
+body.tool-page .tool-related{margin-top:36px;border-top:1px solid #d7e4d8;padding-top:28px}
+body.tool-page .tool-related h2{color:#2c6947;font-size:10px;font-weight:850;letter-spacing:.15em}
+body.tool-page .related-links{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+body.tool-page .related-links a{
+ display:inline-flex;align-items:center;min-height:42px;padding:10px 13px;border-radius:10px;
+ background:#e5f1e7;color:#316747;font-size:12px;font-weight:720;text-decoration:none
+}
+body.tool-page .related-links a:hover{background:#d2ecd9}
+body.tool-page .tool-catalog-link{color:#337452;font-size:12px}
+body.tool-page .tool-footer{
+ background:#10201e;color:#9eb9a7;min-height:98px;text-align:center;line-height:1.6;
+ padding:35px 22px;font-size:12px
+}
+body.tool-page .tool-footer a{color:#baf7d3}
+body.tool-page .tui-upload-zone{border-radius:15px}
+body.tool-page .tui-workspace-head{min-width:0}
+body.tool-page .tui-workspace-copy{min-width:0}
+body.tool-page [hidden]{display:none!important}
+
+@media(max-width:900px){
+ body.tool-page .site-header{gap:16px;padding-inline:26px}
+ body.tool-page .tool-nav{gap:20px}
+ body.tool-page .tool-nav a{font-size:12px}
+ body.tool-page .site-header .header-cta{gap:12px}
+}
+@media(max-width:760px){
+ body.tool-page{padding-bottom:calc(74px + env(safe-area-inset-bottom,0px))}
+ body.tool-page .site-header{height:65px;min-height:65px;padding:0 clamp(16px,4.6vw,26px)}
+ body.tool-page .site-header .brand img{width:35px;height:35px}
+ body.tool-page .site-header .brand-name{font-size:19px}
+ body.tool-page .site-header .brand-name small{font-size:6px;margin-top:5px}
+ body.tool-page .tool-nav,body.tool-page .site-header .header-cta{display:none}
+ body.tool-page .tool-header-back{
+   display:inline-flex;align-items:center;justify-content:center;gap:5px;
+   min-height:44px;padding:10px 12px;margin-left:auto;
+   border:1px solid #a2d8b54a;border-radius:12px;
+   color:#ddf4e3;font-size:12px;font-weight:790;white-space:nowrap
+ }
+ body.tool-page .mobile-dock{
+   display:grid;position:fixed;bottom:0;left:0;right:0;z-index:65;
+   grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;
+   padding:8px max(7px,env(safe-area-inset-left,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(7px,env(safe-area-inset-right,0px));
+   background:#10271ff5;border-top:1px solid #b3f0cd33;
+   box-shadow:0 -6px 22px #0d211e24;
+   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)
+ }
+ body.tool-page .mobile-dock a{
+   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+   min-width:0;min-height:52px;border-radius:12px;color:#b0c9b6;
+   font-size:10px;line-height:1.2;font-weight:680
+ }
+ body.tool-page .mobile-dock a[aria-current="page"]{color:#173c2b;background:#baf5d3}
+ body.tool-page .dock-icon{font-size:22px;line-height:1}
+ body.tool-page .tool-wrap,body.tool-page[data-tui-family] .tool-wrap{
+   width:calc(100% - 2 * clamp(16px,4.6vw,26px));padding:29px 0 65px
+ }
+ body.tool-page .breadcrumb{gap:8px;margin-bottom:24px;font-size:11px}
+ body.tool-page .tool-intro,body.tool-page[data-tui-family] .tool-intro{
+   display:flex;flex-direction:column;align-items:flex-start;gap:14px;margin-bottom:25px
+ }
+ body.tool-page .tool-intro h1,body.tool-page[data-tui-family] .tool-intro h1{
+   font-size:clamp(33px,8.65vw,47px);line-height:1.11;margin:11px 0 13px
+ }
+ body.tool-page .tool-intro>div>p:last-child,body.tool-page[data-tui-family] .tool-intro>div>p:last-child{
+   font-size:13px;line-height:1.57
+ }
+ body.tool-page .privacy-badge,body.tool-page[data-tui-family] .privacy-badge{
+   justify-self:start;margin:0;font-size:11px;padding:9px 12px
+ }
+ body.tool-page .tool-panel,body.tool-page[data-tui-family] .tool-panel{border-radius:17px}
+ body.tool-page .panel-head,body.tool-page[data-tui-family] .panel-head{
+   padding:16px 18px;min-height:57px
+ }
+ body.tool-page .panel-head strong,body.tool-page[data-tui-family] .panel-head strong{font-size:13px}
+ body.tool-page .panel-head span{font-size:10px}
+ body.tool-page .panel-content,body.tool-page[data-tui-family] .panel-content{padding:20px}
+ body.tool-page .tool-field input,body.tool-page .tool-field select,body.tool-page .tool-field textarea{font-size:16px}
+ body.tool-page .tool-fields,body.tool-page .utility-inputs{grid-template-columns:minmax(0,1fr);gap:15px}
+ body.tool-page .utility-inputs .tool-field:has(textarea){grid-column:auto}
+ body.tool-page .tool-help{grid-template-columns:1fr;gap:10px;margin-top:16px}
+ body.tool-page .tool-help-card{padding:20px;border-radius:14px}
+ body.tool-page .tool-related{margin-top:27px;padding-top:23px}
+ body.tool-page .image-settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.tool-page .tool-buttons{gap:9px}
+ body.tool-page .tool-btn{min-height:46px;border-radius:11px}
+ body.tool-page .tool-footer{padding:26px 16px;min-height:77px}
+}
+@media(max-width:420px){
+ body.tool-page .tool-wrap,body.tool-page[data-tui-family] .tool-wrap{padding-top:22px}
+ body.tool-page .tool-intro h1,body.tool-page[data-tui-family] .tool-intro h1{font-size:clamp(31px,8.3vw,36px)}
+ body.tool-page .panel-head span{display:none}
+ body.tool-page .panel-content,body.tool-page[data-tui-family] .panel-content{padding:17px 15px}
+ body.tool-page .tool-buttons .tool-btn{flex:1 1 115px}
+ body.tool-page .related-links a{font-size:11px}
+ body.tool-page .tui-upload-zone{min-width:0}
+}
+@media(max-width:350px){
+ body.tool-page .site-header{padding-inline:13px}
+ body.tool-page .site-header .brand-name{font-size:17px}
+ body.tool-page .tool-header-back{font-size:11px;padding-inline:8px}
+ body.tool-page .tool-wrap,body.tool-page[data-tui-family] .tool-wrap{width:calc(100% - 28px)}
+ body.tool-page .tool-intro h1,body.tool-page[data-tui-family] .tool-intro h1{font-size:31px}
+ body.tool-page .panel-content,body.tool-page[data-tui-family] .panel-content{padding:15px 13px}
+ body.tool-page .mobile-dock a{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.tool-page *,body.tool-page *::before,body.tool-page *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+}

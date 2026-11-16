@@ -15,6 +15,16 @@
   Cache-Control: no-store
 /app.js
   Cache-Control: no-cache, max-age=0, must-revalidate
+/next.js
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/next.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/next-responsive.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/home-experience.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/tools/directory-next.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
 
 # The verified ONNX model filename includes its content hash; cache only this immutable version.
 /tools/models/u2netp-309c8469.onnx

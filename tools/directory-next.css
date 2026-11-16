@@ -1,0 +1,61 @@
+
+/* The original YorpHives Next A–Z directory. Built from catalog.json. */
+.directory-main{padding-block:27px 88px}
+.breadcrumbs{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:12px;font-weight:720;color:#87988b}
+.breadcrumbs a{color:#317d58}
+.directory-hero{display:grid;grid-template-columns:1.08fr .92fr;gap:10%;align-items:center;padding-block:60px 80px}
+.directory-hero h1{font-size:clamp(43px,5.2vw,75px);margin:16px 0 22px}
+.directory-hero h1 em{color:#33805a}
+.directory-hero p{max-width:590px;color:#687c6b;font-size:15px;line-height:1.75;margin-bottom:28px}
+.directory-art{display:flex;flex-direction:column;min-height:320px;justify-content:center;padding:34px 39px;border:1px solid #a6cdb1;border-radius:23px;background:linear-gradient(150deg,#d0f2d9,#eaf6ec);box-shadow:0 20px 35px #265d3212;position:relative;overflow:hidden}
+.directory-art::after{content:"";position:absolute;inset:15% -18%;border:1px solid #4c977257;border-radius:50%;transform:rotate(-25deg)}
+.dir-art-tag{color:#387e58;font-size:11px;letter-spacing:.2em;font-weight:800}
+.directory-art strong{max-width:340px;color:#21523b;font-size:clamp(28px,2.8vw,40px);line-height:1.2;letter-spacing:-.055em;margin:22px 0 10px}
+.dir-art-glyph{align-self:flex-end;font-size:79px;color:#348760;line-height:1}
+.directory-list-head{display:flex;justify-content:space-between;align-items:end;gap:24px;border-top:1px solid #d5e3d9;padding-top:35px;margin-bottom:25px}
+.directory-list-head h2{margin-top:12px;font-size:clamp(30px,3.3vw,50px)}
+.directory-list-head h2 em{color:#35805e}
+.directory-list-head>p{font-size:13px;line-height:1.5;color:#6b7b6b}
+details.directory-section{background:#fff;border:1px solid #d8e2d8;border-radius:16px;overflow:hidden;margin-top:11px}
+details.directory-section>summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none;min-height:72px;padding:19px 23px;color:#244837;font-size:18px;font-weight:800}
+details.directory-section>summary::-webkit-details-marker{display:none}
+details.directory-section>summary:hover{background:#f2f8f2}
+details.directory-section>summary:focus-visible{outline-offset:-4px}
+details.directory-section>summary small{margin-left:auto;color:#64816c;font-size:12px;font-weight:720}
+.directory-chevron{font-size:23px;line-height:1;color:#4e926b;transition:transform .2s}
+details.directory-section[open] .directory-chevron{transform:rotate(180deg)}
+.directory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;padding:18px;background:#f1f5ef;border-top:1px solid #dce6db}
+.directory-card{display:flex;flex-direction:column;gap:8px;min-width:0;border:1px solid #d9e4d9;border-radius:13px;background:white;padding:18px 19px;transition:border-color .2s,transform .2s}
+.directory-card:hover{border-color:#80b891;transform:translateY(-2px)}
+.directory-card strong{color:#1d4932;font-size:15px;letter-spacing:-.02em;overflow-wrap:anywhere}
+.directory-card span{color:#7b8a7d;font-size:12px;line-height:1.55}
+.directory-catalog-link{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 21px;margin-top:24px;border-radius:13px;background:#e1ecdf;color:#2e8058;font-size:13px;font-weight:800}
+.directory-catalog-link span{font-size:20px}
+.directory-footer{margin-top:0}
+.directory-footer .footer-bottom{border-top:1px solid #d7eed124}
+.header-kofi{display:none!important}
+@media(max-width:900px){
+.directory-hero{gap:5%}
+.directory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.directory-art{min-height:275px;padding:25px}
+}
+@media(max-width:760px){
+.directory-main{padding-block:20px 64px}
+.directory-hero{grid-template-columns:1fr;gap:25px;padding-block:38px 45px}
+.directory-hero h1{font-size:clamp(38px,9vw,55px);margin:14px 0}
+.directory-hero p{font-size:13px;line-height:1.66;margin-bottom:22px}
+.directory-art{display:none}
+.directory-art strong{font-size:28px;margin:12px 0 0}
+.dir-art-glyph{font-size:52px}
+.directory-list-head{display:block;padding-top:27px;margin-bottom:18px}
+.directory-list-head h2{font-size:clamp(31px,8vw,42px)}
+.directory-list-head>p{margin-top:10px;font-size:12px}
+details.directory-section{border-radius:15px;margin-top:9px}
+details.directory-section>summary{min-height:60px;padding:13px 16px;font-size:16px}
+.directory-grid{grid-template-columns:1fr;gap:8px;padding:10px}
+.directory-card{padding:14px;border-radius:11px}
+.directory-card strong{font-size:14px}
+.directory-card span{font-size:12px}
+}
+@media(max-width:350px){details.directory-section>summary{font-size:15px;gap:8px}details.directory-section>summary small{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.directory-chevron,.directory-card{transition:none}}
