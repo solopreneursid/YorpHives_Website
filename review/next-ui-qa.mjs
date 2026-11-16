@@ -50,7 +50,7 @@ try{
  check(document.querySelector('.mobile-dock [data-nav="home"]')?.getAttribute('aria-current')==='page','how-it-works resolves to home');
  check(!!document.getElementById('our-ai-team')?.querySelector('.os-decision'),'visual founder approval gate');
  check(document.querySelectorAll('#category-ribbon-track .rail-set').length===2,'seamless animated category rail');
- check(!!document.querySelector('#home-pulse-viewport .pulse-track'),'live verified YHpulse feed is mirrored');
+ check(!!document.querySelector('#home-pulse-viewport .pulse-track')&&!document.querySelector('#footer-pulse'),'only homepage YHpulse is built');
  const catPause=document.querySelector('#home [data-motion-toggle="categories"]');
  catPause.click();
  check(catPause.getAttribute('aria-pressed')==='true','category animation pause control');
