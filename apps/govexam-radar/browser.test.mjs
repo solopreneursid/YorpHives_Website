@@ -81,6 +81,8 @@ test("official-source interface and saved controls load without invented records
   assert.equal(await page.locator("#govradar-official-jobs").count(),1);
   assert.equal(await page.locator("#official-notice-filters").count(),1);
   assert.equal(await page.locator("#saved-official-notices").count(),1);
+  assert.equal(await page.locator("#inapp-official-alerts").count(),1);
+  assert.equal(await page.locator("#inapp-refresh-notices").count(),1);
   assert.equal(await page.locator("#official-notice-grid article").count(),0);
   await page.locator("#official-notice-search").fill("ICT");
   await page.locator("#official-notice-filters button[type=submit]").click();
@@ -211,6 +213,9 @@ test("actual Cloudflare preview displays official-source cards with responsive l
   await cards.first().locator("button[data-save-notice]").click();
   await page.evaluate(()=>document.getElementById("view-saved").classList.remove("hidden"));
   assert.ok((await page.locator("#saved-official-notices article").count())>=1);
+  await page.locator("#inapp-refresh-notices").click();
+  await page.locator("#inapp-notice-status").waitFor();
+  assert.equal(await page.locator("#inapp-official-alerts").count(),1);
   assert.equal(errors.length,0,"Remote staging JS exceptions: "+errors.join("; "));
  }finally{await page.close();}
 });
