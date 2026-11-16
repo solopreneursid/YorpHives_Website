@@ -27,12 +27,14 @@ export function assertUkRow(row){
   typeof row.closing_at!=="string"||!Number.isFinite(Date.parse(row.closing_at))||
   !Number.isSafeInteger(row.last_seen_at)||row.last_seen_at<=0)
   throw Error("source_row_not_approved");
- let url;
- try{url=new URL(row.source_page);}catch{throw Error("source_row_not_approved");}
- if(url.protocol!=="https:"||url.hostname!=="teaching-vacancies.service.gov.uk"||
-   !url.pathname.startsWith(OFFICIAL_PREFIX)||url.username||url.password||
-   url.search||url.hash)
-   throw Error("source_row_not_approved");
+ for(const key of ["source_page","source_ref","apply_url"]){
+  let url;
+  try{url=new URL(row[key]);}catch{throw Error("source_row_not_approved");}
+  if(url.protocol!=="https:"||url.hostname!=="teaching-vacancies.service.gov.uk"||
+    !url.pathname.startsWith(OFFICIAL_PREFIX)||url.username||url.password||
+    url.search||url.hash)
+    throw Error("source_row_not_approved");
+ }
  return true;
 }
 export function makeMirrorUpsertSql(){
