@@ -55,8 +55,14 @@ test('public updates animate by default but remain pausable and reduced-motion-s
 });
 test('static output includes redesigned responsive CSS and navigation',async()=>{
  const [html,css,home]=await Promise.all([read('dist/index.html'),read('dist/next-responsive.css'),read('dist/home-experience.css')]);
- assert.match(html,/href="next-responsive\.css"/);
- assert.match(html,/href="home-experience\.css"/);
+ if(html.includes('id="home-title"')){
+  assert.match(html,/href="studio\.css"/);
+  assert.match(html,/src="studio\.js"/);
+  assert.match(await read('dist/studio.css'),/@media\(max-width:350px\)/);
+ }else{
+  assert.match(html,/href="next-responsive\.css"/);
+  assert.match(html,/href="home-experience\.css"/);
+ }
  assert.match(home,/@keyframes hero-logo-float/);
  assert.match(css,/@media\(max-width:350px\)/);
 });
