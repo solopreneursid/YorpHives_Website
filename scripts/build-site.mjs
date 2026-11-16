@@ -7,7 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {createEntity} from './discovery-schema.mjs';
 import {isQualifiedProduct} from '../product-policy.mjs';
 import {injectNextToolUI} from './next-tool-shell.mjs';
-import {collectPublicActivity,discoverPublicPageUpdates,discoverToolEditTimes,loadActivityNotes,renderFooterPulse} from './activity-feed.mjs';
+import {collectPublicActivity,discoverPublicPageUpdates,discoverToolEditTimes,loadActivityNotes,renderHomePulse} from './activity-feed.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const dest=resolve(root,'dist');
@@ -67,9 +67,12 @@ const pulseEnd='<!-- PULSE_END -->';
 const begin=mainPage.indexOf(pulseStart),finish=mainPage.indexOf(pulseEnd,begin+pulseStart.length);
 if(begin<0||finish<begin||mainPage.indexOf(pulseStart,begin+1)>=0||
    mainPage.indexOf(pulseEnd,finish+1)>=0)
- throw Error('Footer activity template markers are missing or duplicated.');
-await write('index.html',mainPage.slice(0,begin+pulseStart.length)+
-  renderFooterPulse(activity)+mainPage.slice(finish));
+ throw Error('Homepage YHpulse template markers are missing or duplicated.');
+const pulseCount='<!-- PULSE_COUNT -->';
+if(mainPage.split(pulseCount).length!==2)throw Error('Homepage YHpulse count marker missing.');
+const injected=mainPage.slice(0,begin+pulseStart.length)+
+  renderHomePulse(activity)+mainPage.slice(finish);
+await write('index.html',injected.replace(pulseCount,'LATEST '+activity.length+' UPDATES'));
 await write('activity.json',JSON.stringify({version:1,items:activity},null,2)+'\n');
 console.log('PUBLIC ACTIVITY BUILT: '+activity.length+' verified published shortcuts; mode='+target+'.');
 
