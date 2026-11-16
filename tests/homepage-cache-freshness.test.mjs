@@ -9,8 +9,9 @@ const read=p=>readFile(resolve(root,p),'utf8');
 test('redesigned Explore explains qualification without implying launches',async()=>{
  const [html,js]=await Promise.all([read('index.html'),read('next.js')]);
  assert.match(html,/id="explore-qualification-note"/);
- assert.match(html,/market demand, customer needs, competition, feasibility, business potential and final founder approval/i);
- assert.match(html,/No qualified launches yet/);
+ assert.match(html,/03 \/ FOUNDER/);
+ assert.match(html,/Founder-approved launches only/);
+ assert.match(html,/Nothing published until it's ready/);
  assert.match(js,/qualifiedProducts\(published\)/);
  assert.doesNotMatch(html,/No HQ-qualified products have been released yet/);
 });
@@ -27,7 +28,7 @@ test('navigation and redesigned assets enforce explicit freshness',async()=>{
 test('built website preserves actual copy, scripts and freshness',async()=>{
  const [html,js,headers]=await Promise.all([read('dist/index.html'),read('dist/next.js'),read('dist/_headers')]);
  assert.match(html,/id="explore-qualification-note"/);
- assert.match(html,/No qualified launches yet/);
+ assert.match(html,/Nothing published until it's ready/);
  assert.match(js,/qualifiedProducts\(published\)/);
  assert.match(headers,/\n\/\n\s+Cache-Control: no-store/);
 });
