@@ -51,3 +51,12 @@ test("founder moderation page is private and credentialless API fails closed",as
  const api=await request("/api/moderation/reports");assert.equal(api.status,503);
  assert.equal((await api.json()).error,"database_unavailable");
 });
+
+test("cross-device backup script is first-party and never requests personal identity tokens",async()=>{
+ const html=await (await request("/")).text();assert.match(html,/\/portable-bookmarks\.js/);
+ const file=await request("/portable-bookmarks.js");assert.equal(file.status,200);
+ const script=await file.text();
+ assert.match(script,/GovRadarBookmarkTransfer/);
+ assert.match(script,/govradar_saved_sources_v1/);
+ assert.match(script,/No account, email address/);
+});
