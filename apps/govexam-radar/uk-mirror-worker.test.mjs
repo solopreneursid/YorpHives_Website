@@ -105,6 +105,18 @@ test("private Worker has a scheduled handler but NO public fetch entrypoint",()=
  assert.match(makeMirrorUpsertSql(),/withdrawn_confirmed/);
  assert.match(makeMirrorUpsertSql(),/excluded\.last_seen_at<=official_job_notices\.last_seen_at/);
 });
+test("real Cloudflare scheduled delivery at 18:55:55 UTC remains within the approved 18:55 cron slot",async()=>{
+ const delayed={cron:UK_MIRROR_CRON,scheduledTime:EVENT+55923};
+ assert.equal(validateMirroringCron(delayed),EVENT+55923);
+ const f=fixture();
+ const result=await mirrorUkSnapshot(f.env,delayed,()=>NOW);
+ assert.equal(result.status,"ok");
+ assert.equal(f.runs.size,1);
+ assert.ok([...f.runs.keys()][0].includes(String(EVENT+55923)));
+ for(const invalid of [EVENT-60000,EVENT+60000,EVENT+5*60000]){
+  assert.throws(()=>validateMirroringCron({cron:UK_MIRROR_CRON,scheduledTime:invalid}),/unapproved_uk_mirror_schedule/);
+ }
+});
 test("Cron handler refuses untrusted trigger, timestamp and extra bindings",async()=>{
  for(const wrong of [
   {cron:"* * * * *",scheduledTime:EVENT},
