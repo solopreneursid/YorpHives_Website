@@ -93,6 +93,15 @@ if(!homepage.includes('id="builders"')||
    !homepage.includes('id="partners"')||
    !homepage.includes('Find paid work.'))
  problems.push('Builders future paid-membership landing page is incomplete.');
+
+if(!home.includes('class="connection-card connection-partner" href="#partners"')||
+   !homepage.includes('class="partnership-section" id="partners"')||
+   !homepage.includes('href="#partners">Partnerships')||
+   !homepage.includes('data-contact-reason="Partnership"')||
+   !homepage.includes('Formal applications are not open yet.')||
+   !homepage.includes('Contact is for an initial discussion, not an application or approval.'))
+ problems.push('Partnerships must be discoverable from Home and Builders without implying open enrollment.');
+
 if(/data-form="opportunity"|<form[^>]*id="post"|id="job-listings"|id="post"/i.test(homepage))
  problems.push('Public job listing or job-posting form is forbidden without membership enforcement.');
 if(!homepage.includes('Jobs and posting require verified paid membership.')||
