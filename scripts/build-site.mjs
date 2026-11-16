@@ -311,6 +311,7 @@ if(target==='preview'){
 // canonical root, without publishing the preview-only /reimagined/ directory.
 // This routine is also used to render a path-isolated acceptance candidate.
 async function publishReimaginedRoot(prefix=''){
+ if(prefix)await mkdir(resolve(dest,prefix),{recursive:true});
  const assets=['studio.css','studio.js','rotators.css','rotators.js',
   'catalog-sync.mjs','impact-public.json','usage-public.json'];
  for(const asset of assets)
