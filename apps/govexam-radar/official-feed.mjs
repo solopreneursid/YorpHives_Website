@@ -124,7 +124,19 @@ export async function ingestDfE(db,fetcher=fetch,clock=Date.now()){
   const parsed=parseOfficialFeed(payload,clock);
   outcome.received=parsed.received;outcome.discarded=parsed.received-parsed.valid.length;
   // Empty or malformed official response should never silently reset or delete the catalogue.
-  if(!parsed.received||!parsed.valid.length){outcome.state="rejected";outcome.errorCode=parsed.received?"no_eligible_records":"empty_page";outcome.details=JSON.stringify({page,rejected:parsed.rejected}).slice(0,800);return outcome;}
+  if(!parsed.received||!parsed.valid.length){
+   outcome.state="rejected";
+   outcome.errorCode=parsed.received?"no_eligible_records":"empty_page";
+   // A shrinking official feed can make an old cursor page fall out of range.
+   // Reset only the cursor, NEVER delete historical records or invent new posts.
+   if(!parsed.received && page>parsed.totalPages){
+    await db.prepare("INSERT INTO source_feed_cursors(source_id,next_page,last_total_pages,last_success_at) VALUES(?,?,?,NULL) ON CONFLICT(source_id) DO UPDATE SET next_page=excluded.next_page,last_total_pages=excluded.last_total_pages")
+     .bind(DFE_SOURCE.id,1,parsed.totalPages).run();
+    outcome.errorCode="out_of_range_page_reset";
+   }
+   outcome.details=JSON.stringify({page,totalPages:parsed.totalPages,rejected:parsed.rejected}).slice(0,800);
+   return outcome;
+  }
   const now=Date.now();
   for(let i=0;i<parsed.valid.length;i+=MAX_BATCH){
    const batch=await Promise.all(parsed.valid.slice(i,i+MAX_BATCH).map(async row=>{
