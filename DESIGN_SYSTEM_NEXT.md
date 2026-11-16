@@ -1,92 +1,90 @@
-# YorpHives Next — Front-end design system
+# YorpHives Kinetic — original visual design system
 
-**Status:** Preview-only redesign. Not merged into the production branch.
+**Status:** New front-end implementation, review only. No production deployment.
 
-## Founder and YorpHivesHQ authority
+## Communication standard
 
 **One founder. An AI team. Ideas in motion.**
 
-- **YorpHivesHQ** is short for **YorpHives Headquarters**. It is the website's
-  operational intelligence system, coordinating website monitoring, specialist
-  AI employees, market and opportunity research, evidence, and recommendations.
-- **Founder** owns strategy and makes the final go/no-go decisions on new
-  ventures, priorities, website changes, publication, and launches.
-- HQ agents must not independently approve launches, edit live source, deploy
-  changes, or bypass founder review. Website operations include observation,
-  research, analysis and recommendations; production execution is founder-
-  controlled. Do not interpret public-facing \"operated by HQ\" as permission
-  for autonomous source modifications.
-- The same research-and-approval lifecycle produces the founder-approved
-  projects on **Explore**. Unapproved plans remain out of the public catalogue.
-- Prefer modular self-hostable infrastructure, open-weight models, and
-  founder-reviewed learning. Never imply speculative AI capabilities are
-  already fully deployed when documenting operational status.
+The website is operated by YorpHivesHQ and its AI workforce. AI specialists
+observe, research, analyze opportunities and recommend. The founder approves,
+revises or rejects projects and controls source changes and launches.
 
-## Architecture
+The public interface should explain this through diagrams, motion and *short
+single-line sentences*. Never copy founder notes directly into public paragraphs.
+Keep operational details in internal documentation, not the hero.
 
-This is a new first-party website interface, not a series of overrides to the
-previous homepage. Keep page structure, styles, and functionality independent
-of third-party SaaS and external fonts.
+Explore contains only founder-approved, publicly launched YorpHives projects.
+There must be no fabricated opportunities, future jobs or invented revenue.
 
-| Layer | Purpose |
-| --- | --- |
-| `index.html` | New semantic content architecture: Home, Free Tools, Explore, Builders, Contact |
-| `next.css` | Canonical typography, colors, spacing, components, desktop composition |
-| `next-responsive.css` | Tablet and phone layouts, safe-area and reduced-motion support |
-| `next.js` | Hash routing, navigation, search, categories, local favorites, form |
-| `catalog.json` | Public first-party inventory for tools and qualified products |
-| `tools/index.html` and `tools/directory-next.css` | A–Z category directory |
-| `tools/tool-next.css` | Shared direct-tool workspaces and navigation |
-| `scripts/next-tool-shell.mjs` | Build-time shell for **all** public tools; no processor modification |
-| `product-policy.mjs` | Existing qualification and founder approval policy; retained |
-| `scripts/build-site.mjs` | Static generation, security, metadata, and previews |
+## Single canonical frontend
 
-## Visual foundations
+- `index.html`: five semantic pages and native interactive controls.
+- `next.css`: **completely replaced** from scratch. Design foundations,
+  compact desktop layouts, moving category rail and verified YHpulse.
+- `next-responsive.css`: **completely replaced** from scratch. Responsive
+  compositions, touch targets, bottom mobile dock and reduced-motion support.
+- `next.js`: local routing, independent catalog UI, filtering, favorites,
+  pagination, image-free CSS motion controls and founder-controlled contact.
+- `tools/index.html` + `tools/directory-next.css`: responsive A–Z catalogue.
+- `tools/tool-next.css` and `scripts/next-tool-shell.mjs`: shared appearance
+  for every direct tool, **not** a rewrite of its processing code.
+- `catalog.json` + `product-policy.mjs`: source-of-truth public tools and
+  verified founder-approved product qualification.
+- `scripts/activity-feed.mjs`: only source of public YHpulse updates.
 
-- Colors: forest `#10201e`, mint `#baf7d3`, paper `#f4f6f0`,
-  ink `#14241e`, muted `#667c6e`, divider `#dbe5db`.
-- Fonts: system sans + built-in Georgia italic emphasis. No remote font requests.
-- Surfaces: calm solid colors, strong contrast, 11–23 px radii, light borders.
-- Page gutter: fluid shell on desktop; 16–26 px on phones.
-- Mobile navigation: five equally sized destinations with safe-area padding.
-- Primary actions: touch-friendly, consistent, visible without hover.
-- Search: first-class action on Free Tools; category pills scroll on small phones.
-- Hero graphics: original CSS/SVG decoration, not stock art, and never essential
-  to understanding the page.
+No remote fonts, CDN scripts, proprietary UI kits or paid app dependencies.
 
-## Rules for future development
+## Visual hierarchy
 
-1. **Do not return to patch layering.** Change the canonical component in
-   `next.css`, then its corresponding responsive composition in
-   `next-responsive.css`. Delete obsolete rules when replacing a component.
-2. A tool is added to `catalog.json`, not hand-coded into the directory. Every
-   tool retains a direct URL, accessible form and local processor.
-3. The tool UI adapter may change navigation, spacing and visual components,
-   **never processor form IDs, output IDs, security constraints or file data**.
-4. Unqualified products are **never** promoted to a public launch. Membership
-   pricing, paid jobs and partner access remain unavailable until implemented.
-5. Keep all CSS and JS static and first-party. No proprietary services or paid
-   execution dependencies.
-6. Test at 320, 360, 390, 430, 768, 1024, 1440 and 1920 px. Check keyboard
-   focus, scroll/overflow, zoom, reduced-motion and the real tool output.
-7. Keep preview deployments **noindex** and unmerged; require founder review
-   before any change to the live website.
+1. Mobile hero: short headline, one-line promise, two calls to action and
+   compact animated HQ→AI→founder schematic. No tall overlapping laptop art.
+2. Automatically moving free tool category rail directly below the hero;
+   separate manual category **filters** on Free Tools for precise taps.
+3. Three equal-purpose entry destinations (Explore, Free Tools, Builders).
+4. HQ flow diagram: six specialists, evidence stream, human go/no-go gate.
+5. Five-step research→decision→build cards.
+6. Product launch gate, small Builders intro and public YHpulse.
+7. Explore and Builders repeat the same design language without repeating
+   the homepage's entire explanation.
 
-## Verification
+Palette: `#0d1e19` forest, `#b4f5ce` mint, `#f5f7f1` paper,
+`#183329` ink, `#dce8dd` borders. Local system sans + Georgia italics.
+Mobile gutters: 16–26px; desktop shell up to 1280px.
 
-The Cloudflare Pages review project runs the existing production and preview
-builds, Node unit tests, dependency checks and release validation. Additional
-regressions:
+## Motion standard
 
-- `tests/next-tool-shell.test.mjs` verifies all direct tool pages preserve
-  original forms and gain the shared responsive shell.
-- `review/next-ui-qa.mjs` is an opt-in, preview-only browser interaction test
-  for routing, search, filters, favorites, pagination and overflow.
-- `review/next-word-tool-qa.mjs` is opt-in, preview-only actual Word Counter QA.
-- `review/browser-interaction.mjs` also tests PDF Merge using real in-browser
-  file processing and downloadable output.
-- Page-specific security, catalog, sitemap, SEO, and product qualification
-  tests remain active.
+- `rail-drift`: moving tool-category chips; built from live catalog groups.
+- `pulse-scroll`: moving verified update feed. Footer and homepage share the
+  server-generated feed, not fabricated example events.
+- Individual pause/resume controls for category and YHpulse groups, with
+  `aria-pressed` and descriptive accessible names.
+- Pause on hover/focus, and disable animation completely for
+  `prefers-reduced-motion: reduce` while keeping the first set of links
+  navigable. The second visual set is `aria-hidden` and non-focusable.
+- Background ornament motion is transform-only and decorative.
+- Avoid anything that blocks scrolling, creates horizontal body overflow,
+  steals focus or prevents a visitor from interacting with tools.
 
-**Release boundary:** The redesign branch is for review only. Publishing to
-`yorphives.com` requires a separate explicit founder decision.
+## Non-negotiable release controls
+
+- Publish only founder-qualified products through `qualifiedProducts`.
+- Public Builders has no jobs, posts, prices or checkout until verified
+  paid-membership controls genuinely exist.
+- Preserve all tool URLs, processors, native form IDs and local processing.
+- Keep strict Content Security Policy and noindex previews.
+- Preserve reliable production and preview release checks.
+- No automatic agents or HQ employees may edit or deploy source code.
+
+## QA minimum
+
+Check 320, 360, 390, 430, 768, 1024, 1440 and 1920px widths; portrait
+and landscape where possible; keyboard nav, zoom, no horizontal overflow,
+reduced motion, real tool processing and YHpulse integrity.
+
+`review/next-ui-qa.mjs` is an opt-in preview-only browser interaction suite
+for routing, search, saved tools, category filtering, pagination, HQ founder
+gate, animated category/YHpulse components and pause controls.
+
+The founder reviews the preview separately before any release. This branch
+**must not merge into or deploy to yorphives.com automatically**.
