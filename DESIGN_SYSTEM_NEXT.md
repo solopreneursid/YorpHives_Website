@@ -6,6 +6,10 @@
 
 **Founder-led. Intelligence-powered. Ideas in motion.**
 
+YorpHives presents itself publicly as an **AI-powered venture studio**.
+Its founder-approved project and venture showcase is branded **HQventures**.
+
+
 YorpHivesHQ operates the website's intelligence workflows. Its evolving AI
 workforce researches opportunities and presents evidence. The founder retains
 the final decisions about projects, releases, deployments and business direction.
@@ -19,7 +23,7 @@ repeating the HQ process in several sections.
    intelligence field using the cyan, turquoise, blue and mint geometry of
    the existing YorpHives brand. No large foreground console, illustration
    card, stock photo, remote graphic or extra paragraph.
-2. **Explore:** Immersive dark project lab with one featured project. Only
+2. **HQventures:** Immersive dark project lab with one featured project. Only
    qualified and founder-approved published products are shown. Until then,
    the public stage says explicitly that no project has launched. An abstract
    geometric artifact decorates the empty state; it is not a fake project.
@@ -33,8 +37,10 @@ repeating the HQ process in several sections.
 5. **YHpulse:** A single stream of verified recent public activity, injected
    into the static homepage at build time. Never repeat the ticker in footer.
 
-The five distinct navigation destinations remain Home, Free Tools, Explore,
-Builders and Contact. Existing hash deep links are preserved.
+The five distinct navigation destinations are Home, Free Tools, **HQventures**,
+Builders and Contact. The existing `#explore` route is retained internally
+for backward-compatible bookmarks; every visitor-facing page, navigation
+label and direct-tool shell uses HQventures.
 
 ## File ownership
 
