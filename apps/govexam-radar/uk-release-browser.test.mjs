@@ -125,3 +125,24 @@ test("revisited UK listing changes are highlighted without a notification server
   assert.equal(await page.locator(".change-badge").count(),0,"unchanged repeat view must not keep alerting");
  }finally{await context.close();}
 });
+
+test("visible-tab vacancy watching is off by default and opt-in only",async()=>{
+ const context=await browser.newContext();
+ const page=await context.newPage();
+ try{
+  await page.goto(origin+"/",{waitUntil:"domcontentloaded"});
+  await page.locator(".job-card").waitFor();
+  assert.equal(await page.locator("#watch-toggle").getAttribute("aria-pressed"),"false");
+  assert.match(await page.locator("#watch-status").textContent(),/off/);
+  await page.locator("#watch-toggle").click();
+  assert.equal(await page.locator("#watch-toggle").getAttribute("aria-pressed"),"true");
+  assert.match(await page.locator("#watch-status").textContent(),/15 minutes/);
+  await page.locator("#watch-toggle").click();
+  assert.equal(await page.locator("#watch-toggle").getAttribute("aria-pressed"),"false");
+  await page.locator("#watch-toggle").click();
+  await page.locator("#preview-reset").click();
+  assert.equal(await page.locator("#watch-toggle").getAttribute("aria-pressed"),"false","changing filters must stop watching");
+  await page.reload({waitUntil:"domcontentloaded"});
+  assert.equal(await page.locator("#watch-toggle").getAttribute("aria-pressed"),"false","no watch after tab reload");
+ }finally{await context.close();}
+});
