@@ -53,7 +53,7 @@ test('public Impact never fabricates visitors, partners, revenue, or achievement
  assert.deepEqual(data.trendingApps,[]);
  assert.deepEqual(data.milestones,[]);
  const [html,js]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js')]);
- for(const claim of ['Awaiting verified aggregate data','No revenue has been published','Rankings appear once real application usage is verified','Verified milestones will appear'])
+ for(const claim of ['First-party anonymous sessions · new collection','No revenue has been published','Rankings appear once real application usage is verified','Verified milestones will appear'])
   assert.ok(html.includes(claim),claim);
  assert.match(js,/p\.publication\.approvedByFounder===true/);
  assert.match(js,/\[-1,0,1\]\.includes\(x\.direction\)/);
