@@ -3,6 +3,7 @@ import { FULL_HTML } from "./full-ui.mjs";
 import { ENHANCE_JS } from "./enhance.mjs";
 import { FULL_CSS } from "./full-css.mjs";
 import { handleCommunity } from "./community-api.mjs";
+import { checkPortalAndStore, getPortalStatus, runScheduledPortalChecks } from "./source-monitor.mjs";
 const VERSION = "2.0.0";
 const SOURCES = [{"id":"upsc","name":"UPSC Recruitment & Examination Notices","country":"India","flag":"🇮🇳","category":"Civil services","url":"https://www.upsc.gov.in/recruitment/recruitment-advertisement","note":"Union Public Service Commission"},{"id":"ssc","name":"Staff Selection Commission","country":"India","flag":"🇮🇳","category":"Examinations","url":"https://ssc.gov.in/","note":"Central staff recruitment and examination notices"},{"id":"rrb","name":"Railway Recruitment Boards","country":"India","flag":"🇮🇳","category":"Railways","url":"https://www.rrbcdg.gov.in/","note":"Railway recruitment notices; check your regional board"},{"id":"hal","name":"Hindustan Aeronautics Careers","country":"India","flag":"🇮🇳","category":"Engineering","url":"https://hal-india.co.in/","note":"Public-sector aerospace and engineering careers"},{"id":"ncs","name":"National Career Service","country":"India","flag":"🇮🇳","category":"Employment portal","url":"https://www.ncs.gov.in/","note":"Government-run employment portal; individual employers vary"},{"id":"jpsc","name":"Jharkhand Public Service Commission","country":"India","flag":"🇮🇳","category":"State examinations","url":"https://www.jpsc.gov.in/","note":"Jharkhand state civil-service recruitment"},{"id":"ibps","name":"Institute of Banking Personnel Selection","country":"India","flag":"🇮🇳","category":"Banking","url":"https://www.ibps.in/","note":"Bank recruitment examinations and call letters"},{"id":"usajobs","name":"USAJOBS","country":"United States","flag":"🇺🇸","category":"Federal careers","url":"https://www.usajobs.gov/","note":"Official U.S. federal employment website"},{"id":"usstate","name":"U.S. Department of State Careers","country":"United States","flag":"🇺🇸","category":"Diplomacy","url":"https://careers.state.gov/","note":"Foreign service and related career information"},{"id":"ukcivil","name":"UK Civil Service Careers","country":"United Kingdom","flag":"🇬🇧","category":"Civil service","url":"https://www.civil-service-careers.gov.uk/","note":"UK government careers and Fast Stream"},{"id":"canada","name":"Government of Canada Jobs","country":"Canada","flag":"🇨🇦","category":"Federal careers","url":"https://www.canada.ca/en/services/jobs/opportunities/government.html","note":"Federal public service and related opportunities"},{"id":"aps","name":"APS Jobs Australia","country":"Australia","flag":"🇦🇺","category":"Public service","url":"https://www.apsjobs.gov.au/","note":"Australian Public Service employment"},{"id":"germany","name":"German Federal Public Service","country":"Germany","flag":"🇩🇪","category":"Public service","url":"https://www.service.bund.de/","note":"German federal administrative and technical jobs"},{"id":"singapore","name":"Singapore Careers@Gov","country":"Singapore","flag":"🇸🇬","category":"Public service","url":"https://www.careers.gov.sg/","note":"Singapore public service recruitment"},{"id":"eu","name":"EU Careers (EPSO)","country":"European Union","flag":"🇪🇺","category":"EU institutions","url":"https://eu-careers.europa.eu/en","note":"EU institution recruitment and selection"},{"id":"nz","name":"New Zealand Government Jobs","country":"New Zealand","flag":"🇳🇿","category":"Public service","url":"https://jobs.govt.nz/","note":"New Zealand public service job board"},{"id":"japan","name":"Japan National Personnel Authority","country":"Japan","flag":"🇯🇵","category":"National examinations","url":"https://www.jinji.go.jp/","note":"Japan national public-service examinations"}];
 const LEADS = [{"id":"rrb-je","title":"RRB Junior Engineer","authority":"Railway Recruitment Boards","country":"India","flag":"🇮🇳","stream":"Technical","category":"Railways","sourceId":"rrb","region":"All India"},{"id":"rrb-ntpc","title":"RRB NTPC (Graduate / Undergraduate)","authority":"Railway Recruitment Boards","country":"India","flag":"🇮🇳","stream":"Non-technical","category":"Railways","sourceId":"rrb","region":"All India"},{"id":"ibps-rrb","title":"IBPS Regional Rural Bank Officer / Assistant","authority":"Institute of Banking Personnel Selection","country":"India","flag":"🇮🇳","stream":"Non-technical","category":"Banking","sourceId":"ibps","region":"All India"},{"id":"ssc-chsl","title":"SSC CHSL / CGL Recruitment Cycles","authority":"Staff Selection Commission","country":"India","flag":"🇮🇳","stream":"Non-technical","category":"Examinations","sourceId":"ssc","region":"All India"},{"id":"jpsc-ccs","title":"Jharkhand Combined Civil Services","authority":"Jharkhand Public Service Commission","country":"India","flag":"🇮🇳","stream":"Non-technical","category":"State examinations","sourceId":"jpsc","region":"Jharkhand"},{"id":"upsc-ese","title":"UPSC Engineering Services Examination","authority":"Union Public Service Commission","country":"India","flag":"🇮🇳","stream":"Technical","category":"Engineering","sourceId":"upsc","region":"All India"},{"id":"upsc-cse","title":"UPSC Civil Services Examination","authority":"Union Public Service Commission","country":"India","flag":"🇮🇳","stream":"Non-technical","category":"Civil services","sourceId":"upsc","region":"All India"},{"id":"uk-fast-stream","title":"UK Civil Service Fast Stream","authority":"UK Civil Service","country":"United Kingdom","flag":"🇬🇧","stream":"Both","category":"Civil service","sourceId":"ukcivil","region":"United Kingdom"},{"id":"aps-graduate","title":"Australian Government Graduate Programs","authority":"Australian Public Service","country":"Australia","flag":"🇦🇺","stream":"Both","category":"Public service","sourceId":"aps","region":"Australia"},{"id":"us-federal","title":"USAJOBS Federal Career Openings","authority":"U.S. Office of Personnel Management","country":"United States","flag":"🇺🇸","stream":"Both","category":"Federal careers","sourceId":"usajobs","region":"United States"}];
@@ -48,30 +49,23 @@ export default {
     if (path === "/openapi.json") return JSONResponse(OPENAPI, 200, "public, max-age=3600");
     if (path === "/robots.txt") return respond("User-agent: *\nDisallow: /\n", 200, "text/plain; charset=utf-8");
     if (path === "/api/health") return JSONResponse({ status: "ok", service: "hqventures-govradar", version: VERSION, serverTime: new Date().toISOString() }, 200, "no-store");
+    if (path === "/api/source-status") return getPortalStatus(env?.DB, SOURCES);
     if (path === "/api/catalog") return JSONResponse({ version: VERSION, catalogUpdatedAt: "2026-11-16", sources: SOURCES, leads: LEADS, verifiedListings: [], notice: "Research leads require manual official confirmation. No automatic job ingestion or email dispatch is enabled." }, 200, "public, max-age=300");
     if (path === "/api/check") {
-      const source = SOURCES.find(s => s.id === url.searchParams.get("id"));
-      if (!source) return JSONResponse({ error: "unknown_source" }, 404, "no-store");
-      const key = new Request(new URL("/api/check?id=" + source.id, url.origin).toString());
-      try {
-        const cached = await caches.default.match(key);
-        if (cached) return cached;
-      } catch(e) { /* cache unavailable in local runners */ }
-      let status = "unconfirmed"; let httpStatus = null;
-      try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 5000);
-        try {
-          const upstream = await fetch(source.url, { method: "GET", redirect: "follow", signal: controller.signal, headers: { "Accept": "text/html,application/xhtml+xml" } });
-          httpStatus = upstream.status;
-          status = upstream.ok ? "reachable" : (httpStatus === 401 || httpStatus === 403 || httpStatus === 429 ? "restricted" : "unconfirmed");
-          if (upstream.body) await upstream.body.cancel().catch(() => {});
-        } finally { clearTimeout(timer); }
-      } catch(e) { status = "unconfirmed"; }
-      const response = JSONResponse({ sourceId: source.id, status, httpStatus, checkedAt: new Date().toISOString(), disclaimer: "Website reachability is not verification of a vacancy, exam date, eligibility or closing date." }, 200, "public, max-age=900");
-      try { await caches.default.put(key, response.clone()); } catch(e) {}
-      return response;
+      const source = SOURCES.find(s=>s.id===url.searchParams.get("id"));
+      if(!source)return JSONResponse({error:"unknown_source"},404,"no-store");
+      const key=new Request(new URL("/api/check?id="+source.id,url.origin).toString());
+      try {const cached=await caches.default.match(key);if(cached)return cached;}catch(e){}
+      const observed=await checkPortalAndStore(source,env?.DB);
+      const reply=JSONResponse({...observed,disclaimer:"Website reachability is not verification of a job opening, exam date, eligibility, admit card or result."},200,"public, max-age=900");
+      try{await caches.default.put(key,reply.clone());}catch(e){}
+      return reply;
     }
     return JSONResponse({ error: "not_found" }, 404, "no-store");
+  },
+  async scheduled(controller,env,ctx){
+    // Pure source health checks: never infer or publish open vacancies.
+    if(ctx?.waitUntil){ctx.waitUntil(runScheduledPortalChecks(env.DB,SOURCES));return;}
+    await runScheduledPortalChecks(env.DB,SOURCES);
   }
 };
