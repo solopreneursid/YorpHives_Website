@@ -213,6 +213,7 @@ test("actual Cloudflare preview displays official-source cards with responsive l
   await cards.first().locator("button[data-save-notice]").click();
   await page.evaluate(()=>document.getElementById("view-saved").classList.remove("hidden"));
   assert.ok((await page.locator("#saved-official-notices article").count())>=1);
+  await page.evaluate(()=>window.switchTab("alerts"));
   await page.locator("#inapp-refresh-notices").click();
   await page.locator("#inapp-notice-status").waitFor();
   assert.equal(await page.locator("#inapp-official-alerts").count(),1);
