@@ -13,20 +13,20 @@ function hexToBytes(hex){
  if(typeof hex!=="string"||!/^[0-9a-f]{64}$/i.test(hex))return null;
  return Uint8Array.from(hex.match(/.{2}/g),x=>parseInt(x,16));
 }
-export async function calculateCollectorSignature(key,timestamp,raw){
+export async function calculateCollectorSignature(key,timestamp,raw,audience=""){
  if(typeof key!=="string"||key.length<32)throw Error("collector_secret_not_configured");
  const imported=await crypto.subtle.importKey("raw",enc.encode(key),{name:"HMAC",hash:"SHA-256"},false,["sign"]);
- const signature=await crypto.subtle.sign("HMAC",imported,enc.encode(String(timestamp)+"\n"+raw));
+ const signature=await crypto.subtle.sign("HMAC",imported,enc.encode(String(timestamp)+"\n"+audience+"\n"+raw));
  return [...new Uint8Array(signature)].map(n=>n.toString(16).padStart(2,"0")).join("");
 }
-export async function verifyCollectorSignature(key,timestamp,raw,hex,now=Date.now()){
+export async function verifyCollectorSignature(key,timestamp,raw,hex,now=Date.now(),audience=""){
  if(typeof key!=="string"||key.length<32)return false;
  if(!/^\d{13}$/.test(String(timestamp)))return false;
  const time=Number(timestamp);
  if(!Number.isSafeInteger(time)||Math.abs(now-time)>300000)return false;
  const bytes=hexToBytes(hex);if(!bytes)return false;
  const imported=await crypto.subtle.importKey("raw",enc.encode(key),{name:"HMAC",hash:"SHA-256"},false,["verify"]);
- return crypto.subtle.verify("HMAC",imported,bytes,enc.encode(String(timestamp)+"\n"+raw));
+ return crypto.subtle.verify("HMAC",imported,bytes,enc.encode(String(timestamp)+"\n"+audience+"\n"+raw));
 }
 async function boundedRead(request){
  if(Number(request.headers.get("content-length")||0)>COLLECTOR_MAX_WIRE_BYTES)throw Error("oversized_payload");
@@ -67,7 +67,7 @@ export async function handleCollectorIngest(request,env,now=Date.now()){
  let raw;
  try{raw=await boundedRead(request);}
  catch{return reply({error:"payload_too_large"},413);}
- const allowed=await verifyCollectorSignature(env.INGEST_HMAC_KEY,t,raw,sig,now);
+ const allowed=await verifyCollectorSignature(env.INGEST_HMAC_KEY,t,raw,sig,now,new URL(request.url).origin);
  if(!allowed)return reply({error:"unauthorized"},401);
  let data;
  try{data=JSON.parse(raw);}catch{return reply({error:"invalid_json"},400);}
