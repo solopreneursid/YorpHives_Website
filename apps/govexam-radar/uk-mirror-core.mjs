@@ -62,7 +62,10 @@ export function validateMirroringCron(controller){
     !Number.isSafeInteger(controller.scheduledTime)||controller.scheduledTime<=0)
   throw Error("unapproved_uk_mirror_schedule");
  const time=new Date(controller.scheduledTime);
- if(time.getUTCHours()%3!==0||time.getUTCMinutes()!==55||time.getUTCSeconds()!==0)
+ // Cloudflare Cron invocations can land seconds after the minute boundary.
+ // The trusted cron expression and UTC hour/minute define the approved slot;
+ // requiring seconds===0 rejected a real 18:55:55 UTC scheduled event.
+ if(time.getUTCHours()%3!==0||time.getUTCMinutes()!==55)
   throw Error("unapproved_uk_mirror_schedule");
  return controller.scheduledTime;
 }
