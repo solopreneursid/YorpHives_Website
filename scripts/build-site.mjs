@@ -316,6 +316,9 @@ async function publishReimaginedRoot(prefix=''){
   'catalog-sync.mjs','impact-public.json','usage-public.json'];
  for(const asset of assets)
   await cp(resolve(root,'reimagined',asset),resolve(dest,prefix+asset));
+ // Browser fixture is isolated to preview acceptance; never ship it on production root.
+ if(prefix)await cp(resolve(root,'reimagined/catalog-sync-qa.mjs'),resolve(dest,prefix+'catalog-sync-qa.mjs'));
+
  const source=await readFile(resolve(root,'reimagined/index.html'),'utf8');
  let homepage=source.replace(
    '<meta name="robots" content="noindex,nofollow">',
