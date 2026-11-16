@@ -34,7 +34,7 @@ test("rejects foreign domains, closed/future notices and duplicate RSS records",
  assert.equal(normalizeManitobaItem(item({type:"Closed"}),DATE).error,"not_open");
  const a=parseManitobaRss(feed(item(),item(),item({id:"130449",title:"Office Assistant",closing:"2026-10-01"})),DATE);
  assert.equal(a.received,3);assert.equal(a.valid.length,1);assert.equal(a.rejected.duplicate,1);assert.equal(a.rejected.expired,1);
- assert.throws(()=>parseManitobaRss("<rss><channel></channel></rss>"),/invalid_manitoba_rss/);
+ assert.throws(()=>parseManitobaRss("<invalid-feed/>"),/invalid_manitoba_rss/);
  assert.throws(()=>parseManitobaRss('<!DOCTYPE foo><rss><channel></channel></rss>'),/unsupported_xml_declarations/);
 });
 function mockDb(){
