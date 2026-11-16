@@ -66,6 +66,7 @@ function fixture({rows=[mkRow("uk-1"),mkRow("uk-2")],sourceState="ok",
      if(sql.startsWith("SELECT last_cursor_seen"))return{...state};
      throw Error("unexpected_target_first");
     }};
+   }
    };
   },
   async batch(statements){
