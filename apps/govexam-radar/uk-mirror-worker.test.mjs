@@ -47,7 +47,12 @@ function fixture({rows=[mkRow("uk-1"),mkRow("uk-2")],sourceState="ok",
  };
  const target={
   prepare(sql){
-   return{bind(...args){return{
+   return{
+    async first(){
+     if(sql.startsWith("SELECT last_cursor_seen"))return{...state};
+     throw Error("unexpected_target_first");
+    },
+    bind(...args){return{
     sql,args,
     async run(){
      events.push({sql,args,method:"run"});
@@ -61,7 +66,7 @@ function fixture({rows=[mkRow("uk-1"),mkRow("uk-2")],sourceState="ok",
      if(sql.startsWith("SELECT last_cursor_seen"))return{...state};
      throw Error("unexpected_target_first");
     }};
-   }};
+   };
   },
   async batch(statements){
    for(const statement of statements){
