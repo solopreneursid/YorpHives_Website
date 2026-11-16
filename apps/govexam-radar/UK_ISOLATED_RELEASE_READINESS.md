@@ -34,6 +34,15 @@ From `apps/govexam-radar` on an owner-controlled Node.js 22+ machine with a priv
 - The current script does **not** delete records if the source has fewer rows or withdraws notices; instead it rejects orphaned records for a founder-reviewed reconciliation. A future production mirror must define safe withdrawal and tombstone semantics with audit trails.
 - A manual mirror update is not evidence of scheduled feed reliability. A separate reviewed synchronization architecture and deployment control is required for a commercial release.
 
+## Safe isolated-Worker redeployment
+
+`uk-release-deploy.mjs` is a dependency-free Node 22+ Cloudflare REST adapter for the **existing isolated staging Worker only**, not a general production deployer. No YorpHives site domains, HQ Workers, additional Cron triggers, or research Worker settings are changed.
+
+- `npm run uk-deploy:dry-run`: read-only inspection of the exact Cloudflare account/Worker name, UK-only D1 identifier, table inventory, UK-only rows, existing `workers.dev` subdomain, Secrets and Cron inventory. Requires a private account ID and narrowly scoped Cloudflare API token through environment variables.
+- `GOVRADAR_UK_STAGING_DEPLOY_APPROVED=YES npm run uk-deploy:apply`: an explicitly approved **staging-only** Worker redeployment. It requires exactly one D1 binding, no Secrets, no Cron, no community tables, no non-UK records, and a subdomain configured to serve only the isolated staging version.
+- The deployer packages exactly six first-party modules and uses strict binding-inheritance protection on upload. It independently checks all forbidden bindings after upload. It never copies `INGEST_HMAC_KEY` into the public-facing candidate.
+- Any future launch at a public domain requires a separately reviewed production deployment plan and founder authorization; **this command does not publish to a domain**.
+
 ## Quality assurance
 
 - Node unit tests in `uk-release-worker.test.mjs`: route allowlist, denied write/research paths, zero D1 writes, accepted UK records and accurate totals, denied Manitoba/India, query-string bypass attempts, no fabricated records without D1, minimal OpenAPI and noindex/CSP.
