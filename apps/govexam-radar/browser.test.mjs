@@ -36,7 +36,24 @@ for(const width of [320,375,768,1440]){
      const layout=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>window.innerWidth+3,offenders:[...document.querySelectorAll("body *")].filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&(b.right>innerWidth+4||b.left<-4)}).slice(0,12).map(e=>({tag:e.tagName,id:e.id,cls:String(e.className).slice(0,100),right:Math.round(e.getBoundingClientRect().right)}))}));
      const horizontalScroll=await page.evaluate(()=>{scrollTo(1000,0);const x=scrollX;scrollTo(0,0);return x;});
      assert.equal(horizontalScroll,0,"unexpected page-level horizontal scroll at "+width+"px: "+JSON.stringify(layout.offenders));
-     assert.equal(renderWidth,width,"full-page screenshot exceeds viewport; width "+renderWidth+" for "+width+"; offenders: "+JSON.stringify(layout.offenders));
+     if(renderWidth!==width){
+       const diagnostics=await page.evaluate(()=>{
+         const list=[...document.querySelectorAll("body *")].map(e=>{
+           const b=e.getBoundingClientRect(),css=getComputedStyle(e);
+           let clipped=false, p=e.parentElement;
+           while(p&&p!==document.documentElement){
+             const bs=p.getBoundingClientRect(),o=getComputedStyle(p).overflowX;
+             if(["auto","scroll","hidden","clip"].includes(o)&&bs.right<=window.innerWidth+2){clipped=true;break;}
+             p=p.parentElement;
+           }
+           return {e,b,css,clipped};
+         });
+         return list.filter(x=>x.b.right>window.innerWidth+3&&!x.clipped&&x.b.left>=-4)
+           .sort((a,b)=>a.b.right-b.b.right).slice(0,35)
+           .map(x=>({tag:x.e.tagName,id:x.e.id,cls:String(x.e.className).slice(0,90),right:Math.round(x.b.right),left:Math.round(x.b.left),top:Math.round(x.b.top),whiteSpace:x.css.whiteSpace}));
+       });
+       assert.equal(renderWidth,width,"rendered "+renderWidth+"px at "+width+"px. Unclipped: "+JSON.stringify(diagnostics));
+     }
      assert.equal(errors.length,0,"JS errors: "+errors.join("; "));
    }finally{await page.close();}
  });
