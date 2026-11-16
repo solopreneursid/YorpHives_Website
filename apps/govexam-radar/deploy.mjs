@@ -11,7 +11,7 @@ form.append("metadata",new Blob([JSON.stringify({
  bindings:[{type:"d1",name:"DB",database_id:database}],
  observability:{enabled:true,traces:{enabled:true}}
 })],{type:"application/json"}));
-for(const name of ["worker.js","full-ui.mjs","full-css.mjs","enhance.mjs","community-api.mjs","source-monitor.mjs"]){
+for(const name of ["worker.js","full-ui.mjs","full-css.mjs","enhance.mjs","community-api.mjs","source-monitor.mjs","official-feed.mjs","official-ui.mjs"]){
  const code=await readFile(new URL("./"+name,import.meta.url),"utf8");
  form.append(name,new Blob([code],{type:"application/javascript+module"}),name);
 }
