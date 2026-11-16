@@ -53,7 +53,7 @@ h1 em,h2 em{font-family:var(--serif);font-weight:400;letter-spacing:-.055em}
 .hero-grid{position:relative;display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);gap:clamp(35px,5vw,85px);align-items:center;min-height:670px;padding-block:82px 103px}
 .hero-copy{position:relative;z-index:2;min-width:0}
 .hero h1{margin:26px 0 23px;max-width:720px;font-size:clamp(48px,4.35vw,66px)}
-.hero h1 em{color:#a4efc4}
+.hero h1 em{color:#a4efc4;white-space:nowrap}
 .hero-sub{max-width:515px;color:#b5d0c0;font-size:clamp(15px,1.25vw,18px);line-height:1.72}
 .hero-buttons{display:flex;flex-wrap:wrap;gap:11px;margin-top:30px}
 .hero-proof{display:flex;flex-wrap:wrap;align-items:center;gap:9px;color:#9eb7a9;font-size:11px;font-weight:650;margin-top:38px}
