@@ -79,3 +79,39 @@ test("API refuses to fabricate job records when storage is absent",async()=>{
  const r=await serveOfficialNotices(null,new URLSearchParams());
  assert.equal(r.status,503);assert.equal((await r.json()).notices.length,0);
 });
+
+test("bounded DfE fetch follows only one same-host same-path redirect",async()=>{
+ const db=dbMock(),calls=[];
+ const fetcher=async url=>{
+  calls.push(url);
+  if(calls.length===1)return new Response(null,{status:302,headers:{Location:DFE_SOURCE.api+"?page=1"}});
+  return new Response(JSON.stringify({data:[sample()],meta:{totalPages:2}}),{headers:{"content-type":"application/json"}});
+ };
+ const out=await ingestDfE(db,fetcher,clock);
+ assert.equal(out.state,"ok");
+ assert.equal(out.accepted,1);
+ assert.equal(calls.length,2);
+});
+test("DfE redirected to unrelated host fails closed",async()=>{
+ const db=dbMock(),calls=[];
+ const fetcher=async url=>{
+  calls.push(url);
+  return new Response(null,{status:302,headers:{Location:"https://other.example/jobs.json?page=1"}});
+ };
+ const out=await ingestDfE(db,fetcher,clock);
+ assert.equal(out.state,"error");
+ assert.equal(out.errorCode,"unsafe_redirect");
+ assert.equal(calls.length,1);
+ assert.equal(db.batches.length,0);
+});
+test("DfE retry is bounded after transient upstream network failure",async()=>{
+ const db=dbMock();let calls=0;
+ const fetcher=async()=>{
+  calls++;
+  if(calls===1)throw new TypeError("temporary network issue");
+  return new Response(JSON.stringify({data:[sample()],meta:{totalPages:2}}),{headers:{"content-type":"application/json"}});
+ };
+ const out=await ingestDfE(db,fetcher,clock);
+ assert.equal(out.state,"ok");
+ assert.equal(calls,2);
+});
