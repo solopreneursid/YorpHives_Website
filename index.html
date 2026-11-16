@@ -25,62 +25,147 @@
 <section class="page" id="home" aria-label="Home">
  <div class="hero">
   <div class="hero-ambient" aria-hidden="true">
-   <span class="ambient-halo ambient-halo-a"></span><span class="ambient-halo ambient-halo-b"></span>
-   <span class="ambient-halo ambient-halo-c"></span><span class="ambient-sweep"></span>
-   <span class="ambient-node ambient-node-a"></span><span class="ambient-node ambient-node-b"></span>
-   <span class="ambient-node ambient-node-c"></span><span class="ambient-node ambient-node-d"></span>
-   <span class="ambient-node ambient-node-e"></span>
-   <span class="ambient-trace ambient-trace-a"></span><span class="ambient-trace ambient-trace-b"></span>
+   <div class="hero-aurora"></div>
+   <svg class="hero-geometry" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <defs>
+     <linearGradient id="hero-edge-glow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1adce5"/><stop offset=".48" stop-color="#6be8c6"/><stop offset="1" stop-color="#2767f2"/></linearGradient>
+     <radialGradient id="hero-center-haze"><stop stop-color="#73ffd9" stop-opacity=".26"/><stop offset="1" stop-color="#73ffd9" stop-opacity="0"/></radialGradient>
+    </defs>
+    <circle cx="621" cy="292" r="230" fill="url(#hero-center-haze)" class="hero-glow-core"/>
+    <g class="hero-orbit-paths" fill="none" stroke="#79d9b7" stroke-opacity=".23">
+     <ellipse cx="619" cy="293" rx="275" ry="135" transform="rotate(-34 619 293)"/>
+     <ellipse cx="619" cy="293" rx="230" ry="188" transform="rotate(31 619 293)"/>
+     <path d="M385 455 524 375 618 429 777 342" stroke-dasharray="5 12"/>
+     <path d="M407 142 535 213 624 161 823 262" stroke-dasharray="7 14"/>
+    </g>
+    <g class="hero-identity-mark" stroke-linejoin="round">
+     <path d="M480 199 578 145 656 187 562 241Z" fill="#14d9e7" fill-opacity=".85"/>
+     <path d="M656 187 751 243 668 293 562 241Z" fill="#83f3c3" fill-opacity=".80"/>
+     <path d="M562 241 668 293 668 380 577 431 577 342 480 287 480 199Z" fill="#3678f5" fill-opacity=".69"/>
+     <path d="M562 241 577 342 668 293" fill="none" stroke="#c2ffe9" stroke-opacity=".75" stroke-width="4"/>
+    </g>
+    <g class="hero-circuit-lines" fill="none" stroke="url(#hero-edge-glow)" stroke-width="3" stroke-linecap="round">
+     <path d="M296 160 385 207 457 164 480 199"/>
+     <path d="M751 243 827 201 876 233"/>
+     <path d="M577 431 536 489 425 489"/>
+     <path d="M668 380 767 433 841 410"/>
+    </g>
+    <g class="hero-beacons" fill="#a7ffe0">
+     <circle cx="296" cy="160" r="6"/><circle cx="876" cy="233" r="7"/>
+     <circle cx="425" cy="489" r="5"/><circle cx="841" cy="410" r="6"/>
+     <circle cx="407" cy="142" r="4"/><circle cx="777" cy="342" r="5"/>
+    </g>
+   </svg>
+   <div class="hero-grid-wash"></div>
   </div>
   <div class="shell hero-grid">
-   <div class="hero-copy">
+   <div class="hero-copy" id="our-ai-team">
     <span class="eyebrow"><span class="status-dot"></span> YORPHIVESHQ · EVOLVING AI OS</span>
     <h1>Founder-led.<br><span class="hero-intelligence">Intelligence-powered.</span><br><em>Ideas in motion.</em></h1>
-    <p class="hero-sub">HQ runs the AI engine. <strong>The founder decides.</strong></p>
-    <div class="hero-buttons"><a class="btn btn-accent" href="#explore">Explore projects <span aria-hidden="true">↗</span></a><a class="btn btn-outline" href="#how-it-works">How it works <span aria-hidden="true">→</span></a></div>
+    <p class="hero-sub">HQ discovers. AI evaluates. <strong>Founder decides.</strong></p>
+    <div class="hero-buttons">
+     <a class="btn btn-accent" href="#home-explore">Explore <span aria-hidden="true">↗</span></a>
+     <a class="btn btn-outline" href="#home-use">Try free tools <span aria-hidden="true">→</span></a>
+    </div>
    </div>
   </div>
+  <a class="hero-scroll-cue" href="#home-explore" aria-label="See what YorpHives offers"><span aria-hidden="true">↓</span> DISCOVER</a>
  </div>
- <!-- Moving tool category rail; data-filled from local catalog -->
- <div class="category-ribbon" aria-label="Browse free tool categories">
-  <div class="rail-caption"><span class="rail-star" aria-hidden="true">✳</span><strong>FREE TOOLS</strong><span class="rail-faint">DISCOVER & USE</span></div>
-  <div class="rail-viewport" aria-label="Tool categories"><div class="rail-track" id="category-ribbon-track"></div></div>
-  <button type="button" class="motion-toggle" data-motion-toggle="categories" aria-label="Pause moving categories" aria-pressed="false">Ⅱ</button>
- </div>
- <section class="entry-section shell" aria-labelledby="entry-title">
-  <div class="section-heading"><span class="overline">THREE WAYS IN</span><h2 id="entry-title">Explore. Use. <em>Connect.</em></h2></div>
-  <div class="entry-grid">
-   <a class="entry-card entry-first" href="#explore"><span class="entry-meta">01 / PROJECTS <span aria-hidden="true">↗</span></span><span class="entry-symbol" aria-hidden="true">◈</span><h3>Explore</h3><p>What we're building.</p></a>
-   <a class="entry-card" href="#tools"><span class="entry-meta">02 / UTILITIES <span aria-hidden="true">↗</span></span><span class="entry-symbol" aria-hidden="true">▦</span><h3>Free tools</h3><p>Get things done.</p></a>
-   <a class="entry-card" href="#builders"><span class="entry-meta">03 / NETWORK <span aria-hidden="true">↗</span></span><span class="entry-symbol" aria-hidden="true">⌘</span><h3>Builders</h3><p>Work together. Soon.</p></a>
-  </div>
- </section>
- <section class="os-section" id="our-ai-team" aria-labelledby="os-title">
-  <div class="shell os-grid"><div class="os-copy"><span class="overline light">THE ENGINE BEHIND YORPHIVES</span><h2 id="os-title">HQ operates.<br>AI investigates.<br><em>Founder decides.</em></h2><p>One system. Different specialists. Evidence before action.</p><a class="text-action light-text" href="#explore">See where ideas go <span aria-hidden="true">↗</span></a></div>
-   <div class="os-board" aria-label="Visual operating flow from YorpHivesHQ to AI specialists to the founder">
-    <div class="os-board-head"><span class="live-pip"></span><strong>YORPHIVESHQ</strong><small>OPERATIONS ENGINE</small></div>
-    <div class="os-roles"><span>⌕ Research</span><span>◇ Markets</span><span>⌘ Product</span><span>↗ Growth</span><span>▣ Quality</span><span>✳ Learning</span></div>
-    <div class="os-channel"><span>EVIDENCE & RECOMMENDATIONS</span><i aria-hidden="true">↓</i></div>
-    <div class="os-decision"><span aria-hidden="true">✓</span><strong>FOUNDER</strong><small>GO / NO-GO</small></div>
+
+ <!-- 01 Explore: project showcase, never fabricate an unapproved launch -->
+ <section class="home-experience home-explore" id="home-explore" aria-labelledby="home-explore-title">
+  <div class="shell experience-layout">
+   <div class="experience-copy">
+    <span class="experience-index">01 <span>— EXPLORE</span></span>
+    <h2 id="home-explore-title">Discover<br><em>what's next.</em></h2>
+    <p>Our projects. Backed by evidence.</p>
+    <a class="experience-action experience-action-light" href="#explore">Explore projects <span aria-hidden="true">↗</span></a>
+   </div>
+   <div class="home-project-stage" id="home-project-stage">
+    <div class="project-stage-top"><span class="stage-live-dot"></span><span>YORPHIVES / PROJECT LAB</span><span class="project-stage-state" id="project-stage-state">FOUNDER REVIEW</span></div>
+    <div class="project-stage-body" id="home-featured">
+     <div class="project-abstract" aria-hidden="true"><i></i><i></i><i></i><b>✳</b></div>
+     <div class="project-stage-copy"><span>FIRST PUBLIC LAUNCH</span><strong>In evaluation.</strong><small>Nothing goes live without approval.</small></div>
+    </div>
+    <div class="project-stage-foot" id="how-it-works">
+      <span>DISCOVER</span><b>→</b><span>VERIFY</span><b>→</b><span class="stage-founder">FOUNDER</span><b>→</b><span>BUILD</span>
+    </div>
    </div>
   </div>
  </section>
- <section class="journey-section shell" id="how-it-works" aria-labelledby="journey-title">
-  <div class="section-heading row"><div><span class="overline">THE DECISION LOOP</span><h2 id="journey-title">From signal <em>to launch.</em></h2></div><span class="section-note">Five steps. One final decision-maker.</span></div>
-  <ol class="journey-list">
-   <li class="studio-step stage-idea"><span class="step-index">01</span><span class="step-icon" aria-hidden="true">⌁</span><h3>Discover</h3><p>Spot opportunities.</p></li>
-   <li class="studio-step stage-research"><span class="step-index">02</span><span class="step-icon" aria-hidden="true">⌕</span><h3>Research</h3><p>Know the market.</p></li>
-   <li class="studio-step stage-strategy"><span class="step-index">03</span><span class="step-icon" aria-hidden="true">◇</span><h3>Evaluate</h3><p>Check the evidence.</p></li>
-   <li class="studio-step stage-build founder-gate"><span class="step-index">04 / FOUNDER</span><span class="step-icon" aria-hidden="true">✓</span><h3>Decide</h3><p>Approve or reject.</p></li>
-   <li class="studio-step stage-product"><span class="step-index">05</span><span class="step-icon" aria-hidden="true">↗</span><h3>Build</h3><p>Launch & evolve.</p></li>
-  </ol>
+
+ <!-- 02 Use: real tool discovery without another explanation of HQ -->
+ <section class="home-experience home-use" id="home-use" aria-labelledby="home-use-title">
+  <div class="shell home-use-shell">
+   <div class="home-use-top">
+    <div class="experience-copy">
+     <span class="experience-index">02 <span>— USE</span></span>
+     <h2 id="home-use-title">Useful tools.<br><em>Ready now.</em></h2>
+     <p>Free. Private. No sign-up.</p>
+    </div>
+    <form id="home-tool-search-form" class="home-tool-search" role="search" aria-label="Search free tools">
+     <label class="visually-hidden" for="home-tool-search">Find a free tool</label>
+     <span aria-hidden="true">⌕</span>
+     <input id="home-tool-search" type="search" placeholder="Find a tool…" autocomplete="off">
+     <button type="submit" aria-label="Search the tool library">↗</button>
+    </form>
+   </div>
+   <div class="home-featured-tools" id="home-tools-list" aria-label="Featured free tools" role="list">
+    <p class="home-tools-loading" role="status">Loading free tools…</p>
+   </div>
+   <div class="home-use-actions">
+    <a class="experience-action" href="#tools">Browse all free tools <span aria-hidden="true">↗</span></a>
+    <span id="home-tools-count" class="home-tool-count">Tools made for everyday work</span>
+   </div>
+  </div>
+  <div class="category-ribbon home-use-ribbon" aria-label="Browse tool categories">
+   <div class="rail-caption"><span class="rail-star" aria-hidden="true">✳</span><strong>CATEGORIES</strong></div>
+   <div class="rail-viewport" aria-label="Moving tool categories"><div class="rail-track" id="category-ribbon-track"></div></div>
+   <button type="button" class="motion-toggle" data-motion-toggle="categories" aria-label="Pause moving categories" aria-pressed="false">Ⅱ</button>
+  </div>
  </section>
- <section class="spotlight-section shell" aria-labelledby="spotlight-title"><div class="spotlight-copy"><span class="overline">EXPLORE / PROJECTS</span><h2 id="spotlight-title">Research in.<br><em>Projects out.</em></h2><p>Only founder-approved work makes it to Explore.</p><a class="btn btn-dark" href="#explore">View our projects <span aria-hidden="true">↗</span></a></div>
-  <div class="spotlight-panel" role="img" aria-label="AI opportunity analysis passes through the founder's approval gate before becoming a project"><div class="panel-tag">PROJECT PIPELINE <span class="live-pip"></span></div><div class="pipeline-lines"><div><span>01</span><strong>OPPORTUNITY</strong><i>●</i></div><div><span>02</span><strong>HQ EVIDENCE</strong><i>●</i></div><div class="pipeline-gate"><span>03</span><strong>FOUNDER APPROVAL</strong><i>✓</i></div><div class="pipeline-last"><span>04</span><strong>PROJECT</strong><i>↗</i></div></div><div class="panel-bottom">NO AUTOMATIC LAUNCHES</div></div>
+
+ <!-- 03 Connect: clear choice between contact and coming-soon Builders -->
+ <section class="home-experience home-connect" id="home-connect" aria-labelledby="home-connect-title">
+  <div class="shell connect-shell">
+   <div class="connect-intro">
+    <div class="experience-copy">
+     <span class="experience-index">03 <span>— CONNECT</span></span>
+     <h2 id="home-connect-title">Good things<br><em>happen together.</em></h2>
+     <p>Ideas meet people. People make progress.</p>
+    </div>
+    <div class="connection-network" aria-hidden="true">
+     <svg viewBox="0 0 460 260" focusable="false" preserveAspectRatio="xMidYMid meet">
+      <g class="connection-lines" stroke="#328861" stroke-width="2" fill="none">
+       <path d="M70 114 218 61 384 112 322 216 158 215 70 114 218 61 322 216"/>
+       <path d="M158 215 218 61M70 114 384 112"/>
+      </g>
+      <g class="connection-orbs">
+       <circle cx="70" cy="114" r="21"/><circle cx="218" cy="61" r="25"/>
+       <circle cx="384" cy="112" r="22"/><circle cx="322" cy="216" r="19"/><circle cx="158" cy="215" r="21"/>
+      </g>
+      <g class="connection-icons" text-anchor="middle" fill="#185a3e" font-size="25" font-family="sans-serif">
+       <text x="70" y="123">✳</text><text x="218" y="70">◇</text>
+       <text x="384" y="121">↗</text><text x="322" y="225">⌘</text><text x="158" y="224">+</text>
+      </g>
+     </svg>
+    </div>
+   </div>
+   <div class="connection-paths">
+    <a class="connection-card" href="#connect"><span class="connection-symbol" aria-hidden="true">↗</span><span><strong>Have an idea?</strong><small>Start a conversation.</small></span><span class="connection-arrow" aria-hidden="true">↗</span></a>
+    <a class="connection-card" href="#builders"><span class="connection-symbol" aria-hidden="true">⌘</span><span><strong>Find your people.</strong><small>Builders network · Coming soon</small></span><span class="connection-arrow" aria-hidden="true">↗</span></a>
+   </div>
+  </div>
  </section>
- <section class="builders-teaser"><div class="shell teaser-grid"><div><span class="overline">THE BUILDERS NETWORK</span><h2>Find work.<br><em>Build together.</em></h2></div><div><span class="availability-tag">COMING SOON</span><p>Verified paid membership for projects and people.</p><a class="text-action" href="#builders">Meet Builders <span aria-hidden="true">↗</span></a></div></div></section>
- <div class="home-pulse" aria-label="Latest YorpHives updates"><div class="shell home-pulse-inner"><div class="home-pulse-head"><span class="live-pip"></span><strong>YHpulse</strong><small><!-- PULSE_COUNT --></small></div><div class="home-pulse-viewport" id="home-pulse-viewport"><!-- PULSE_START --><!-- PULSE_END --></div><button type="button" class="motion-toggle home-pulse-pause" data-motion-toggle="pulse" aria-pressed="false" aria-label="Pause YHpulse updates">Ⅱ</button><a href="#tools" class="home-pulse-arrow" aria-label="Browse free tools">↗</a></div></div>
- <section class="cta-banner shell"><div><span class="overline">KEEP IDEAS MOVING</span><h2>Something on your mind?</h2></div><a class="btn btn-dark" href="#connect">Say hello <span aria-hidden="true">↗</span></a></section>
+
+ <!-- Verified recent public updates appear only once -->
+ <div class="home-pulse" aria-label="Latest YorpHives updates">
+  <div class="shell home-pulse-inner">
+   <div class="home-pulse-head"><span class="live-pip"></span><strong>YHpulse</strong><small><!-- PULSE_COUNT --></small></div>
+   <div class="home-pulse-viewport" id="home-pulse-viewport"><!-- PULSE_START --><!-- PULSE_END --></div>
+   <button type="button" class="motion-toggle home-pulse-pause" data-motion-toggle="pulse" aria-pressed="false" aria-label="Pause YHpulse updates">Ⅱ</button>
+  </div>
+ </div>
 </section>
 <!-- TOOLS: search-first, no giant intro -->
 <section class="page" id="tools" aria-label="Free tools" hidden>
