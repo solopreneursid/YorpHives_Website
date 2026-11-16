@@ -14,7 +14,7 @@ const niceDate=d=>new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{day:'nume
 const number=n=>n.toLocaleString('en-US');
 const views=[...document.querySelectorAll('.view')];
 const names={home:'Home',ventures:'HQventures',builders:'Builders',impact:'Impact',tools:'Free tools',partners:'Partnerships',contact:'Contact'};
-const special={ecosystem:'home','venture-collection':'ventures'};
+const special={ecosystem:'home','venture-collection':'ventures',explore:'ventures',connect:'contact',opportunities:'builders',membership:'builders'};
 let current='home';
 
 function menuClose(){
@@ -37,8 +37,8 @@ function route(){
  });
  document.title=active==='home'?'YorpHives — Ideas into impact':names[active]+' · YorpHives';
  menuClose();moreClose();
- if(special[hash])requestAnimationFrame(()=>$(hash)?.scrollIntoView({block:'start',behavior:'instant'}));
- else if(changed || hash===active)window.scrollTo({top:0,behavior:'instant'});
+ if(special[hash]&&$(hash))requestAnimationFrame(()=>$(hash)?.scrollIntoView({block:'start',behavior:'instant'}));
+ else if(changed || hash===active || special[hash])window.scrollTo({top:0,behavior:'instant'});
  current=active;
 }
 $('menu-toggle').addEventListener('click',()=>{
