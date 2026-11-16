@@ -155,3 +155,43 @@
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
+
+
+/* Responsive visual hierarchy for the founder-led studio story. */
+@media(max-width:1100px) and (min-width:761px){
+ .benefit{gap:9px;padding:13px 11px}
+ .benefit>span{width:22px;font-size:20px}
+ .benefit strong{font-size:11px}
+ .benefit small{font-size:9px}
+}
+@media(max-width:760px){
+ .hero-grid{padding-bottom:40px}
+ .hero-benefits{margin-top:-10px;padding-bottom:25px}
+ .benefits-grid{grid-template-columns:repeat(2,minmax(0,1fr));border-radius:14px}
+ .benefit{gap:8px;padding:13px 12px;min-height:70px}
+ .benefit:nth-child(2){border-right:0}
+ .benefit:nth-child(-n+2){border-bottom:1px solid #a6d9bd30}
+ .benefit>span{width:22px;height:25px;font-size:21px}
+ .benefit strong{font-size:11px}
+ .benefit small{font-size:9.5px}
+ .spotlight-panel{min-height:0;padding-bottom:26px}
+ .spotlight-symbol{font-size:35px;margin:8px 0}
+ .spotlight-panel h3{font-size:25px}
+ .evidence-list>div{gap:8px;padding:11px 0}
+ .evidence-list strong{font-size:11px}
+ .evidence-list small{font-size:10px}
+ .search-footer{align-items:flex-start;margin-top:9px}
+ .tool-suggest{font-size:11px;min-height:40px}
+}
+@media(max-width:420px){
+ .hero-grid{padding-bottom:31px}
+ .hero-benefits{margin-top:-6px}
+ .benefit{padding:10px 7px;gap:5px;min-height:68px}
+ .benefit>span{width:18px;font-size:17px}
+ .benefit strong{font-size:10px}
+ .benefit small{font-size:9px}
+ .search-footer .search-under{flex:1 1 100%}
+ .evidence-list>div{align-items:flex-start;flex-direction:column;gap:3px}
+ .evidence-list small{text-align:left}
+}
+
