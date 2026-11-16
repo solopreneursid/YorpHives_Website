@@ -134,6 +134,17 @@ This checklist is intentionally evidence-based. **Do not mark automatic synchron
 - UK isolated mirror was refreshed to **250 approved-source records** after the UK second Cron, matching the research UK record count. This was a founder-authorized **manual staging sync**, not automatic continuous mirroring.
 - **Remaining blockers:** automated UK-only mirror refresh with private credentials and withdrawal handling, continued long-term source reliability monitoring, Manitoba publication rights, actual public release hardening, founder domain/launch authorization, and expense monitoring. The fact that two Cron cycles passed does **not** grant permission to publish commercially.
 
+## Private mirror: safe expiry and confirmed withdrawals — staging (2026-11-16)
+
+- Audited the private UK-only mirror scheduler, public SQL and isolated D1. **The first unattended `55 */3 * * *` mirror Cron has not occurred** as of the latest check; `uk_mirror_state.status=never_run`, `uk_mirror_runs` empty. Do not claim automated freshness until a genuine scheduled `state=ok` entry appears in isolated D1.
+- Found and fixed a lifecycle sync gap: the source feed can change `life_status='expired'` **without changing `last_seen_at`**. The private mirror now reconciles `closing_at<=now` separately on every successful mirroring attempt. Public API already filters both past deadlines and non-open statuses.
+- Implemented private `uk_withdrawal_checks` evidence table **only in isolated UK D1** (no community/HQ data). A missing entry from a partial official feed is never proof of withdrawal.
+- Conservative first-party direct link verification checks only original official UK DfE URLs, maximum **4** older unexpired vacancies per 3-hour run, with an 8-second request timeout and no cross-origin redirects followed. Repeated 404s trigger **review only**. Two independent **410 Gone** results at least **3 hours apart**, with unchanged source evidence, can mark `life_status='withdrawn_confirmed'`; no records are deleted.
+- Private source/target D1, public isolated UK Worker, encrypted research ingest Secret and all existing schedules remained unchanged. The private mirror was deployed with 5 JavaScript modules, two exact D1 bindings, **zero Secrets, disabled public subdomain**, and its original `55 */3 * * *` Cron.
+- Both automatic and manual SQL upsert paths now preserve `withdrawn_confirmed` if an incoming row has no newer source observation, so a stale copy cannot silently reopen a confirmed withdrawn record.
+- Added lifecycle regression tests for expiration without new source timestamps, HTTP 404/410 proof, minimum separation, failed/redirected requests, changed official-source evidence, URL spoofing, safe no-deletion semantics and probe limits; CI validation recorded in PR #7.
+- Remaining readiness: first genuine private mirror success and subsequent successful cadence, confirmation of privacy/rights/recovery checks and founder-approved commercial domain. **None of these updates authorize publication to `yorphives.com`.**
+
 ## Evidence URLs
 - Draft PR 7: https://github.com/solopreneursid/YorpHives_Website/pull/7
 - Official India index: https://employmentnews.gov.in/newemp/AllJobs.aspx?k=All
