@@ -79,3 +79,25 @@ test("a browser cannot retrieve research, community, collector or moderation rou
   assert.deepEqual(j.sources.map(s=>s.id),["uk-dfe-teaching-vacancies"]);
  }finally{await page.close();}
 });
+
+test("saved UK search remains private to a browser and survives reload",async()=>{
+ const context=await browser.newContext();
+ const page=await context.newPage();
+ try{
+  await page.goto(origin+"/",{waitUntil:"domcontentloaded"});
+  await page.locator("#preview-search").fill("mathematics");
+  await page.locator("#preview-stream").selectOption("Non-technical");
+  await page.locator("#save-search").click();
+  assert.match(await page.locator("#saved-search-status").textContent(),/mathematics/);
+  await page.reload({waitUntil:"domcontentloaded"});
+  assert.equal(await page.locator("#preview-search").inputValue(),"");
+  await page.locator("#use-saved-search").click();
+  assert.equal(await page.locator("#preview-search").inputValue(),"mathematics");
+  assert.equal(await page.locator("#preview-stream").inputValue(),"Non-technical");
+  const stored=await page.evaluate(()=>localStorage.getItem("govradar-uk-saved-search-v1"));
+  assert.deepEqual(JSON.parse(stored),{version:1,term:"mathematics",stream:"Non-technical"});
+  await page.locator("#clear-saved-search").click();
+  assert.equal(await page.evaluate(()=>localStorage.length),0);
+  assert.equal(await page.locator("#use-saved-search").isDisabled(),true);
+ }finally{await context.close();}
+});
