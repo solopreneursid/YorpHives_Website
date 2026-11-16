@@ -49,6 +49,9 @@ for(const file of ['index.html','app.js','style.css','next.css','next-responsive
  await cp(resolve(root,file),resolve(dest,file));
 // Keep private or unqualified catalog candidates out of public static assets.
 await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
+// One first-party analytics client for the marketing site and published tools.
+await cp(resolve(root,'insights-client.mjs'),resolve(dest,'insights-client.mjs'));
+
 const roots=new Set(['tools',...published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0])]);
 for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory()).catch(()=>false))
  await cp(resolve(root,dir),resolve(dest,dir),{recursive:true});
@@ -156,7 +159,10 @@ for(const item of published){
   entity
  ];
  html=injectHead(html,metadata(url,graph));
- html=injectSiteSupport(html,path);
+ html=injectSiteSupport(html,path)
+  if(path.startsWith('tools/')&&path.endsWith('index.html')&&path!=='tools/index.html'){
+   html=html.replace('</body>','<script type="module" src="../../insights-client.mjs"></script></body>');
+  };
  html=injectToolSuite(html,item);
  html=injectNextToolUI(html,item);
  await write(path,html);
