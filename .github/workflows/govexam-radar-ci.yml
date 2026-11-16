@@ -149,7 +149,7 @@ jobs:
           const canada=await dict['/api/notices?country=Canada'].json();
           if(canada.notices.length!==0||canada.total!==0)throw Error('Unexpected non-UK rows');
           const api=await dict['/openapi.json'].json();
-          if(JSON.stringify(Object.keys(api.paths).sort())!==JSON.stringify(['/api/health','/api/notices']))
+          if(JSON.stringify(Object.keys(api.paths).sort())!==JSON.stringify(['/api/freshness','/api/health','/api/notices']))
             throw Error('Extra routes exposed in OpenAPI');
           const denied=await fetch(origin+'/api/collector/ingest',{method:'POST',body:'{}'});
           if(denied.status!==405)throw Error('Write method unexpectedly accepted');
