@@ -195,3 +195,72 @@
  .evidence-list small{text-align:left}
 }
 
+/* New AI workforce and Explore journey reflow as composed layouts, not shrinking desktop cards. */
+@media(max-width:1100px){
+ .os-section{padding-block:75px 79px}
+ .os-grid{gap:5%;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr)}
+ .os-visual{padding:19px}
+ .os-agent{padding:11px 9px;grid-template-columns:25px minmax(0,1fr);gap:3px 7px}
+ .os-agent>span{width:25px;height:25px;font-size:16px}
+ .os-agent strong{font-size:10px}
+ .os-agent small{font-size:9px}
+ .explore-process-list li{padding:16px 13px;min-height:183px}
+ .explore-process-list li strong{font-size:15px}
+}
+@media(max-width:900px){
+ .os-grid{grid-template-columns:1fr;gap:32px}
+ .os-intro>p{max-width:730px}
+ .os-visual{width:min(100%,720px);justify-self:center}
+ .os-agent strong{font-size:12px}
+ .os-agent small{font-size:10px}
+ .os-agent{padding:14px}
+ .explore-process-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .explore-process-list li{min-height:156px}
+}
+@media(max-width:760px){
+ .hero h1{font-size:clamp(38px,9.05vw,56px)}
+ .hero-copy .hero-sub{font-size:13px;line-height:1.68}
+ .os-section{padding-block:58px 62px}
+ .os-grid{gap:22px}
+ .os-intro h2{font-size:clamp(34px,8.5vw,48px);margin:14px 0 18px}
+ .os-intro>p{font-size:13px;line-height:1.67;margin-bottom:14px}
+ .os-visual{padding:15px;border-radius:18px}
+ .os-agents{gap:8px;margin-top:15px}
+ .os-agent{padding:11px 9px}
+ .os-agent strong{font-size:11px}
+ .os-agent small{font-size:9.5px}
+ .os-founder{padding:12px;gap:10px}
+ .os-founder strong{font-size:14px}
+ .os-human{font-size:8px}
+ .explore-process{padding-top:54px}
+ .explore-process-heading{display:block}
+ .explore-process-heading h2{font-size:clamp(30px,7.6vw,43px)}
+ .explore-process-heading p{margin-top:15px;font-size:12px;max-width:680px}
+ .explore-process-list{gap:9px;margin-top:22px}
+ .explore-process-list li{padding:14px;min-height:151px}
+ .explore-process-list li strong{font-size:14px}
+ .explore-process-list li small{font-size:11px;line-height:1.45}
+ #explore #projects-collection{padding-top:56px}
+}
+@media(max-width:420px){
+ .hero h1{font-size:clamp(37px,9.4vw,41px);letter-spacing:-.053em}
+ .hero-proof{font-size:9px}
+ .os-visual-top{flex-wrap:wrap;gap:5px}
+ .os-status{font-size:9px}
+ .os-stage{font-size:8px}
+ .os-agent{grid-template-columns:25px minmax(0,1fr);padding:10px 7px;gap:3px 6px}
+ .os-agent strong{font-size:10px}
+ .os-agent small{font-size:9px}
+ .os-human{white-space:normal;max-width:70px}
+ .os-founder-icon{width:36px;height:36px}
+ .explore-process-list{grid-template-columns:1fr;gap:8px}
+ .explore-process-list li{min-height:0;gap:7px;padding:16px}
+ .explore-process-list li strong{font-size:16px}
+ .explore-process-list li small{font-size:12px}
+}
+@media(max-width:350px){
+ .hero h1{font-size:35px}
+ .os-agent strong{font-size:9.5px}
+ .os-agent small{font-size:8.5px}
+ .os-founder strong{font-size:13px}
+}
