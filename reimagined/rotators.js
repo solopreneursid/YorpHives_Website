@@ -2,6 +2,7 @@
  * No inferred product activity. No remote services, timers stop offscreen.
  * Page links and card interactions remain fully keyboard accessible. */
 import {qualifiedProducts} from '../product-policy.mjs';
+import {getCatalog,subscribeCatalog} from './catalog-sync.mjs';
 
 const byId=id=>document.getElementById(id);
 const publicTool=item=>item?.type==='tool'&&item.published!==false&&item.visibility!=='private'&&
@@ -17,6 +18,8 @@ const mql=window.matchMedia('(prefers-reduced-motion: reduce)');
 let ecoPaused=false,pulsePaused=false;
 let pulseEntries=[];
 let pulseIndex=0;
+let latestCatalogItems=[];
+let publishedUsage=null;
 const cards={};
 const zones=new Map();
 const observer='IntersectionObserver'in window?new IntersectionObserver(entries=>{
@@ -38,13 +41,26 @@ function useCard(key,entries,interval){
  const wrap=document.querySelector('[data-strip="'+key+'"]');
  if(!wrap)return;
  const safe=Array.isArray(entries)?entries.filter(x=>safeText(x?.text)):[];
+ const prior=cards[key];
+ if(prior){
+  const current=prior.entries[prior.index];
+  const retained=safe.findIndex(x=>x.category?x.category===current?.category:x.url?x.url===current?.url:x.text===current?.text);
+  prior.entries=safe;prior.index=retained>=0?retained:0;
+  const value=safe[prior.index]?.text;
+  if(value){byId('eco-strip-'+key).textContent=value;byId('eco-strip-'+key).title=value;}
+  else{
+   const fallback={ventures:'Founder-approved launches will appear here',tools:'No published categories yet',builders:'Verified updates will appear here'};
+   byId('eco-strip-'+key).textContent=fallback[key]||'No verified updates yet';
+  }
+  return;
+ }
  const card={wrap,entries:safe,index:0,key};cards[key]=card;
  watch(wrap);
  if(safe.length){byId('eco-strip-'+key).textContent=safe[0].text;byId('eco-strip-'+key).title=safe[0].text}
- if(safe.length>1)window.setInterval(()=>{
-  if(!canMove(wrap,ecoPaused))return;
-  card.index=(card.index+1)%safe.length;
-  animateText(wrap,'eco-strip-'+key,safe[card.index].text);
+ window.setInterval(()=>{
+  if(card.entries.length<2||!canMove(wrap,ecoPaused))return;
+  card.index=(card.index+1)%card.entries.length;
+  animateText(wrap,'eco-strip-'+key,card.entries[card.index].text);
  },interval);
 }
 function initEcoControl(){
@@ -59,24 +75,28 @@ function initEcoControl(){
  btn.addEventListener('click',()=>{ecoPaused=!ecoPaused;update()});
  update();
 }
-async function initEco(){
- initEcoControl();
- const catalog=await getJson('../catalog.json');
- const items=Array.isArray(catalog?.items)?catalog.items:[];
+function onCatalogUpdate(items){
+ latestCatalogItems=items;
  const qualified=qualifiedProducts(items).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
  const tools=items.filter(publicTool);
  const categoryCounts=new Map();
- for(const tool of tools){const category=abbreviate(tool.category||'Other');
+ for(const tool of tools){
+  const category=abbreviate(tool.category||'Other');
   if(!category||category.length>42)continue;
   categoryCounts.set(category,(categoryCounts.get(category)||0)+1);
  }
- // Each category is genuine and links to the same Free Tools catalog.
  const categories=[...categoryCounts].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))
   .map(([category,count])=>({text:category+' · '+count+' tool'+(count===1?'':'s'),category}));
- const products=qualified.map(p=>({text:p.name,url:p.url}));
- useCard('ventures',products,5400);
+ useCard('ventures',qualified.map(p=>({text:p.name,url:p.url})),5400);
  useCard('tools',categories,4300);
- // A one-item venture list stays static; no bogus product cards are generated.
+ // When an existing tool is changed or a new tool is launched, eligibility
+ // is rechecked for YHpulse; ranking still requires *actual* approved usage.
+ if(publishedUsage)applyUsageSnapshot(publishedUsage);
+}
+async function initEco(){
+ initEcoControl();
+ subscribeCatalog(onCatalogUpdate);
+ await getCatalog();
  const builderFeed=await getJson('builders-updates.json');
  const builderRows=Array.isArray(builderFeed?.items)?builderFeed.items:[];
  const unique=new Set();
@@ -86,7 +106,6 @@ async function initEco(){
   .sort((a,b)=>Date.parse(b.timestamp)-Date.parse(a.timestamp)).slice(0,10)
   .map(e=>({text:e.title}));
  useCard('builders',builderEntries,6200);
- // Turn a category-strip click into an actually filtered tool library visit.
  const toolsCard=document.querySelector('.eco-tools');
  toolsCard?.addEventListener('click',event=>{
   if(!event.target.closest('[data-strip="tools"]'))return;
@@ -95,14 +114,12 @@ async function initEco(){
   event.preventDefault();
   document.dispatchEvent(new CustomEvent('yorphives:select-tool-category',{detail:{category:current.category}}));
  });
- // Venture strip opens the selected, qualified product directly.
  document.querySelector('.eco-ventures')?.addEventListener('click',event=>{
   if(!event.target.closest('[data-strip="ventures"]'))return;
   const current=cards.ventures?.entries[cards.ventures.index];
   if(!current?.url)return;
   event.preventDefault();window.location.assign('../'+current.url);
  });
- return {tools,qualified};
 }
 function approvedUsage(data){
  const p=data?.publication;
@@ -121,23 +138,46 @@ function showPulse(){
  byId('yh-pulse-label').textContent='MOST USED / LAST 30 DAYS';
  a.title='Open '+item.name;
 }
-async function initPulse(items){
- const a=byId('yh-pulse-item');if(!a)return;
- watch(a);
- const data=await getJson('usage-public.json');
+function resetPulse(){
+ pulseEntries=[];pulseIndex=0;
+ const a=byId('yh-pulse-item');a.href='#impact';a.classList.add('is-placeholder');
+ byId('yh-pulse-number').textContent='—';
+ byId('yh-pulse-name').textContent='Most-used rankings will appear after verified reporting.';
+ byId('yh-pulse-kind').textContent='EVIDENCE FIRST';
+ byId('yh-pulse-label').textContent='MOST USED / 30 DAYS';
+ byId('yh-pulse-toggle').disabled=true;
+}
+function applyUsageSnapshot(data){
  if(!approvedUsage(data))return;
- const valid=new Map(items.filter(x=>publicTool(x)||qualifiedProducts([x]).length).map(x=>[x.url,x]));
- const seen=new Set();
- const list=[];
+ const eligible=latestCatalogItems.filter(x=>publicTool(x)||qualifiedProducts([x]).length);
+ const valid=new Map(eligible.map(x=>[x.url,x]));
+ const seen=new Set(),list=[];
  for(const row of data.ranked){
   if(!row||typeof row.url!=='string'||seen.has(row.url)||!valid.has(row.url))continue;
   seen.add(row.url);list.push(valid.get(row.url));
  }
- if(!list.length)return;
- pulseEntries=list.slice(0,10);pulseIndex=0;showPulse();
+ if(!list.length){resetPulse();return;}
+ const current=pulseEntries[pulseIndex]?.url;
+ pulseEntries=list.slice(0,10);
+ pulseIndex=Math.max(0,pulseEntries.findIndex(x=>x.url===current));
+ showPulse();
+ const toggle=byId('yh-pulse-toggle');toggle.disabled=pulseEntries.length<2;
+}
+async function refreshUsage(){
+ const snapshot=await getJson('usage-public.json');
+ if(!approvedUsage(snapshot)){
+  publishedUsage=null;
+  resetPulse();
+  return;
+ }
+ publishedUsage=snapshot;
+ applyUsageSnapshot(snapshot);
+}
+async function initPulse(){
+ const a=byId('yh-pulse-item');if(!a)return;
+ watch(a);
+ await refreshUsage();
  const toggle=byId('yh-pulse-toggle');
- toggle.disabled=pulseEntries.length<2;
- if(pulseEntries.length<2)return;
  const label=toggle.querySelector('span');
  toggle.addEventListener('click',()=>{
   pulsePaused=!pulsePaused;
@@ -147,11 +187,15 @@ async function initPulse(items){
   label.textContent=pulsePaused?'Resume':'Pause';
  });
  window.setInterval(()=>{
-  if(!canMove(a,pulsePaused))return;
+  if(pulseEntries.length<2||!canMove(a,pulsePaused))return;
   a.classList.add('is-changing');
   window.setTimeout(()=>{pulseIndex=(pulseIndex+1)%pulseEntries.length;showPulse();a.classList.remove('is-changing');},210);
  },4900);
+ // Aggregate rankings can change independently of catalogue content.
+ // Refresh infrequently while open; no per-visitor event tracking.
+ window.setInterval(()=>{if(!document.hidden)void refreshUsage()},300_000);
+ window.addEventListener('focus',()=>{if(!document.hidden)void refreshUsage()});
 }
 
-const {tools,qualified}=await initEco();
-await initPulse([...tools,...qualified]);
+await initEco();
+await initPulse();
