@@ -15,6 +15,7 @@ function mockDb(){
       employer:"Example Primary School",country:"United Kingdom",region:"London",
       jurisdiction:"England",stream:"Non-technical",
       closingAt:"2026-12-03T12:00:00Z",
+      lastSeenAt:Date.parse("2026-11-16T15:20:00Z"),
       sourceUrl:"https://teaching-vacancies.service.gov.uk/jobs/example"}]};
    },
    async first(){return{total:bound.includes("Canada")?0:1};}
@@ -52,6 +53,7 @@ for(const width of [320,375,768,1440]){
    assert.match(await page.locator(".job-card h3").textContent(),/<img src=x/);
    assert.equal(await page.locator(".job-link").getAttribute("href"),"https://teaching-vacancies.service.gov.uk/jobs/example");
    assert.equal(await page.locator("#hero-count").textContent(),"1");
+   assert.match(await page.locator(".job-card").textContent(),/Last observed in source/);
    assert.ok((await page.locator("a[href='#about']").count())>=1);
    assert.equal(await page.locator(".topbar .back-link").getAttribute("href"),"#about");
    assert.equal((await page.locator(".topbar .back-link").textContent()).trim(),"About ↗");
