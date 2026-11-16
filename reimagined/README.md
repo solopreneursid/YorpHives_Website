@@ -31,3 +31,18 @@ Four compact strips keep the visual hierarchy of the approved reimagined design:
 - **YHpulse:** A single strip immediately before the footer on all seven views, allowing up to ten actual most-used apps/tools/products. `usage-public.json` starts **unpublished** with no rankings. A founder-approved aggregate with `publication.status=approved`, `approvedByFounder=true`, `approvedAt` ISO day, `periodDays=30`, `metric=completed_uses`, and `ranked` entries `{url: 'tools/slug/'}` may be released only after independent first-party analytics validation. Every ranked URL is checked against the published utility catalog or qualified ventures, deduplicated and capped at ten. No counts or private analytics are published. An empty state is shown until verified data exists.
 
 Rotation changes a single line at a time without expensive CSS marquees or backend polling. Pausable, stopped while hidden/offscreen/hovered/focused, respects `prefers-reduced-motion`, never auto-announces to screen readers, and preserves real category and product links. Only preview builds include this experience; production is unchanged. **A JSON approval flag is an output gate, not an authentication mechanism or proof of founder authorization**—the publishing process must be separately controlled and audited.
+
+
+## Automatic catalogue synchronization (tools and venture carousel)
+
+**Use the stable preview alias** `https://design-yorphives-full-rebuil.yorphives-v1-review.pages.dev/reimagined/`, not a numbered deployment URL. Numbered URLs represent immutable snapshots of earlier builds. The branch alias advances after each successful Pages preview build.
+
+Every published tool is sourced exclusively from the canonical `catalog.json`; no homepage strip, category count, or tools list needs manual editing. After a change to any existing tool's name, category, or published status, or after adding an approved new entry to `catalog.json`, Cloudflare builds a new preview and the website reflects it:
+
+- Free Tools directory: name, description, category filters, counts, search, and sorting.
+- Home card: **auto-rotating** genuine categories and their current tool counts, including new categories.
+- Public Impact: actual number of published utilities, founder-approved ventures.
+- HQventures: genuinely founder-qualified products, one at a time.
+- YHpulse: only products that have verified, founder-approved completed-use rankings. New tools do **not** automatically become "most used." A fresh aggregate must establish real popularity.
+
+An already-open tab rechecks the catalogue every three minutes (and on focus/return), with one shared `fetch` for the site. Updates preserve active search and filters when still valid; a removed category resets to All. No page reload or database service is required. New `catalog.json` entries must correspond to real files and pass the existing release checks; adding a tool file without registering it in `catalog.json` will not publish the tool or its category. The live production project remains untouched.
