@@ -69,3 +69,23 @@ test("redirect to nonofficial host never transfers source content",async()=>{
  await assert.rejects(collectOnce({target:TARGET,source:"dfe",dryRun:true,fetcher,now:NOW,log(){}}),/unsafe_redirect/);
  assert.ok(!requests.some(x=>x.options.method==="POST"));
 });
+
+test("one source failure does not stop another source being independently collected",async()=>{
+ const {fetcher:base,requests}=fixture({evilRedirect:true});
+ const events=[];
+ const fetcher=async(url,options)=>base(url,options);
+ await assert.rejects(collectOnce({target:TARGET,source:"both",dryRun:true,
+  fetcher,now:NOW,log:v=>events.push(JSON.parse(v))}),/unsafe_redirect/);
+ assert.ok(requests.some(x=>x.url===MANITOBA.url),"Manitoba must still be checked");
+ assert.ok(events.some(x=>x.sourceId===MANITOBA.id&&x.eligible===1),"Manitoba must succeed");
+ assert.ok(events.some(x=>x.sourceId===DFE_SOURCE.id&&x.state==="failed"),"DfE error must be isolated");
+});
+test("transient DfE HTTP 503 is retried once without retrying hard failures",async()=>{
+ const {fetcher:base}=fixture();let dfeCalls=0;
+ const fetcher=async(url,options)=>{
+  if(url.startsWith(DFE_SOURCE.api)&&++dfeCalls===1)return new Response("Unavailable",{status:503});
+  return base(url,options);
+ };
+ const res=await collectOnce({target:TARGET,source:"dfe",dryRun:true,fetcher,now:NOW,log(){}});
+ assert.equal(res[0].state,"dry_run");assert.equal(dfeCalls,2);
+});
