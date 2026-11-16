@@ -49,7 +49,7 @@ test("publisher sends correct HMAC and exact requested official page",async()=>{
  const x=JSON.parse(posted.options.body);
  assert.equal(x.sourceId,DFE_SOURCE.id);assert.equal(x.page,2);
  assert.equal(await verifyCollectorSignature(KEY,posted.options.headers["X-GovRadar-Timestamp"],
-  posted.options.body,posted.options.headers["X-GovRadar-Signature"]),true);
+  posted.options.body,posted.options.headers["X-GovRadar-Signature"],Date.now(),TARGET),true);
  assert.doesNotMatch(posted.options.body,/GOVRADAR_TEST_SHARED_SECRET/);
 });
 test("a recent successful import is not duplicated by fallback",async()=>{
