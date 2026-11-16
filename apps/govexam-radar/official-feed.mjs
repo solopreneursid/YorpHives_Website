@@ -172,8 +172,8 @@ export async function serveOfficialNotices(db,params){
   const page=Math.max(1,Math.min(1000,Number(params.get("page"))||1));
   const keyword=plain(params.get("q"),60);
   const stream=["Technical","Non-technical","Unclassified"].includes(params.get("stream"))?params.get("stream"):"";
-  const where=["life_status='open'","closing_at>?", "review_state IN ('official_feed_unreviewed','founder_reviewed')"];
-  const bind=[new Date().toISOString()];
+  const where=["life_status='open'","closing_at>?","last_seen_at>=?", "review_state IN ('official_feed_unreviewed','founder_reviewed')"];
+  const bind=[new Date().toISOString(),Date.now()-14*86400000];
   if(stream){where.push("stream=?");bind.push(stream);}
   if(keyword){where.push("(title LIKE ? OR employer LIKE ? OR region LIKE ?)");bind.push(...Array(3).fill("%"+keyword+"%"));}
   const rows=await db.prepare("SELECT id,source_id as sourceId,title,employer,country,region,stream,source_page as sourceUrl,published_at as publishedAt,closing_at as closingAt,first_seen_at as firstSeenAt,last_seen_at as lastSeenAt,review_state as reviewState FROM official_job_notices WHERE "+where.join(" AND ")+" ORDER BY first_seen_at DESC,id ASC LIMIT ? OFFSET ?")
