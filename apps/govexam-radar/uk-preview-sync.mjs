@@ -100,7 +100,7 @@ export async function syncUkPreview({fetcher=fetch,account=process.env.CLOUDFLAR
  // tables are excluded). This is stricter than route-level UK filtering.
  const tables=await api("POST",root+UK_DB+"/query",
   {sql:"SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name"});
- if(JSON.stringify(tables?.[0]?.results?.map(x=>x.name))!=='["official_job_notices"]')
+ if(JSON.stringify(tables?.[0]?.results?.map(x=>x.name))!=='["official_job_notices","uk_mirror_runs","uk_mirror_state"]')
   throw Error("uk_mirror_contains_unexpected_tables");
  const target=await api("POST",root+UK_DB+"/query",
   {sql:"SELECT id FROM official_job_notices WHERE source_id=?" ,params:[UK_SOURCE]});
