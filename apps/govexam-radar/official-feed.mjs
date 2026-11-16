@@ -27,7 +27,7 @@ function validDate(v){
 }
 function classifyStream(raw){
  const category=value(raw.occupationalCategory)+" "+value(raw.title);
- if(/\b(software|developer|software engineer|IT support|information technology|network technician|engineering|data engineer|database administrator|computing|ICT technician|cybersecurity|IT technician)\b/i.test(category))return "Technical";
+ if(/\b(software|developer|software engineer|IT support|ICT support|information technology|network technician|engineering|data engineer|database administrator|computing|ICT technician|cybersecurity|IT technician)\b/i.test(category))return "Technical";
  if(/\b(teacher|teaching|tutor|catering|administrative|administrator|finance|headteacher|caretaker|assistant|reception|office|cleaning|school business|leadership)\b/i.test(category))return "Non-technical";
  return "Unclassified";
 }
