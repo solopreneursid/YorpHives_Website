@@ -54,7 +54,7 @@ function transport(calls,sourceRecords=[row("uk-1")],targetIds=[]){
    result={uuid:u.pathname.endsWith(src)?src:dst,
     name:u.pathname.endsWith(src)?"hqventures-govradar-community":"govradar-uk-candidate-preview"};
   }else if(body.sql.includes("sqlite_master")){
-   result=[{results:[{name:"official_job_notices"}]}];
+   result=[{results:[{name:"official_job_notices"},{name:"uk_mirror_runs"},{name:"uk_mirror_state"}]}];
   }else if(u.pathname.endsWith(src+"/query")){
    result=[{results:sourceRecords}];
   }else if(body.sql.startsWith("SELECT id FROM official_job_notices")){
