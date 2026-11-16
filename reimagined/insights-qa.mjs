@@ -12,9 +12,13 @@ const send=async obj=>{
 try{
  const first=await send({event:'view',route:'tools'});
  const duplicate=await send({event:'view',route:'tools'});
- const invalid=await send({event:'complete',url:'tools/does-not-exist/',});
+ const invalid=await send({event:'complete',url:'tools/does-not-exist/'});
+ const completion=await send({event:'complete',url:'tools/word-counter/'});
+ const repeatedCompletion=await send({event:'complete',url:'tools/word-counter/'});
  const valid=first.status===200&&first.data?.counted===true&&
-  duplicate.status===200&&duplicate.data?.counted===false&&invalid.status===422;
+  duplicate.status===200&&duplicate.data?.counted===false&&invalid.status===422&&
+  completion.status===200&&completion.data?.counted===true&&
+  repeatedCompletion.status===200&&repeatedCompletion.data?.counted===false;
  pre.dataset.status=valid?'passed':'failed';
- pre.textContent=JSON.stringify({valid,first,duplicate,invalid},null,2);
+ pre.textContent=JSON.stringify({valid,first,duplicate,invalid,completion,repeatedCompletion},null,2);
 }catch(e){pre.dataset.status='failed';pre.textContent=String(e)}
