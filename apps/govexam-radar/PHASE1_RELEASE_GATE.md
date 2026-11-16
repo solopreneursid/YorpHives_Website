@@ -23,6 +23,19 @@ This checklist is intentionally evidence-based. **Do not mark automatic synchron
 4. **Zero-cost quotas and no regressions**: confirm Cron/D1/Worker daily consumption stays within free tiers; ensure all existing YorpHives pages unchanged. Main branch and production deployment must remain untouched.
 5. **Fallback if Cloudflare outbound fetch stays restricted**: create a portable, first-party Node scheduled reader (self-hosted) or narrowly scoped GitHub Actions source collector with protected destination credentials; never use a third-party proxy or simulate success.
 
+## Portable fallback (implemented, fail-closed until activated)
+- Code: `collector-client.mjs` (Node.js 22, no third-party runtime packages), `collector-bridge.mjs` (WebCrypto HMAC verification, source allowlist, bounded body, replay audit), `.github/workflows/govradar-portable-collector.yml` (GitHub Actions dry-run and default-branch-only scheduled fallback).
+- `GET /api/collector/plan` reports cursor and last successful import for the two approved sources. This does NOT reveal any candidate data.
+- `POST /api/collector/ingest` accepts ONLY timestamped, HMAC-SHA256 signed snapshots for UK DfE or Manitoba. It validates the original official-source record schema using the same adapter used by Cron and refuses India or any unlisted source.
+- No token, password, candidate profile or session is exposed in public artifacts. The endpoint returns HTTP 503 and performs no writes when `INGEST_HMAC_KEY` is not installed.
+- A 5-minute signature window and unique request IDs guard against accidental replay. Page cursor disagreement is rejected; sources remain distinct.
+- Source-hosted content is validated but the bridge cannot independently prove that a signed publisher downloaded it from the claimed site; restrict the key to the protected first-party collector, audit all writes, and revoke it if compromised.
+- GitHub Actions scheduled workflows require the file to exist on the **default branch**; until this reviewed phase is merged and configured, the fallback is a tested design, not a running automatic recovery.
+- To activate: the founder must create a securely generated 32+ character key, install exactly the same value as **Cloudflare Worker secret `INGEST_HMAC_KEY`** on the isolated Worker and **GitHub Actions repository secret `GOVRADAR_COLLECTOR_KEY`**, then review the collector workflow before enabling its schedule. Never put the key in source, PR comments, screenshots, issue discussions, or site HTML.
+- A read-only dry-run needs no credentials: `node apps/govexam-radar/collector-client.mjs --dry-run` on a Node 22 machine with Internet access.
+- To publish from owner-operated Node 22 after secrets are installed: set `GOVRADAR_COLLECTOR_KEY` and `GOVRADAR_COLLECTOR_TARGET` as environment variables, then execute `node apps/govexam-radar/collector-client.mjs`.
+- The GitHub fallback runs at `55 */3 * * *` UTC and skips sources with successful imports less than two hours old, reducing duplicate writes and free-tier usage. GitHub schedules are not exact-time guarantees. It must not be described as live until the first real signed import succeeds.
+
 ## Next steps
 - Re-test isolated Cloudflare preview after deploy; inspect API metadata and mobile browser UI.
 - Observe next 3-hour Cron ingestions through D1 history; do not assume a next run will succeed.
