@@ -37,6 +37,23 @@ repeating the HQ process in several sections.
 5. **YHpulse:** A single stream of verified recent public activity, injected
    into the static homepage at build time. Never repeat the ticker in footer.
 
+## Partnerships discovery
+
+- Homepage Connect has **three equal entry paths**: Contact, Builders,
+  **Partnerships**. Keep these discoverable on phone without adding another
+  generic explanatory section.
+- The Builders hero has a dedicated **Partnerships** anchor to a separate
+  visually prominent section with potential collaboration areas.
+- The existing `#partners` hash opens that section directly in Builders;
+  `#membership` remains separate.
+- Formal Builder partner applications, partner memberships, and entitlement
+  decisions are **not open**. Users may ask about partnerships through a
+  locally generated email prepared for their review. No application, paid
+  transaction, partner acceptance or privileged access is implied.
+- Founder review and trust verification remain mandatory; never enable
+  automated partner approvals or production changes.
+
+
 The five distinct navigation destinations are Home, Free Tools, **HQventures**,
 Builders and Contact. The existing `#explore` route is retained internally
 for backward-compatible bookmarks; every visitor-facing page, navigation
