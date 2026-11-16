@@ -275,3 +275,16 @@ test("real Manitoba provincial government jobs display with source and location 
   assert.equal(errors.length,0,"Provincial feed UI script errors: "+errors.join("; "));
  }finally{await page.close();}
 });
+
+test("private moderation page loads without exposing content",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:820}});
+ try{
+  await page.goto(origin+"/moderation",{waitUntil:"domcontentloaded"});
+  assert.equal(await page.locator("#login-form").isVisible(),true);
+  assert.equal(await page.locator("#dashboard").isVisible(),false);
+  await page.locator("#moderator-token").fill("q".repeat(40));
+  await page.locator("#login-form button[type=submit]").click();
+  await page.waitForFunction(()=>document.querySelector("#message")?.textContent.includes("database_unavailable")||document.querySelector("#message")?.textContent.includes("moderation_not_configured"));
+  assert.equal(await page.locator("#dashboard").isVisible(),false);
+ }finally{await page.close();}
+});
