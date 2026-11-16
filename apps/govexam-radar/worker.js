@@ -6,6 +6,7 @@ import { handleCommunity } from "./community-api.mjs";
 import { checkPortalAndStore, getPortalStatus, runScheduledPortalChecks } from "./source-monitor.mjs";
 import { ingestDfE, serveOfficialNotices, serveIngestionStatus } from "./official-feed.mjs";
 import { OFFICIAL_UI_JS } from "./official-ui.mjs";
+import {RELEASE_PREVIEW_HTML,RELEASE_PREVIEW_CSS,RELEASE_PREVIEW_JS} from "./release-preview-ui.mjs";
 import { combinedSources, filterSources, REGIONAL_SOURCES } from "./regional-sources.mjs";
 import { REGIONAL_UI_JS } from "./regional-ui.mjs";
 import { ingestManitoba } from "./manitoba-feed.mjs";
@@ -92,6 +93,10 @@ export default {
     if (path === "/openapi.json") return JSONResponse(OPENAPI, 200, "public, max-age=3600");
     if (path === "/robots.txt") return respond("User-agent: *\nDisallow: /\n", 200, "text/plain; charset=utf-8");
     if (path === "/api/health") return JSONResponse({ status: "ok", service: "hqventures-govradar", version: VERSION, serverTime: new Date().toISOString() }, 200, "no-store");
+    if(path==="/release-preview")return respond(RELEASE_PREVIEW_HTML,200,"text/html; charset=utf-8",{"Content-Security-Policy":CSP,"Cache-Control":"no-store","X-Robots-Tag":"noindex, nofollow"});
+    if(path==="/release-preview.css")return respond(RELEASE_PREVIEW_CSS,200,"text/css; charset=utf-8",{"Cache-Control":"public, max-age=300"});
+    if(path==="/release-preview.js")return respond(RELEASE_PREVIEW_JS,200,"application/javascript; charset=utf-8",{"Cache-Control":"public, max-age=300"});
+
     if (path === "/api/jurisdictions") return JSONResponse(filterSources(SOURCES,url.searchParams),200,"public, max-age=600");
     if (path === "/api/source-status") return getPortalStatus(env?.DB, SOURCES);
     if (path === "/api/notices") return serveOfficialNotices(env?.DB,url.searchParams);
