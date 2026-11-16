@@ -4,11 +4,11 @@ GovRadar is a transparent, zero-dependency government recruitment **source direc
 
 ## Honest scope (v2.2 pilot)
 
-- Full six-section founder-uploaded interface with advanced location / country / citizenship / stream / stage filters, imported example records, archived data, demo lifecycle, custom personal leads, email preference settings, and 4-part guide.
+- Full six-section founder-uploaded interface with advanced location / country / citizenship / stream / stage filters, imported example records, archived data, demo lifecycle, custom personal leads, legacy preference settings (no email delivery), and 4-part guide.
 - 58 official national and subnational recruitment portals in 11 countries, including state, provincial, territory, devolved, municipal and prefectural government career sources.
 - 10 imported prototype opportunity *research leads*, explicitly **unverified** and not represented as live vacancies.
 - Country / keyword / technical-stream filtering, browser-local bookmarks and responsive mobile-first interface.
-- Real **on-device** notification inbox in the Alerts tab: new official-source imports since your last visit and personal bookmarks within 7 days of their source closing date. No automatic email, remote push or background alert delivery.
+- Real **on-device** notification inbox in the Alerts tab: new official-source imports since your last visit and personal bookmarks within 7 days of their source closing date. No remote delivery or background alert service.
 - On-demand and scheduled official **site reachability** checker restricted to a fixed allowlist. Reachability **does not** verify recruitment details.
 - Installable simplified PWA shell under `/lite`, and full responsive six-tab version under `/`.
 - Real shared community discussions, replies, and votes using a separate free-tier Cloudflare D1 database. Device-bound identity tokens prevent username-only impersonation; losing local browser storage loses your handle.
@@ -16,7 +16,7 @@ GovRadar is a transparent, zero-dependency government recruitment **source direc
 - Self-hosted compiled Tailwind CSS 3.4.17, with source generator and portable CSS. Zero third-party browser runtime fetches.
 - OpenAPI 3.1 contract at `/openapi.json` plus JSON catalog and health endpoints, strict Content Security Policy, no third-party client scripts, and no backend collection of candidate information.
 - **Official-feed pilot:** one source-specific, daily-to-three-hour rotating adapter for the UK DfE's Teaching Vacancies open-data API. The source returns Schema.org `JobPosting` records; GovRadar only imports records with future `validThrough`, verified official-domain URLs, and required fields. These are **source-confirmed records, not individually verified job notices**.
-- **Not implemented**: comprehensive global live vacancy coverage, verified admit-card/result ingestion, delivered email alerts, recoverable cross-device accounts. Do not advertise these as live.
+- **Not implemented**: comprehensive global live vacancy coverage, verified admit-card/result ingestion, background delivery, recoverable cross-device accounts. Do not advertise these as live.
 
 ## API
 
@@ -49,7 +49,7 @@ GitHub Actions executes these tests on changes to this product. Smoke-test the i
 2. Store each notice with official document URL, source snapshot/hash, published/check times, closing date and a manual/automated verification state.
 3. Quarantine uncertain notices; never infer open status from a portal being reachable. Re-verify expiry and eligibility against **each specific posting**.
 4. Add audited storage (portable SQLite schema; Cloudflare D1 may be an optional managed adapter), scheduled ingestion and a founder/reviewer queue.
-5. Implement genuine opt-in email or push only when a compliant sending channel exists within budget; no fake dispatch log or unverified claimed alerts.
+5. Improve opt-in browser-local vacancy watching and on-device alert history. Do not implement an email notification service or claim off-device delivery.
 6. Add authenticated, moderated community only after secure identities, rate limits and abuse handling exist.
 
 ## Cost and ownership
@@ -108,7 +108,7 @@ The Worker Free plan has request and CPU caps; zero cost applies **within free-t
 - Migrations: `official-notices.sql`, `official-notices-jurisdictions.sql`, `official-notices-revisions.sql` and `moderation.sql`. SQLite/D1 compatible; no proprietary agent orchestration.
 - **Human moderation:** `/moderation` interface, `/api/moderation/reports`, `/api/moderation/decide`, `/api/moderation/hidden`, `/api/moderation/restore`. All actions require the founder-only `MODERATOR_TOKEN` secret, and return `503` when it is not configured; no privileged guest access, no HQ agent access.
 - **Device-to-device bookmark portability:** the Saved tab can export and import a validation-controlled JSON file with official job bookmarks, saved state/province/government portals and prototype example bookmarks. This is local-only, does not require accounts, and never exports community credentials or stored email settings. For changes to appear immediately after importing, reload the page.
-- **Still pending:** independently verified unattended Worker Cron source access, authentic live recruitment ingestion for Indian PSCs and all remaining subnational portals, admit-card/result change detection, delivered email alerts (requires a real opt-in mail transport, preferably owner-hosted SMTP), cross-device account recovery, scalable regional directory vetting and user-facing launch privacy/terms.
+- **Still pending:** independently verified unattended Worker Cron source access, authentic live recruitment ingestion for Indian PSCs and all remaining subnational portals, admit-card/result change detection, browser-local alert history and honest visible-tab monitoring (no email transport), cross-device account recovery, scalable regional directory vetting and user-facing launch privacy/terms.
 
 ### Release boundary
 
