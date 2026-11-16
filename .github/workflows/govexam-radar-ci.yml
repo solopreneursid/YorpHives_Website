@@ -25,6 +25,10 @@ jobs:
           node-version: '22'
       - name: Unit and API tests
         run: node --test worker.test.mjs
+      - name: Build first-party Tailwind CSS (one-time QA artifact)
+        run: |
+          npm install --no-save tailwindcss@3.4.17
+          PRINT_CSS_BASE64=yes node build-css.mjs
       - name: Install browser test runtime
         run: |
           npm install --no-save playwright@1.56.1
