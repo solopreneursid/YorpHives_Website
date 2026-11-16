@@ -40,10 +40,14 @@ jobs:
           if-no-files-found: ignore
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     permissions:
       contents: read
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Check independent Cloudflare deployment
         run: |
           curl --fail --show-error --silent --max-time 25 --retry 2 https://hqventures-govexam-radar.solopreneursid-proy.workers.dev/api/health | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const d=JSON.parse(s);if(d.status!=="ok"||d.service!=="hqventures-govradar")process.exit(1);console.log("Cloudflare health verified",d.version);})'
