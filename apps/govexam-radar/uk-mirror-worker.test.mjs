@@ -29,8 +29,10 @@ function fixture({rows=[mkRow("uk-1"),mkRow("uk-2")],sourceState="ok",
    return {bind(...args){
     return {async first(){
      if(sql.includes("source_ingest_runs"))return latest;
-     if(sql.includes("MAX(last_seen_at)"))return{
-      highwater:Math.max(...rows.map(x=>x.last_seen_at)),count:rows.length};
+     if(sql.includes("MAX(last_seen_at)")){
+      const allowed=rows.filter(x=>x.source_id===UK_SOURCE_ID);
+      return{highwater:allowed.length?Math.max(...allowed.map(x=>x.last_seen_at)):null,count:allowed.length};
+     }
      throw Error("unexpected_source_first");
     },async all(){
      if(!sql.includes("official_job_notices"))throw Error("unexpected_source_all");
@@ -72,9 +74,7 @@ function fixture({rows=[mkRow("uk-1"),mkRow("uk-2")],sourceState="ok",
      Object.assign(state,{last_cursor_seen:args[0],last_cursor_id:args[1],
       last_success_at:args[2],last_attempt_at:args[3],status:args[5],error_code:""});
     }else if(sql.startsWith("UPDATE uk_mirror_runs SET finished_at")){
-     Object.assign(runs.get(args[3]),{state:args[1]});
-    }else if(sql.startsWith("UPDATE uk_mirror_runs SET finished_at=")){
-     // Covered above.
+     Object.assign(runs.get(args[3]),{state:sql.includes("state='error'")?"error":args[1]});
     }else if(sql.startsWith("UPDATE uk_mirror_state SET last_attempt_at")){
      Object.assign(state,{last_attempt_at:args[0],status:"error",error_code:args[1]});
     }else throw Error("unexpected_target_batch_sql:"+sql.slice(0,60));
@@ -125,7 +125,7 @@ test("source mistakes and expired or failed native imports fail closed with erro
  ]){
   const f=fixture(opts);
   await assert.rejects(()=>mirrorUkSnapshot(f.env,controller,()=>NOW),
-   /uk_native_source_not_fresh|source_row_not_approved/);
+   /uk_native_source_not_fresh|source_row_not_approved|uk_mirror_source_snapshot_invalid/);
   assert.equal(f.state.status,"error");
   assert.equal(f.existing.size,0);
   assert.equal([...f.runs.values()][0].state,"error");
