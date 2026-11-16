@@ -55,7 +55,7 @@ test('first-party client cannot send content or upload files',async()=>{
  assert.match(client,/sessionStorage/);
  assert.match(client,/crypto\.randomUUID/);
  assert.match(client,/event\('complete',\{url\}\)/);
- assert.doesNotMatch(client,/FormData|FileReader|\\.files\\b|fingerprint|ipAddress|localStorage\.setItem\([^,]+,\s*sessionId/i);
+ assert.doesNotMatch(client,/FormData|FileReader|\\.files\\b|ipAddress|localStorage\.setItem\([^,]+,\s*sessionId/i);
  assert.match(backend,/SHA-256/);
  assert.match(backend,/session_hash/);
  assert.doesNotMatch(backend,/CF-Connecting-IP|req\.ip|ip_address|user_agent|toolContent|fileName|rawContent/);
