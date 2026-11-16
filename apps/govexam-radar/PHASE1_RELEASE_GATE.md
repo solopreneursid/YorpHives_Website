@@ -31,6 +31,15 @@ This checklist is intentionally evidence-based. **Do not mark automatic synchron
 
 **Still to prove before unattended release:** repeated healthy Cron runs across time, complete free-account utilization review, controlled recovery drill on an isolated copy (never restore this shared database as a test), review of public-source licensing, and a separate founder-authorized default-branch release if the GitHub scheduled fallback is to be activated. **PR #7 stays draft and neither `main` nor `yorphives.com` has been changed.**
 
+## Atomic signed-request replay defense — 2026-11-16, 12:51 UTC
+
+- The original signed-ingest handler checked for an existing UUID and then wrote notices, leaving a small race in which concurrent identical requests could both pass the read. It now **atomically reserves** the authenticated request UUID with `INSERT ... ON CONFLICT(id) DO NOTHING` in D1 **before any notice writes**. The reservation is a visibly pending/error audit receipt (using an allowed existing CHECK state), so a crash does not fabricate a successful import.
+- UK DfE and Manitoba ingesters can finalize **only their own pending reserved audit ID** via a conditional conflict update. A successful signed response is denied if final audit writing fails. New automated tests validate same-ID concurrent requests (exactly one can import) and forced audit failures (must not return success).
+- The 17-module staging Worker was securely redeployed using strict encrypted-secret inheritance; D1 and `INGEST_HMAC_KEY` survived unchanged.
+- A one-time authenticated GitHub Actions [run 43870350599](https://github.com/solopreneursid/YorpHives_Website/actions/runs/43870350599) **passed** live staging integration after this code deployment. Signed Manitoba request audit `54a3aea3-2746-4340-a9af-ea63234de1ce` has `state=ok`, `accepted=8`, `origin=signed_portable_collector` and cursor wrap to page 1. The test deliberately bypassed only the **client's** 2-hour freshness skip using an injected test clock; it did not alter the database's freshness timestamp or any shared secret.
+- The one-time trusted-branch trigger was removed immediately afterwards; the scheduled collector workflow blob SHA was restored **exactly** to `539a5d6f51893356f655d4ada298eb28f66191d9`.
+- **Limit of evidence:** one successful signed D1 reservation and audit finalization are verified live; simulated concurrent request blocking and audit failure are covered by unit tests, **not** deliberate live races. Native UK/Manitoba Cron success evidence remains separate, as recorded above.
+
 ## Earlier external evidence (historical)
 - Cloudflare Worker Cron schedules are active at `0 */3 * * *` (site checks), `20 */3 * * *` (UK DfE) and `40 */3 * * *` (Manitoba).
 - DfE scheduled attempt at 2026-11-16 09:20 UTC failed with `network_error` before new recovery was deployed.
