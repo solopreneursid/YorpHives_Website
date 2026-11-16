@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "publication": {
+    "status": "unpublished",
+    "approvedByFounder": false,
+    "approvedAt": null,
+    "periodDays": 30,
+    "metric": "completed_uses"
+  },
+  "ranked": []
+}
