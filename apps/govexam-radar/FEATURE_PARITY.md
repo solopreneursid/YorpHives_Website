@@ -17,7 +17,7 @@ Status legend: **Working** = function tested in running web app; **Reference-onl
 | Email address, lead days, stream and trigger preferences | Saved locally on device; no server collection or dispatch | Partial |
 | Send test email | Replaced with truthful local browser notification test | Partial |
 | Per-exam email subscription toggles | Local alert interest list, not active email delivery | Partial |
-| Auto-sync 15+ portals | On-demand checks for 17 allowlisted official portal URLs; reports reachable/restricted/unconfirmed | Partial |
+| Auto-sync 15+ portals | On-demand checks for 17 allowlisted official portal URLs plus isolated Cloudflare preview cron (3 sources every 3 hours) with SQLite/D1 result history; reports reachable/restricted/unconfirmed | Partial |
 | Auto-detect and upload new vacancies | Not active; source-specific authorized data ingestion still required | Not yet |
 | Auto-update admit cards and results | Not active without verified official event adapters | Not yet |
 | Auto-remove and restore expired exams | Local archive examples with restore and hide controls | Reference-only |
