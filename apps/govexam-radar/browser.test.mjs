@@ -598,3 +598,22 @@ test("phone users can discover official portals and navigate quick guide without
   assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });
+
+test("Phase 7 never claims simulated jobs or email delivery",async()=>{
+ const page=await browser.newPage({viewport:{width:320,height:740}});
+ const errors=[];page.on('pageerror',error=>errors.push(String(error)));
+ try{
+  await page.goto(origin,{waitUntil:'domcontentloaded'});
+  await page.locator('#exam-cards-grid article').first().waitFor();
+  assert.match(await page.locator('#results-summary-text').textContent(),/prototype research leads/);
+  await page.evaluate(()=>window.switchTab('feeds'));
+  const original=await page.locator('#exam-cards-grid article').count();
+  await page.evaluate(()=>window.runFeedSync());
+  assert.ok(!(await page.locator('#feed-log-status').textContent()).includes('ALL 15 CHANNELS SYNCED'));
+  await page.evaluate(()=>window.simulateLifecycleStep());
+  assert.equal(await page.locator('#exam-cards-grid article').count(),original);
+  assert.match(await page.locator('#feed-log-output').textContent(),/ILLUSTRATION|DEMO ONLY/);
+  assert.equal(await page.evaluate(()=>localStorage.getItem('govexam_radar_email_v2')),null);
+  assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
