@@ -14,43 +14,49 @@ if(tools.length<90)problems.push('Expected at least the 90 established tools.');
 if(new Set(items.map(x=>x.url)).size!==items.length)problems.push('Duplicate public URL.');
 const directory=await read('tools/index.html');
 const homepage=await read('index.html');
-// Minimal copy, strong visual hierarchy and founder-controlled operations.
+// The homepage must do three different jobs: projects, usable tools, connection.
+// The HQ approval authority remains visible without repeating entire diagrams.
 if(!homepage.includes('Founder-led.')||!homepage.includes('Intelligence-powered.')||
-   !homepage.includes('Ideas in motion.')||
-   !homepage.includes('HQ runs the AI engine.')||
-   !homepage.includes('The founder decides.')||
-   !homepage.includes('href="#connect"'))
+   !homepage.includes('Ideas in motion.')||!homepage.includes('HQ discovers. AI evaluates.')||
+   !homepage.includes('Founder decides.')||!homepage.includes('href="#connect"'))
  problems.push('Founder-led AI OS identity or contact route missing.');
-if(!homepage.includes('id="our-ai-team"')||
-   !homepage.includes('class="os-board"')||
-   !homepage.includes('class="os-decision"')||
-   !homepage.includes('class="hero-ambient"')||
-   homepage.includes('class="hero-console"')||
-   !homepage.includes('FOUNDER')||
-   !homepage.includes('id="projects-collection"')||
-   !homepage.includes('Only founder-approved work'))
- problems.push('Evidence-to-founder-to-Explore authority visualization missing.');
+const home=homepage.split('<!-- TOOLS:')[0];
+const experiences=['home-explore','home-use','home-connect'];
+if(!experiences.every(id=>home.includes('id="'+id+'"'))||
+  !(home.indexOf('id="home-explore"')<home.indexOf('id="home-use"')&&
+    home.indexOf('id="home-use"')<home.indexOf('id="home-connect"')))
+ problems.push('Distinct Explore, Use and Connect homepage experiences missing or out of order.');
+if(home.includes('class="entry-section')||home.includes('class="os-section')||
+   home.includes('class="journey-section')||home.includes('class="spotlight-section')||
+   home.includes('class="builders-teaser')||home.includes('class="cta-banner'))
+ problems.push('Retired repeating homepage explanations must not return.');
+if(!home.includes('class="hero-geometry"')||!home.includes('class="hero-identity-mark"')||
+   !home.includes('id="our-ai-team"')||home.includes('class="hero-console"'))
+ problems.push('The new logo-inspired hero background or compact founder-led identity is missing.');
+if(!home.includes('id="how-it-works"')||!home.includes('class="stage-founder"')||
+   !homepage.includes('id="projects-collection"')||!homepage.includes('Founder-approved launches only'))
+ problems.push('HQ evidence, founder gate, or approval-based Explore link is missing.');
+if(!home.includes('id="home-tools-list"')||!home.includes('id="home-tool-search-form"')||
+   !home.includes('id="category-ribbon-track"')||!home.includes('id="home-pulse-viewport"')||
+   home.includes('id="footer-pulse"'))
+ problems.push('Featured tools, working search, category rail or unique YHpulse is missing.');
 const kineticCss=await read('next.css');
+const homepageCss=await read('home-experience.css');
 const kineticMobileCss=await read('next-responsive.css');
 const kineticJs=await read('next.js');
-if(!homepage.includes('id="tool-category-rail"')||
-   !homepage.includes('id="home-pulse-viewport"')||
-   !homepage.includes('data-motion-toggle="categories"')||
-   !homepage.includes('data-motion-toggle="pulse"')||
-   !kineticCss.includes('@keyframes rail-drift')||
+if(!kineticCss.includes('@keyframes rail-drift')||
    !kineticCss.includes('@keyframes pulse-scroll')||
-   !kineticMobileCss.includes('@media(prefers-reduced-motion:reduce)')||
+   !homepageCss.includes('@keyframes hero-logo-float')||
+   !homepageCss.includes('@keyframes connection-circuit')||
+   !homepageCss.includes('prefers-reduced-motion:reduce')||
    !kineticJs.includes('function renderRibbon()')||
-   kineticJs.includes('function initPulse()'))
-
- problems.push('Accessible moving category and YHpulse rails are incomplete.');
-if((homepage.match(/<li class="studio-step stage-/g)||[]).length!==5)
- problems.push('The five-stage idea-to-product journey is incomplete.');
-if(!homepage.includes('href="#tools"'))problems.push('Homepage tool navigation missing.');
-if(!homepage.includes('id="category-ribbon-track"')||
-   homepage.includes('id="recent-items"')||
-   homepage.includes('FROM THE HIVE'))
- problems.push('Homepage must show the compact category-only strip, not the old recent cards.');
+   !kineticJs.includes('function renderHomeTools(')||
+   !kineticJs.includes('function renderFeaturedProject(')||
+   !kineticJs.includes('qualifiedProducts(published)')||
+   !kineticMobileCss.includes('@media(prefers-reduced-motion:reduce)'))
+ problems.push('Interactive home discovery or accessible motion is incomplete.');
+if(homepage.includes('id="recent-items"')||homepage.includes('FROM THE HIVE'))
+ problems.push('Old oversized recent-items cards must not return.');
 
 // No stale hard-coded tool links, draft activity, private jobs or absent targets.
 const activityData=JSON.parse(await read('activity.json'));
