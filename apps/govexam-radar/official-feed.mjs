@@ -246,21 +246,33 @@ export async function serveIngestionStatus(db){
   // An audited signed transfer (including a one-off GitHub test) is not proof
   // of an unattended Cloudflare Cron run. Preserve those independent signals.
   // Bootstrap imports have neither origin marker and are never counted as Cron.
-  const observed=await db.prepare("SELECT source_id AS sourceId,MAX(CASE WHEN state='ok' AND details LIKE '%\"origin\":\"scheduled\"%' THEN finished_at ELSE NULL END) AS lastSuccessfulScheduledAt,MAX(CASE WHEN state='ok' AND details LIKE '%\"origin\":\"signed_portable_collector\"%' THEN finished_at ELSE NULL END) AS lastSuccessfulSignedAt,MAX(CASE WHEN id NOT LIKE 'bootstrap-%' THEN finished_at ELSE NULL END) AS lastNonBootstrapAttemptAt FROM source_ingest_runs WHERE source_id IN (?,?) GROUP BY source_id")
-   .bind(DFE_SOURCE.id,"manitoba-jobs").all();
+  // This release-specific two-cycle gate is deliberately stricter than UI
+  // freshness. A one-off signed test is excluded; two recent successful native
+  // Cron imports per source and a successful latest native attempt are required.
+  const now=Date.now();
+  const recentSince=now-8*3600000;
+  const observed=await db.prepare("SELECT source_id AS sourceId,MAX(CASE WHEN state='ok' AND details LIKE '%\"origin\":\"scheduled\"%' THEN finished_at ELSE NULL END) AS lastSuccessfulScheduledAt,MAX(CASE WHEN state='ok' AND details LIKE '%\"origin\":\"signed_portable_collector\"%' THEN finished_at ELSE NULL END) AS lastSuccessfulSignedAt,SUM(CASE WHEN state='ok' AND details LIKE '%\"origin\":\"scheduled\"%' AND finished_at>=? THEN 1 ELSE 0 END) AS recentNativeSuccessCount,MAX(CASE WHEN id NOT LIKE 'bootstrap-%' AND details NOT LIKE '%\"origin\":\"signed_portable_collector\"%' AND (error_code IS NULL OR error_code!='collector_claim_pending') THEN finished_at ELSE NULL END) AS lastNativeAttemptAt FROM source_ingest_runs WHERE source_id IN (?,?) GROUP BY source_id")
+   .bind(recentSince,DFE_SOURCE.id,"manitoba-jobs").all();
   const sources=[DFE_SOURCE.id,"manitoba-jobs"].map(sourceId=>{
    const row=(observed.results||[]).find(x=>x.sourceId===sourceId);
    const lastSuccessfulScheduledAt=row?.lastSuccessfulScheduledAt||null;
    const lastSuccessfulSignedAt=row?.lastSuccessfulSignedAt||null;
+   const lastNativeAttemptAt=row?.lastNativeAttemptAt||null;
+   const recentNativeSuccessCount=Number(row?.recentNativeSuccessCount)||0;
+   const twoCycleNativeProof=recentNativeSuccessCount>=2 &&
+    !!lastSuccessfulScheduledAt &&
+    now-lastSuccessfulScheduledAt<=5*3600000 &&
+    lastNativeAttemptAt===lastSuccessfulScheduledAt;
    return {sourceId,scheduledSuccessObserved:!!lastSuccessfulScheduledAt,
     signedCollectorSuccessObserved:!!lastSuccessfulSignedAt,
-    freshSuccess:!!lastSuccessfulScheduledAt&&Date.now()-lastSuccessfulScheduledAt<86400000,
-    lastSuccessfulScheduledAt,lastSuccessfulSignedAt,
-    lastNonBootstrapAttemptAt:row?.lastNonBootstrapAttemptAt||null};
+    freshSuccess:!!lastSuccessfulScheduledAt&&now-lastSuccessfulScheduledAt<86400000,
+    recentNativeSuccessCount,twoCycleNativeProof,
+    lastSuccessfulScheduledAt,lastSuccessfulSignedAt,lastNativeAttemptAt};
   });
   return json({source:"multiple official sources",openImportedNotices:c?.total||0,bySource:bySource.results||[],latest:latest.results||[],
    automation:{observedForAllSources:sources.every(x=>x.scheduledSuccessObserved),
     healthy:sources.every(x=>x.freshSuccess),
+    twoCycleCronGatePassed:sources.every(x=>x.twoCycleNativeProof),
     signedCollectorVerified:sources.some(x=>x.signedCollectorSuccessObserved),sources,
     indiaSource:"index_parser_only_not_scheduled_pending_reuse_review"},
    status:"official_feed_imports_not_independently_verified"});
