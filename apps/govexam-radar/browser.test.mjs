@@ -570,3 +570,31 @@ test("Updates clearly separates unverified prototypes and retains local source-l
   assert.deepEqual(errors,[]);
  }finally{await context.close();}
 });
+
+test("phone users can discover official portals and navigate quick guide without implying verification",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:812}});
+ const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+ try{
+  await page.goto(origin,{waitUntil:'domcontentloaded'});
+  await page.locator('#exam-cards-grid article').first().waitFor();
+  await page.evaluate(()=>window.switchTab('feeds'));
+  await page.locator('#monitored-portals-grid>div').first().waitFor();
+  const original=await page.locator('#monitored-portals-grid>div').count();
+  assert.ok(original>4);
+  assert.match(await page.locator('#gr-portal-results').textContent(),/official portal links shown/);
+  await page.locator('#gr-portal-query').fill('not-a-real-government-portal-9999');
+  assert.equal(await page.locator('#monitored-portals-grid>div:visible').count(),0);
+  await page.locator('#gr-portal-query').fill('');
+  assert.equal(await page.locator('#monitored-portals-grid>div:visible').count(),original);
+  await page.locator('[data-gr-jump="monitored-portals-grid"]').click();
+  assert.equal(await page.locator('#monitored-portals-grid').isVisible(),true);
+  await page.evaluate(()=>window.switchTab('guide'));
+  assert.match(await page.locator('#view-guide .gr-secondary-intro').innerText(),/How to use GovRadar/);
+  await page.locator('[data-gr-guide-tab="saved"]').click();
+  assert.equal(await page.locator('#view-saved').isVisible(),true);
+  await page.evaluate(()=>window.switchTab('community'));
+  assert.match(await page.locator('#view-community .gr-secondary-intro').innerText(),/user-generated/);
+  assert.equal(await page.locator('#community-login-form').count(),1);
+  assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
