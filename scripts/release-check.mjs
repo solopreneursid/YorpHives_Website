@@ -14,19 +14,33 @@ if(tools.length<90)problems.push('Expected at least the 90 established tools.');
 if(new Set(items.map(x=>x.url)).size!==items.length)problems.push('Duplicate public URL.');
 const directory=await read('tools/index.html');
 const homepage=await read('index.html');
+// Minimal copy, strong visual hierarchy and founder-controlled operations.
 if(!homepage.includes('One founder.')||!homepage.includes('An AI team.')||
    !homepage.includes('Ideas in motion.')||
-   !homepage.includes('YorpHivesHQ (YorpHives Headquarters) operates this website')||
-   !homepage.includes('I make the final decisions based on evidence.')||
+   !homepage.includes('YorpHivesHQ finds the signal.')||
+   !homepage.includes('I make the call.')||
    !homepage.includes('href="#connect"'))
-  problems.push('YorpHivesHQ website operations, founder authority or contact CTA missing.');
-if(!homepage.includes('It does not independently approve launches or publish code changes.')||
-   !homepage.includes('The final decision to pursue a venture, change the website or launch a project stays with me, the founder.'))
-  problems.push('YorpHivesHQ operational boundary and final founder release control missing.');
+ problems.push('One-founder, HQ-led studio identity or contact route missing.');
 if(!homepage.includes('id="our-ai-team"')||
+   !homepage.includes('class="os-board"')||
+   !homepage.includes('class="os-decision"')||
+   !homepage.includes('FOUNDER')||
    !homepage.includes('id="projects-collection"')||
-   !homepage.includes('final founder approval'))
-  problems.push('AI research, human approval and public Explore project linkage must be visible.');
+   !homepage.includes('Only founder-approved work'))
+ problems.push('Evidence-to-founder-to-Explore authority visualization missing.');
+const kineticCss=await read('next.css');
+const kineticMobileCss=await read('next-responsive.css');
+const kineticJs=await read('next.js');
+if(!homepage.includes('id="tool-category-rail"')||
+   !homepage.includes('id="home-pulse-viewport"')||
+   !homepage.includes('data-motion-toggle="categories"')||
+   !homepage.includes('data-motion-toggle="pulse"')||
+   !kineticCss.includes('@keyframes rail-drift')||
+   !kineticCss.includes('@keyframes pulse-scroll')||
+   !kineticMobileCss.includes('@media(prefers-reduced-motion:reduce)')||
+   !kineticJs.includes('function renderRibbon()')||
+   !kineticJs.includes('function initPulse()'))
+ problems.push('Accessible moving category and YHpulse rails are incomplete.');
 if((homepage.match(/<li class="studio-step stage-/g)||[]).length!==5)
  problems.push('The five-stage idea-to-product journey is incomplete.');
 if(!homepage.includes('href="#tools"'))problems.push('Homepage tool navigation missing.');
@@ -61,10 +75,12 @@ if(!homepage.includes('id="footer-pulse"')||
    homepage.includes('<nav class="footer-directory"'))
  problems.push('Legacy footer tool shortcuts must be replaced by public Pulse.');
 
-if(!homepage.includes('id="builders-home-title"')||!homepage.includes('Find work. Post work.')||
-   !homepage.includes('id="builders-membership-title"')||
-   !homepage.includes('id="partners"'))
- problems.push('Builders paid membership landing page is incomplete.');
+if(!homepage.includes('id="builders"')||
+   !homepage.includes('id="opportunities"')||
+   !homepage.includes('id="membership"')||
+   !homepage.includes('id="partners"')||
+   !homepage.includes('Find paid work.'))
+ problems.push('Builders future paid-membership landing page is incomplete.');
 if(/data-form="opportunity"|<form[^>]*id="post"|id="job-listings"|id="post"/i.test(homepage))
  problems.push('Public job listing or job-posting form is forbidden without membership enforcement.');
 if(!homepage.includes('Jobs and posting require verified paid membership.')||
