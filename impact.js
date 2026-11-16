@@ -23,6 +23,7 @@ const text=(tag,content,className)=>{
 };
 
 let qualified=[];
+let verifiedPublicUrls=new Set();
 async function updatePublicCatalogCounts(){
  try{
   const response=await fetch('catalog.json',{cache:'no-cache'});
@@ -32,6 +33,7 @@ async function updatePublicCatalogCounts(){
   const tools=data.items.filter(x=>x?.type==='tool'&&
     x.visibility!=='private'&&x.published!==false&&localPath.test(x.url||''));
   qualified=qualifiedProducts(data.items);
+  verifiedPublicUrls=new Set([...tools,...qualified].map(x=>x.url));
   setCounter('impact-tools',tools.length,'Available to use today');
   setCounter('impact-ventures',qualified.length,'Verified founder-approved launches');
  }catch{
@@ -110,7 +112,7 @@ function renderMilestones(entries){
   if(!entry||!validDay(entry.date)||entry.date>new Date().toISOString().slice(0,10)||
      typeof entry.title!=='string'||entry.title.length<5||entry.title.length>90||
      typeof entry.summary!=='string'||entry.summary.length<8||entry.summary.length>160||
-     typeof entry.proofUrl!=='string'||!localPath.test(entry.proofUrl)||
+     typeof entry.proofUrl!=='string'||!verifiedPublicUrls.has(entry.proofUrl)||
      used.has(entry.proofUrl+entry.date))continue;
   // Milestone evidence must be a genuinely public catalog item.
   // Proof paths are not accepted from arbitrary or external websites.
