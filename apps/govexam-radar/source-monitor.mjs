@@ -52,7 +52,7 @@ export async function getPortalStatus(db,sources){
     return writeResponse({sources:items,checkedSources:items.filter(x=>x.checkedAt).length,
       total:sources.length,verifiedVacancies:0,
       monitoring:"Reachability checks only; no live vacancy ingestion, deadlines or eligibility verification.",
-      cadence:"Up to six official source URLs per 3-hour run. All currently registered portals normally cycle within a day; failures may require rechecks.",
+      cadence:"Up to six official source URLs per 3-hour run. All currently registered portals normally cycle in about 30 hours at six URLs per three-hour run; blocked sources may need rechecks.",
       generatedAt:new Date().toISOString()});
   }catch(e){
     console.error(JSON.stringify({event:"portal_status_read_failed",error:String(e?.message||e)}));
