@@ -17,6 +17,9 @@ const homepage=await read('index.html');
 // A release may use either the approved legacy homepage or the completely
 // reimagined site. Keep every common SEO/security/tool gate after this block.
 const isReimagined=homepage.includes('id="home-title"')&&homepage.includes('id="yh-pulse"');
+// Enforce UI parity: the same redesigned homepage must be served at / for
+// staging and live. This prevents successful builds of an obsolete preview.
+if(!isReimagined)problems.push('Preview/live parity failure: outdated homepage at root.');
 if(isReimagined){
  const ids=['home','ventures','builders','impact','tools','partners','contact'];
  for(const id of ids)if(!homepage.includes('<section class="view" id="'+id+'"'))
