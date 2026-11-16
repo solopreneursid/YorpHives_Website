@@ -6,6 +6,7 @@ import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createEntity} from './discovery-schema.mjs';
 import {isQualifiedProduct} from '../product-policy.mjs';
+import {injectNextToolUI} from './next-tool-shell.mjs';
 import {collectPublicActivity,discoverPublicPageUpdates,discoverToolEditTimes,loadActivityNotes,renderFooterPulse} from './activity-feed.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
@@ -152,6 +153,7 @@ for(const item of published){
  html=injectHead(html,metadata(url,graph));
  html=injectSiteSupport(html,path);
  html=injectToolSuite(html,item);
+ html=injectNextToolUI(html,item);
  await write(path,html);
 }
 // A directory stays crawlable and provides standard links to every item.
