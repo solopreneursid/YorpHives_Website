@@ -52,6 +52,10 @@ await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
 const roots=new Set(['tools',...published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0])]);
 for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory()).catch(()=>false))
  await cp(resolve(root,dir),resolve(dest,dir),{recursive:true});
+// Standalone redesign concept is published ONLY into noindex review builds.
+// Never include /concept/ in production output or public sitemap.
+if(target==='preview')
+ await cp(resolve(root,'concept'),resolve(dest,'concept'),{recursive:true});
 // Build YHpulse only from actual published pages and reviewed public release notes.
 // This is static and requires no paid runtime services or background polling.
 const activity=collectPublicActivity({
