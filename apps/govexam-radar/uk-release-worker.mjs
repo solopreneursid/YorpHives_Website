@@ -4,6 +4,7 @@
 // Do not attach a public domain or deploy to production without founder approval.
 import {serveOfficialNotices} from "./official-feed.mjs";
 import {readonlyOfficialNoticesDb} from "./uk-release-db.mjs";
+import {getUkMirrorPublicStatus} from "./uk-mirror-status.mjs";
 import {RELEASE_PREVIEW_HTML,RELEASE_PREVIEW_CSS,RELEASE_PREVIEW_JS} from "./release-preview-ui.mjs";
 const SECURITY=Object.freeze({
  "X-Content-Type-Options":"nosniff",
@@ -30,12 +31,13 @@ const OPENAPI=Object.freeze({
    "403":{description:"Unapproved source"},
    "503":{description:"Database or source-rights policy unavailable"}
   }}},
-  "/api/health":{get:{summary:"UK candidate readiness (does not assert source accuracy)",responses:{"200":{description:"Handler reachable"}}}}
+  "/api/health":{get:{summary:"UK candidate readiness (does not assert source accuracy)",responses:{"200":{description:"Handler reachable"}}}},
+  "/api/freshness":{get:{summary:"Sanitized read-only official-source mirror freshness; not an endorsement",responses:{"200":{description:"May be pending, delayed or current"}}}}
  }
 });
 export const UK_RELEASE_ALLOWED_PATHS=Object.freeze([
  "/","/release-preview","/release-preview.css","/release-preview.js",
- "/api/notices","/api/release-preview/notices","/api/health",
+ "/api/notices","/api/release-preview/notices","/api/health","/api/freshness",
  "/openapi.json","/robots.txt"
 ]);
 export default{
@@ -54,6 +56,8 @@ export default{
   if(p==="/api/health")
    return response(JSON.stringify({status:"ok",service:"govradar-uk-release-candidate",
     publicLaunchAuthorized:false,serverTime:new Date().toISOString()}),200,"application/json; charset=utf-8");
+  if(p==="/api/freshness")
+   return response(JSON.stringify(await getUkMirrorPublicStatus(env?.DB)) ,200,"application/json; charset=utf-8");
   if(p==="/openapi.json")
    return response(JSON.stringify(OPENAPI),200,"application/json; charset=utf-8");
   if(p==="/api/notices"||p==="/api/release-preview/notices"){
