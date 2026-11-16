@@ -1,5 +1,4 @@
 import {parseManitobaRss} from "./manitoba-feed.mjs";
-import {createHash} from "node:crypto";
 // Read-only compatibility check for a genuine province-level government RSS feed.
 // Never write job notices to storage from this probe.
 const url="https://jobsearch.gov.mb.ca/rss/newJobPostingsFeed.rss";
@@ -14,24 +13,8 @@ try{
  const parsed=parseManitobaRss(body);
  console.log("MANITOBA_NORMALIZATION",JSON.stringify({received:parsed.received,valid:parsed.valid.length,rejected:parsed.rejected,firstRecordFields:parsed.valid[0]?Object.keys(parsed.valid[0]):[]}));
  if(parsed.received===0||parsed.valid.length===0)throw Error("Source feed returned no eligible current records");
- const digest=x=>createHash("sha256").update(x).digest("hex");
- const normalized=parsed.valid.map(x=>({
-   ...x,id:"manitoba-jobs:"+digest(x.sourceRef).slice(0,32),
-   evidenceSha256:digest(JSON.stringify([x.sourceRef,x.title,x.employer,x.region,x.closingAt,x.publishedAt]))
- }));
- console.log("GOVRADAR_MANITOBA_BOOTSTRAP_DATA="+JSON.stringify({at:new Date().toISOString(),records:normalized}));
- const test=normalized.find(x=>x.sourceRef.includes("ID=130448"));
- if(test){
-   const original=items.map(item=>(item.match(/<link[^>]*>([\s\S]*?)<\/link>/i)||[])[1]||"").find(x=>x.includes("ID=130448"))?.replace(/&amp;/g,"&");
-   for(const [kind,url] of [["normalized",test.sourceRef],["original",original]]){
-     if(!url)continue;
-     try{
-       const r=await fetch(url,{method:"GET",redirect:"manual",signal:AbortSignal.timeout(7500),headers:{"Accept":"text/html"}});
-       const text=r.status>=200&&r.status<300?(await r.text()).slice(0,120000):"";
-       console.log("MANITOBA_JOB_LINK_CHECK",JSON.stringify({kind,status:r.status,location:r.headers.get("location")?.slice(0,140)||null,contentType:r.headers.get("content-type"),containsId:text.includes("130448"),containsTitle:text.toLowerCase().includes("crown counsel"),finalUrl:r.url?.slice(0,160)}));
-     }catch(e){console.log("MANITOBA_JOB_LINK_CHECK",JSON.stringify({kind,error:String(e.message||e).slice(0,180)}));}
-   }
- }
-
+ const official=parsed.valid.every(x=>x.sourceId==="manitoba-jobs"&&x.sourceRef.startsWith("https://jobsearch.gov.mb.ca/jow/advancedResult.action?ID="));
+ console.log("MANITOBA_RSS_VALIDATION",JSON.stringify({publishedItems:parsed.received,eligibleRecords:parsed.valid.length,rejected:parsed.rejected,officialSourceOnly:official}));
+ if(!official)process.exitCode=1;
 
 }catch(e){console.log("MANITOBA_RSS_UNAVAILABLE",String(e.message||e).slice(0,150));}finally{clearTimeout(timer);}
