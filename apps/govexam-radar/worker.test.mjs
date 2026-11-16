@@ -20,3 +20,12 @@ test("public OpenAPI contract is machine readable",async()=>{const r=await reque
 test("unsafe paths and methods are rejected",async()=>{assert.equal((await request("/api/check?id=https://evil.invalid")).status,404);assert.equal((await request("/does-not-exist")).status,404);assert.equal((await request("/api/catalog","POST")).status,405);});
 
 test("source status endpoint does not fake checks when binding is missing",async()=>{const r=await request("/api/source-status");assert.equal(r.status,503);const x=await r.json();assert.equal(x.error,"not_configured");});
+
+test("official job endpoints never return invented data without D1",async()=>{
+ for(const path of ["/api/notices","/api/ingestion-status"]){
+  const r=await request(path);assert.equal(r.status,503,path);const d=await r.json();assert.equal(d.error,"not_configured",path);
+ }
+ const r=await request("/official.js");assert.equal(r.status,200);assert.match(await r.text(),/official-notice-grid/);
+ const s=await request("/");assert.match(await s.text(),/\/official\.js/);
+ const api=await request("/openapi.json");const spec=await api.json();assert.ok(spec.paths["/api/notices"]);assert.ok(spec.paths["/api/ingestion-status"]);
+});
