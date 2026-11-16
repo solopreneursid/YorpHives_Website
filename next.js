@@ -34,12 +34,12 @@
   });
   window.addEventListener('resize',()=>{if(innerWidth>760&&!menuPanel.hidden)closeMenu();});
 
-  const subpages = new Set(['post','opportunities','membership','partners','how-it-works','projects-collection','our-ai-team']);
+  const subpages = new Set(['post','opportunities','membership','partners','how-it-works','projects-collection','our-ai-team','home-explore','home-use','home-connect']);
   function route() {
     let hash=location.hash.slice(1);
     try{hash=decodeURIComponent(hash);}catch{hash='home';}
     const subpage=subpages.has(hash);
-    const active=['how-it-works','our-ai-team'].includes(hash)?'home':hash==='projects-collection'?'explore':subpage?'builders':Object.hasOwn(names,hash)?hash:'home';
+    const active=['how-it-works','our-ai-team','home-explore','home-use','home-connect'].includes(hash)?'home':hash==='projects-collection'?'explore':subpage?'builders':Object.hasOwn(names,hash)?hash:'home';
     pages.forEach(page=>{page.hidden=page.id!==active;});
     document.querySelectorAll('[data-nav]').forEach(link=>{
       if(link.dataset.nav===active)link.setAttribute('aria-current','page');
@@ -86,6 +86,18 @@
   });
 
   const search=document.getElementById('tool-search');
+  // The homepage search goes to the *working* Free Tools library. It does not
+  // maintain a second search index or make users enter their query again.
+  const homeSearch=document.getElementById('home-tool-search');
+  document.getElementById('home-tool-search-form').addEventListener('submit',event=>{
+    event.preventDefault();
+    const query=homeSearch.value.trim();
+    search.value=query;
+    search.dispatchEvent(new Event('input',{bubbles:true}));
+    location.hash='#tools';
+    requestAnimationFrame(()=>search.focus({preventScroll:true}));
+  });
+
   const grid=document.getElementById('tools-items');
   const groupsEl=document.getElementById('tool-categories');
   const count=document.getElementById('tool-count');
@@ -287,6 +299,50 @@
       applyMotion(kind,!pausedStates[kind]);
     });
   });
+  const homeTools=document.getElementById('home-tools-list');
+  const homeFeatured=document.getElementById('home-featured');
+  const featuredSlugs=['word-counter','pdf-merge','image-resizer','json-formatter','qr-code-generator','password-generator'];
+  function renderHomeTools(items){
+    // Only genuine published, locally executable catalog tools appear here.
+    const safe=items.filter(item=>/^tools\\/[a-z0-9][a-z0-9-]*\\/$/.test(item.url));
+    const curated=featuredSlugs.map(slug=>safe.find(t=>t.url==='tools/'+slug+'/')).filter(Boolean);
+    const pool=curated.concat(safe.filter(t=>!curated.includes(t))).slice(0,6);
+    const nodes=pool.map(item=>{
+      const a=document.createElement('a');a.className='home-tool-card';a.href=safeUrl(item);a.setAttribute('role','listitem');
+      const icon=document.createElement('span');icon.className='home-tool-symbol';icon.setAttribute('aria-hidden','true');icon.textContent=iconFor(item.category);
+      const detail=document.createElement('span');detail.className='home-tool-details';
+      const title=document.createElement('strong');title.textContent=item.name;
+      const category=document.createElement('small');category.textContent=item.category||'Free tool';
+      detail.append(title,category);
+      const arrow=document.createElement('span');arrow.className='home-tool-arrow';arrow.setAttribute('aria-hidden','true');arrow.textContent='↗';
+      a.append(icon,detail,arrow);
+      return a;
+    });
+    if(nodes.length)homeTools.replaceChildren(...nodes);
+    else{
+      const a=document.createElement('a');a.href='tools/';a.textContent='Open the tool directory ↗';
+      homeTools.replaceChildren(a);
+    }
+    document.getElementById('home-tools-count').textContent=items.length+' free tools · no sign-up';
+  }
+  function renderFeaturedProject(products){
+    const stage=document.getElementById('project-stage-state');
+    if(!products.length){stage.textContent='APPROVAL REQUIRED';return;}
+    // The same founder-qualified product data powers both home and Explore.
+    const item=products[0],container=document.createElement('div');
+    container.className='project-stage-copy project-stage-approved';
+    const badge=document.createElement('span');badge.textContent='FOUNDER APPROVED';
+    const title=document.createElement('strong');title.textContent=item.name;
+    const desc=document.createElement('small');desc.textContent=item.description;
+    container.append(badge,title,desc);
+    if(/^(?:products|apps)\\/[a-z0-9][a-z0-9-]*\\/$/.test(String(item.url||''))){
+      const link=document.createElement('a');link.href=item.url;link.textContent='Open project ↗';container.append(link);
+    }
+    const icon=document.createElement('div');icon.className='project-abstract';icon.setAttribute('aria-hidden','true');
+    const mark=document.createElement('b');mark.textContent='✳';icon.append(mark);
+    homeFeatured.replaceChildren(icon,container);
+    stage.textContent='APPROVED PROJECT';
+  }
   function showProducts(products){
     const el=document.getElementById('explore-items'),empty=document.getElementById('explore-empty');
     el.replaceChildren();
@@ -320,7 +376,10 @@
         if(!assigned.has(category))groups.push({id:'other-'+groups.length,name:category,icon:'◇',categories:[category]});
       }
       const {qualifiedProducts}=await import('./product-policy.mjs');
-      showProducts(qualifiedProducts(published));
+      const approved=qualifiedProducts(published);
+      showProducts(approved);
+      renderFeaturedProject(approved);
+      renderHomeTools(allTools);
       if(allTools.length){render();renderRibbon();}
       else{
         count.textContent='No tools available';
@@ -337,6 +396,9 @@
       document.querySelector('#tool-no-results p').textContent='Please refresh the page or try the A–Z directory.';
       groupsEl.replaceChildren();
       document.getElementById('explore-empty').hidden=false;
+      const fail=document.createElement('a');fail.href='tools/';fail.textContent='Open the tool directory ↗';
+      homeTools.replaceChildren(fail);
+      document.getElementById('home-tools-count').textContent='Explore the A–Z directory';
     }
   }
   loadCatalog();
