@@ -10,6 +10,7 @@ import { combinedSources, filterSources, REGIONAL_SOURCES } from "./regional-sou
 import { REGIONAL_UI_JS } from "./regional-ui.mjs";
 import { ingestManitoba } from "./manitoba-feed.mjs";
 import { ingestEmploymentNews } from "./india-employment-news.mjs";
+import {serveCollectorPlan,handleCollectorIngest} from "./collector-bridge.mjs";
 import { expireKnownDeadlines, serveNoticeChanges } from "./notice-lifecycle.mjs";
 import { handleModeration } from "./moderation-api.mjs";
 import { MODERATION_HTML, MODERATION_JS } from "./moderation-ui.mjs";
@@ -38,6 +39,8 @@ function JSONResponse(data, status = 200, cache = "public, max-age=300") {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === "/api/collector/ingest") return handleCollectorIngest(request,env);
+    if (url.pathname === "/api/collector/plan") return request.method==="GET"?serveCollectorPlan(env?.DB):JSONResponse({error:"method_not_allowed"},405,"no-store");
     if (url.pathname.startsWith("/api/moderation/")) return handleModeration(request,env,url);
     if (url.pathname.startsWith("/api/community/")) {
       return handleCommunity(request, env, url.pathname, url);
