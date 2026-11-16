@@ -9,7 +9,7 @@ try{
  await wait(()=>document.getElementById('home-tool-count')?.textContent!=='—');
  ok(document.getElementById('home-tool-count').textContent==='143','real catalog backed 143 utilities');
  ok(document.getElementById('home-venture-count').textContent==='0','no unqualified venture launches');
- ok(document.getElementById('impact-visitors').textContent==='—','no invented unique visitor count');
+ ok(document.getElementById('impact-visitors').textContent==='—'||(/^\d[\d,]*$/.test(document.getElementById('impact-visitors').textContent)&&document.getElementById('impact-visitors-note').textContent.includes('browser-tab sessions')),'Impact shows only measured anonymous sessions or a real empty state');
  ok(document.getElementById('impact-partners').textContent==='—','no invented partner count');
  ok(document.getElementById('revenue-chart').hidden,'revenue graph absent without evidence');
  ok(document.querySelector('.app-empty')!==null,'no fictitious trending ventures');
@@ -51,8 +51,10 @@ try{
  for(const key of strips)ok(!!document.getElementById('eco-strip-'+key),'ecosystem '+key+' strip exists');
  ok(document.querySelector('[data-strip="tools"]').textContent.includes('tool'),'tool category comes from real catalogue');
  ok(document.getElementById('eco-strip-ventures').textContent.includes('Founder-approved launches'),'no imaginary HQventures product');
- ok(document.getElementById('yh-pulse-name').textContent.includes('verified reporting'),'no false most-used claim');
- ok(document.getElementById('yh-pulse-toggle').disabled,'YHpulse pause disabled without rankings');
+ const pulse=document.getElementById('yh-pulse-item');
+ ok(pulse.classList.contains('is-placeholder')||pulse.getAttribute('href').startsWith('../tools/'),'YHpulse is empty or links to a published tool');
+ if(pulse.classList.contains('is-placeholder'))ok(document.getElementById('yh-pulse-toggle').disabled,'no rotating rankings before activity');
+ else ok(document.getElementById('yh-pulse-label').textContent.includes('COMPLETED ACTIONS'),'observed rankings are not misrepresented as verified people');
  const ecoPause=document.getElementById('eco-motion-toggle');
  ecoPause.click();ok(ecoPause.getAttribute('aria-pressed')==='true','all ecosystem rotators can be paused');
  ecoPause.click();ok(ecoPause.getAttribute('aria-pressed')==='false','ecosystem rotators can be resumed');
