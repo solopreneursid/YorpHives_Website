@@ -297,6 +297,7 @@ test("portable bookmark export and import work on mobile without exporting crede
  const errors=[];page.on("pageerror",e=>errors.push(String(e)));
  try{
   await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.evaluate(()=>window.switchTab("saved"));
   await page.locator("#portable-bookmark-tools").waitFor({timeout:16000});
   await page.evaluate(()=>{
    localStorage.setItem("govradar_saved_sources_v1",JSON.stringify(["manitoba-jobs","bpsc-bihar"]));
