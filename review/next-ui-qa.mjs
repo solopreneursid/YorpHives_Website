@@ -12,7 +12,7 @@ const check=(condition,message)=>{if(!condition)throw Error(message);results.pus
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const wait=async(fn,ms=10000)=>{
  const started=Date.now();
- while(Date.now()-started<ms){if(fn())return;sleep(80);await sleep(80);}
+ while(Date.now()-started<ms){if(fn())return;await sleep(80);}
  throw Error('Timeout: '+String(fn).slice(0,110));
 };
 try{
@@ -37,7 +37,7 @@ try{
  search.value='';search.dispatchEvent(new Event('input',{bubbles:true}));await sleep(100);
  const category=[...document.querySelectorAll('.chip')].find(x=>x.dataset.group==='documents');
  category?.click();await sleep(100);
- check(category?.getAttribute('aria-pressed')==='true','category filtering');
+ check(document.querySelector('.chip[data-group="documents"]')?.getAttribute('aria-pressed')==='true','category filtering');
  document.getElementById('tool-show-all')?.click();await sleep(100);
  const first=document.getElementById('tool-page-number').textContent;
  document.getElementById('tool-next')?.click();await sleep(100);
