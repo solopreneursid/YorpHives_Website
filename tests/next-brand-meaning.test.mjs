@@ -1,99 +1,108 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
-import {resolve,dirname} from 'node:path';
+import {dirname,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>readFile(resolve(root,p),'utf8');
-const home=h=>h.split('<!-- HOME:')[1]?.split('<!-- TOOLS:')[0]||'';
+const home=h=>h.split('<!-- TOOLS:')[0];
 const explore=h=>h.split('<!-- EXPLORE -->')[1]?.split('<!-- BUILDERS -->')[0]||'';
 
-test('the public story is concise: HQ operates, AI researches, founder decides',async()=>{
- const html=await read('index.html');
+test('three large homepage experiences replace repeated HQ explanations',async()=>{
+ const html=await read('index.html'),h=home(html);
+ const ids=['home-explore','home-use','home-connect'];
+ for(const id of ids)assert.ok(h.includes('id="'+id+'"'),'missing '+id);
+ assert.ok(h.indexOf('id="home-explore"')<h.indexOf('id="home-use"'));
+ assert.ok(h.indexOf('id="home-use"')<h.indexOf('id="home-connect"'));
+ for(const old of ['entry-section','os-section','journey-section','spotlight-section','builders-teaser','cta-banner'])
+  assert.ok(!h.includes('class="'+old),'obsolete repeating section '+old);
+ assert.match(h,/Discover<br><em>what's next\.<\/em>/);
+ assert.match(h,/Useful tools\.<br><em>Ready now\.<\/em>/);
+ assert.match(h,/Good things<br><em>happen together\.<\/em>/);
+});
+test('a geometric logo-inspired background supports a concise founder-led hero',async()=>{
+ const [html,css]=await Promise.all([read('index.html'),read('home-experience.css')]);
  const h=home(html);
  assert.match(h,/Founder-led\.<br><span class="hero-intelligence">Intelligence-powered\.<\/span><br><em>Ideas in motion\.<\/em>/);
- assert.match(h,/HQ runs the AI engine/);
- assert.match(h,/The founder decides/);
- assert.match(h,/class="hero-ambient"/);
- assert.doesNotMatch(h,/class="hero-console"/);
- assert.match(h,/FOUNDER/);
- assert.match(h,/HQ operates/);
- assert.match(h,/AI investigates/);
- assert.match(h,/Founder decides/);
- const heroText=h.match(/<p class="hero-sub">([\s\S]*?)<\/p>/)?.[1].replace(/<[^>]+>/g,'');
- assert.ok(heroText&&heroText.length<95,'hero uses one short sentence, not copied founder exposition');
- assert.doesNotMatch(h,/short for YorpHives Headquarters|I'm developing|I am developing/i);
-});
-test('workforce is explained by a visual diagram, not a paragraph of role descriptions',async()=>{
- const h=home(await read('index.html'));
+ assert.match(h,/HQ discovers\. AI evaluates\. <strong>Founder decides\.<\/strong>/);
+ assert.match(h,/class="hero-identity-mark"/);
+ assert.match(h,/class="hero-geometry"/);
  assert.match(h,/id="our-ai-team"/);
- assert.match(h,/class="os-board"/);
- assert.match(h,/class="os-roles"/);
- for(const role of ['Research','Markets','Product','Growth','Quality','Learning'])
-  assert.ok(h.includes(role),'missing AI employee label: '+role);
- assert.match(h,/class="os-decision"/);
- assert.match(h,/GO \/ NO-GO/);
- assert.match(h,/role="img"/);
+ assert.doesNotMatch(h,/class="hero-console"|class="os-board"|class="spotlight-panel"/);
+ assert.match(css,/@keyframes hero-logo-float/);
+ assert.match(css,/@keyframes hero-circuit-flow/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ const heroText=h.match(/<p class="hero-sub">([\s\S]*?)<\/p>/)?.[1].replace(/<[^>]+>/g,'');
+ assert.ok(heroText&&heroText.length<80);
 });
-test('five clear stages preserve the founder authorization gate',async()=>{
- const html=await read('index.html');
- const section=html.match(/<section class="journey-section shell"[\s\S]*?<\/section>/)?.[0];
- assert.ok(section&&section.includes('id="how-it-works"'));
- for(const step of ['Discover','Research','Evaluate','Decide','Build'])
-  assert.ok(section.includes('<h3>'+step+'</h3>'),step);
- assert.match(section,/founder-gate/);
- assert.match(section,/Approve or reject/);
- assert.match(html,/href="#how-it-works"/);
-});
-test('Explore connects published projects to HQ evidence and founder decisions',async()=>{
+test('Explore's featured project comes from founder-qualified data, never placeholders pretending to be launched',async()=>{
  const [html,js]=await Promise.all([read('index.html'),read('next.js')]);
- const section=explore(html);
- assert.match(section,/HQ researches\. I decide\. Approved projects go live\./);
- assert.match(section,/id="explore-process-title"/);
- assert.match(section,/class="explore-process-list"/);
- assert.match(section,/03 \/ FOUNDER/);
- assert.match(section,/Go \/ no-go/);
- assert.match(section,/id="projects-collection"/);
- assert.match(section,/Only founder-approved work makes it to Explore|Founder-approved launches only/i);
+ const h=home(html),page=explore(html);
+ assert.match(h,/id="home-featured"/);
+ assert.match(h,/APPROVAL REQUIRED/);
+ assert.match(h,/Nothing is published without founder approval/);
+ assert.match(h,/class="stage-founder"/);
+ assert.match(h,/id="how-it-works"/);
+ assert.match(page,/Founder-approved launches only/);
+ assert.match(page,/id="projects-collection"/);
  assert.match(js,/qualifiedProducts\(published\)/);
- assert.doesNotMatch(section,/fabricated launched projects|external marketplace/i);
+ assert.match(js,/showProducts\(approved\)/);
+ assert.match(js,/renderFeaturedProject\(approved\)/);
+ assert.match(js,/stage\.textContent='APPROVAL REQUIRED'/);
 });
-test('free tools and real public activity use seamless accessible motion',async()=>{
- const [html,css,phone,js]=await Promise.all([read('index.html'),read('next.css'),read('next-responsive.css'),read('next.js')]);
- assert.match(html,/id="category-ribbon-track"/);
- assert.match(html,/id="tool-category-rail"/);
- assert.match(html,/id="home-pulse-viewport"/);
+test('Use has a real search form, actual catalog-backed tools and animated categories',async()=>{
+ const [html,js,css]=await Promise.all([read('index.html'),read('next.js'),read('home-experience.css')]);
+ const h=home(html);
+ assert.match(h,/id="home-tool-search-form"/);
+ assert.match(h,/id="home-tool-search"/);
+ assert.match(h,/id="home-tools-list"/);
+ assert.match(h,/id="category-ribbon-track"/);
+ assert.match(js,/function renderHomeTools\(items\)/);
+ assert.match(js,/renderHomeTools\(allTools\)/);
+ assert.match(js,/search\.dispatchEvent\(new Event\('input'/);
+ assert.match(js,/function renderRibbon\(\)/);
+ assert.match(css,/scroll-snap-type:x mandatory/);
+});
+test('Connect differentiates contacting YorpHives from the still-closed Builders network',async()=>{
+ const h=home(await read('index.html'));
+ assert.match(h,/class="connection-network"/);
+ assert.match(h,/Have an idea\?/);
+ assert.match(h,/Start a conversation/);
+ assert.match(h,/href="#connect"/);
+ assert.match(h,/Find your people/);
+ assert.match(h,/Builders network · Coming soon/);
+ assert.match(h,/href="#builders"/);
+ assert.doesNotMatch(h,/Pay now|Join immediately|Apply to public jobs/i);
+});
+test('one verified YHpulse appears and moving elements have pause and reduced-motion support',async()=>{
+ const [html,css,base,js]=await Promise.all([read('index.html'),read('home-experience.css'),read('next.css'),read('next.js')]);
+ assert.equal((html.match(/id="home-pulse-viewport"/g)||[]).length,1);
  assert.doesNotMatch(html,/id="footer-pulse"/);
  assert.equal((html.match(/data-motion-toggle="categories"/g)||[]).length,2);
  assert.equal((html.match(/data-motion-toggle="pulse"/g)||[]).length,1);
- assert.match(css,/@keyframes rail-drift/);
- assert.match(css,/@keyframes pulse-scroll/);
- assert.match(css,/animation:rail-drift/);
- assert.match(css,/animation:pulse-scroll/);
- assert.match(js,/function renderRibbon\(\)/);
- assert.doesNotMatch(js,/function initPulse\(\)/);
- assert.doesNotMatch(html,/id="footer-pulse"/);
+ assert.match(base,/@keyframes rail-drift/);
+ assert.match(base,/@keyframes pulse-scroll/);
+ assert.match(css,/@keyframes connection-circuit/);
  assert.match(js,/aria-pressed/);
- assert.match(phone,/@media\(prefers-reduced-motion:reduce\)/);
- assert.match(phone,/animation:none!important/);
+ assert.doesNotMatch(js,/function initPulse\(\)/);
 });
-test('all main pages remain navigable and genuine work remains gated',async()=>{
- const h=await read('index.html');
- for(const id of ['home','tools','explore','builders','connect'])
-  assert.ok(h.includes('id="'+id+'"'),id+' missing');
- for(const id of ['tool-search','tool-categories','tool-count','tool-prev','tool-next','tool-favorites'])
-  assert.ok(h.includes('id="'+id+'"'),id+' missing');
- assert.match(h,/verified paid membership/);
- assert.match(h,/Enrollment is not open yet/);
- assert.match(h,/Nothing is uploaded by this form/);
- assert.doesNotMatch(h,/data-form="opportunity"|id="job-listings"/);
+test('navigation and safeguards still cover all five pages and human decision gate',async()=>{
+ const html=await read('index.html'),js=await read('next.js');
+ for(const id of ['home','tools','explore','builders','connect','projects-collection'])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(js,/'home-explore','home-use','home-connect'/);
+ assert.match(html,/Jobs and posting require verified paid membership/);
+ assert.match(html,/Enrollment is not open yet/);
+ assert.match(html,/Nothing is uploaded by this form/);
+ assert.doesNotMatch(html,/data-form="opportunity"|id="job-listings"/);
 });
-test('release gate verifies founder authorization and media-motion safeguards',async()=>{
- const check=await read('scripts/release-check.mjs');
- assert.match(check,/Founder-led/);
- assert.match(check,/HQ runs the AI engine/);
- assert.match(check,/hero-ambient/);
- assert.match(check,/@keyframes rail-drift/);
- assert.match(check,/@keyframes pulse-scroll/);
- assert.match(check,/Public job listing or job-posting form is forbidden/);
+test('release gate enforces three experiences, the qualified showcase and single public pulse',async()=>{
+ const release=await read('scripts/release-check.mjs');
+ assert.match(release,/home-explore/);
+ assert.match(release,/home-use/);
+ assert.match(release,/home-connect/);
+ assert.match(release,/class="hero-geometry"/);
+ assert.match(release,/renderFeaturedProject/);
+ assert.match(release,/YHpulse must appear exactly once/);
+ assert.match(release,/Public job listing or job-posting form is forbidden/);
 });
