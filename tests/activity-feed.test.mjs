@@ -3,7 +3,7 @@ import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {collectPublicActivity,renderFooterPulse,loadActivityNotes} from '../scripts/activity-feed.mjs';
+import {collectPublicActivity,renderFooterPulse,renderHomePulse,loadActivityNotes} from '../scripts/activity-feed.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>readFile(resolve(root,p),'utf8');
@@ -87,14 +87,25 @@ test('generated footer is clickable, escaped and has a non-focusable duplicate s
  assert.equal(renderFooterPulse([]).includes('Published updates will appear here.'),true);
 });
 
-test('source has compact footer template and avoids old hard-coded free-tool directory',async()=>{
+test('the homepage pulse contains only the scrolling verified links, no extra header',()=>{
+ const items=collectPublicActivity({published:[tool('Writer & Reader',4)],notes,now:instant});
+ const track=renderHomePulse(items);
+ assert.match(track,/class="pulse-track/);
+ assert.match(track,/href="tools\/example-4\//);
+ assert.equal((track.match(/class="pulse-items"/g)||[]).length,2);
+ assert.doesNotMatch(track,/<b>YHpulse<\/b>/);
+ assert.doesNotMatch(track,/class="pulse-viewport"/);
+});
+
+test('source has one homepage pulse and no duplicate footer ticker',async()=>{
  const html=await read('index.html'),css=await read('style.css'),build=await read('scripts/build-site.mjs');
- assert.match(html,/id="footer-pulse"/);
+ assert.doesNotMatch(html,/id="footer-pulse"/);
+ assert.match(html,/id="home-pulse-viewport"/);
  assert.match(html,/<!-- PULSE_START -->/);
  assert.match(html,/<!-- PULSE_END -->/);
  assert.doesNotMatch(html,/class="footer-directory"/);
  assert.doesNotMatch(html,/<nav class="footer-directory" aria-label="Free tools"/);
- assert.match(build,/renderFooterPulse\(activity\)/);
+ assert.match(build,/renderHomePulse\(activity\)/);
  assert.match(build,/await write\('activity.json'/);
  assert.match(build,/discoverToolEditTimes\(root\)/);
  assert.match(build,/discoverPublicPageUpdates\(root\)/);
