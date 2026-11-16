@@ -324,6 +324,21 @@ async function publishReimaginedRoot(prefix=''){
    '<meta name="robots" content="noindex,nofollow">',
    '<link rel="canonical" href="https://yorphives.com/">');
  homepage=homepage.replace(/<div class="preview-banner">[^\n]*<\/div>\n?/,'');
+
+ // Human-readable first-party share metadata supports growth without a SaaS widget.
+ const sharing=[
+  '<meta property="og:type" content="website">',
+  '<meta property="og:site_name" content="YorpHives">',
+  '<meta property="og:title" content="YorpHives — A cloud-based AI-powered venture studio">',
+  '<meta property="og:description" content="Discover founder-approved ventures, build connections and explore useful tools.">',
+  '<meta property="og:url" content="https://yorphives.com/">',
+  '<meta property="og:image" content="https://yorphives.com/tools/brand-icon.webp">',
+  '<meta property="og:image:alt" content="YorpHives brand emblem">',
+  '<meta name="twitter:card" content="summary">'
+ ].join('\\n');
+ if(!homepage.includes('<meta name="description"'))throw Error('Public description missing.');
+ homepage=homepage.replace(/<meta name="description"[^>]*>/,match=>match+'\\n'+sharing);
+
  if(homepage.includes('DESIGN PREVIEW · NOT LIVE')||
     homepage.includes('name="robots" content="noindex')||
     !homepage.includes('id="home"')||
