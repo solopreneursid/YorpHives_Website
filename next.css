@@ -124,6 +124,28 @@ img{display:block;max-width:100%}h1,h2,h3,p{margin:0}h1,h2,h3{letter-spacing:-.0
 .product-card h3{font-size:20px;margin:12px 0 6px}.product-card p{font-size:12px;line-height:1.6;color:#78897c}.product-card a{display:inline-block;margin-top:18px;color:#2f8153;font-size:12px;font-weight:820}
 .empty-product{display:flex;flex-direction:column;align-items:flex-start;padding:34px;border:1px solid #cfe4d4;border-radius:18px;background:#e5f2e8}
 .empty-product-icon{font-size:41px;color:#4a9f68;margin-bottom:13px}.empty-product h3{font-size:25px;margin:10px 0 7px}.empty-product p{color:#6c876f;font-size:12px;line-height:1.55;margin-bottom:17px}
+/* Builders: visible, independent partnership discovery with founder review. */
+.builders-hero-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.builders-hero-actions .btn{min-width:155px}
+.partnership-section{padding-block:76px 74px;background:linear-gradient(125deg,#e0f2e7,#f1f8ee);scroll-margin-top:75px}
+.partnership-layout{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);align-items:center;gap:40px 7%}
+.partnership-copy h2{margin:15px 0;font-size:clamp(35px,3.9vw,54px);line-height:1.09}
+.partnership-copy h2 em{color:#317a54}
+.partnership-copy p{color:#637e6c;font-size:14px;line-height:1.5;margin-bottom:21px}
+.partnership-panel{overflow:hidden;min-width:0;background:#153c2d;border:1px solid #458d665c;border-radius:19px;color:#f1fff4;box-shadow:0 21px 45px #153d2c1a}
+.partnership-panel-top{display:flex;align-items:center;gap:11px;min-height:67px;padding:14px 21px;border-bottom:1px solid #90cfa830}
+.partnership-symbol{flex:none;display:grid;place-items:center;height:38px;width:38px;border:1px solid #a7f0c753;border-radius:12px;background:#2a6546;color:#b6fdd2;font-size:25px}
+.partnership-panel-top strong{font-size:10px;letter-spacing:.11em;line-height:1.3}
+.partner-status{margin-left:auto;color:#b8f6cb;border:1px solid #91d6ab6d;border-radius:100px;padding:7px 10px;font-size:9px;letter-spacing:.1em;font-weight:850}
+.partnership-path{display:grid;grid-template-columns:30px minmax(0,1fr) minmax(0,.55fr);align-items:center;gap:11px;min-height:65px;padding:12px 21px;border-bottom:1px solid #9dd9b62b}
+.partnership-path>span{color:#8fbc9f;font-size:10px;font-weight:810}
+.partnership-path strong{font-size:14px;line-height:1.35;letter-spacing:-.018em}
+.partnership-path small{text-align:right;font-size:11px;color:#9dc6ae;line-height:1.4}
+.partnership-panel-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 21px}
+.partnership-badge{border-radius:7px;background:#b6f4ce;color:#205237;padding:7px 9px;font-size:10px;font-weight:900;letter-spacing:.075em}
+.partnership-panel-foot small{color:#a8d1b8;font-size:11px}
+.partnership-disclosure{grid-column:1/-1;border-top:1px solid #c4dfca;padding-top:17px;color:#688571;font-size:11px;line-height:1.6}
+.partnership-disclosure strong{color:#39784f}
 .builders-graphic{position:relative;min-height:245px;border-radius:50%;border:1px solid #9be6b64d;background:radial-gradient(circle at center,#386e4a4a,transparent 65%);box-shadow:0 0 0 28px #9be6b610}
 .bgraph-center{position:absolute;inset:34%;display:grid;place-items:center;border-radius:18px;background:#bcf9d5;color:#285b3b;font-size:60px;animation:mark-breathe 6s ease-in-out infinite}\n@keyframes mark-breathe{50%{transform:scale(1.06);box-shadow:0 0 0 12px #b5f5ce11}}
 .bnode{position:absolute;padding:10px 15px;border:1px solid #9de8bd70;border-radius:10px;background:#245540;color:#bff6d4;font-size:10px;letter-spacing:.1em;font-weight:800}
