@@ -11,6 +11,11 @@ on:
         type: boolean
   schedule:
     - cron: '55 */3 * * *'
+  push:
+    branches:
+      - feat/govradar-phase1-sources-20261116
+    paths:
+      - '.github/workflows/govradar-portable-collector.yml'
   pull_request:
     paths:
       - 'apps/govexam-radar/**'
@@ -35,6 +40,19 @@ jobs:
         env:
           GOVRADAR_COLLECTOR_TARGET: https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev
         run: node apps/govexam-radar/collector-client.mjs --dry-run
+      # Controlled one-shot verification, removed immediately after this run.
+      # Only a trusted push to this isolated branch with the exact commit message can run it.
+      - name: One-time signed staging ingestion verification
+        if: github.event_name == 'push' && github.ref == 'refs/heads/feat/govradar-phase1-sources-20261116' && github.event.head_commit.message == 'test(govradar): one-time signed staging ingest'
+        env:
+          GOVRADAR_COLLECTOR_KEY: ${{ secrets.GOVRADAR_COLLECTOR_KEY }}
+          GOVRADAR_COLLECTOR_TARGET: https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev
+        run: |
+          if [ -z "${GOVRADAR_COLLECTOR_KEY}" ]; then
+            echo "Protected repository secret GOVRADAR_COLLECTOR_KEY is unavailable."
+            exit 1
+          fi
+          node apps/govexam-radar/collector-client.mjs
       - name: Signed publish — only scheduled or founder manual approval
         if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.publish == true)
         env:
