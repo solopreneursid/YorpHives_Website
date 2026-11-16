@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: '22'
       - name: Unit and API tests
-        run: node --test worker.test.mjs source-monitor.test.mjs official-feed.test.mjs manitoba-feed.test.mjs moderation.test.mjs
+        run: node --test worker.test.mjs source-monitor.test.mjs official-feed.test.mjs manitoba-feed.test.mjs india-employment-news.test.mjs moderation.test.mjs
       - name: Install browser test runtime
         run: |
           npm install --no-save playwright@1.56.1
@@ -62,6 +62,10 @@ jobs:
 
       - name: Read-only official Manitoba province RSS compatibility probe
         run: node apps/govexam-radar/probe-manitoba.mjs
+
+      - name: Read-only India Employment News source/robots compatibility probe
+        continue-on-error: true
+        run: node apps/govexam-radar/probe-india.mjs
 
       - name: Verify D1 community API on isolated preview
         run: node apps/govexam-radar/community-smoke.mjs
