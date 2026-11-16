@@ -14,7 +14,7 @@ test('viewport supports device sizing and browser zoom',async()=>{
 test('redesigned five-stage journey stays usable on phones',async()=>{
  const [html,css]=await Promise.all([read('index.html'),read('next-responsive.css')]);
  assert.equal((html.match(/<li class="studio-step stage-/g)||[]).length,5);
- assert.match(css,/\.journey-list\{display:flex;gap:10px;overflow-x:auto/);
+ assert.match(css,/\.journey-list\{display:flex;gap:9px;overflow-x:auto/);
  assert.match(css,/scroll-snap-type:x proximity/);
 });
 test('responsive rules include narrow phones, tablets and safe areas',async()=>{
@@ -40,10 +40,12 @@ test('mobile navigation and Escape to close are accessible',async()=>{
  assert.match(js,/event\.key==='Escape'/);
  assert.match(js,/aria-expanded/);
 });
-test('footers keep public updates readable and disable animated marquee',async()=>{
+test('public updates animate by default but remain pausable and reduced-motion-safe',async()=>{
  const [base,mobile]=await Promise.all([read('next.css'),read('next-responsive.css')]);
- assert.match(base,/\.pulse-viewport\{overflow-x:auto/);
- assert.match(base,/\.pulse-item\{display:flex/);
+ assert.match(base,/\.pulse-viewport\{min-width:0;overflow:hidden/);
+ assert.match(base,/\.pulse-item\{display:inline-flex/);
+ assert.match(base,/@keyframes pulse-scroll/);
+ assert.match(base,/@keyframes rail-drift/);
  assert.match(mobile,/@media\(prefers-reduced-motion:reduce\)/);
 });
 test('static output includes redesigned responsive CSS and navigation',async()=>{
