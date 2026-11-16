@@ -86,3 +86,11 @@ The Worker Free plan has request and CPU caps; zero cost applies **within free-t
 - The implementation fails closed on wrong schema, non-JSON, unexpected redirect, source restriction, excessive response size, wrong domain, stale closing timestamp, or database error; prior records are not silently deleted.
 - Do **not** refer to source-confirmed imported notices as individually verified, automatically checked for right-to-work, or proof that the job is still open. All hiring conditions must be checked on the original posting.
 - The data feed does not cover UPSC, SSC, RRB, JPSC or other Indian exam notifications. Those remain directory links and historical sample leads until suitable legal, authentic public sources are integrated separately.
+
+### Pilot verification — 16 November 2026
+
+- The UK DfE official JSON feed returned HTTP 200 with a Schema.org `JobPosting` `data` array, 100 items and 62 pages. All 100 records in the first page passed strict validation in a GitHub Actions read-only probe.
+- A one-time, audited, source-provenance preserving bootstrap placed 100 official-feed records into the isolated Cloudflare D1 database. The browser and HTTP integration checks confirmed imported records can be read and bookmarked.
+- Current draft PR CI passed at 320, 375, 768, 1440px and on live preview mobile. These records remain **source-confirmed, not independently verified**, and the pilot is not yet exhaustive.
+- The bootstrap was a single operation. It does **not** prove the future Cron Trigger can fetch this source from Cloudflare; observe and independently verify the first scheduled ingestion outcome. Until then do not claim unattended recruitment synchronization is operational.
+- The experimental minute-frequency schedule was removed. Only conservative 3-hour recurring checks remain enabled on the separate staging Worker. No production website files were changed.
