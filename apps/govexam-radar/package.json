@@ -1,10 +1,10 @@
 {
   "name": "@hqventures/govradar",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "node --test worker.test.mjs source-monitor.test.mjs",
+    "test": "node --test worker.test.mjs source-monitor.test.mjs official-feed.test.mjs",
     "deploy": "node deploy.mjs"
   }
 }
