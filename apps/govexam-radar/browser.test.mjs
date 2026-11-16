@@ -39,13 +39,11 @@ for(const width of [320,375,768,1440]){
      assert.equal(horizontalScroll,0,"unexpected page-level horizontal scroll at "+width+"px: "+JSON.stringify(layout.offenders));
      assert.equal(renderWidth,width,"Screenshot must match actual 320px viewport without padding beyond its bounds");
      if(width<=375){
-       const scrollable=await page.evaluate(()=>{
-         const el=document.querySelector("#view-radar .bg-gradient-to-r .overflow-x-auto");
-         if(!el)return false;
-         const before=el.scrollLeft;el.scrollLeft=el.scrollWidth;const after=el.scrollLeft;el.scrollLeft=before;
-         return after>0;
-       });
-       assert.equal(scrollable,true,"Location options must remain accessible by horizontal swipe");
+       assert.equal(await page.locator(".discovery-modes").isVisible(),true);
+       assert.equal(await page.locator("#discovery-filter-toggle").isVisible(),true);
+       assert.equal(await page.locator("#search-input").isVisible(),true);
+       assert.equal(await page.locator("#discovery-advanced-filters").isVisible(),false,"advanced filters start folded on phones");
+       assert.equal(await page.locator("nav[aria-label='Mobile Navigation'] button:visible").count(),4);
      }
      assert.equal(errors.length,0,"JS errors: "+errors.join("; "));
    }finally{await page.close();}
@@ -147,9 +145,10 @@ test("modals, saved preferences, guide and custom leads",async()=>{
    await page.locator("#modal-bookmark-btn").click();
    await page.evaluate(()=>window.closeExamModal());
    await page.evaluate(()=>window.switchTab("alerts"));
-   await page.locator("#user-email-input").fill("person@example.org");
-   await page.locator("#email-subscription-form button[type=submit]").click();
-   assert.match(await page.locator("#email-dispatch-log").innerText(),/No email|NOT being sent/);
+   assert.equal(await page.locator("#user-email-input").count(),0);
+   assert.equal(await page.locator("#email-subscription-form").count(),0);
+   assert.equal(await page.locator("#email-dispatch-log").count(),0);
+   assert.match(await page.locator("#view-alerts").innerText(),/Admit cards, results & updates/i);
    await page.evaluate(()=>window.switchTab("feeds"));
    await page.locator("#custom-title").fill("QA Test Community Outreach Exam");
    await page.locator("#custom-authority").fill("Research Team");
@@ -322,5 +321,299 @@ test("portable bookmark export and import work on mobile without exporting crede
   assert.equal(imported.length,1);
   assert.equal(imported[0].title,"Official source demo");
   assert.equal(errors.length,0,errors.join("; "));
+ }finally{await page.close();}
+});
+
+const RELEASE_FIXTURE={
+ releaseProfile:"uk_only_release_preview",publicLaunchAuthorized:false,total:1,page:1,limit:12,
+ sources:[{id:"uk-dfe-teaching-vacancies",name:"UK Department for Education",commercialReuseApprovedForCurrentFields:true}],
+ notices:[{id:"uk-synthetic-test",sourceId:"uk-dfe-teaching-vacancies",
+  title:"<img src=x onerror=alert(1)> Mathematics Teacher",employer:"Example School",
+  jurisdiction:"England",region:"London",sourceUrl:"https://teaching-vacancies.service.gov.uk/jobs/example",
+  closingAt:"2026-11-27T12:00:00Z",lastSeenAt:Date.parse("2026-11-16T15:20:00Z"),stream:"Non-technical"}]
+};
+for(const width of [320,375,768,1440]){
+ test("UK-only release candidate is readable, safe and responsive at "+width+"px",async()=>{
+  const page=await browser.newPage({viewport:{width,height:850}});
+  const errors=[];
+  page.on("pageerror",e=>errors.push(String(e)));
+  await page.route("**/api/release-preview/notices?*",route=>route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(RELEASE_FIXTURE)}));
+  try{
+   const resp=await page.goto(origin+"/release-preview",{waitUntil:"domcontentloaded"});
+   assert.equal(resp.status(),200);
+   await page.locator("#preview-grid .job-card").first().waitFor({timeout:15000});
+   assert.equal(await page.locator("#preview-grid .job-card").count(),1);
+   assert.equal(await page.locator("#hero-count").textContent(),"1");
+   assert.match(await page.locator("#preview-grid .job-card").textContent(),/Last observed in source/);
+   assert.equal(await page.locator("#preview-grid img").count(),0,"upstream text must not inject HTML");
+   assert.ok((await page.locator("#preview-grid .job-card h3").textContent()).includes("<img"));
+   assert.equal(await page.locator("#preview-grid a").first().getAttribute("href"),"https://teaching-vacancies.service.gov.uk/jobs/example");
+   const overflow=await page.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,innerWidth:window.innerWidth,outer:document.querySelector(".site-shell").scrollWidth}));
+   assert.ok(overflow.scrollWidth<=width+2,"no horizontal page scroll: "+JSON.stringify(overflow));
+   await page.screenshot({path:"govradar-uk-release-"+width+".png",fullPage:true,animations:"disabled"});
+   assert.deepEqual(errors,[],"no browser errors permitted");
+  }finally{await page.close();}
+ });
+}
+test("UK-only preview search and reset remain functional without user accounts",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:850}});
+ const params=[];
+ await page.route("**/api/release-preview/notices?*",route=>{
+  params.push(new URL(route.request().url()).searchParams.toString());
+  return route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(RELEASE_FIXTURE)});
+ });
+ try{
+  await page.goto(origin+"/release-preview",{waitUntil:"domcontentloaded"});
+  await page.locator("#preview-grid .job-card").waitFor({timeout:15000});
+  await page.locator("#preview-search").fill("London");
+  await page.locator("#preview-stream").selectOption("Non-technical");
+  await page.locator("#preview-filters button[type=submit]").click();
+  await page.waitForFunction(()=>document.querySelector("#preview-grid .job-card")!==null);
+  assert.ok(params.some(x=>x.includes("q=London")&&x.includes("stream=Non-technical")));
+  await page.locator("#preview-reset").click();
+  await page.waitForFunction(()=>document.querySelector("#preview-search").value==="");
+  assert.equal(await page.locator("#preview-stream").inputValue(),"");
+  assert.ok((await page.locator("body").textContent()).includes("RELEASE CANDIDATE"));
+ }finally{await page.close();}
+});
+
+test("retired email preferences are purged without deleting saved opportunities",async()=>{
+ const context=await browser.newContext();
+ const page=await context.newPage();
+ try{
+  await page.addInitScript(()=>{
+   localStorage.setItem("govexam_radar_email_v2",JSON.stringify({email:"old@example.test"}));
+   localStorage.setItem("hqventures_govradar_full_v3",JSON.stringify({saved:["rrb-je"],emailIds:["rrb-je"],emailSettings:{email:"old@example.test"}}));
+  });
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  const state=await page.evaluate(()=>({
+   oldEmail:localStorage.getItem("govexam_radar_email_v2"),
+   saved:JSON.parse(localStorage.getItem("hqventures_govradar_full_v3"))
+  }));
+  assert.equal(state.oldEmail,null);
+  assert.deepEqual(state.saved.saved,["rrb-je"]);
+  assert.equal(Object.hasOwn(state.saved,"emailIds"),false);
+  assert.equal(Object.hasOwn(state.saved,"emailSettings"),false);
+ }finally{await context.close();}
+});
+
+test("phone discovery is searchable, browsable, and has accessible filters",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:812}});
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  const search=page.locator("#search-input");
+  await search.fill("UPSC");
+  assert.ok((await page.locator("#exam-cards-grid article").count())>=1);
+  await page.locator("#discovery-filter-toggle").click();
+  assert.equal(await page.locator("#discovery-filter-toggle").getAttribute("aria-expanded"),"true");
+  assert.equal(await page.locator("#discovery-advanced-filters").isVisible(),true);
+  await search.fill("");
+  await page.locator('[data-discovery-mode="GLOBAL_MANUAL"]').click();
+  assert.equal(await page.locator('[data-discovery-mode="GLOBAL_MANUAL"]').getAttribute("aria-pressed"),"true");
+  assert.equal(await page.locator("#exam-cards-grid article").count(),20,"global mode shows full prototype research inventory, including archived filtering");
+  await page.locator("#discovery-menu-toggle").click();
+  assert.equal(await page.locator("#discovery-menu-toggle").getAttribute("aria-expanded"),"true");
+  await page.locator('[data-discovery-tab="guide"]').click();
+  assert.equal(await page.locator("#view-guide").isVisible(),true);
+  assert.equal(await page.locator("#discovery-more-menu").isVisible(),false);
+ }finally{await page.close();}
+});
+
+test("opportunity cards show truthful source evidence, compact actions and saved-state feedback",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:812}});
+ const errors=[];page.on("pageerror",e=>errors.push(String(e)));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  const card=page.locator("#exam-cards-grid .govradar-opportunity-card").first();
+  await card.waitFor();
+  assert.match(await card.locator(".govradar-card-evidence").textContent(),/Research lead/);
+  assert.match(await card.locator(".govradar-card-caution").textContent(),/not independently verified/);
+  assert.equal(await card.locator(".govradar-details-button").count(),1);
+  assert.equal(await card.locator(".govradar-save-button").count(),1);
+  assert.equal(await card.locator(".govradar-source-link").count(),1);
+  const title=await card.locator(".govradar-card-title").textContent();
+  await card.locator(".govradar-save-button").click();
+  const saved=page.locator("#exam-cards-grid .govradar-opportunity-card").first().locator(".govradar-save-button");
+  assert.equal(await saved.getAttribute("aria-pressed"),"true");
+  await page.evaluate(()=>window.switchTab("saved"));
+  assert.ok((await page.locator("#saved-exams-grid .govradar-opportunity-card").count())>=1);
+  assert.ok((await page.locator("#saved-exams-grid").textContent()).includes(title));
+  await page.locator("#saved-exams-grid .govradar-details-button").first().click();
+  assert.equal(await page.locator("#exam-detail-modal").isVisible(),true);
+  assert.match(await page.locator("#modal-body").textContent(),/Qualifications|Eligibility/);
+  assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
+
+test("mobile quick country, stream and region filters share original search state",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:812}});
+ const errors=[];page.on("pageerror",e=>errors.push(e.message));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  assert.ok((await page.locator("#discovery-country-chips button").count())>=5);
+  await page.locator('[data-quick-country="India"]').click();
+  assert.equal(await page.locator('[data-quick-country="India"]').getAttribute("aria-pressed"),"true");
+  const india=await page.locator("#exam-cards-grid .govradar-card-location").allTextContents();
+  assert.ok(india.length>0);
+  assert.ok(india.every(x=>x.includes("India")),JSON.stringify(india));
+  await page.locator('[data-quick-stream="Technical"]').click();
+  assert.equal(await page.locator('[data-quick-stream="Technical"]').getAttribute("aria-pressed"),"true");
+  const cards=await page.locator("#exam-cards-grid article").count();
+  assert.ok(cards>0);
+  const types=await page.locator("#exam-cards-grid .govradar-card-tags").allTextContents();
+  assert.ok(types.every(x=>x.includes("Technical")));
+  assert.ok((await page.locator("#discovery-region-quick option").count())>=2);
+  await page.locator("#discovery-clear-quick").click();
+  assert.equal(await page.locator('[data-quick-stream="ALL"]').getAttribute("aria-pressed"),"true");
+  assert.equal(await page.locator('[data-quick-country="ALL"]').getAttribute("aria-pressed"),"true");
+  await page.locator("#exam-cards-grid .govradar-details-button").first().click();
+  assert.match(await page.locator("#modal-body").textContent(),/Research lead · not independently verified/);
+  assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
+
+test("global saved searches persist, apply and remove privately on mobile",async()=>{
+ const context=await browser.newContext({viewport:{width:375,height:812}});
+ const page=await context.newPage();const errors=[];page.on("pageerror",error=>errors.push(String(error)));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  await page.locator('[data-quick-country="India"]').click();
+  await page.locator('[data-quick-stream="Technical"]').click();
+  await page.locator("#search-input").fill("RRB");
+  await page.evaluate(()=>window.switchTab('saved'));
+  await page.locator("#saved-search-create").click();
+  assert.equal(await page.locator("#saved-search-list [data-apply-search]").count(),1);
+  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('govradar-global-saved-searches-v1')));
+  assert.deepEqual(stored[0].filters,{keyword:"RRB",country:"India",stream:"Technical",region:"ALL"});
+  await page.locator("#saved-search-create").click();
+  assert.equal(await page.locator("#saved-search-list [data-apply-search]").count(),1,"duplicate search must not be added");
+  await page.reload({waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  await page.evaluate(()=>window.switchTab('saved'));
+  assert.equal(await page.locator("#saved-search-list [data-apply-search]").count(),1);
+  await page.locator("#saved-search-list [data-apply-search]").click();
+  assert.equal(await page.locator("#view-radar").isVisible(),true);
+  assert.equal(await page.locator("#search-input").inputValue(),"RRB");
+  assert.equal(await page.locator('[data-quick-country="India"]').getAttribute("aria-pressed"),"true");
+  assert.equal(await page.locator('[data-quick-stream="Technical"]').getAttribute("aria-pressed"),"true");
+  await page.evaluate(()=>window.switchTab('saved'));
+  await page.locator("#saved-search-list [data-remove-search]").click();
+  assert.equal(await page.locator("#saved-search-list [data-apply-search]").count(),0);
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
+
+test("opt-in discovery preferences survive reload and clear without losing bookmarks",async()=>{
+ const context=await browser.newContext({viewport:{width:375,height:812}});
+ const page=await context.newPage();const errors=[];page.on("pageerror",error=>errors.push(String(error)));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  await page.locator("#exam-cards-grid .govradar-save-button").first().click();
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem("govexam_radar_saved_v2")));
+  assert.ok(saved.length>0);
+  await page.locator('[data-quick-country="India"]').click();
+  await page.locator('[data-quick-stream="Non-Technical"]').click();
+  await page.evaluate(()=>window.switchTab('saved'));
+  await page.locator("#saved-preferences-save").click();
+  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('govradar-global-discovery-preferences-v1'))),{country:"India",stream:"Non-Technical"});
+  await page.reload({waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  assert.equal(await page.locator('[data-quick-country="India"]').getAttribute("aria-pressed"),"true");
+  assert.equal(await page.locator('[data-quick-stream="Non-Technical"]').getAttribute("aria-pressed"),"true");
+  await page.evaluate(()=>window.switchTab('saved'));
+  assert.ok((await page.locator("#saved-exams-grid .govradar-opportunity-card").count())>0);
+  await page.locator("#saved-preferences-clear").click();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('govradar-global-discovery-preferences-v1')),null);
+  assert.ok((await page.locator("#saved-exams-grid .govradar-opportunity-card").count())>0);
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
+
+test("Updates clearly separates unverified prototypes and retains local source-link history",async()=>{
+ const context=await browser.newContext({viewport:{width:375,height:812}});
+ const page=await context.newPage(),errors=[];page.on("pageerror",e=>errors.push(String(e)));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  await page.evaluate(()=>window.switchTab("alerts"));
+  assert.equal(await page.locator("#gr-verified-empty").isVisible(),true);
+  assert.match(await page.locator("#gr-verified-empty").textContent(),/No independently verified/);
+  assert.equal(await page.locator("#gr-admit-panel").isVisible(),true);
+  assert.equal(await page.locator("#gr-result-panel").isVisible(),false);
+  assert.equal(await page.locator("#gr-upcoming-panel").isVisible(),false);
+  const lead=page.locator("#gr-admit-panel a[data-gr-official-source]").first();
+  const rowCount=await lead.count();
+  assert.ok(rowCount>0);
+  assert.match(await page.locator("#gr-admit-panel").innerText(),/Prototype · not verified/);
+  await lead.evaluate(a=>a.click());
+  assert.equal(await page.locator("#gr-history-list .gr-history-entry").count(),1);
+  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem("govradar-global-official-click-history-v1")));
+  assert.equal(stored.length,1);
+  assert.deepEqual(Object.keys(stored[0]).sort(),["id","openedAt"]);
+  await page.locator('[data-gr-update-tab="results"]').click();
+  assert.equal(await page.locator("#gr-result-panel").isVisible(),true);
+  assert.equal(await page.locator("#gr-admit-panel").isVisible(),false);
+  await page.locator('[data-gr-update-tab="upcoming"]').click();
+  assert.equal(await page.locator("#gr-upcoming-panel").isVisible(),true);
+  await page.reload({waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  await page.evaluate(()=>window.switchTab("alerts"));
+  assert.equal(await page.locator("#gr-history-list .gr-history-entry").count(),1);
+  await page.locator("#gr-clear-history").click();
+  assert.equal(await page.locator("#gr-history-list .gr-history-entry").count(),0);
+  assert.equal(await page.evaluate(()=>localStorage.getItem("govradar-global-official-click-history-v1")),null);
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
+
+test("phone users can discover official portals and navigate quick guide without implying verification",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:812}});
+ const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+ try{
+  await page.goto(origin,{waitUntil:'domcontentloaded'});
+  await page.locator('#exam-cards-grid article').first().waitFor();
+  await page.evaluate(()=>window.switchTab('feeds'));
+  await page.locator('#monitored-portals-grid>div').first().waitFor();
+  const original=await page.locator('#monitored-portals-grid>div').count();
+  assert.ok(original>4);
+  assert.match(await page.locator('#gr-portal-results').textContent(),/official portal links shown/);
+  await page.locator('#gr-portal-query').fill('not-a-real-government-portal-9999');
+  assert.equal(await page.locator('#monitored-portals-grid>div:visible').count(),0);
+  await page.locator('#gr-portal-query').fill('');
+  assert.equal(await page.locator('#monitored-portals-grid>div:visible').count(),original);
+  await page.locator('[data-gr-jump="monitored-portals-grid"]').click();
+  assert.equal(await page.locator('#monitored-portals-grid').isVisible(),true);
+  await page.evaluate(()=>window.switchTab('guide'));
+  assert.match(await page.locator('#view-guide .gr-secondary-intro').innerText(),/How to use GovRadar/);
+  await page.locator('[data-gr-guide-tab="saved"]').click();
+  assert.equal(await page.locator('#view-saved').isVisible(),true);
+  await page.evaluate(()=>window.switchTab('community'));
+  assert.match(await page.locator('#view-community .gr-secondary-intro').innerText(),/user-generated/);
+  assert.equal(await page.locator('#community-login-form').count(),1);
+  assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
+
+test("Phase 7 never claims simulated jobs or email delivery",async()=>{
+ const page=await browser.newPage({viewport:{width:320,height:740}});
+ const errors=[];page.on('pageerror',error=>errors.push(String(error)));
+ try{
+  await page.goto(origin,{waitUntil:'domcontentloaded'});
+  await page.locator('#exam-cards-grid article').first().waitFor();
+  assert.match(await page.locator('#results-summary-text').textContent(),/prototype research leads/);
+  await page.evaluate(()=>window.switchTab('feeds'));
+  const original=await page.locator('#exam-cards-grid article').count();
+  await page.evaluate(()=>window.runFeedSync());
+  assert.ok(!(await page.locator('#feed-log-status').textContent()).includes('ALL 15 CHANNELS SYNCED'));
+  await page.evaluate(()=>window.simulateLifecycleStep());
+  assert.equal(await page.locator('#exam-cards-grid article').count(),original);
+  assert.match(await page.locator('#feed-log-output').textContent(),/ILLUSTRATION|DEMO ONLY/);
+  assert.equal(await page.evaluate(()=>localStorage.getItem('govexam_radar_email_v2')),null);
+  assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });

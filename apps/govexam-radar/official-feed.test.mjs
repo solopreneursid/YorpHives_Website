@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {normalizeOfficialJob,parseOfficialFeed,ingestDfE,DFE_SOURCE,serveOfficialNotices} from "./official-feed.mjs";
+import {normalizeOfficialJob,parseOfficialFeed,ingestDfE,DFE_SOURCE,serveOfficialNotices,serveIngestionStatus} from "./official-feed.mjs";
 const clock=Date.parse("2026-11-16T12:00:00Z");
 function sample(extra={}){
  return {"@type":"JobPosting",title:"ICT Support Technician",datePosted:"2026-11-10",
@@ -78,4 +78,65 @@ test("network error never fabricates notices or advances cursor",async()=>{
 test("API refuses to fabricate job records when storage is absent",async()=>{
  const r=await serveOfficialNotices(null,new URLSearchParams());
  assert.equal(r.status,503);assert.equal((await r.json()).notices.length,0);
+});
+
+test("bounded DfE fetch follows only one same-host same-path redirect",async()=>{
+ const db=dbMock(),calls=[];
+ const fetcher=async url=>{
+  calls.push(url);
+  if(calls.length===1)return new Response(null,{status:302,headers:{Location:DFE_SOURCE.api+"?page=1"}});
+  return new Response(JSON.stringify({data:[sample()],meta:{totalPages:2}}),{headers:{"content-type":"application/json"}});
+ };
+ const out=await ingestDfE(db,fetcher,clock);
+ assert.equal(out.state,"ok");
+ assert.equal(out.accepted,1);
+ assert.equal(calls.length,2);
+});
+test("DfE redirected to unrelated host fails closed",async()=>{
+ const db=dbMock(),calls=[];
+ const fetcher=async url=>{
+  calls.push(url);
+  return new Response(null,{status:302,headers:{Location:"https://other.example/jobs.json?page=1"}});
+ };
+ const out=await ingestDfE(db,fetcher,clock);
+ assert.equal(out.state,"error");
+ assert.equal(out.errorCode,"unsafe_redirect");
+ assert.equal(calls.length,1);
+ assert.equal(db.batches.length,0);
+});
+test("DfE retry is bounded after transient upstream network failure",async()=>{
+ const db=dbMock();let calls=0;
+ const fetcher=async()=>{
+  calls++;
+  if(calls===1)throw new TypeError("temporary network issue");
+  return new Response(JSON.stringify({data:[sample()],meta:{totalPages:2}}),{headers:{"content-type":"application/json"}});
+ };
+ const out=await ingestDfE(db,fetcher,clock);
+ assert.equal(out.state,"ok");
+ assert.equal(calls,2);
+});
+
+test("ingestion health excludes one-time bootstraps from automation proof",async()=>{
+ const db=dbMock();const r=await serveIngestionStatus(db),data=await r.json();
+ assert.equal(r.status,200);
+ assert.equal(data.automation.observedForAllSources,false);
+ assert.equal(data.automation.healthy,false);
+ assert.equal(data.automation.sources.length,2);
+ assert.equal(data.automation.indiaSource,"index_parser_only_not_scheduled_pending_reuse_review");
+});
+test("ingestion health requires both source runs and evaluates freshness",async()=>{
+ const now=Date.now(),db=dbMock(),prepare=db.prepare.bind(db);
+ db.prepare=(sql)=>{
+  if(sql.includes("AS lastSuccessfulSignedAt")&&sql.includes("signed_portable_collector")){
+   return {bind(){return this;},async all(){return {results:[
+    {sourceId:"uk-dfe-teaching-vacancies",lastSuccessfulScheduledAt:now-60000,lastNonBootstrapAttemptAt:now-60000},
+    {sourceId:"manitoba-jobs",lastSuccessfulScheduledAt:now-120000,lastNonBootstrapAttemptAt:now-120000}
+   ]};}};
+  }
+  return prepare(sql);
+ };
+ const data=await (await serveIngestionStatus(db)).json();
+ assert.equal(data.automation.healthy,true);
+ assert.equal(data.automation.observedForAllSources,true);
+ assert.equal(data.automation.sources.every(s=>s.scheduledSuccessObserved),true);
 });

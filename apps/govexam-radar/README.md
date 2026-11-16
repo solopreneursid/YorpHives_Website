@@ -4,11 +4,11 @@ GovRadar is a transparent, zero-dependency government recruitment **source direc
 
 ## Honest scope (v2.2 pilot)
 
-- Full six-section founder-uploaded interface with advanced location / country / citizenship / stream / stage filters, imported example records, archived data, demo lifecycle, custom personal leads, email preference settings, and 4-part guide.
+- Full six-section founder-uploaded interface with advanced location / country / citizenship / stream / stage filters, imported example records, archived data, demo lifecycle, custom personal leads, on-device updates (email subscription interface removed), and 4-part guide.
 - 58 official national and subnational recruitment portals in 11 countries, including state, provincial, territory, devolved, municipal and prefectural government career sources.
 - 10 imported prototype opportunity *research leads*, explicitly **unverified** and not represented as live vacancies.
 - Country / keyword / technical-stream filtering, browser-local bookmarks and responsive mobile-first interface.
-- Real **on-device** notification inbox in the Alerts tab: new official-source imports since your last visit and personal bookmarks within 7 days of their source closing date. No automatic email, remote push or background alert delivery.
+- Real **on-device** notification inbox in the Alerts tab: new official-source imports since your last visit and personal bookmarks within 7 days of their source closing date. No remote delivery or background alert service.
 - On-demand and scheduled official **site reachability** checker restricted to a fixed allowlist. Reachability **does not** verify recruitment details.
 - Installable simplified PWA shell under `/lite`, and full responsive six-tab version under `/`.
 - Real shared community discussions, replies, and votes using a separate free-tier Cloudflare D1 database. Device-bound identity tokens prevent username-only impersonation; losing local browser storage loses your handle.
@@ -16,7 +16,7 @@ GovRadar is a transparent, zero-dependency government recruitment **source direc
 - Self-hosted compiled Tailwind CSS 3.4.17, with source generator and portable CSS. Zero third-party browser runtime fetches.
 - OpenAPI 3.1 contract at `/openapi.json` plus JSON catalog and health endpoints, strict Content Security Policy, no third-party client scripts, and no backend collection of candidate information.
 - **Official-feed pilot:** one source-specific, daily-to-three-hour rotating adapter for the UK DfE's Teaching Vacancies open-data API. The source returns Schema.org `JobPosting` records; GovRadar only imports records with future `validThrough`, verified official-domain URLs, and required fields. These are **source-confirmed records, not individually verified job notices**.
-- **Not implemented**: comprehensive global live vacancy coverage, verified admit-card/result ingestion, delivered email alerts, recoverable cross-device accounts. Do not advertise these as live.
+- **Not implemented**: comprehensive global live vacancy coverage, verified admit-card/result ingestion, background delivery, recoverable cross-device accounts. Do not advertise these as live.
 
 ## API
 
@@ -49,7 +49,7 @@ GitHub Actions executes these tests on changes to this product. Smoke-test the i
 2. Store each notice with official document URL, source snapshot/hash, published/check times, closing date and a manual/automated verification state.
 3. Quarantine uncertain notices; never infer open status from a portal being reachable. Re-verify expiry and eligibility against **each specific posting**.
 4. Add audited storage (portable SQLite schema; Cloudflare D1 may be an optional managed adapter), scheduled ingestion and a founder/reviewer queue.
-5. Implement genuine opt-in email or push only when a compliant sending channel exists within budget; no fake dispatch log or unverified claimed alerts.
+5. Improve opt-in browser-local vacancy watching and on-device alert history. Do not implement an email notification service or claim off-device delivery.
 6. Add authenticated, moderated community only after secure identities, rate limits and abuse handling exist.
 
 ## Cost and ownership
@@ -108,8 +108,34 @@ The Worker Free plan has request and CPU caps; zero cost applies **within free-t
 - Migrations: `official-notices.sql`, `official-notices-jurisdictions.sql`, `official-notices-revisions.sql` and `moderation.sql`. SQLite/D1 compatible; no proprietary agent orchestration.
 - **Human moderation:** `/moderation` interface, `/api/moderation/reports`, `/api/moderation/decide`, `/api/moderation/hidden`, `/api/moderation/restore`. All actions require the founder-only `MODERATOR_TOKEN` secret, and return `503` when it is not configured; no privileged guest access, no HQ agent access.
 - **Device-to-device bookmark portability:** the Saved tab can export and import a validation-controlled JSON file with official job bookmarks, saved state/province/government portals and prototype example bookmarks. This is local-only, does not require accounts, and never exports community credentials or stored email settings. For changes to appear immediately after importing, reload the page.
-- **Still pending:** independently verified unattended Worker Cron source access, authentic live recruitment ingestion for Indian PSCs and all remaining subnational portals, admit-card/result change detection, delivered email alerts (requires a real opt-in mail transport, preferably owner-hosted SMTP), cross-device account recovery, scalable regional directory vetting and user-facing launch privacy/terms.
+- **Still pending:** independently verified unattended Worker Cron source access, authentic live recruitment ingestion for Indian PSCs and all remaining subnational portals, admit-card/result change detection, browser-local alert history and honest visible-tab monitoring (no email transport), cross-device account recovery, scalable regional directory vetting and user-facing launch privacy/terms.
 
 ### Release boundary
 
 This remains an isolated Cloudflare staging Worker plus a **draft GitHub pull request**. The main branch and `yorphives.com` have not been modified by this phase. Stay within Cloudflare's free-tier request/D1 allowances or migrate the portable runtime to the owner's server.
+
+
+## Phase 1 source automation pilot — 16 November 2026
+
+- The staging Worker has three explicitly configured schedules: source-site reachability (`0 */3 * * *`), the DfE jobs JSON page reader (`20 */3 * * *`), and the Manitoba civil-service RSS reader (`40 */3 * * *`). A scheduler being configured is **not** proof of successful unattended import.
+- The first scheduled UK and Manitoba attempts both recorded `network_error` from the Worker. The bounded, same-official-host redirect/retry fixes are now deployed to the **isolated preview**, but recurrence after the fixes must still be demonstrated by successful source-specific D1 audits.
+- `GET /api/ingestion-status` now returns `automation.observedForAllSources` and `automation.healthy`, excluding `bootstrap-*` one-time imports. The frontend does not call a bootstrap or failed fetch a healthy live sync.
+- A new adapter can read only minimal date-labeled entries from India's official Employment News index. Its read-only government site probe returned HTTP 200 and parsed two future-closing summaries from the current snapshot. Because prior written permission for commercial republication has **not** been established, the **India importer is deliberately not scheduled or bootstrapped**. Never claim its listings are available in GovRadar before that changes.
+- Consult `PHASE1_RELEASE_GATE.md` for the evidence, policy review and remaining release conditions. Prefer officially reusable open datasets under India's Government Open Data License or direct authorized recruitment feeds rather than assuming all official websites grant commercial republication rights.
+- Keep deployment portable: the modules use standard Fetch APIs and SQLite-compatible D1 SQL; any fallback collector must remain first-party and independently verified. No production YorpHives website deployment was made.
+
+
+## Phase 1 status (16 November 2026): portable official-source fallback
+
+- Source collection targets the UK Department for Education public JSON feed and the Government of Manitoba provincial RSS. Imported source data remains unreviewed until separately validated.
+- The staging Worker provides a read-only `GET /api/collector/plan` with source cursor state and a **disabled-by-default** `POST /api/collector/ingest` receiving only cryptographically signed source snapshots.
+- The bridge reuses the existing official-feed validation, preserves provenance, enforces byte caps and exact DfE page cursors, rejects unsupported sources and duplicate request IDs, and signs messages for the intended destination hostname.
+- Source-ingestion audits identify `signed_portable_collector` separately from Worker scheduling. Signing keys never belong in GitHub source or site JavaScript.
+- The platform-independent `collector-client.mjs` runs on Node 22 with no third-party packages. It fetches both feeds independently, retries transient upstream failures and publishes only when `GOVRADAR_COLLECTOR_KEY` is configured. Otherwise `--dry-run` reads and validates source data without updating D1.
+- The GitHub Actions workflow `.github/workflows/govradar-portable-collector.yml` runs **read-only** in pull requests. Scheduled publishing requires that the workflow be released to the default branch and the founder install the matching Cloudflare `INGEST_HMAC_KEY` Worker secret and GitHub `GOVRADAR_COLLECTOR_KEY` Actions secret. Until then, background fallback is **not activated**.
+- Employment News India is limited to source directory and read-only parser testing because rights for commercial republication have not been established. No India ingest trigger is configured; no Indian vacancy records have been imported by this phase.
+- Existing `yorphives.com` deployment and the repository default branch are deliberately unchanged. Track release blockers and evidence in `PHASE1_RELEASE_GATE.md`.
+
+## Founder-original global product scope
+
+The six-section global app, not the UK-only candidate, is the product blueprint. See [`ORIGINAL_VISION_IMPLEMENTATION.md`](./ORIGINAL_VISION_IMPLEMENTATION.md). No email collection, mail transport or remote alert service is in scope. The UK isolated Worker remains a source/safety release proof. Existing exam sample records are research leads, not verified live announcements.
