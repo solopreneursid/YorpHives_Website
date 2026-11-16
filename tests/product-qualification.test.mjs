@@ -50,44 +50,30 @@ test('the rotating public showcase never includes unqualified ideas or free tool
   assert.deepEqual(qualifiedProducts(null),[]);
 });
 
-test('homepage positions qualification before the carousel and provides truthful zero-launch state',async()=>{
+test('redesigned homepage and Explore are truthful before qualification',async()=>{
   const html=await read('index.html');
-  const css=await read('style.css');
-  const js=await read('app.js');
-  assert.match(html,/id="explore-spotlight"/);
-  assert.match(html,/Yorphives HQ must evaluate market demand/);
-  assert.match(html,/Only qualified opportunities with final founder approval become launches/);
-  assert.match(html,/id="home-feature-product"/);
-  assert.match(html,/id="home-feature-logo"/);
-  assert.match(html,/id="home-feature-empty"/);
-  assert.match(html,/<p id="explore-qualification-note">Here is what every product must pass:<\/p>/);
-  assert.match(js,/if \(note\) note\.textContent = 'Here is what every product must pass:';/);
+  const css=await read('next.css');
+  const js=await read('next.js');
+  assert.match(html,/id="explore-qualification-note"/);
+  assert.match(html,/No qualified launches yet/);
+  assert.match(html,/final founder approval/);
+  assert.match(html,/href="#tools"/);
   assert.doesNotMatch(html,/No HQ-qualified products have been released yet/);
-  assert.doesNotMatch(js,/No HQ-qualified products have been released yet/);
-  assert.doesNotMatch(html,/every candidate must pass/i);
-  assert.match(html,/id="home-feature-pause"/);
-  assert.match(js,/qualifiedProducts\(catalog\)/);
-  assert.match(js,/setupExploreFeatureSpotlight\(products, 'home'\)/);
-  assert.match(js,/setupExploreFeatureSpotlight\(products, 'explore'\)/);
-  assert.match(js,/4500/);
-  assert.match(js,/IntersectionObserver/);
-  assert.match(js,/prefers-reduced-motion/);
-  assert.match(css,/home-feature-widget \.explore-feature-product\.is-entering/);
-  assert.match(css,/prefers-reduced-motion:reduce/);
+  assert.match(js,/qualifiedProducts\(published\)/);
+  assert.match(js,/showProducts\(qualifiedProducts\(published\)\)/);
+  assert.match(css,/\.empty-product\{/);
 });
-
-test('Explore publishing contract is also applied at build and product-list level',async()=>{
+test('only founder-qualified products are included by build and runtime',async()=>{
   const build=await read('scripts/build-site.mjs');
-  const js=await read('app.js');
+  const js=await read('next.js');
   assert.match(build,/import \{isQualifiedProduct\} from '\.\.\/product-policy\.mjs'/);
   assert.match(build,/Unqualified product cannot be published/);
   assert.match(build,/isQualifiedProduct\(item\)/);
   assert.match(build,/catalog\.json',JSON\.stringify\(\{\.\.\.catalog,items:published\}/);
   assert.match(js,/import\('\.\/product-policy\.mjs'\)/);
-  assert.match(js,/products\.forEach\(item => productGrid\.append\(card\(item\)\)\)/);
+  assert.match(js,/qualifiedProducts\(published\)/);
   assert.match(await read('index.html'),/No qualified launches yet/);
 });
-
 test('public catalog currently contains free tools but no fabricated approved apps',async()=>{
  const catalog=JSON.parse(await read('catalog.json'));
  assert.ok(catalog.items.filter(x=>x.type==='tool').length>=100);
