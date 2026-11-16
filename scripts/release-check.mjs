@@ -24,6 +24,7 @@ if(!homepage.includes('One founder.')||!homepage.includes('An AI team.')||
 if(!homepage.includes('id="our-ai-team"')||
    !homepage.includes('class="os-board"')||
    !homepage.includes('class="os-decision"')||
+   !homepage.includes('class="console-decision"')||
    !homepage.includes('FOUNDER')||
    !homepage.includes('id="projects-collection"')||
    !homepage.includes('Only founder-approved work'))
