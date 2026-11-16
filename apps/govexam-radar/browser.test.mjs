@@ -31,10 +31,12 @@ for(const width of [320,375,768,1440]){
      await page.locator("#exam-cards-grid article").first().waitFor({timeout:30000});
      assert.equal(await page.locator("#view-radar").isVisible(),true);
      assert.equal(await page.locator("#exam-cards-grid article").count(),17); // Prototype SMART_BOTH location mode omits two native-only foreign boards.
-     await page.screenshot({path:"govradar-full-"+width+".png",fullPage:true});
+     const capture=await page.screenshot({path:"govradar-full-"+width+".png",fullPage:true});
+     const renderWidth=capture.readUInt32BE(16);
      const layout=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>window.innerWidth+3,offenders:[...document.querySelectorAll("body *")].filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&(b.right>innerWidth+4||b.left<-4)}).slice(0,12).map(e=>({tag:e.tagName,id:e.id,cls:String(e.className).slice(0,100),right:Math.round(e.getBoundingClientRect().right)}))}));
      const horizontalScroll=await page.evaluate(()=>{scrollTo(1000,0);const x=scrollX;scrollTo(0,0);return x;});
      assert.equal(horizontalScroll,0,"unexpected page-level horizontal scroll at "+width+"px: "+JSON.stringify(layout.offenders));
+     assert.equal(renderWidth,width,"full-page screenshot exceeds viewport; width "+renderWidth+" for "+width+"; offenders: "+JSON.stringify(layout.offenders));
      assert.equal(errors.length,0,"JS errors: "+errors.join("; "));
    }finally{await page.close();}
  });
