@@ -207,7 +207,10 @@ test("actual Cloudflare preview displays official-source cards with responsive l
   const cards=page.locator("#official-notice-grid article");
   await cards.first().waitFor({timeout:25000});
   assert.ok((await cards.count())>=1);
-  const href=await cards.first().locator("a[href^='https://teaching-vacancies.service.gov.uk/jobs/']").getAttribute("href");
+  await page.locator("#official-notice-country").selectOption("United Kingdom");
+  await page.locator("#official-notice-filters button[type=submit]").click();
+  await page.waitForFunction(()=>document.querySelector("#official-notice-grid article a[href^='https://teaching-vacancies.service.gov.uk/jobs/']")!==null,{timeout:12000});
+ const href=await cards.first().locator("a[href^='https://teaching-vacancies.service.gov.uk/jobs/']").getAttribute("href");
   assert.ok(href);
   await page.screenshot({path:"govradar-live-official-375.png",fullPage:false});
   await cards.first().locator("button[data-save-notice]").click();
