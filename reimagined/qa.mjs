@@ -14,6 +14,12 @@ try{
  ok(document.getElementById('revenue-chart').hidden,'revenue graph absent without evidence');
  ok(document.querySelector('.app-empty')!==null,'no fictitious trending ventures');
  ok(document.querySelector('.milestone-empty')!==null,'no fabricated milestones');
+ const kofi=document.getElementById('kofi-support');
+ ok(kofi?.disabled===true,'Ko-fi support is genuinely disabled');
+ ok(kofi?.textContent.includes('Ko-fi')&&kofi?.textContent.includes('Support us'),'Ko-fi Support us is visible in shared header');
+ ok(!kofi.hasAttribute('href')&&!kofi.hasAttribute('onclick'),'no donation URL or checkout action');
+ const oldHash=location.hash;kofi.click();
+ ok(location.hash===oldHash,'disabled Ko-fi CTA cannot navigate to checkout');
  for(const page of ['home','ventures','builders','impact','tools','partners','contact']){
    location.hash='#'+page;
    await wait(()=>!document.getElementById(page).hidden);
