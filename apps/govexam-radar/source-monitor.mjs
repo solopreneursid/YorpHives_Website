@@ -43,7 +43,7 @@ export async function getPortalStatus(db,sources){
     const byId=new Map((r.results||[]).map(x=>[x.source_id,x]));
     const items=sources.map(s=>{
       const row=byId.get(s.id);
-      return {id:s.id,name:s.name,country:s.country,category:s.category,url:s.url,
+      return {id:s.id,name:s.name,country:s.country,category:s.category,url:s.url,jurisdiction:s.jurisdiction||"",jurisdictionCode:s.jurisdictionCode||"",level:s.level||"national",
         status:row?.status||"not_checked",httpStatus:row?.http_status??null,
         checkedAt:row?new Date(row.checked_at).toISOString():null,
         latencyMs:row?.latency_ms??null,
@@ -52,14 +52,14 @@ export async function getPortalStatus(db,sources){
     return writeResponse({sources:items,checkedSources:items.filter(x=>x.checkedAt).length,
       total:sources.length,verifiedVacancies:0,
       monitoring:"Reachability checks only; no live vacancy ingestion, deadlines or eligibility verification.",
-      cadence:"3 sources per scheduled 3-hour run; all 17 normally covered within a day.",
+      cadence:"Up to six official source URLs per 3-hour run. All currently registered portals normally cycle within a day; failures may require rechecks.",
       generatedAt:new Date().toISOString()});
   }catch(e){
     console.error(JSON.stringify({event:"portal_status_read_failed",error:String(e?.message||e)}));
     return writeResponse({error:"monitoring_unavailable",message:"Portal status history could not be loaded."},503);
   }
 }
-export async function runScheduledPortalChecks(db,sources,limit=3){
+export async function runScheduledPortalChecks(db,sources,limit=6){
   if(!db)throw Error("D1 binding required for scheduled monitoring");
   const result=await db.prepare("SELECT source_id,checked_at FROM portal_status").all();
   const checked=new Map((result.results||[]).map(x=>[x.source_id,x.checked_at]));
