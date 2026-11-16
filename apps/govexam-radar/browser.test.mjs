@@ -72,6 +72,21 @@ test("classic filters, alerts, bookmarks and tabs",async()=>{
    assert.equal(await page.locator("#view-guide").isVisible(),true);
  }finally{await page.close();}
 });
+test("official-source interface and saved controls load without invented records",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:820}});
+ const errors=[];page.on("pageerror",e=>errors.push(String(e)));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#official-notice-grid").waitFor({timeout:20000});
+  assert.equal(await page.locator("#govradar-official-jobs").count(),1);
+  assert.equal(await page.locator("#official-notice-filters").count(),1);
+  assert.equal(await page.locator("#saved-official-notices").count(),1);
+  assert.equal(await page.locator("#official-notice-grid article").count(),0);
+  await page.locator("#official-notice-search").fill("ICT");
+  await page.locator("#official-notice-filters button[type=submit]").click();
+  assert.equal(errors.length,0,"JS errors: "+errors.join("; "));
+ }finally{await page.close();}
+});
 test("simple mode remains fully functional",async()=>{
  const page=await browser.newPage({viewport:{width:375,height:800}});
  try{
