@@ -324,3 +324,55 @@ test("portable bookmark export and import work on mobile without exporting crede
   assert.equal(errors.length,0,errors.join("; "));
  }finally{await page.close();}
 });
+
+const RELEASE_FIXTURE={
+ releaseProfile:"uk_only_release_preview",publicLaunchAuthorized:false,total:1,page:1,limit:12,
+ sources:[{id:"uk-dfe-teaching-vacancies",name:"UK Department for Education",commercialReuseApprovedForCurrentFields:true}],
+ notices:[{id:"uk-synthetic-test",sourceId:"uk-dfe-teaching-vacancies",
+  title:"<img src=x onerror=alert(1)> Mathematics Teacher",employer:"Example School",
+  jurisdiction:"England",region:"London",sourceUrl:"https://teaching-vacancies.service.gov.uk/jobs/example",
+  closingAt:"2026-11-27T12:00:00Z",stream:"Non-technical"}]
+};
+for(const width of [320,375,768,1440]){
+ test("UK-only release candidate is readable, safe and responsive at "+width+"px",async()=>{
+  const page=await browser.newPage({viewport:{width,height:850}});
+  const errors=[];
+  page.on("pageerror",e=>errors.push(String(e)));
+  await page.route("**/api/release-preview/notices?*",route=>route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(RELEASE_FIXTURE)}));
+  try{
+   const resp=await page.goto(origin+"/release-preview",{waitUntil:"domcontentloaded"});
+   assert.equal(resp.status(),200);
+   await page.locator("#preview-grid .job-card").first().waitFor({timeout:15000});
+   assert.equal(await page.locator("#preview-grid .job-card").count(),1);
+   assert.equal(await page.locator("#hero-count").textContent(),"1");
+   assert.equal(await page.locator("#preview-grid img").count(),0,"upstream text must not inject HTML");
+   assert.ok((await page.locator("#preview-grid .job-card h3").textContent()).includes("<img"));
+   assert.equal(await page.locator("#preview-grid a").first().getAttribute("href"),"https://teaching-vacancies.service.gov.uk/jobs/example");
+   const overflow=await page.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,innerWidth:window.innerWidth,outer:document.querySelector(".site-shell").scrollWidth}));
+   assert.ok(overflow.scrollWidth<=width+2,"no horizontal page scroll: "+JSON.stringify(overflow));
+   await page.screenshot({path:"govradar-uk-release-"+width+".png",fullPage:true,animations:"disabled"});
+   assert.deepEqual(errors,[],"no browser errors permitted");
+  }finally{await page.close();}
+ });
+}
+test("UK-only preview search and reset remain functional without user accounts",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:850}});
+ const params=[];
+ await page.route("**/api/release-preview/notices?*",route=>{
+  params.push(new URL(route.request().url()).searchParams.toString());
+  return route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(RELEASE_FIXTURE)});
+ });
+ try{
+  await page.goto(origin+"/release-preview",{waitUntil:"domcontentloaded"});
+  await page.locator("#preview-grid .job-card").waitFor({timeout:15000});
+  await page.locator("#preview-search").fill("London");
+  await page.locator("#preview-stream").selectOption("Non-technical");
+  await page.locator("#preview-filters button[type=submit]").click();
+  await page.waitForFunction(()=>document.querySelector("#preview-grid .job-card")!==null);
+  assert.ok(params.some(x=>x.includes("q=London")&&x.includes("stream=Non-technical")));
+  await page.locator("#preview-reset").click();
+  await page.waitForFunction(()=>document.querySelector("#preview-search").value==="");
+  assert.equal(await page.locator("#preview-stream").inputValue(),"");
+  assert.ok((await page.locator("body").textContent()).includes("RELEASE CANDIDATE"));
+ }finally{await page.close();}
+});
