@@ -43,3 +43,11 @@ test("regional portal API supports hierarchical country, government tier and sub
  assert.equal(noMatch.total,0);assert.ok(noMatch.sources.length===0);
  for(const p of ["/regional.js","/"]){const a=await request(p);assert.equal(a.status,200);assert.match(await a.text(),/regional/);}
 });
+
+test("founder moderation page is private and credentialless API fails closed",async()=>{
+ const page=await request("/moderation");assert.equal(page.status,200);assert.match(await page.text(),/Founder moderation/);
+ assert.match(page.headers.get("Content-Security-Policy"),/default-src 'none'/);
+ const script=await request("/moderation.js");assert.equal(script.status,200);assert.match(await script.text(),/moderation\/reports/);
+ const api=await request("/api/moderation/reports");assert.equal(api.status,503);
+ assert.equal((await api.json()).error,"database_unavailable");
+});
