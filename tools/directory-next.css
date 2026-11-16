@@ -44,7 +44,7 @@ details.directory-section[open] .directory-chevron{transform:rotate(180deg)}
 .directory-hero{grid-template-columns:1fr;gap:25px;padding-block:38px 45px}
 .directory-hero h1{font-size:clamp(38px,9vw,55px);margin:14px 0}
 .directory-hero p{font-size:13px;line-height:1.66;margin-bottom:22px}
-.directory-art{min-height:180px;padding:26px;border-radius:17px}
+.directory-art{display:none}
 .directory-art strong{font-size:28px;margin:12px 0 0}
 .dir-art-glyph{font-size:52px}
 .directory-list-head{display:block;padding-top:27px;margin-bottom:18px}
