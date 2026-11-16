@@ -34,6 +34,20 @@ Provide a mobile-first, source-transparent preview of UK Department for Educatio
 - Avoid costly technology dependencies; all files and feed ingestion remain first-party, portable, and independently deployable to an owner-controlled Node/SQLite environment in the future.
 - Cloudflare Workers **Paid $5/month base plus usage** is currently founder-approved for development; do not upgrade or downgrade without the founder's decision. Monitor account requests, CPU and D1 usage as the audience grows.
 
+## Independent UK-only staging deployment (new)
+
+The earlier `/release-preview` route on the research staging Worker is still available for visual comparison, but the **independent restricted candidate** is now:
+
+**https://hqventures-govradar-uk-isolated-preview.solopreneursid-proy.workers.dev/**
+
+It is a separate Cloudflare Worker with no ingestion, moderation, community, data-export or research routes, **zero Secrets**, **zero Cron triggers**, and a D1 binding to `govradar-uk-candidate-preview` instead of the shared research/community database. The isolated D1 enforces UK-only source and official DfE URL checks at the schema level and contains only the `official_job_notices` application table. Both the isolated Worker route allowlist and D1 contents were independently verified. All visitor methods other than GET are denied.
+
+The UK 15:20 UTC unattended Cron success imported DfE page 3 and advanced the cursor; after a **manually controlled mirror refresh**, the source and separate UK D1 each contained **250 distinct UK DfE records** at 15:27 UTC, no Manitoba, India, HQ or community records. The isolated preview itself remains **noindex** and `publicLaunchAuthorized=false`.
+
+The first-party `uk-preview-sync.mjs` provides a **read-only dry-run by default** and a founder-approved `--apply` workflow, with validated official URLs, maximum four rows per SQL batch and no silent destructive deletions. This does **not** run automatically, and a production release must add a reviewed, separately authorized refresh mechanism.
+
+Read the independent verification and guarded refresh plan in `UK_ISOLATED_RELEASE_READINESS.md`.
+
 ## Readiness gates before a real release
 
 1. **Two full unattended Cron cycles per source** independently audited after the single-Cron migration. The status API's `twoCycleCronGatePassed` must be true; historic signed GitHub tests do not count.
