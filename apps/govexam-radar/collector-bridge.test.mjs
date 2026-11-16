@@ -9,7 +9,7 @@ const job={ "@type":"JobPosting", title:"ICT Support Technician",datePosted:"202
  url:"https://teaching-vacancies.service.gov.uk/jobs/ict-support-technician-school",
  hiringOrganization:{name:"Test Public School"}};
 const rss='<rss version="2.0"><channel><title>Official jobs</title><item><title>Crown Counsel</title><link>https://jobsearch.gov.mb.ca/jow/advancedResult.action?ID=130448</link><description>&lt;strong&gt;Department&lt;/strong&gt;: Manitoba Justice&lt;br /&gt;&lt;strong&gt;Closing Date&lt;/strong&gt;: 2026-12-09&lt;br /&gt;&lt;strong&gt;Posted Date&lt;/strong&gt;: 2026-11-09&lt;br /&gt;&lt;strong&gt;Posting Type&lt;/strong&gt;: Open&lt;br /&gt;</description></item></channel></rss>';
-function mockDb(){
+function mockDb({auditFailure=false}={}){
  const audits=new Set(),batches=[],cursors=[];
  return{audits,batches,cursors,
   prepare(sql){let args=[];return{
@@ -20,7 +20,16 @@ function mockDb(){
     if(sql.includes("COUNT("))return{total:0};
     return null;},
    async run(){
-    if(sql.includes("INSERT INTO source_ingest_runs"))audits.add(args[0]);
+    if(sql.includes("INSERT INTO source_ingest_runs")){
+     if(sql.includes("ON CONFLICT(id) DO NOTHING")){
+      if(audits.has(args[0]))return{success:true,meta:{changes:0}};
+      audits.add(args[0]);
+     }else{
+      if(auditFailure&&sql.includes("ON CONFLICT(id) DO UPDATE SET"))
+       throw Error("simulated_audit_write_failure");
+      audits.add(args[0]);
+     }
+    }
     if(sql.includes("source_feed_cursors"))cursors.push(args);
     return{success:true,meta:{changes:1}};}
   };},
@@ -100,4 +109,22 @@ test("signed snapshot cannot be replayed against a different Worker hostname",as
  const sig=await calculateCollectorSignature(KEY,NOW,payloadText,"https://staging.invalid");
  assert.equal(await verifyCollectorSignature(KEY,NOW,payloadText,sig,NOW,"https://staging.invalid"),true);
  assert.equal(await verifyCollectorSignature(KEY,NOW,payloadText,sig,NOW,"https://production.invalid"),false);
+});
+
+test("concurrent same-ID signed Manitoba requests cannot both cross the atomic claim",async()=>{
+ const db=mockDb(),env={DB:db,INGEST_HMAC_KEY:KEY};
+ const req=()=>signedRequest(payload(MANITOBA.id));
+ const [a,b]=await Promise.all([req(),req()]);
+ const responses=await Promise.all([handleCollectorIngest(a,env,NOW),handleCollectorIngest(b,env,NOW)]);
+ assert.deepEqual(responses.map(x=>x.status).sort(),[200,409]);
+ assert.equal(db.batches.length,1,"exactly one request should publish a batch");
+ assert.equal(db.audits.size,1,"there must be one durable audit ID");
+});
+test("a failed audit commit never returns successful signed ingestion acknowledgement",async()=>{
+ const db=mockDb({auditFailure:true}),env={DB:db,INGEST_HMAC_KEY:KEY};
+ const r=await handleCollectorIngest(await signedRequest(payload(MANITOBA.id)),env,NOW);
+ assert.equal(r.status,503);
+ const info=await r.json();
+ assert.equal(info.errorCode,"audit_write_failed");
+ assert.equal(db.audits.size,1,"pending atomic receipt remains for investigation");
 });
