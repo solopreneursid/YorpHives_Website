@@ -127,10 +127,10 @@ test("ingestion health excludes one-time bootstraps from automation proof",async
 test("ingestion health requires both source runs and evaluates freshness",async()=>{
  const now=Date.now(),db=dbMock(),prepare=db.prepare.bind(db);
  db.prepare=(sql)=>{
-  if(sql.includes("MAX(CASE WHEN state='ok' AND id NOT LIKE 'bootstrap-%'")){
+  if(sql.includes("AS lastSuccessfulSignedAt")&&sql.includes("signed_portable_collector")){
    return {bind(){return this;},async all(){return {results:[
-    {sourceId:"uk-dfe-teaching-vacancies",lastSuccessfulScheduledAt:now-60000,lastScheduledAttemptAt:now-60000},
-    {sourceId:"manitoba-jobs",lastSuccessfulScheduledAt:now-120000,lastScheduledAttemptAt:now-120000}
+    {sourceId:"uk-dfe-teaching-vacancies",lastSuccessfulScheduledAt:now-60000,lastNonBootstrapAttemptAt:now-60000},
+    {sourceId:"manitoba-jobs",lastSuccessfulScheduledAt:now-120000,lastNonBootstrapAttemptAt:now-120000}
    ]};}};
   }
   return prepare(sql);
