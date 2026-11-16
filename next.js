@@ -5,7 +5,7 @@
 (() => {
   'use strict';
   const pages = [...document.querySelectorAll('.page')];
-  const names = {home:'Home',tools:'Free tools',explore:'Explore',builders:'Builders',connect:'Contact'};
+  const names = {home:'Home',tools:'Free tools',explore:'HQventures',builders:'Builders',connect:'Contact'};
   const menuButton = document.getElementById('menu-toggle');
   const menuPanel = document.getElementById('mobile-menu');
   let previousPage = '';
@@ -328,7 +328,7 @@
   function renderFeaturedProject(products){
     const stage=document.getElementById('project-stage-state');
     if(!products.length){stage.textContent='APPROVAL REQUIRED';return;}
-    // The same founder-qualified product data powers both home and Explore.
+    // The same founder-qualified product data powers Home and HQventures.
     const item=products[0],container=document.createElement('div');
     container.className='project-stage-copy project-stage-approved';
     const badge=document.createElement('span');badge.textContent='FOUNDER APPROVED';
@@ -354,7 +354,7 @@
       const desc=document.createElement('p');desc.textContent=item.description;
       card.append(badge,heading,desc);
       if(/^(?:products|apps)\/[a-z0-9][a-z0-9-]*\/$/.test(String(item.url||''))){
-        const link=document.createElement('a');link.href=item.url;link.textContent='Explore product ↗';card.append(link);
+        const link=document.createElement('a');link.href=item.url;link.textContent='View project ↗';card.append(link);
       }
       el.append(card);
     });
