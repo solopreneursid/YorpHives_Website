@@ -1,4 +1,4 @@
-/* YORPHIVES NEXT: original, dependency-free user interface.
+/* YORPHIVES KINETIC: original, dependency-free user interface.
  * All public tools and products are discovered from the local catalog.json.
  * Client-side state only. No external API, no tracking or remote assets.
  */
@@ -244,20 +244,56 @@
     event.preventDefault();search.focus();
   });
 
+  // Moving categories use two equal tracks so the animation has a seamless
+  // loop. The duplicate is decorative and is removed for reduced motion.
   function renderRibbon(){
-    ribbon.replaceChildren();
-    for(const g of groups){
-      if(!allTools.some(x=>g.categories.includes(x.category||'Other')))continue;
-      const link=document.createElement('a');link.href='#tools';
-      link.textContent=g.name;
-      const arrow=document.createElement('span');arrow.textContent='↗';arrow.setAttribute('aria-hidden','true');
-      link.append(arrow);
-      link.addEventListener('click',()=>{
-        activeGroup=g.id;savedOnly=false;page=1;search.value='';render();
-      });
-      ribbon.append(link);
+    const available=groups.filter(g=>allTools.some(x=>g.categories.includes(x.category||'Other')));
+    const buildSet=(isDuplicate)=>{
+      const set=document.createElement('div');set.className='rail-set';
+      if(isDuplicate)set.setAttribute('aria-hidden','true');
+      for(const g of available){
+        const link=document.createElement('a');
+        link.className='rail-chip';link.href='#tools';
+        link.textContent=g.name;
+        const arrow=document.createElement('span');
+        arrow.textContent='↗';arrow.setAttribute('aria-hidden','true');
+        link.append(arrow);
+        if(isDuplicate)link.tabIndex=-1;
+        else link.addEventListener('click',()=>{activeGroup=g.id;savedOnly=false;page=1;search.value='';render();});
+        set.append(link);
+      }
+      return set;
+    };
+    for(const track of [ribbon,document.getElementById('tool-category-rail')]){
+      if(!track)continue;
+      track.replaceChildren(buildSet(false),buildSet(true));
     }
   }
+  // YHpulse is generated server-side from verified published activity. Mirror
+  // that same feed into the homepage rather than creating invented "updates".
+  function initPulse(){
+    const original=document.querySelector('#footer-pulse .pulse-track');
+    const home=document.getElementById('home-pulse-viewport');
+    if(original&&home)home.replaceChildren(original.cloneNode(true));
+  }
+  const pausedStates={categories:false,pulse:false};
+  const applyMotion=(kind,paused)=>{
+    pausedStates[kind]=paused;
+    const selector=kind==='categories'?'.category-ribbon':'.home-pulse, .footer-pulse';
+    document.querySelectorAll(selector).forEach(el=>el.classList.toggle('motion-paused',paused));
+    document.querySelectorAll('[data-motion-toggle="'+kind+'"]').forEach(button=>{
+      button.setAttribute('aria-pressed',String(paused));
+      button.setAttribute('aria-label',(paused?'Resume ':'Pause ')+(kind==='pulse'?'YHpulse updates':'moving categories'));
+      button.textContent=paused?'▶':'Ⅱ';
+    });
+  };
+  document.querySelectorAll('[data-motion-toggle]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      const kind=button.dataset.motionToggle;
+      applyMotion(kind,!pausedStates[kind]);
+    });
+  });
+  initPulse();
   function showProducts(products){
     const el=document.getElementById('explore-items'),empty=document.getElementById('explore-empty');
     el.replaceChildren();
