@@ -36,7 +36,7 @@ export const RELEASE_PREVIEW_HTML=`<!doctype html>
   </aside>
  </section>
  <section class="listings" id="vacancies" aria-labelledby="listings-title">
-  <div class="section-heading"><div><p class="section-kicker">LIVE-SOURCE RESEARCH</p><h2 id="listings-title">Explore teaching vacancies</h2><p>Source-observed, not individually verified. Confirm dates and eligibility with the employer.</p></div><span class="source-pill">UK DfE · OGL v3.0</span></div>
+  <div class="section-heading"><div><p class="section-kicker">OFFICIAL-SOURCE SNAPSHOT</p><h2 id="listings-title">Explore teaching vacancies</h2><p>Source-observed, not individually verified. This staging snapshot is refreshed manually; confirm current details on the official source.</p></div><span class="source-pill">UK DfE · OGL v3.0</span></div>
   <form id="preview-filters" class="filters" role="search">
    <label class="field field-search">Search title, employer or region<input type="search" id="preview-search" autocomplete="off" maxlength="60" placeholder="e.g. mathematics, London" aria-label="Search UK teaching roles"></label>
    <label class="field field-type">Category<select id="preview-stream"><option value="">All categories</option><option value="Technical">Technical (inferred)</option><option value="Non-technical">Non-technical (inferred)</option><option value="Unclassified">Unclassified</option></select></label>
@@ -51,7 +51,7 @@ export const RELEASE_PREVIEW_HTML=`<!doctype html>
   <div class="trust-cards">
    <article><span class="trust-icon" aria-hidden="true">01</span><h3>Official-source links</h3><p>Every listing points back to the Department for Education's Teaching Vacancies site.</p></article>
    <article><span class="trust-icon" aria-hidden="true">02</span><h3>Information, not endorsement</h3><p>Check closing dates, job details and eligibility on the official listing before applying.</p></article>
-   <article><span class="trust-icon" aria-hidden="true">03</span><h3>Preview, not launch</h3><p>This staging candidate covers UK DfE data only. Other country sources are held for further rights review.</p></article>
+   <article><span class="trust-icon" aria-hidden="true">03</span><h3>Preview, not launch</h3><p>This manually refreshed staging snapshot covers UK DfE data only. Other country sources remain under rights review. Confirm freshness on the official DfE site.</p></article>
   </div>
  </section>
 </main>
@@ -81,6 +81,10 @@ export const RELEASE_PREVIEW_JS=`
   const card=node("article","job-card");
   const badges=node("div","job-meta");badges.append(node("span","job-chip","UK Department for Education"),node("span","job-note","Verify on official site"));
   card.append(badges,node("h3","",row.title||"Untitled official listing"),node("p","job-employer",row.employer||"Employer not specified"),node("p","job-region",[row.jurisdiction,row.region].filter(Boolean).join(" · ")||"United Kingdom"));
+  const observedAt=Number(row.lastSeenAt);
+  if(Number.isSafeInteger(observedAt)&&observedAt>0)
+   card.append(node("p","job-region","Last observed in source · "+new Intl.DateTimeFormat(undefined,
+    {day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(observedAt))));
   const deadline=node("p","job-deadline");deadline.append(node("span","","Closing · "),node("strong","",dateLabel(row.closingAt)));card.append(deadline);
   const link=node("a","job-link","Read on official website ↗");link.href=row.sourceUrl;link.target="_blank";link.rel="noopener noreferrer";card.append(link);
   return card;
