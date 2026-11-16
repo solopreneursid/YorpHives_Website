@@ -49,3 +49,13 @@ export function assertSourceRightsForCommercialRelease(ids){
  if(pending.length)throw Error("commercial_reuse_review_pending:"+pending.join(","));
  return true;
 }
+
+// A narrowly scoped *preview*, never a switch that can be set by public query
+// parameters. Actual commercial publication still requires a reviewed release.
+// Explicit source IDs rather than a broad boolean prevent accidental rollout
+// when new research-only source adapters are added to the platform.
+export const UK_ONLY_PREVIEW_SOURCE_IDS=Object.freeze(["uk-dfe-teaching-vacancies"]);
+export function allowedCommercialPreviewSources(){
+ assertSourceRightsForCommercialRelease(UK_ONLY_PREVIEW_SOURCE_IDS);
+ return [...UK_ONLY_PREVIEW_SOURCE_IDS];
+}
