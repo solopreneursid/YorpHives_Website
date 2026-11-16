@@ -233,6 +233,7 @@ if(target==='preview'){
  // Browser smoke harness is intentionally preview-only, excluded from production assets.
  await cp(resolve(root,'review/browser-smoke.mjs'),resolve(dest,'browser-smoke.mjs'));
  await cp(resolve(root,'review/browser-interaction.mjs'),resolve(dest,'browser-interaction.mjs'));
+ await cp(resolve(root,'review/next-ui-qa.mjs'),resolve(dest,'next-ui-qa.mjs'));
  await cp(resolve(root,'review/library-qa.mjs'),resolve(dest,'library-qa.mjs'));
  await cp(resolve(root,'review/wave1-qa.mjs'),resolve(dest,'wave1-qa.mjs'));
  await cp(resolve(root,'review/wave1-ui-qa.mjs'),resolve(dest,'wave1-ui-qa.mjs'));
