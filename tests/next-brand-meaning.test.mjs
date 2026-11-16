@@ -71,7 +71,8 @@ test('free tools and real public activity use seamless accessible motion',async(
  assert.match(css,/animation:rail-drift/);
  assert.match(css,/animation:pulse-scroll/);
  assert.match(js,/function renderRibbon\(\)/);
- assert.match(js,/function initPulse\(\)/);
+ assert.doesNotMatch(js,/function initPulse\(\)/);
+ assert.doesNotMatch(html,/id="footer-pulse"/);
  assert.match(js,/aria-pressed/);
  assert.match(phone,/@media\(prefers-reduced-motion:reduce\)/);
  assert.match(phone,/animation:none!important/);
