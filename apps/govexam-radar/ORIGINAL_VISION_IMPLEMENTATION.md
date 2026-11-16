@@ -39,3 +39,8 @@ The six original areas are retained: **Radar, Alerts & Updates, Feeds, Saved, Co
 6. Audit mobile UX, privacy, safety, accessible navigation, moderation and founder-approved release.
 
 Status: **staging development**. Updating this document never asserts a production launch.
+
+## India source-rights investigation (2026-11-16)
+- **Employment News** editorial guidance explicitly reserves article copyright and prohibits reproduction of published articles or parts without permission. Do not assume this journal is openly reusable just because it is operated by a government ministry: https://employmentnews.gov.in/Editorial-Guidelines.pdf
+- **Government Open Data License – India (GODL)** explicitly allows commercial and noncommercial reuse with attribution **for data actually published under that license**, not every government website or Employment News article: https://data.gov.in/Godl
+- Result: keep Employment News content ingestion disabled pending source-specific rights. Explore individually licensed OGD datasets or official notice metadata as separate adapters, with accurate attribution, evidence and consent checks.
