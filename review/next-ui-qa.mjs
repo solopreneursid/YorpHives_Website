@@ -57,6 +57,15 @@ try{
  location.hash='#builders';
  await wait(()=>!document.getElementById('builders').hidden);
  check(document.querySelector('.mobile-dock [data-nav="builders"]')?.getAttribute('aria-current')==='page','builders navigation');
+ location.hash='#partners';
+ await wait(()=>!document.getElementById('builders').hidden);
+ check(!!document.getElementById('partners')?.querySelector('.partnership-panel'),'dedicated Partnerships section is reachable');
+ check(document.querySelector('#home-connect .connection-partner')?.getAttribute('href')==='#partners','homepage has Partnership entry');
+ check(!!document.querySelector('#builders .builders-hero-actions a[href="#partners"]'),'Builders hero links to Partnerships');
+ const partnershipLink=document.querySelector('#partners a[data-contact-reason="Partnership"]');
+ partnershipLink.click();
+ await wait(()=>!document.getElementById('connect').hidden);
+ check(document.getElementById('project-type').value==='Partnership','partnership enquiry is preselected without submitting a form');
  location.hash='#how-it-works';
  await wait(()=>!document.getElementById('home').hidden);
  check(document.querySelector('.mobile-dock [data-nav="home"]')?.getAttribute('aria-current')==='page','how-it-works resolves to home');
