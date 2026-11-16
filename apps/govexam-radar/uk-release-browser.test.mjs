@@ -120,9 +120,18 @@ test("revisited UK listing changes are highlighted without a notification server
   await page.locator(".change-badge").waitFor();
   assert.match(await page.locator(".change-badge").textContent(),/Closing date changed/);
   assert.match(await page.locator("#preview-changes").textContent(),/1 previously viewed/);
+  assert.equal(await page.locator(".local-alert-item").count(),1);
+  assert.match(await page.locator(".local-alert-item").textContent(),/Closing date changed/);
+  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem("govradar-uk-local-alerts-v1")).items.length),1);
+
   await page.reload({waitUntil:"domcontentloaded"});
   await page.locator(".job-card").waitFor();
   assert.equal(await page.locator(".change-badge").count(),0,"unchanged repeat view must not keep alerting");
+  assert.equal(await page.locator(".local-alert-item").count(),1,"previous alert remains in local history");
+  await page.locator("#clear-local-alerts").click();
+  assert.equal(await page.locator(".local-alert-item").count(),0);
+  assert.equal(await page.evaluate(()=>localStorage.getItem("govradar-uk-local-alerts-v1")),null);
+
  }finally{await context.close();}
 });
 
