@@ -11,11 +11,16 @@ test('viewport supports device sizing and browser zoom',async()=>{
  assert.match(html,/<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">/);
  assert.doesNotMatch(html,/user-scalable=no|maximum-scale=1/i);
 });
-test('redesigned five-stage journey stays usable on phones',async()=>{
- const [html,css]=await Promise.all([read('index.html'),read('next-responsive.css')]);
- assert.equal((html.match(/<li class="studio-step stage-/g)||[]).length,5);
- assert.match(css,/\.journey-list\{display:flex;gap:9px;overflow-x:auto/);
- assert.match(css,/scroll-snap-type:x proximity/);
+test('new three-experience homepage composes differently at phone widths',async()=>{
+ const [html,css]=await Promise.all([read('index.html'),read('home-experience.css')]);
+ for(const id of ['home-explore','home-use','home-connect'])assert.match(html,new RegExp('id="'+id+'"'));
+ assert.match(css,/@media\(max-width:760px\)/);
+ assert.match(css,/@media\(max-width:420px\)/);
+ assert.match(css,/@media\(max-width:350px\)/);
+ assert.match(css,/\.experience-layout\{grid-template-columns:1fr/);
+ assert.match(css,/scroll-snap-type:x mandatory/);
+ assert.match(css,/\.connection-paths\{grid-template-columns:1fr/);
+ assert.match(css,/\.hero-geometry\{width:145%/);
 });
 test('responsive rules include narrow phones, tablets and safe areas',async()=>{
  const css=await read('next-responsive.css');
@@ -42,15 +47,17 @@ test('mobile navigation and Escape to close are accessible',async()=>{
 });
 test('public updates animate by default but remain pausable and reduced-motion-safe',async()=>{
  const [base,mobile]=await Promise.all([read('next.css'),read('next-responsive.css')]);
- assert.match(base,/\.pulse-viewport\{min-width:0;overflow:hidden/);
+ assert.match(base,/\.pulse-track\{display:flex/);
  assert.match(base,/\.pulse-item\{display:inline-flex/);
  assert.match(base,/@keyframes pulse-scroll/);
  assert.match(base,/@keyframes rail-drift/);
  assert.match(mobile,/@media\(prefers-reduced-motion:reduce\)/);
 });
 test('static output includes redesigned responsive CSS and navigation',async()=>{
- const [html,css]=await Promise.all([read('dist/index.html'),read('dist/next-responsive.css')]);
+ const [html,css,home]=await Promise.all([read('dist/index.html'),read('dist/next-responsive.css'),read('dist/home-experience.css')]);
  assert.match(html,/href="next-responsive\.css"/);
+ assert.match(html,/href="home-experience\.css"/);
+ assert.match(home,/@keyframes hero-logo-float/);
  assert.match(css,/@media\(max-width:350px\)/);
 });
 test('skip link works without persistent overlay',async()=>{
