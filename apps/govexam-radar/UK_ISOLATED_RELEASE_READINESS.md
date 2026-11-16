@@ -53,10 +53,10 @@ From `apps/govexam-radar` on an owner-controlled Node.js 22+ machine with a priv
 
 ## Remaining launch conditions
 
-1. Verify both research Cron sources over repeated unattended cycles, then confirm two-cycle reliability metric. One successful import per source is not sustained proof.
+1. **Initial two-cycle Cron gate satisfied** on 2026-11-16 at 15:41 UTC: UK and Manitoba each have two audited, independent native successful scheduled imports and the gate calculation returned true. Continue observing scheduled runs across days; a two-cycle pass is not proof of permanent reliability.
 2. Design a secure **source-verified UK mirror refresh**, limited to approved fields and official URLs, outside the public-facing Worker. It must fail safely and publish source recency status.
 3. Confirm all security, privacy, accessibility and source compliance checks, with explicit release approval. The founder controls domain association, go-live, rollback and monetization.
 4. Noindex and `publicLaunchAuthorized=false` are mandatory in this staging candidate. Public SEO/indexing is a separate founder-approved decision.
 5. Cloudflare Workers Paid is currently accepted as a modest development cost; monitor metered requests/CPU/D1 usage and keep architecture portable to owner-operated Node/SQLite.
 
-**Status: independent UK-only staging deployment; not a production-ready, automatically refreshed commercial product.**
+**Status: independent UK-only staging deployment with first native two-cycle gate passed; not yet a production-ready, automatically refreshed commercial product.**
