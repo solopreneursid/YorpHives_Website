@@ -324,6 +324,7 @@ async function publishReimaginedRoot(prefix=''){
   await cp(resolve(root,'reimagined',asset),resolve(dest,prefix+asset));
  // Browser fixture is isolated to preview acceptance; never ship it on production root.
  if(prefix)await cp(resolve(root,'reimagined/catalog-sync-qa.mjs'),resolve(dest,prefix+'catalog-sync-qa.mjs'));
+ if(prefix)await cp(resolve(root,'reimagined/insights-qa.mjs'),resolve(dest,prefix+'insights-qa.mjs'));
 
  const source=await readFile(resolve(root,'reimagined/index.html'),'utf8');
  let homepage=source.replace(
