@@ -9,11 +9,12 @@ GovRadar is a transparent, zero-dependency government recruitment **source direc
 - Country / keyword / technical-stream filtering, browser-local bookmarks and responsive mobile-first interface.
 - On-demand server-side official **site reachability** checker restricted to a fixed allowlist. Reachability **does not** verify recruitment details.
 - Installable PWA shell; offline UI, though API catalog requires a network connection.
-- JSON catalog and health endpoints, strict Content Security Policy, no third-party client scripts, and no backend collection of candidate information.
+- OpenAPI 3.1 contract at `/openapi.json` plus JSON catalog and health endpoints, strict Content Security Policy, no third-party client scripts, and no backend collection of candidate information.
 - **Not implemented**: real job ingestion, background updates, user accounts, shared community, email dispatch, or cross-device synchronization. Nothing should imply these are live.
 
 ## API
 
+- `GET /openapi.json`: machine-readable OpenAPI 3.1 contract for external tools and agents.
 - `GET /api/health`: worker health and version.
 - `GET /api/catalog`: official source registry, unverified leads and an empty verified listing dataset.
 - `GET /api/check?id=upsc`: on-demand reachability for a registry entry. Public API rejects arbitrary URLs.
