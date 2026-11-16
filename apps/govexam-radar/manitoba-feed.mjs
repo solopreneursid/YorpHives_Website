@@ -144,9 +144,20 @@ export async function ingestManitoba(db,fetcher=fetch,now=Date.now(),meta={}){
   console.error(JSON.stringify({event:"manitoba_ingest_error",reason:outcome.details}));return outcome;
  }finally{
   outcome.finishedAt=Date.now();
-  try{await db.prepare("INSERT INTO source_ingest_runs(id,source_id,started_at,finished_at,state,http_status,received,accepted,discarded,error_code,details) VALUES(?,?,?,?,?,?,?,?,?,?,?)")
-   .bind(outcome.id,MANITOBA.id,outcome.startedAt,outcome.finishedAt,outcome.state,outcome.httpStatus,outcome.received,outcome.accepted,outcome.discarded,outcome.errorCode,outcome.details).run();}
-  catch(e){console.error(JSON.stringify({event:"manitoba_audit_write_failed",reason:String(e?.message||e)}));}
+  const signed=meta?.origin==="signed_portable_collector";
+  const base="INSERT INTO source_ingest_runs(id,source_id,started_at,finished_at,state,http_status,received,accepted,discarded,error_code,details) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+  const sql=signed?base+
+   " ON CONFLICT(id) DO UPDATE SET started_at=excluded.started_at,finished_at=excluded.finished_at,state=excluded.state,http_status=excluded.http_status,received=excluded.received,accepted=excluded.accepted,discarded=excluded.discarded,error_code=excluded.error_code,details=excluded.details WHERE source_ingest_runs.state='error' AND source_ingest_runs.error_code='collector_claim_pending'":base;
+  let committed=false;
+  try{
+   const wrote=await db.prepare(sql)
+    .bind(outcome.id,MANITOBA.id,outcome.startedAt,outcome.finishedAt,outcome.state,
+     outcome.httpStatus,outcome.received,outcome.accepted,outcome.discarded,
+     outcome.errorCode,outcome.details).run();
+   committed=wrote?.meta?.changes===1||(!signed&&wrote?.success===true);
+  }catch(e){console.error(JSON.stringify({event:"manitoba_audit_write_failed",reason:String(e?.message||e)}));}
+  if(!committed && signed){outcome.state="error";outcome.errorCode="audit_write_failed";}
+
   console.log(JSON.stringify({event:"manitoba_feed",outcome:outcome.state,accepted:outcome.accepted,errorCode:outcome.errorCode}));
  }
 }
