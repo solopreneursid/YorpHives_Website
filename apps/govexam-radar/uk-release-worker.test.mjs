@@ -27,7 +27,7 @@ function mockDb(){
 const fetch=(path,opts={},env={DB:mockDb()})=>worker.fetch(new Request("https://uk-preview.example"+path,opts),env);
 test("public Worker exposes only explicitly approved paths, not research or write capabilities",async()=>{
  assert.equal(typeof worker.scheduled,"undefined","must not run source ingestion");
- assert.equal(UK_RELEASE_ALLOWED_PATHS.length,9);
+ assert.equal(UK_RELEASE_ALLOWED_PATHS.length,10);
  for(const path of ["/api/community/posts","/api/moderation/reports","/api/collector/ingest",
   "/api/collector/plan","/api/notice-changes","/api/source-status",
   "/api/jurisdictions","/api/catalog","/official.js","/full.css",
@@ -114,8 +114,27 @@ test("visitor HTML is noindexed, self-contained and never links to staging resea
   assert.ok((await asset.text()).length>1000);
  }
  const spec=await (await fetch("/openapi.json")).json();
- assert.deepEqual(Object.keys(spec.paths).sort(),["/api/health","/api/notices"]);
+ assert.deepEqual(Object.keys(spec.paths).sort(),["/api/freshness","/api/health","/api/notices"]);
  assert.equal(spec.openapi,"3.1.0");
  const robots=await (await fetch("/robots.txt")).text();
  assert.ok(robots.includes("Disallow: /"));
+});
+
+test("UK mirror status exposes only sanitized recency and never internal data",async()=>{
+ const db={prepare(sql){
+  assert.equal(sql,"SELECT status,last_success_at,last_attempt_at,last_native_source_at,last_rows_upserted FROM uk_mirror_state WHERE id=1");
+  return{async first(){return{status:"ok",last_success_at:Date.now()-120000,
+   last_native_source_at:Date.now()-190000,last_rows_upserted:25,
+   last_attempt_at:Date.now()-120000,error_code:"private_token_must_not_appear"};}};}};
+ const response=await worker.fetch(new Request("https://uk-preview.example/api/freshness"),{DB:db});
+ assert.equal(response.status,200);
+ const payload=await response.json();
+ assert.equal(payload.status,"current");
+ assert.equal(payload.fresh,true);
+ assert.equal(payload.publicLaunchAuthorized,false);
+ assert.equal(response.headers.get("cache-control"),"no-store");
+ assert.equal(JSON.stringify(payload).includes("private_token"),false);
+ assert.equal(JSON.stringify(payload).includes("database_id"),false);
+ const absent=await worker.fetch(new Request("https://uk-preview.example/api/freshness"),{});
+ assert.equal((await absent.json()).status,"unavailable");
 });
