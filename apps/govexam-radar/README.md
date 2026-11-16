@@ -124,3 +124,14 @@ This remains an isolated Cloudflare staging Worker plus a **draft GitHub pull re
 - Consult `PHASE1_RELEASE_GATE.md` for the evidence, policy review and remaining release conditions. Prefer officially reusable open datasets under India's Government Open Data License or direct authorized recruitment feeds rather than assuming all official websites grant commercial republication rights.
 - Keep deployment portable: the modules use standard Fetch APIs and SQLite-compatible D1 SQL; any fallback collector must remain first-party and independently verified. No production YorpHives website deployment was made.
 
+
+## Phase 1 status (16 November 2026): portable official-source fallback
+
+- Source collection targets the UK Department for Education public JSON feed and the Government of Manitoba provincial RSS. Imported source data remains unreviewed until separately validated.
+- The staging Worker provides a read-only `GET /api/collector/plan` with source cursor state and a **disabled-by-default** `POST /api/collector/ingest` receiving only cryptographically signed source snapshots.
+- The bridge reuses the existing official-feed validation, preserves provenance, enforces byte caps and exact DfE page cursors, rejects unsupported sources and duplicate request IDs, and signs messages for the intended destination hostname.
+- Source-ingestion audits identify `signed_portable_collector` separately from Worker scheduling. Signing keys never belong in GitHub source or site JavaScript.
+- The platform-independent `collector-client.mjs` runs on Node 22 with no third-party packages. It fetches both feeds independently, retries transient upstream failures and publishes only when `GOVRADAR_COLLECTOR_KEY` is configured. Otherwise `--dry-run` reads and validates source data without updating D1.
+- The GitHub Actions workflow `.github/workflows/govradar-portable-collector.yml` runs **read-only** in pull requests. Scheduled publishing requires that the workflow be released to the default branch and the founder install the matching Cloudflare `INGEST_HMAC_KEY` Worker secret and GitHub `GOVRADAR_COLLECTOR_KEY` Actions secret. Until then, background fallback is **not activated**.
+- Employment News India is limited to source directory and read-only parser testing because rights for commercial republication have not been established. No India ingest trigger is configured; no Indian vacancy records have been imported by this phase.
+- Existing `yorphives.com` deployment and the repository default branch are deliberately unchanged. Track release blockers and evidence in `PHASE1_RELEASE_GATE.md`.
