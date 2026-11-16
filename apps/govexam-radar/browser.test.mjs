@@ -160,7 +160,7 @@ test("community buttons expose report, data export and account controls",async()
        upvotes:0,upvotedByMe:false,
        replies:[{id:"22222222-2222-4222-8222-222222222222",username:"otherqa",text:"Sample reply",timestamp:"Now"}]
      }];
-     window.switchTab("community");renderCommunityHub();
+     document.getElementById("view-radar").classList.add("hidden");document.getElementById("view-community").classList.remove("hidden");renderCommunityHub();
    });
    assert.equal(await page.locator('button:has-text("Report post")').count(),1);
    assert.equal(await page.locator('button:has-text("Report reply")').count(),1);
