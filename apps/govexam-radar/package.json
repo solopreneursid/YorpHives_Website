@@ -1,10 +1,10 @@
 {
   "name": "@hqventures/govradar",
-  "version": "2.2.0",
+  "version": "2.4.0",
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "node --test worker.test.mjs source-monitor.test.mjs official-feed.test.mjs",
+    "test": "node --test worker.test.mjs source-monitor.test.mjs official-feed.test.mjs manitoba-feed.test.mjs",
     "deploy": "node deploy.mjs"
   }
 }
