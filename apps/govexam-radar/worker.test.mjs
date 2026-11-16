@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import worker from "./worker.js";
 const request=(path,method="GET")=>worker.fetch(new Request("https://app.example"+path,{method}));
 test("health responds without PII or fake sync",async()=>{const r=await request("/api/health");assert.equal(r.status,200);const x=await r.json();assert.equal(x.status,"ok");assert.equal(x.service,"hqventures-govradar");});
-test("catalog is honest and has source allowlist",async()=>{const r=await request("/api/catalog");assert.equal(r.status,200);const d=await r.json();assert.equal(d.verifiedListings.length,0);assert.ok(d.leads.every(x=>d.sources.some(s=>s.id===x.sourceId)));assert.equal(new Set(d.sources.map(s=>s.country)).size,11);assert.equal(d.sources.length,40);assert.equal(d.newRegionalPortals,23);assert.ok(d.sources.every(s=>new URL(s.url).protocol==="https:"));});
+test("catalog is honest and has source allowlist",async()=>{const r=await request("/api/catalog");assert.equal(r.status,200);const d=await r.json();assert.equal(d.verifiedListings.length,0);assert.ok(d.leads.every(x=>d.sources.some(s=>s.id===x.sourceId)));assert.equal(new Set(d.sources.map(s=>s.country)).size,11);assert.equal(d.sources.length,58);assert.equal(d.newRegionalPortals,41);assert.ok(d.sources.every(s=>new URL(s.url).protocol==="https:"));});
 test("full original six-tab experience and separate simple interface",async()=>{
     const r=await request("/");assert.equal(r.status,200);
     const html=await r.text();
@@ -32,7 +32,7 @@ test("official job endpoints never return invented data without D1",async()=>{
 
 test("regional portal API supports hierarchical country, government tier and subdivision filters",async()=>{
  const all=await (await request("/api/jurisdictions")).json();
- assert.equal(all.total,40);assert.equal(all.countries.includes("France"),true);
+ assert.equal(all.total,58);assert.equal(all.countries.includes("France"),true);
  const ca=await (await request("/api/jurisdictions?country=Canada&level=province")).json();
  assert.ok(ca.total>=4);assert.ok(ca.sources.every(x=>x.country==="Canada"&&x.level==="province"));
  const inBihar=await (await request("/api/jurisdictions?jurisdiction=IN-BR")).json();
