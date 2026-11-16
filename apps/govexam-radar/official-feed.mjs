@@ -75,36 +75,55 @@ async function digest(value){
  const bytes=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value));
  return [...new Uint8Array(bytes)].map(b=>b.toString(16).padStart(2,"0")).join("");
 }
+// Strict redirect validation: upstream HTTP 30x was previously collapsed into
+// 'network_error' because fetch was configured with redirect:'error'.
+// Follow at most one same-origin redirect for this fixed official API path.
 async function boundedOfficialFetch(page,fetcher=fetch){
- const u=new URL(DFE_SOURCE.api);u.searchParams.set("page",String(page));
- const ctl=new AbortController();const timeout=setTimeout(()=>ctl.abort(),14000);
- try{
-  const res=await fetcher(u.toString(),{method:"GET",signal:ctl.signal,redirect:"error",headers:{
-   "Accept":"application/json",
-   "Referer":"https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/",
-   "User-Agent":"HQventuresGovRadar/2.2 (public-data reader, https://yorphives.com)"
-  }});
-  if(!res.ok)return {error:"http_"+res.status,status:res.status};
-  if(!(res.headers.get("content-type")||"").includes("json"))return {error:"unexpected_content_type",status:res.status};
-  const length=Number(res.headers.get("content-length")||0);
-  if(length>MAX_FEED_BYTES)return {error:"response_too_large",status:res.status};
-  const reader=res.body?.getReader();
-  let text="";
-  if(reader){
-   const decoder=new TextDecoder();
-   try{
-    while(true){
-     const {done,value}=await reader.read();if(done)break;
-     text+=decoder.decode(value,{stream:true});
-     if(text.length>MAX_FEED_BYTES){await reader.cancel();return {error:"response_too_large",status:res.status};}
+ const original=new URL(DFE_SOURCE.api);original.searchParams.set("page",String(page));
+ let target=original.toString();
+ for(let attempt=0;attempt<2;attempt++){
+  const ctl=new AbortController(),timeout=setTimeout(()=>ctl.abort(),14000);
+  try{
+   for(let hop=0;hop<=1;hop++){
+    const res=await fetcher(target,{method:"GET",signal:ctl.signal,redirect:"manual",headers:{"Accept":"application/json"}});
+    if([301,302,303,307,308].includes(res.status)){
+     const location=res.headers.get("location");
+     let next;
+     try{next=new URL(location,target);}catch{return {error:"invalid_redirect",status:res.status};}
+     if(hop===1||next.protocol!=="https:"||next.hostname!==DFE_SOURCE.host||
+       next.pathname!=="/api/v1/jobs.json"||next.searchParams.get("page")!==String(page)||
+       [...next.searchParams.keys()].some(k=>k!=="page"))
+       return {error:"unsafe_redirect",status:res.status};
+     target=next.toString();continue;
     }
-    text+=decoder.decode();
-   }finally{reader.releaseLock();}
-  }else{text=await res.text();if(text.length>MAX_FEED_BYTES)return {error:"response_too_large",status:res.status};}
-  try{return {payload:JSON.parse(text),status:res.status};}
-  catch{return {error:"invalid_json",status:res.status};}
- }catch(e){return {error:e?.name==="AbortError"?"timeout":"network_error",status:null};}
- finally{clearTimeout(timeout);}
+    if([429,502,503,504].includes(res.status)&&attempt===0){break;}
+    if(!res.ok)return {error:"http_"+res.status,status:res.status};
+    if(!(res.headers.get("content-type")||"").toLowerCase().includes("json"))return {error:"unexpected_content_type",status:res.status};
+    const length=Number(res.headers.get("content-length")||0);
+    if(length>MAX_FEED_BYTES)return {error:"response_too_large",status:res.status};
+    const reader=res.body?.getReader();let content="",bytes=0;
+    if(reader){
+     const decoder=new TextDecoder();
+     try{
+      while(true){
+       const {done,value}=await reader.read();if(done)break;
+       bytes+=value.byteLength;
+       if(bytes>MAX_FEED_BYTES){await reader.cancel();return {error:"response_too_large",status:res.status};}
+       content+=decoder.decode(value,{stream:true});
+      }
+      content+=decoder.decode();
+     }finally{reader.releaseLock();}
+    }else{content=await res.text();if(new TextEncoder().encode(content).byteLength>MAX_FEED_BYTES)return {error:"response_too_large",status:res.status};}
+    try{return {payload:JSON.parse(content),status:res.status};}
+    catch{return {error:"invalid_json",status:res.status};}
+   }
+  }catch(e){
+   if(attempt===1)return {error:e?.name==="AbortError"?"timeout":"network_error",status:null};
+  }finally{clearTimeout(timeout);}
+  if(attempt===0)await new Promise(resolve=>setTimeout(resolve,350));
+  target=original.toString();
+ }
+ return {error:"temporary_upstream_failure",status:null};
 }
 async function audit(db,outcome){
  try{
