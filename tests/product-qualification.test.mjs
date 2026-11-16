@@ -55,12 +55,14 @@ test('redesigned homepage and Explore are truthful before qualification',async()
   const css=await read('next.css');
   const js=await read('next.js');
   assert.match(html,/id="explore-qualification-note"/);
-  assert.match(html,/Nothing published until it's ready/);
+  assert.match(html,/Nothing is published without founder approval/);
   assert.match(html,/Founder-approved launches only/);
   assert.match(html,/href="#tools"/);
+  assert.match(html,/id="home-featured"/);
   assert.doesNotMatch(html,/No HQ-qualified products have been released yet/);
   assert.match(js,/qualifiedProducts\(published\)/);
-  assert.match(js,/showProducts\(qualifiedProducts\(published\)\)/);
+  assert.match(js,/showProducts\(approved\)/);
+  assert.match(js,/renderFeaturedProject\(approved\)/);
   assert.match(css,/\.empty-product\{/);
 });
 test('only founder-qualified products are included by build and runtime',async()=>{
@@ -72,7 +74,7 @@ test('only founder-qualified products are included by build and runtime',async()
   assert.match(build,/catalog\.json',JSON\.stringify\(\{\.\.\.catalog,items:published\}/);
   assert.match(js,/import\('\.\/product-policy\.mjs'\)/);
   assert.match(js,/qualifiedProducts\(published\)/);
-  assert.match(await read('index.html'),/Nothing published until it's ready/);
+  assert.match(await read('index.html'),/Nothing is published without founder approval/);
 });
 test('public catalog currently contains free tools but no fabricated approved apps',async()=>{
  const catalog=JSON.parse(await read('catalog.json'));
