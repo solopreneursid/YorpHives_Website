@@ -181,6 +181,8 @@ h1 em,h2 em{font-family:var(--serif);font-weight:400;letter-spacing:-.055em}
 .member-grid h3{font-size:25px;margin:20px 0 10px}.member-grid p{max-width:390px;font-size:14px;color:#65776a;line-height:1.65}
 .member-tag{margin-top:auto;padding-top:22px;color:#43805a;font-size:11px;font-weight:830;letter-spacing:.07em;text-transform:uppercase}
 .access-note{padding:18px 21px;background:#e7f2e7;border:1px solid #d1e3d4;border-radius:12px;color:#5e8066;font-size:12px;line-height:1.6;margin-top:19px}
+.communities{color:#607d66;font-size:12px;line-height:1.8;margin-top:15px}
+#explore-qualification-note{color:#6f8773;font-size:12px;line-height:1.6;margin-top:12px;max-width:550px}
 .membership-section{padding-block:95px 105px;background:#152c24;color:#f5fff5}.membership-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
 .membership-card{display:flex;flex-direction:column;min-height:300px;padding:31px;border:1px solid #a6e2bb44;border-radius:20px;background:#234534}.membership-card .overline{color:#b1efc8}.membership-partner{background:#335841}
 .membership-card h3{font-size:29px;margin:48px 0 13px}.membership-card p{max-width:435px;font-size:14px;color:#c2d5c5;line-height:1.67}.membership-foot{margin-top:auto;padding-top:25px;color:#b2f4c8;font-size:12px;font-weight:750}
