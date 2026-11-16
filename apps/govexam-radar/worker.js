@@ -95,6 +95,7 @@ export default {
     if (path === "/api/jurisdictions") return JSONResponse(filterSources(SOURCES,url.searchParams),200,"public, max-age=600");
     if (path === "/api/source-status") return getPortalStatus(env?.DB, SOURCES);
     if (path === "/api/notices") return serveOfficialNotices(env?.DB,url.searchParams);
+    if (path === "/api/release-preview/notices") return serveOfficialNotices(env?.DB,url.searchParams,"uk_only_release_preview");
     if (path === "/api/ingestion-status") return serveIngestionStatus(env?.DB);
     if (path === "/api/notice-changes") return serveNoticeChanges(env?.DB,url.searchParams);
     if (path === "/api/catalog") return JSONResponse({ version: VERSION, catalogUpdatedAt: "2026-11-16", sources: SOURCES, leads: LEADS, verifiedListings: [], directoryTotal: SOURCES.length, newRegionalPortals: REGIONAL_SOURCES.length, notice: "State, province, devolved, prefectural and municipal portals are directories; they are not automatically imported vacancies. Separately labelled DfE source records are at /api/notices. Email is not delivered." }, 200, "public, max-age=300");
