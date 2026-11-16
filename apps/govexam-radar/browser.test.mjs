@@ -533,3 +533,40 @@ test("opt-in discovery preferences survive reload and clear without losing bookm
   assert.deepEqual(errors,[]);
  }finally{await context.close();}
 });
+
+test("Updates clearly separates unverified prototypes and retains local source-link history",async()=>{
+ const context=await browser.newContext({viewport:{width:375,height:812}});
+ const page=await context.newPage(),errors=[];page.on("pageerror",e=>errors.push(String(e)));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  await page.evaluate(()=>window.switchTab("alerts"));
+  assert.equal(await page.locator("#gr-verified-empty").isVisible(),true);
+  assert.match(await page.locator("#gr-verified-empty").textContent(),/No independently verified/);
+  assert.equal(await page.locator("#gr-admit-panel").isVisible(),true);
+  assert.equal(await page.locator("#gr-result-panel").isVisible(),false);
+  assert.equal(await page.locator("#gr-upcoming-panel").isVisible(),false);
+  const lead=page.locator("#gr-admit-panel a[data-gr-official-source]").first();
+  const rowCount=await lead.count();
+  assert.ok(rowCount>0);
+  assert.match(await page.locator("#gr-admit-panel").innerText(),/Prototype · not verified/);
+  await lead.evaluate(a=>a.click());
+  assert.equal(await page.locator("#gr-history-list .gr-history-entry").count(),1);
+  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem("govradar-global-official-click-history-v1")));
+  assert.equal(stored.length,1);
+  assert.deepEqual(Object.keys(stored[0]).sort(),["id","openedAt"]);
+  await page.locator('[data-gr-update-tab="results"]').click();
+  assert.equal(await page.locator("#gr-result-panel").isVisible(),true);
+  assert.equal(await page.locator("#gr-admit-panel").isVisible(),false);
+  await page.locator('[data-gr-update-tab="upcoming"]').click();
+  assert.equal(await page.locator("#gr-upcoming-panel").isVisible(),true);
+  await page.reload({waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  await page.evaluate(()=>window.switchTab("alerts"));
+  assert.equal(await page.locator("#gr-history-list .gr-history-entry").count(),1);
+  await page.locator("#gr-clear-history").click();
+  assert.equal(await page.locator("#gr-history-list .gr-history-entry").count(),0);
+  assert.equal(await page.evaluate(()=>localStorage.getItem("govradar-global-official-click-history-v1")),null);
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
