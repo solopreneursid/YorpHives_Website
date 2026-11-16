@@ -129,7 +129,7 @@ test('deployed release activity and HTML agree and link only to published public
   // The reimagined home renders a smaller verified feed using the local
   // activity JSON; not all published events belong in initial HTML.
   const js=await read('dist/studio.js');
-  assert.match(homepage,/id="home-activity"/);
+  assert.match(homepage,/id="activity-list"/);
   assert.match(js,/fetch\('\.\.\/activity\.json'/);
   assert.match(js,/renderActivity\(d\.items\)/);
  }else{
