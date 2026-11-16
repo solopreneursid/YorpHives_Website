@@ -54,10 +54,12 @@ for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory())
  await cp(resolve(root,dir),resolve(dest,dir),{recursive:true});
 // Build YHpulse only from actual published pages and reviewed public release notes.
 // This is static and requires no paid runtime services or background polling.
+const publicNotes=await loadActivityNotes(root);
+const publicPageChanges=discoverPublicPageUpdates(root);
 const activity=collectPublicActivity({
   published,
-  notes:await loadActivityNotes(root),
-  pageChanges:discoverPublicPageUpdates(root),
+  notes:publicNotes,
+  pageChanges:publicPageChanges,
   toolEditTimes:discoverToolEditTimes(root),
 });
 if(!activity.length)throw Error('No verified public activity available for release.');
@@ -229,9 +231,28 @@ const sitemap='<?xml version="1.0" encoding="UTF-8"?>\n'+
  canonicalPaths.map(p=>'  <url><loc>'+xml(origin+p)+'</loc></url>').join('\n')+'\n</urlset>\n';
 await write('sitemap.xml',sitemap);
 if(target==='preview'){
- // Full from-scratch website experience for review, copied only after the
- // registered public-page audit. Never include it in production output.
+ // An entirely new site experience for review, added AFTER public HTML auditing.
+ // No new unregistered pages are ever introduced into the production build.
  await cp(resolve(root,'reimagined'),resolve(dest,'reimagined'),{recursive:true});
+ // Independent Builders-only update feed: newest ten *verified* public notes.
+ // The main activity feed is capped at 20 items and heavily features tools;
+ // it is not a reliable source for ten separate Builders announcements.
+ const builderNotes=[...publicNotes,...publicPageChanges].filter(e=>
+   e?.kind==='builders'&&e.url==='#builders'&&
+   typeof e.id==='string'&&e.id.length<=100&&
+   typeof e.title==='string'&&e.title.length>=3&&e.title.length<=90&&
+   !/[<>]/.test(e.title)&&typeof e.timestamp==='string'&&
+   Number.isFinite(Date.parse(e.timestamp))&&Date.parse(e.timestamp)<=Date.now());
+ const uniqueBuilderNotes=new Map();
+ for(const note of builderNotes){
+  const prior=uniqueBuilderNotes.get(note.id);
+  if(!prior||Date.parse(note.timestamp)>Date.parse(prior.timestamp))
+   uniqueBuilderNotes.set(note.id,note);
+ }
+ const builders=[...uniqueBuilderNotes.values()]
+  .sort((a,b)=>Date.parse(b.timestamp)-Date.parse(a.timestamp))
+  .slice(0,10).map(({id,kind,title,url,timestamp})=>({id,kind,title,url,timestamp}));
+ await write('reimagined/builders-updates.json',JSON.stringify({version:1,items:builders},null,2)+'\n');
  // Robots must be allowed to fetch pages to see the noindex response header.
  // A blanket robots.txt Disallow would prevent verification of noindex.
  await write('robots.txt','User-agent: *\nAllow: /\n');
