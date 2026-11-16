@@ -136,7 +136,7 @@
 #home .connection-icons{text-anchor:middle;font-weight:800}
 @keyframes connection-circuit{to{stroke-dashoffset:-180}}
 @keyframes connection-nodes{50%{filter:drop-shadow(0 0 8px #43b97b);transform:translateY(-2px)}}
-#home .connection-paths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:25px}
+#home .connection-paths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:25px}
 #home .connection-card{display:flex;align-items:center;gap:19px;min-width:0;min-height:114px;padding:22px;
  border:1px solid #9ed8b9;border-radius:18px;background:#f6fff8d9;
  box-shadow:0 10px 28px #1d5a2f12;transition:transform .18s ease,background .18s ease}
@@ -147,6 +147,16 @@
 #home .connection-card strong{font-size:19px;letter-spacing:-.035em;line-height:1.2}
 #home .connection-card small{font-size:11px;color:#6b8973;line-height:1.35}
 #home .connection-arrow{align-self:flex-start;font-size:23px;color:#358b59}
+#home .connection-partner{background:linear-gradient(130deg,#f8fffa,#e9f6ef);border-color:#80c6a0}
+#home .connection-partner .connection-symbol{color:#246f9d;background:linear-gradient(135deg,#c6f5e4,#c9e5fb)}
+@media(min-width:761px){
+ #home .connection-card{gap:11px;padding:17px;min-height:104px}
+ #home .connection-symbol{width:46px;height:46px;flex:none;font-size:27px;border-radius:13px}
+ #home .connection-card strong{font-size:16px}
+ #home .connection-card small{font-size:10px}
+ #home .connection-arrow{font-size:19px}
+}
+
 /* One YHpulse, separating the experiences from the minimal footer. */
 #home .home-pulse{background:#102920;color:#d4f6dd}
 #home .home-pulse-inner{display:flex;align-items:center;gap:16px;min-height:71px}
