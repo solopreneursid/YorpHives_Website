@@ -114,9 +114,9 @@ async function fetchRss(fetcher=fetch){
  }
  return{error:"temporary_upstream_failure",httpStatus:null};
 }
-export async function ingestManitoba(db,fetcher=fetch,now=Date.now()){
+export async function ingestManitoba(db,fetcher=fetch,now=Date.now(),meta={}){
  if(!db)throw Error("D1 binding required");
- const outcome={id:crypto.randomUUID(),sourceId:MANITOBA.id,startedAt:now,finishedAt:now,state:"error",httpStatus:null,received:0,accepted:0,discarded:0,errorCode:null,details:""};
+ const outcome={id:meta?.auditId||crypto.randomUUID(),sourceId:MANITOBA.id,startedAt:now,finishedAt:now,state:"error",httpStatus:null,received:0,accepted:0,discarded:0,errorCode:null,details:""};
  try{
   const response=await fetchRss(fetcher);outcome.httpStatus=response.httpStatus;
   if(response.error){outcome.errorCode=response.error;return outcome;}
@@ -138,7 +138,7 @@ export async function ingestManitoba(db,fetcher=fetch,now=Date.now()){
   const next=offset+entries.length>=parsed.valid.length?1:offset+entries.length+1;
   await db.prepare("INSERT INTO source_feed_cursors(source_id,next_page,last_total_pages,last_success_at) VALUES(?,?,?,?) ON CONFLICT(source_id) DO UPDATE SET next_page=excluded.next_page,last_total_pages=excluded.last_total_pages,last_success_at=excluded.last_success_at")
    .bind(MANITOBA.id,next,Math.ceil(parsed.valid.length/PER_RUN),Date.now()).run();
-  outcome.state="ok";outcome.details=JSON.stringify({offset,next,eligible:parsed.valid.length,rejected:parsed.rejected}).slice(0,400);
+  outcome.state="ok";outcome.details=JSON.stringify({offset,next,eligible:parsed.valid.length,rejected:parsed.rejected,origin:meta?.origin||"scheduled"}).slice(0,400);
   return outcome;
  }catch(e){outcome.errorCode="storage_or_schema_error";outcome.details=String(e?.message||e).slice(0,220);
   console.error(JSON.stringify({event:"manitoba_ingest_error",reason:outcome.details}));return outcome;
