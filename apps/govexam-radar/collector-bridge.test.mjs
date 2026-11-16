@@ -31,7 +31,7 @@ const payload=(sourceId,extra={})=>({requestId:"db6bdfbe-75f3-4f75-9916-f4903c5c
  ...(sourceId===DFE_SOURCE.id?{page:2,upstreamBody:JSON.stringify({data:[job],meta:{totalPages:40}})}:{upstreamBody:rss}),
  ...extra});
 async function signedRequest(payload,signatureKey=KEY,signatureTimestamp=NOW){
- const raw=JSON.stringify(payload),sig=await calculateCollectorSignature(signatureKey,signatureTimestamp,raw);
+ const raw=JSON.stringify(payload),sig=await calculateCollectorSignature(signatureKey,signatureTimestamp,raw,"https://staging.invalid");
  return new Request("https://staging.invalid/api/collector/ingest",{method:"POST",headers:{
   "content-type":"application/json","X-GovRadar-Timestamp":String(signatureTimestamp),"X-GovRadar-Signature":sig
  },body:raw});
