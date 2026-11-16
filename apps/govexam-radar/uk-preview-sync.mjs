@@ -125,10 +125,16 @@ export async function syncUkPreview({fetcher=fetch,account=process.env.CLOUDFLAR
  return{mode:"founder_approved_uk_staging_snapshot",ukRows:sourceRows.length,
   newRowsMirrored:plan.rowsToInsert,writes,verified:true};
 }
+export function parseMirrorArgs(args){
+ if(!Array.isArray(args)||args.some(x=>x!=="--apply"&&x!=="--dry-run")||
+    (args.includes("--apply")&&args.includes("--dry-run"))||
+    args.filter(x=>x==="--apply").length>1)
+  throw Error("unknown_or_conflicting_sync_option");
+ return {apply:args.includes("--apply")};
+}
 async function main(){
- const apply=process.argv.includes("--apply");
- if(process.argv.some(x=>x!=="--apply"&&x!=="--dry-run"))
-  throw Error("unknown_sync_option");
+ // argv[0] is the Node runtime; argv[1] is this script. They are not flags.
+ const {apply}=parseMirrorArgs(process.argv.slice(2));
  const result=await syncUkPreview({apply});
  console.log(JSON.stringify(result)); // Never log API token, source fields or personal data.
 }
