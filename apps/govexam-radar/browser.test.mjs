@@ -71,3 +71,72 @@ test("simple mode remains fully functional",async()=>{
    await page.screenshot({path:"govradar-lite-375.png",fullPage:true});
  }finally{await page.close();}
 });
+
+
+test("advanced global filters and manual location modes",async()=>{
+ const page=await browser.newPage({viewport:{width:420,height:900}});
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  const initial=await page.locator("#exam-cards-grid article").count();
+  assert.ok(initial>10);
+  await page.evaluate(()=>window.setLocationViewMode("HOME_NATIVE"));
+  assert.equal(await page.locator("#exam-cards-grid article").count(),10);
+  await page.evaluate(()=>window.setLocationViewMode("ABROAD_FOREIGN"));
+  const foreign=await page.locator("#exam-cards-grid article").count();
+  assert.ok(foreign>0 && foreign<initial);
+  await page.evaluate(()=>window.setLocationViewMode("GLOBAL_MANUAL"));
+  assert.ok((await page.locator("#exam-cards-grid article").count())>=initial);
+  await page.evaluate(()=>window.selectCountry("Japan"));
+  assert.equal(await page.locator("#exam-cards-grid article").count(),1);
+  await page.evaluate(()=>window.resetAllFilters());
+  assert.equal(await page.locator("#exam-cards-grid article").count(),initial);
+ }finally{await page.close();}
+});
+test("official source checks display real check outcomes without fake ingestion",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:850}});
+ let count=0;
+ try{
+  await page.route("**/api/check?id=*",async route=>{
+    count++;
+    await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({status:"reachable",checkedAt:new Date().toISOString()})});
+  });
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.evaluate(()=>window.runFeedSync());
+  await page.waitForFunction(()=>document.querySelector("#feed-log-status")?.textContent.includes("17 REACHABLE"),{timeout:30000});
+  assert.equal(count,17);
+  assert.match(await page.locator("#feed-log-output").innerText(),/Job notices have not been verified|Recruitment data was not updated/);
+ }finally{await page.close();}
+});
+test("modals, saved preferences, guide and custom leads",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:850}});
+ try{
+   await page.goto(origin,{waitUntil:"domcontentloaded"});
+   await page.locator("#exam-cards-grid article").first().waitFor();
+   await page.locator('#exam-cards-grid button').filter({hasText:"Details"}).first().click();
+   assert.equal(await page.locator("#exam-detail-modal").isVisible(),true);
+   await page.locator("#modal-bookmark-btn").click();
+   await page.evaluate(()=>window.closeExamModal());
+   await page.evaluate(()=>window.switchTab("alerts"));
+   await page.locator("#user-email-input").fill("person@example.org");
+   await page.locator("#email-subscription-form button[type=submit]").click();
+   assert.match(await page.locator("#email-dispatch-log").innerText(),/No email|NOT being sent/);
+   await page.evaluate(()=>window.switchTab("feeds"));
+   await page.locator("#custom-title").fill("QA Test Community Outreach Exam");
+   await page.locator("#custom-authority").fill("Research Team");
+   await page.locator("#custom-region").fill("Test District");
+   await page.locator("#custom-dates").fill("Unverified research date");
+   await page.locator("#custom-url").fill("https://ncs.gov.in/");
+   await page.locator("#add-exam-form button[type=submit]").click();
+   assert.equal(await page.locator("#view-radar").isVisible(),true);
+   await page.locator("#search-input").fill("QA Test Community Outreach Exam");
+   assert.equal(await page.locator("#exam-cards-grid article").count(),1);
+   await page.reload({waitUntil:"domcontentloaded"});
+   await page.locator("#exam-cards-grid article").first().waitFor();
+   await page.locator("#search-input").fill("QA Test Community Outreach Exam");
+   assert.equal(await page.locator("#exam-cards-grid article").count(),1);
+   await page.evaluate(()=>window.switchTab("guide"));
+   await page.evaluate(()=>window.selectGuidePart(4));
+   assert.match(await page.locator("#guide-detail-panel").innerText(),/Module 4/);
+ }finally{await page.close();}
+});
