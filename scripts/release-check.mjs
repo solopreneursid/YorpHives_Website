@@ -58,6 +58,30 @@ if(!kineticCss.includes('@keyframes rail-drift')||
 if(homepage.includes('id="recent-items"')||homepage.includes('FROM THE HIVE'))
  problems.push('Old oversized recent-items cards must not return.');
 
+// Public Impact shows only genuinely qualified launches and founder-reviewed data.
+const impactCss=await read('impact.css');
+const impactJs=await read('impact.js');
+const impactData=JSON.parse(await read('impact-public.json'));
+if(!home.includes('id="home-impact"')||
+  !(home.indexOf('id="home-explore"')<home.indexOf('id="home-impact"')&&
+    home.indexOf('id="home-impact"')<home.indexOf('id="home-use"'))||
+   !homepage.includes('src="impact.js"')||!homepage.includes('href="impact.css"')||
+   !home.includes('id="impact-revenue-chart"')||
+   !home.includes('id="impact-apps"')||!home.includes('id="impact-milestone-list"'))
+ problems.push('YorpHives Impact layout, scripts, or presentation zones are missing.');
+if(!impactCss.includes('prefers-reduced-motion:reduce')||
+   !impactCss.includes('@media(max-width:760px)')||
+   !impactJs.includes('qualifiedProducts(data.items)')||
+   !impactJs.includes('approvedPublication(snapshot)'))
+ problems.push('Impact accessibility or founder-gated data source is incomplete.');
+if(impactData.schemaVersion!==1||impactData.publication?.approvedByFounder!==false||
+   impactData.publication?.status!=='unpublished'||
+   Object.values(impactData.metrics||{}).some(v=>v!==null)||
+   (impactData.revenueDirection||[]).length||
+   (impactData.trendingApps||[]).length||
+   (impactData.milestones||[]).length)
+ problems.push('Impact preview must not include simulated visitors, partners, revenue or achievements.');
+
 // No stale hard-coded tool links, draft activity, private jobs or absent targets.
 const activityData=JSON.parse(await read('activity.json'));
 if(!Array.isArray(activityData.items)||activityData.items.length>20||

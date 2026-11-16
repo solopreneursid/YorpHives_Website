@@ -19,9 +19,10 @@ test('navigation and redesigned assets enforce explicit freshness',async()=>{
  const headers=await read('_headers');
  assert.match(headers,/\n\/\n\s+Cache-Control: no-store/);
  assert.match(headers,/\n\/index\.html\n\s+Cache-Control: no-store/);
- for(const file of ['/app.js','/next.js','/next.css','/next-responsive.css','/home-experience.css']){
+ for(const file of ['/app.js','/next.js','/next.css','/next-responsive.css','/home-experience.css','/impact.css','/impact.js']){
   assert.ok(headers.includes(file+'\n  Cache-Control: no-cache, max-age=0, must-revalidate'),file);
  }
+ assert.match(headers,/\/impact-public\.json\n\s+Cache-Control: no-store/);
  assert.match(headers,/Content-Security-Policy:/);
  assert.match(headers,/X-Content-Type-Options: nosniff/);
 });
