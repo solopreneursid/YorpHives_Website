@@ -34,12 +34,12 @@
   });
   window.addEventListener('resize',()=>{if(innerWidth>760&&!menuPanel.hidden)closeMenu();});
 
-  const subpages = new Set(['post','opportunities','membership','partners','how-it-works','projects-collection','our-ai-team','home-explore','home-use','home-connect']);
+  const subpages = new Set(['post','opportunities','membership','partners','how-it-works','projects-collection','our-ai-team','home-explore','home-use','home-connect','home-impact']);
   function route() {
     let hash=location.hash.slice(1);
     try{hash=decodeURIComponent(hash);}catch{hash='home';}
     const subpage=subpages.has(hash);
-    const active=['how-it-works','our-ai-team','home-explore','home-use','home-connect'].includes(hash)?'home':hash==='projects-collection'?'explore':subpage?'builders':Object.hasOwn(names,hash)?hash:'home';
+    const active=['how-it-works','our-ai-team','home-explore','home-use','home-connect','home-impact'].includes(hash)?'home':hash==='projects-collection'?'explore':subpage?'builders':Object.hasOwn(names,hash)?hash:'home';
     pages.forEach(page=>{page.hidden=page.id!==active;});
     document.querySelectorAll('[data-nav]').forEach(link=>{
       if(link.dataset.nav===active)link.setAttribute('aria-current','page');
