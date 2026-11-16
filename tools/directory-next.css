@@ -33,7 +33,7 @@ details.directory-section[open] .directory-chevron{transform:rotate(180deg)}
 .directory-catalog-link span{font-size:20px}
 .directory-footer{margin-top:0}
 .directory-footer .footer-bottom{border-top:1px solid #d7eed124}
-.header-kofi{display:none!important}
+/* Future donations remain visible in the tool directory, but never enabled. */
 @media(max-width:900px){
 .directory-hero{gap:5%}
 .directory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -59,3 +59,31 @@ details.directory-section>summary{min-height:60px;padding:13px 16px;font-size:16
 }
 @media(max-width:350px){details.directory-section>summary{font-size:15px;gap:8px}details.directory-section>summary small{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.directory-chevron,.directory-card{transition:none}}
+
+
+/* Disabled support CTA mirrors YorpHives public header without donation links. */
+.directory-page .site-header .header-kofi{
+ display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+ flex:none;min-width:101px;min-height:45px;padding:6px 10px;
+ border:1px solid #a7f5c759;border-radius:11px;background:#acf7c812;
+ color:#f0fff6;white-space:nowrap;text-align:center;line-height:1.15
+}
+.directory-page .site-header .header-kofi:disabled{opacity:1;cursor:not-allowed}
+.directory-page .site-header .header-kofi strong{font-size:12px;font-weight:850}
+.directory-page .site-header .header-kofi small{font-size:10px;color:#b8dfc4;font-weight:680}
+.directory-page .site-header .header-kofi .kofi-pending{font-size:8px;letter-spacing:.1em;color:#95cda9}
+@media(max-width:900px){
+ .directory-page .site-header{gap:15px}
+ .directory-page .site-header .header-cta{display:none}
+ .directory-page .site-header .header-kofi{min-width:94px}
+}
+@media(max-width:760px){
+ .directory-page .site-header .header-kofi{margin-left:auto;min-width:92px;min-height:43px}
+ .directory-page .site-header .header-kofi .kofi-pending{display:none}
+}
+@media(max-width:350px){
+ .directory-page .site-header{gap:8px;padding-inline:12px}
+ .directory-page .site-header .brand img{width:31px;height:31px}
+ .directory-page .site-header .brand-word{font-size:17px}
+ .directory-page .site-header .header-kofi{min-width:88px}
+}
