@@ -196,3 +196,21 @@ test("community buttons expose report, data export and account controls",async()
    assert.equal(await page.locator("#govradar-delete-account").count(),1);
  }finally{await page.close();}
 });
+
+test("actual Cloudflare preview displays official-source cards with responsive layout",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:820}});
+ const errors=[];page.on("pageerror",e=>errors.push(String(e)));
+ try{
+  await page.goto("https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/",{waitUntil:"domcontentloaded",timeout:30000});
+  const cards=page.locator("#official-notice-grid article");
+  await cards.first().waitFor({timeout:25000});
+  assert.ok((await cards.count())>=1);
+  const href=await cards.first().locator("a[href^='https://teaching-vacancies.service.gov.uk/jobs/']").getAttribute("href");
+  assert.ok(href);
+  await page.screenshot({path:"govradar-live-official-375.png",fullPage:false});
+  await cards.first().locator("button[data-save-notice]").click();
+  await page.evaluate(()=>document.getElementById("view-saved").classList.remove("hidden"));
+  assert.ok((await page.locator("#saved-official-notices article").count())>=1);
+  assert.equal(errors.length,0,"Remote staging JS exceptions: "+errors.join("; "));
+ }finally{await page.close();}
+});
