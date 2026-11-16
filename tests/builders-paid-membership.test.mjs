@@ -7,14 +7,14 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=path=>readFile(resolve(root,path),'utf8');
 const builderBody=html=>html.split('<!-- BUILDERS -->')[1]?.split('<!-- CONNECT -->')[0]||'';
 
-test('homepage introduces the future Builders network without pretending it is open',async()=>{
+test('homepage Connect links to future Builders without inventing paid access',async()=>{
  const h=await read('index.html');
- assert.match(h,/href="#builders"/);
- assert.match(h,/class="builders-teaser"/);
- assert.match(h,/THE BUILDERS NETWORK/);
- assert.match(h,/COMING SOON/);
- assert.match(h,/Verified paid membership/);
- assert.doesNotMatch(h,/data-form="opportunity"|class="job-listing"/);
+ const home=h.split('<!-- TOOLS:')[0];
+ assert.match(home,/id="home-connect"/);
+ assert.match(home,/href="#builders"/);
+ assert.match(home,/Builders network · Coming soon/);
+ assert.match(home,/href="#connect"/);
+ assert.doesNotMatch(home,/Pay now|Job available|Join membership now/i);
 });
 test('private opportunity listings and posting are not publicly accessible',async()=>{
   const html=builderBody(await read('index.html'));
