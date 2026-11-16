@@ -99,6 +99,32 @@
  .library-controls select{max-width:92px}
  .mobile-dock a{font-size:9px}
 }
+/* Partnership page reflows to an intentional single-column mobile journey. */
+@media(max-width:900px){
+ .partnership-layout{grid-template-columns:1fr;gap:25px}
+ .partnership-panel{max-width:780px;width:100%}
+ .builders-hero-actions{gap:9px}
+}
+@media(max-width:760px){
+ .builders-hero-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .builders-hero-actions .btn{min-width:0;min-height:44px;padding:10px 12px;font-size:11px;white-space:normal}
+ .partnership-section{padding-block:49px 50px;scroll-margin-top:67px}
+ .partnership-copy h2{font-size:clamp(36px,8.1vw,45px);margin:10px 0}
+ .partnership-copy p{font-size:12px;margin-bottom:17px}
+ .partnership-panel{border-radius:15px}
+ .partnership-panel-top{padding:13px 15px;min-height:60px;gap:9px}
+ .partnership-path{grid-template-columns:23px minmax(0,1fr) minmax(0,.48fr);gap:8px;min-height:62px;padding:11px 15px}
+ .partnership-path strong{font-size:12px}
+ .partnership-path small{font-size:10px}
+ .partnership-panel-foot{padding:13px 15px}
+ .partnership-disclosure{padding-top:14px;font-size:10px}
+}
+@media(max-width:350px){
+ .builders-hero-actions .btn{font-size:10px;padding:9px}
+ .partnership-path{grid-template-columns:20px minmax(0,1fr);gap:8px}
+ .partnership-path small{grid-column:2;text-align:left}
+ .partnership-panel-foot small{font-size:10px}
+}
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
  .rail-viewport,.pulse-viewport,.home-pulse-viewport{overflow-x:auto;scrollbar-width:thin;mask-image:none;-webkit-mask-image:none}
