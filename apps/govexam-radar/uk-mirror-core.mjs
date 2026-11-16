@@ -40,7 +40,10 @@ export function assertUkRow(row){
 export function makeMirrorUpsertSql(){
  const cols=UK_MIRROR_COLUMNS;
  return "INSERT INTO official_job_notices ("+cols.join(",")+") VALUES ("+cols.map(()=>"?").join(",")+
-  ") ON CONFLICT(id) DO UPDATE SET "+cols.filter(x=>x!=="id").map(x=>x+"=excluded."+x).join(",");
+  ") ON CONFLICT(id) DO UPDATE SET "+cols.filter(x=>x!=="id").map(x=>
+   x==="life_status"
+    ? "life_status=CASE WHEN official_job_notices.life_status='withdrawn_confirmed' AND excluded.last_seen_at<=official_job_notices.last_seen_at THEN 'withdrawn_confirmed' ELSE excluded.life_status END"
+    : x+"=excluded."+x).join(",");
 }
 export function mirrorRowParams(row){
  assertUkRow(row);
