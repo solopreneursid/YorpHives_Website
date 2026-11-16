@@ -2,6 +2,7 @@
  * Dependencies: ONLY public source catalog + local approval gate + approved snapshot.
  * No visitor tracking. No external APIs. No paid libraries. */
 import {qualifiedProducts} from '../product-policy.mjs';
+import {getCatalog,subscribeCatalog,startCatalogMonitoring} from './catalog-sync.mjs';
 
 const $=id=>document.getElementById(id);
 const icon=name=>{const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('aria-hidden','true');const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href','#i-'+name);svg.append(use);return svg;};
@@ -130,9 +131,13 @@ $('reset-tool-filters').addEventListener('click',()=>{activeCategory='All';onlyS
 $('tool-prev').addEventListener('click',()=>{page=Math.max(1,page-1);renderTools();$('tool-results').scrollIntoView({block:'start'})});
 $('tool-next').addEventListener('click',()=>{page+=1;renderTools();$('tool-results').scrollIntoView({block:'start'})});
 
+const ventureEmpty=$('venture-products').firstElementChild?.cloneNode(true);
 function renderVentures(){
  $('venture-total').textContent=ventures.length+' founder-approved launch'+(ventures.length===1?'':'es');
- if(!ventures.length)return;
+ if(!ventures.length){
+  $('venture-products').replaceChildren(ventureEmpty.cloneNode(true));
+  return;
+ }
  const cards=ventures.map(x=>{
   const a=el('article','','venture-item');a.append(el('span','FOUNDER APPROVED · LAUNCHED','overline'),el('h3',x.name),el('p',x.description));
   const link=el('a','Open venture');link.href='../'+x.url;link.append(icon('external'));a.append(link);return a;
@@ -140,16 +145,20 @@ function renderVentures(){
  $('venture-products').replaceChildren(...cards);
 }
 
+function applyCatalog(newItems){
+ allItems=newItems;tools=allItems.filter(isPublicTool);ventures=qualifiedProducts(allItems);
+ verifiedPublic=new Set([...tools,...ventures].map(x=>x.url));
+ // Category may have disappeared or been renamed in a new catalogue release.
+ if(activeCategory!=='All'&&!tools.some(t=>(t.category||'Other')===activeCategory))activeCategory='All';
+ for(const id of ['home-tool-count','impact-tools','tools-count-big'])$(id).textContent=number(tools.length);
+ for(const id of ['home-venture-count','impact-ventures'])$(id).textContent=number(ventures.length);
+ categoryChips();updateSavedCount();renderTools();renderVentures();
+}
+subscribeCatalog(applyCatalog);
+startCatalogMonitoring();
 async function loadCatalog(){
- try{
-  const r=await fetch('../catalog.json',{cache:'no-cache'});if(!r.ok)throw Error('Catalogue fetch failed');
-  const data=await r.json();if(!Array.isArray(data.items))throw Error('Catalogue invalid');
-  allItems=data.items;tools=allItems.filter(isPublicTool);ventures=qualifiedProducts(allItems);
-  verifiedPublic=new Set([...tools,...ventures].map(x=>x.url));
-  for(const id of ['home-tool-count','impact-tools','tools-count-big'])$(id).textContent=number(tools.length);
-  for(const id of ['home-venture-count','impact-ventures'])$(id).textContent=number(ventures.length);
-  categoryChips();updateSavedCount();renderTools();renderVentures();
- }catch{
+ try{await getCatalog()}
+ catch{
   for(const id of ['home-tool-count','impact-tools','tools-count-big','home-venture-count','impact-ventures'])$(id).textContent='—';
   $('tool-results-description').textContent='The catalogue is temporarily unavailable. Please use the A–Z directory.';
   $('tool-empty').hidden=false;$('tool-pagination').hidden=true;
