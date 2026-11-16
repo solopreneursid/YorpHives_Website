@@ -126,11 +126,22 @@ async function boundedOfficialFetch(page,fetcher=fetch){
  }
  return {error:"temporary_upstream_failure",status:null};
 }
-async function audit(db,outcome){
+async function audit(db,outcome,upsertPending=false){
+ const base="INSERT INTO source_ingest_runs (id,source_id,started_at,finished_at,state,http_status,received,accepted,discarded,error_code,details) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+ // Only an atomically reserved signed receipt may transition from pending
+ // to completed. Unrelated existing audit records can never be overwritten.
+ const sql=upsertPending?base+
+  " ON CONFLICT(id) DO UPDATE SET started_at=excluded.started_at,finished_at=excluded.finished_at,state=excluded.state,http_status=excluded.http_status,received=excluded.received,accepted=excluded.accepted,discarded=excluded.discarded,error_code=excluded.error_code,details=excluded.details WHERE source_ingest_runs.state='error' AND source_ingest_runs.error_code='collector_claim_pending'":base;
  try{
-  await db.prepare("INSERT INTO source_ingest_runs (id,source_id,started_at,finished_at,state,http_status,received,accepted,discarded,error_code,details) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
-   .bind(outcome.id,DFE_SOURCE.id,outcome.startedAt,outcome.finishedAt,outcome.state,outcome.httpStatus??null,outcome.received||0,outcome.accepted||0,outcome.discarded||0,outcome.errorCode||null,outcome.details||"").run();
- }catch(e){console.error(JSON.stringify({event:"official_feed_audit_failed",reason:String(e?.message||e)}));}
+  const result=await db.prepare(sql)
+   .bind(outcome.id,DFE_SOURCE.id,outcome.startedAt,outcome.finishedAt,outcome.state,
+    outcome.httpStatus??null,outcome.received||0,outcome.accepted||0,outcome.discarded||0,
+    outcome.errorCode||null,outcome.details||"").run();
+  return result?.meta?.changes===1||(!upsertPending&&result?.success===true);
+ }catch(e){
+  console.error(JSON.stringify({event:"official_feed_audit_failed",reason:String(e?.message||e)}));
+  return false;
+ }
 }
 export async function ingestDfE(db,fetcher=fetch,clock=Date.now(),meta={}){
  if(!db)throw Error("database_binding_required");
@@ -181,7 +192,10 @@ export async function ingestDfE(db,fetcher=fetch,clock=Date.now(),meta={}){
   return outcome;
  }finally{
   outcome.finishedAt=Date.now();
-  await audit(db,outcome);
+  const committed=await audit(db,outcome,meta?.origin==="signed_portable_collector");
+  if(!committed && meta?.origin==="signed_portable_collector"){
+   outcome.state="error";outcome.errorCode="audit_write_failed";
+  }
   console.log(JSON.stringify({event:"official_feed_ingestion",source:DFE_SOURCE.id,outcome:outcome.state,count:outcome.accepted,rejected:outcome.discarded,reason:outcome.errorCode}));
  }
 }
