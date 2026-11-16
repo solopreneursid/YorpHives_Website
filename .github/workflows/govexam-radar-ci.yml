@@ -47,4 +47,8 @@ jobs:
       - name: Check independent Cloudflare deployment
         run: |
           curl --fail --show-error --silent --max-time 25 --retry 2 https://hqventures-govexam-radar.solopreneursid-proy.workers.dev/api/health | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const d=JSON.parse(s);if(d.status!=="ok"||d.service!=="hqventures-govradar")process.exit(1);console.log("Cloudflare health verified",d.version);})'
+          curl --fail --show-error --silent --max-time 25 https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/api/health | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const d=JSON.parse(s);if(d.status!=="ok"||d.version!=="2.0.0")process.exit(1);console.log("Full-parity preview health verified",d.version);})'
           curl --fail --show-error --silent --max-time 25 https://hqventures-govexam-radar.solopreneursid-proy.workers.dev/api/catalog | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const d=JSON.parse(s);if(d.sources.length!==17||d.verifiedListings.length!==0)process.exit(1);console.log("Cloudflare catalog verified",d.sources.length);})'
+
+      - name: Verify D1 community API on isolated preview
+        run: node apps/govexam-radar/community-smoke.mjs
