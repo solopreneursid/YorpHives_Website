@@ -43,7 +43,10 @@ jobs:
       # Controlled one-shot verification, removed immediately after this run.
       # Only a trusted push to this isolated branch with the exact commit message can run it.
       - name: One-time signed staging ingestion verification
-        if: github.event_name == 'push' && github.ref == 'refs/heads/feat/govradar-phase1-sources-20261116' && github.event.head_commit.message == 'test(govradar): one-time signed staging ingest'
+        if: >-
+          github.event_name == 'push' &&
+          github.ref == 'refs/heads/feat/govradar-phase1-sources-20261116' &&
+          github.event.head_commit.message == 'test(govradar): one-time signed staging ingest'
         env:
           GOVRADAR_COLLECTOR_KEY: ${{ secrets.GOVRADAR_COLLECTOR_KEY }}
           GOVRADAR_COLLECTOR_TARGET: https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev
