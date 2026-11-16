@@ -27,6 +27,18 @@ const importedStatus=await call("/api/ingestion-status","GET",undefined,null);
 assert.ok(importedStatus.openImportedNotices>=90);
 assert.ok(importedStatus.latest?.some(x=>x.state==="ok" && x.accepted>=100));
 console.log("SUCCESS: verified official DfE records, provenance and database audit through public API.");
+const mb=await call("/api/notices?country=Canada&level=province&jurisdiction=CA-MB&limit=5","GET",undefined,null);
+assert.ok(mb.total>=40,"Expected validated Manitoba provincial government vacancies in staging");
+assert.equal(mb.notices.length,5);
+assert.ok(mb.notices.every(x=>x.sourceId==="manitoba-jobs"&&x.country==="Canada"&&x.jurisdictionCode==="CA-MB"&&x.level==="province"&&x.employerType==="provincial_government"&&x.sourceUrl.startsWith("https://jobsearch.gov.mb.ca/jow/advancedResult.action?ID=")));
+const uk=await call("/api/notices?country=United%20Kingdom&limit=3","GET",undefined,null);
+assert.ok(uk.total>=90,"Expected UK public education source entries");
+assert.ok(uk.notices.every(x=>x.sourceId==="uk-dfe-teaching-vacancies"&&x.employerType==="public_education"));
+const jurisdiction=await call("/api/jurisdictions?country=Canada&level=province","GET",undefined,null);
+assert.ok(jurisdiction.total>=4);
+const revisions=await call("/api/notice-changes?limit=5","GET",undefined,null);
+assert.ok(Array.isArray(revisions.changes));
+console.log("SUCCESS: Manitoba provincial jobs are separately classified, queryable and linked to official public-sector employer source.");
 try{
   for(const user of users){
     const reg=await call("/api/community/register","POST",{handle:user.handle,token:user.token},null,201);
