@@ -474,3 +474,62 @@ test("mobile quick country, stream and region filters share original search stat
   assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });
+
+test("global saved searches persist, apply and remove privately on mobile",async()=>{
+ const context=await browser.newContext({viewport:{width:375,height:812}});
+ const page=await context.newPage();const errors=[];page.on("pageerror",error=>errors.push(String(error)));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  await page.locator('[data-quick-country="India"]').click();
+  await page.locator('[data-quick-stream="Technical"]').click();
+  await page.locator("#search-input").fill("RRB");
+  await page.evaluate(()=>window.switchTab('saved'));
+  await page.locator("#saved-search-create").click();
+  assert.equal(await page.locator("#saved-search-list [data-apply-search]").count(),1);
+  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('govradar-global-saved-searches-v1')));
+  assert.deepEqual(stored[0].filters,{keyword:"RRB",country:"India",stream:"Technical",region:"ALL"});
+  await page.locator("#saved-search-create").click();
+  assert.equal(await page.locator("#saved-search-list [data-apply-search]").count(),1,"duplicate search must not be added");
+  await page.reload({waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  await page.evaluate(()=>window.switchTab('saved'));
+  assert.equal(await page.locator("#saved-search-list [data-apply-search]").count(),1);
+  await page.locator("#saved-search-list [data-apply-search]").click();
+  assert.equal(await page.locator("#view-radar").isVisible(),true);
+  assert.equal(await page.locator("#search-input").inputValue(),"RRB");
+  assert.equal(await page.locator('[data-quick-country="India"]').getAttribute("aria-pressed"),"true");
+  assert.equal(await page.locator('[data-quick-stream="Technical"]').getAttribute("aria-pressed"),"true");
+  await page.evaluate(()=>window.switchTab('saved'));
+  await page.locator("#saved-search-list [data-remove-search]").click();
+  assert.equal(await page.locator("#saved-search-list [data-apply-search]").count(),0);
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
+
+test("opt-in discovery preferences survive reload and clear without losing bookmarks",async()=>{
+ const context=await browser.newContext({viewport:{width:375,height:812}});
+ const page=await context.newPage();const errors=[];page.on("pageerror",error=>errors.push(String(error)));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  await page.locator("#exam-cards-grid .govradar-save-button").first().click();
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem("govexam_radar_saved_v2")));
+  assert.ok(saved.length>0);
+  await page.locator('[data-quick-country="India"]').click();
+  await page.locator('[data-quick-stream="Non-Technical"]').click();
+  await page.evaluate(()=>window.switchTab('saved'));
+  await page.locator("#saved-preferences-save").click();
+  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('govradar-global-discovery-preferences-v1'))),{country:"India",stream:"Non-Technical"});
+  await page.reload({waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  assert.equal(await page.locator('[data-quick-country="India"]').getAttribute("aria-pressed"),"true");
+  assert.equal(await page.locator('[data-quick-stream="Non-Technical"]').getAttribute("aria-pressed"),"true");
+  await page.evaluate(()=>window.switchTab('saved'));
+  assert.ok((await page.locator("#saved-exams-grid .govradar-opportunity-card").count())>0);
+  await page.locator("#saved-preferences-clear").click();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('govradar-global-discovery-preferences-v1')),null);
+  assert.ok((await page.locator("#saved-exams-grid .govradar-opportunity-card").count())>0);
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
