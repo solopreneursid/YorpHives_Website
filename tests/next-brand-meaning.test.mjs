@@ -3,98 +3,95 @@ import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
-const read=file=>readFile(resolve(root,file),'utf8');
+const read=p=>readFile(resolve(root,p),'utf8');
+const home=h=>h.split('<!-- HOME:')[1]?.split('<!-- TOOLS:')[0]||'';
+const explore=h=>h.split('<!-- EXPLORE -->')[1]?.split('<!-- BUILDERS -->')[0]||'';
 
-test('homepage explicitly communicates one founder, private evolving AI workforce and final human authority',async()=>{
- const h=await read('index.html');
+test('the public story is concise: HQ operates, AI researches, founder decides',async()=>{
+ const html=await read('index.html');
+ const h=home(html);
  assert.match(h,/One founder\.<br>An AI team\.<br><em>Ideas in motion\.<\/em>/);
- assert.match(h,/YorpHivesHQ \(YorpHives Headquarters\) operates this website/);
- assert.match(h,/Its specialists monitor the platform, investigate opportunities and analyze markets/);
- assert.match(h,/I make the final decisions based on evidence/);
- assert.match(h,/Founder decides/);
- assert.match(h,/id="our-ai-team"/);
- assert.match(h,/private, self-hostable AI business OS/i);
- assert.match(h,/adaptable open-weight models/i);
- assert.match(h,/founder-reviewed feedback/i);
- assert.match(h,/system can evolve without being locked to one model/i);
- assert.match(h,/The final decision to pursue a venture, change the website or launch a project stays with me, the founder/i);
+ assert.match(h,/YorpHivesHQ finds the signal/);
+ assert.match(h,/I make the call/);
+ assert.match(h,/class="console-decision"/);
  assert.match(h,/HUMAN CONTROL/);
+ assert.match(h,/HQ operates/);
+ assert.match(h,/AI investigates/);
+ assert.match(h,/Founder decides/);
+ const heroText=h.match(/<p class="hero-sub">([\s\S]*?)<\/p>/)?.[1].replace(/<[^>]+>/g,'');
+ assert.ok(heroText&&heroText.length<95,'hero uses one short sentence, not copied founder exposition');
+ assert.doesNotMatch(h,/short for YorpHives Headquarters|I'm developing|I am developing/i);
 });
-test('separate AI roles are represented without claiming they have publishing or deployment authority',async()=>{
- const h=await read('index.html');
- for(const role of ['Research &amp; innovation','Market intelligence','Engineering &amp; product','Growth &amp; revenue','Operations &amp; quality','Shared learning']){
-  assert.ok(h.includes(role),role+' missing');
- }
- assert.match(h,/AI ANALYSIS/);
- assert.match(h,/EVIDENCE &amp; RECOMMENDATIONS/);
- assert.match(h,/Approve · Revise · Reject/);
- assert.doesNotMatch(h,/agents automatically publish|automatic deployment without approval/i);
+test('workforce is explained by a visual diagram, not a paragraph of role descriptions',async()=>{
+ const h=home(await read('index.html'));
+ assert.match(h,/id="our-ai-team"/);
+ assert.match(h,/class="os-board"/);
+ assert.match(h,/class="os-roles"/);
+ for(const role of ['Research','Markets','Product','Growth','Quality','Learning'])
+  assert.ok(h.includes(role),'missing AI employee label: '+role);
+ assert.match(h,/class="os-decision"/);
+ assert.match(h,/GO \/ NO-GO/);
+ assert.match(h,/role="img"/);
 });
-test('every venture follows research, evaluation, founder decision and build stages',async()=>{
- const [h,js]=await Promise.all([read('index.html'),read('next.js')]);
- const section=h.match(/<section class="journey-section"[\s\S]*?<\/section>/)?.[0];
- assert.ok(section);
- assert.match(section,/id="how-it-works"/);
- for(const name of ['Discover','Research','Evaluate','Founder decides','Build &amp; evolve']){
-  assert.ok(section.includes('<h3>'+name+'</h3>'),name+' stage missing');
- }
- assert.match(section,/Approve, revise or reject the proposed plan/);
- assert.match(js,/hash==='projects-collection'\?'explore'/);
- assert.match(js,/'how-it-works','projects-collection','our-ai-team'/);
- assert.match(h,/href="#how-it-works"/);
+test('five clear stages preserve the founder authorization gate',async()=>{
+ const html=await read('index.html');
+ const section=html.match(/<section class="journey-section shell"[\s\S]*?<\/section>/)?.[0];
+ assert.ok(section&&section.includes('id="how-it-works"'));
+ for(const step of ['Discover','Research','Evaluate','Decide','Build'])
+  assert.ok(section.includes('<h3>'+step+'</h3>'),step);
+ assert.match(section,/founder-gate/);
+ assert.match(section,/Approve or reject/);
+ assert.match(html,/href="#how-it-works"/);
 });
-test('Explore is the public collection of approved YorpHives OS projects, not unrelated products',async()=>{
- const [h,js]=await Promise.all([read('index.html'),read('next.js')]);
- const explore=h.split('<!-- EXPLORE -->')[1]?.split('<!-- BUILDERS -->')[0];
- assert.ok(explore);
- assert.match(explore,/YorpHives' own projects/);
- assert.match(explore,/YorpHivesHQ operates the website/);
- assert.match(explore,/same AI research team/i);
- assert.match(explore,/The same team/);
- assert.match(explore,/YorpHivesHQ \(YorpHives Headquarters\)/);
- assert.match(explore,/id="projects-collection"/);
- assert.match(explore,/No qualified launches yet/);
- assert.match(explore,/Only genuinely approved and published work is listed/);
+test('Explore connects published projects to HQ evidence and founder decisions',async()=>{
+ const [html,js]=await Promise.all([read('index.html'),read('next.js')]);
+ const section=explore(html);
+ assert.match(section,/HQ researches\. I decide\. Approved projects go live\./);
+ assert.match(section,/id="explore-process-title"/);
+ assert.match(section,/class="explore-process-list"/);
+ assert.match(section,/03 \/ FOUNDER/);
+ assert.match(section,/Go \/ no-go/);
+ assert.match(section,/id="projects-collection"/);
+ assert.match(section,/Only founder-approved work makes it to Explore|Founder-approved launches only/i);
  assert.match(js,/qualifiedProducts\(published\)/);
+ assert.doesNotMatch(section,/fabricated launched projects|external marketplace/i);
 });
-test('the OS and Explore use the same evidence and founder approval gate',async()=>{
- const h=await read('index.html');
- for(const phrase of ['market demand','customer needs','competition','feasibility','business potential','final founder approval']){
-  assert.ok(h.includes(phrase),phrase+' missing');
- }
- assert.match(h,/The founder makes the final decision/);
- assert.match(h,/Only approved work/i);
- assert.match(h,/First public launch pending/i);
+test('free tools and real public activity use seamless accessible motion',async()=>{
+ const [html,css,phone,js]=await Promise.all([read('index.html'),read('next.css'),read('next-responsive.css'),read('next.js')]);
+ assert.match(html,/id="category-ribbon-track"/);
+ assert.match(html,/id="tool-category-rail"/);
+ assert.match(html,/id="home-pulse-viewport"/);
+ assert.match(html,/id="footer-pulse"/);
+ assert.equal((html.match(/data-motion-toggle="categories"/g)||[]).length,2);
+ assert.equal((html.match(/data-motion-toggle="pulse"/g)||[]).length,2);
+ assert.match(css,/@keyframes rail-drift/);
+ assert.match(css,/@keyframes pulse-scroll/);
+ assert.match(css,/animation:rail-drift/);
+ assert.match(css,/animation:pulse-scroll/);
+ assert.match(js,/function renderRibbon\(\)/);
+ assert.match(js,/function initPulse\(\)/);
+ assert.match(js,/aria-pressed/);
+ assert.match(phone,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.match(phone,/animation:none!important/);
 });
-test('the redesign retains Free Tools, future paid Builders and contact routes',async()=>{
+test('all main pages remain navigable and genuine work remains gated',async()=>{
  const h=await read('index.html');
- for(const title of ['Explore projects','Free tools','Builders network']){
-  assert.ok(h.includes('<h3>'+title+'</h3>'),title+' card missing');
- }
- for(const route of ['#tools','#builders','#connect','#explore'])assert.ok(h.includes('href="'+route+'"'),route+' route missing');
- assert.match(h,/future paid network/);
+ for(const id of ['home','tools','explore','builders','connect'])
+  assert.ok(h.includes('id="'+id+'"'),id+' missing');
+ for(const id of ['tool-search','tool-categories','tool-count','tool-prev','tool-next','tool-favorites'])
+  assert.ok(h.includes('id="'+id+'"'),id+' missing');
+ assert.match(h,/verified paid membership/);
  assert.match(h,/Enrollment is not open yet/);
  assert.match(h,/Nothing is uploaded by this form/);
+ assert.doesNotMatch(h,/data-form="opportunity"|id="job-listings"/);
 });
-test('direct tool suggestion remains an optional founder-reviewed email',async()=>{
- const [h,js]=await Promise.all([read('index.html'),read('next.js')]);
- assert.match(h,/data-contact-reason="Suggest a free tool"/);
- assert.match(h,/<option>Suggest a free tool<\/option>/);
- assert.match(js,/getAttribute\('data-contact-reason'\)/);
- assert.match(js,/mailto:connect@yorphives\.com/);
-});
-
-test('YorpHivesHQ operates the website while founder controls decisions and releases',async()=>{
- const h=await read('index.html');
- const home=h.split('<!-- HOME:')[1]?.split('<!-- TOOLS -->')[0]||'';
- const explore=h.split('<!-- EXPLORE -->')[1]?.split('<!-- BUILDERS -->')[0]||'';
- assert.match(home,/YorpHivesHQ \(YorpHives Headquarters\) operates this website/);
- assert.match(home,/HQ coordinates website monitoring, operational analysis, market research and recommendations/);
- assert.match(home,/It does not independently approve launches or publish code changes/);
- assert.match(home,/The final decision to pursue a venture, change the website or launch a project stays with me, the founder/);
- assert.match(explore,/YorpHivesHQ operates the website and coordinates opportunity research/);
- assert.match(explore,/only approved, published projects appear here/i);
- assert.match(h,/Operated by YorpHivesHQ\./);
+test('release gate verifies founder authorization and media-motion safeguards',async()=>{
+ const check=await read('scripts/release-check.mjs');
+ assert.match(check,/One founder/);
+ assert.match(check,/YorpHivesHQ finds the signal/);
+ assert.match(check,/console-decision/);
+ assert.match(check,/@keyframes rail-drift/);
+ assert.match(check,/@keyframes pulse-scroll/);
+ assert.match(check,/Public job listing or job-posting form is forbidden/);
 });
