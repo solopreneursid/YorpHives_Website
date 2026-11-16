@@ -39,13 +39,11 @@ for(const width of [320,375,768,1440]){
      assert.equal(horizontalScroll,0,"unexpected page-level horizontal scroll at "+width+"px: "+JSON.stringify(layout.offenders));
      assert.equal(renderWidth,width,"Screenshot must match actual 320px viewport without padding beyond its bounds");
      if(width<=375){
-       const scrollable=await page.evaluate(()=>{
-         const el=document.querySelector("#view-radar .bg-gradient-to-r .overflow-x-auto");
-         if(!el)return false;
-         const before=el.scrollLeft;el.scrollLeft=el.scrollWidth;const after=el.scrollLeft;el.scrollLeft=before;
-         return after>0;
-       });
-       assert.equal(scrollable,true,"Location options must remain accessible by horizontal swipe");
+       assert.equal(await page.locator(".discovery-modes").isVisible(),true);
+       assert.equal(await page.locator("#discovery-filter-toggle").isVisible(),true);
+       assert.equal(await page.locator("#search-input").isVisible(),true);
+       assert.equal(await page.locator("#discovery-advanced-filters").isVisible(),false,"advanced filters start folded on phones");
+       assert.equal(await page.locator("nav[aria-label='Mobile Navigation'] button:visible").count(),4);
      }
      assert.equal(errors.length,0,"JS errors: "+errors.join("; "));
    }finally{await page.close();}
@@ -398,4 +396,27 @@ test("retired email preferences are purged without deleting saved opportunities"
   assert.equal(Object.hasOwn(state.saved,"emailIds"),false);
   assert.equal(Object.hasOwn(state.saved,"emailSettings"),false);
  }finally{await context.close();}
+});
+
+test("phone discovery is searchable, browsable, and has accessible filters",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:812}});
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  const search=page.locator("#search-input");
+  await search.fill("UPSC");
+  assert.ok((await page.locator("#exam-cards-grid article").count())>=1);
+  await page.locator("#discovery-filter-toggle").click();
+  assert.equal(await page.locator("#discovery-filter-toggle").getAttribute("aria-expanded"),"true");
+  assert.equal(await page.locator("#discovery-advanced-filters").isVisible(),true);
+  await search.fill("");
+  await page.locator('[data-discovery-mode="GLOBAL_MANUAL"]').click();
+  assert.equal(await page.locator('[data-discovery-mode="GLOBAL_MANUAL"]').getAttribute("aria-pressed"),"true");
+  assert.equal(await page.locator("#exam-cards-grid article").count(),20,"global mode shows full prototype research inventory, including archived filtering");
+  await page.locator("#discovery-menu-toggle").click();
+  assert.equal(await page.locator("#discovery-menu-toggle").getAttribute("aria-expanded"),"true");
+  await page.locator('[data-discovery-tab="guide"]').click();
+  assert.equal(await page.locator("#view-guide").isVisible(),true);
+  assert.equal(await page.locator("#discovery-more-menu").isVisible(),false);
+ }finally{await page.close();}
 });
