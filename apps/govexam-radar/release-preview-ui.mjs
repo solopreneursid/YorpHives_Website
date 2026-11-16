@@ -42,9 +42,9 @@ export const RELEASE_PREVIEW_HTML=`<!doctype html>
    <label class="field field-type">Category<select id="preview-stream"><option value="">All categories</option><option value="Technical">Technical (inferred)</option><option value="Non-technical">Non-technical (inferred)</option><option value="Unclassified">Unclassified</option></select></label>
    <button class="filter-submit" type="submit">Search jobs <span aria-hidden="true">→</span></button>
   </form>
-  <div class="saved-search"><div><strong>Save your UK job search</strong><p>Keep your filters on this device. Reopen GovRadar to check matching vacancies; no background or email alerts yet.</p><p id="saved-search-status" role="status" aria-live="polite">No search saved.</p></div><div class="saved-search-actions"><button id="save-search" type="button">Save search</button><button id="use-saved-search" type="button">Use saved search</button><button id="clear-saved-search" type="button">Remove</button></div></div>
+  <div class="saved-search"><div><strong>Save your UK job search</strong><p>Keep your filters on this device. Reopen GovRadar to check matching vacancies; no off-device notification service.</p><p id="saved-search-status" role="status" aria-live="polite">No search saved.</p></div><div class="saved-search-actions"><button id="save-search" type="button">Save search</button><button id="use-saved-search" type="button">Use saved search</button><button id="clear-saved-search" type="button">Remove</button></div></div>
   <div class="listing-toolbar"><p id="preview-status" role="status" aria-live="polite">Loading source-observed listings…</p><button id="preview-reset" class="reset-button" type="button">Clear filters</button></div>
-  <div class="watch-panel"><div><strong>Watch this search while this page is open</strong><p>Optional check every 15 minutes while the tab is visible. No push notifications, email or checks after closing the page.</p><p id="watch-status" role="status" aria-live="polite">Watching is off.</p></div><button id="watch-toggle" type="button" aria-pressed="false">Start watching</button></div>
+  <div class="watch-panel"><div><strong>Watch this search while this page is open</strong><p>Optional check every 15 minutes while the tab is visible. No remote delivery or checks after closing the page.</p><p id="watch-status" role="status" aria-live="polite">Watching is off.</p></div><button id="watch-toggle" type="button" aria-pressed="false">Start watching</button></div>
   <p class="change-note" id="preview-changes" role="status" aria-live="polite">Changes are compared only for listings viewed in this browser; this is not an automatic background alert.</p>
   <div id="preview-grid" class="job-grid" aria-live="polite"></div>
   <div id="preview-pages" class="pages" aria-label="Results pagination"></div>
@@ -77,7 +77,7 @@ export const RELEASE_PREVIEW_JS=`
  let page=1,term="",stream="",pending=0,watchTimer=null;
  const WATCH_INTERVAL_MS=15*60*1000;
  const watchButton=byId("watch-toggle"),watchLabel=byId("watch-status");
- function watchState(){const active=watchTimer!==null;watchButton.setAttribute("aria-pressed",String(active));watchButton.textContent=active?"Stop watching":"Start watching";watchLabel.textContent=!active?"Watching is off.":document.hidden?"Watching paused while tab is hidden.":"Watching this page's UK search every 15 minutes while visible. No background or email alerts.";}
+ function watchState(){const active=watchTimer!==null;watchButton.setAttribute("aria-pressed",String(active));watchButton.textContent=active?"Stop watching":"Start watching";watchLabel.textContent=!active?"Watching is off.":document.hidden?"Watching paused while tab is hidden.":"Watching this page's UK search every 15 minutes while visible. No background delivery.";}
  function stopWatch(){if(watchTimer!==null)clearInterval(watchTimer);watchTimer=null;watchState();}
  function startWatch(){if(watchTimer!==null)return;
   const choice=byId("preview-stream").value;
