@@ -34,7 +34,7 @@ body.tool-page .site-header .header-cta{
  min-height:42px;padding:10px 15px;border-radius:10px;background:#baf7d3;color:#163d2c;font-size:12px;font-weight:820;white-space:nowrap
 }
 body.tool-page .site-header .header-cta span{font-size:18px}
-body.tool-page .header-kofi{display:none!important}
+/* Disabled Ko-fi support remains visible alongside direct tool navigation. */
 body.tool-page .tool-header-back{display:none}
 body.tool-page .mobile-dock{display:none}
 body.tool-page .skip-link:focus-visible,body.tool-page a:focus-visible,body.tool-page button:focus-visible{
@@ -218,4 +218,39 @@ body.tool-page [hidden]{display:none!important}
 }
 @media(prefers-reduced-motion:reduce){
  body.tool-page *,body.tool-page *::before,body.tool-page *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
+
+/* Shared disabled support CTA for current and newly published direct-entry tools. */
+body.tool-page .site-header .header-kofi{
+ display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+ flex:none;min-width:101px;min-height:45px;padding:6px 10px;
+ background:#aefbcb13;border:1px solid #adf5c85a;border-radius:11px;
+ color:#f0fff5;line-height:1.2;text-align:center;white-space:nowrap
+}
+body.tool-page .site-header .header-kofi:disabled{opacity:1;cursor:not-allowed}
+body.tool-page .site-header .header-kofi strong{font-size:12px;font-weight:850}
+body.tool-page .site-header .header-kofi small{font-size:10px;font-weight:650;color:#bde5cb}
+body.tool-page .site-header .header-kofi .kofi-pending{font-size:8px;letter-spacing:.07em;color:#8ccba5}
+@media(max-width:1020px){
+ body.tool-page .site-header{gap:15px}
+ body.tool-page .tool-nav{gap:15px}
+}
+@media(max-width:900px){
+ body.tool-page .site-header .header-cta{display:none}
+ body.tool-page .site-header .header-kofi{min-width:94px;padding-inline:8px}
+}
+@media(max-width:760px){
+ body.tool-page .site-header .header-kofi{margin-left:auto;min-width:92px;min-height:43px}
+ body.tool-page .site-header .header-kofi .kofi-pending{display:none}
+ body.tool-page .site-header .tool-header-back{margin-left:0}
+}
+@media(max-width:530px){
+ body.tool-page .site-header .tool-header-back{display:none}
+}
+@media(max-width:350px){
+ body.tool-page .site-header{gap:8px}
+ body.tool-page .site-header .brand img{width:31px;height:31px}
+ body.tool-page .site-header .brand-name{font-size:17px}
+ body.tool-page .site-header .header-kofi{min-width:89px}
 }

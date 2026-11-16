@@ -82,7 +82,7 @@ test('every direct-entry page keeps Ko-fi disabled in its own navigation',async(
   const html=await read(page,dest);
   const header=html.match(/<header\b[^>]*>[\s\S]*?<\/header>/i)?.[0]||'';
   assert.match(header,/<button class="header-kofi tool-kofi" type="button" disabled/,page);
-  assert.match(header,/<strong>Ko-fi<\/strong><small>support my work<\/small>/,page);
+  assert.match(header,/<strong>Ko-fi<\/strong><small>Support us<\/small>/,page);
   assert.doesNotMatch(header,/href="\/#support"/,page);
  }
  const directory=await read('tools/index.html',dest);
