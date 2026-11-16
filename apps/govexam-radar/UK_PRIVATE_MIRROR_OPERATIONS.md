@@ -24,10 +24,21 @@ The account moved from **4 to 5 configured Cron triggers**. None of the other fo
 - Maintain `uk_mirror_state`: successful cursor, last attempt/success, latest native-source timestamp, sanitized error code, last row count and `ok`/`partial`/`error`.
 - Maintain `uk_mirror_runs`: scheduled event ID (unique), start/finish times, rows upserted, sanitized state. Duplicate Cron events are refused by atomic `INSERT OR IGNORE`.
 - On a failure, leave the last successful cursor **unchanged**, log a failure, and retry idempotently at the next schedule. Unexpected unapproved rows stop the run; no silent source-missing deletions.
-- No applicant or community data is copied; the UK D1 still contains only `official_job_notices` plus the **two private mirror metadata tables**, not community/HQ tables.
+- No applicant or community data is copied; the UK D1 contains only `official_job_notices` plus **three private lifecycle/operations tables**: `uk_mirror_state`, `uk_mirror_runs`, and `uk_withdrawal_checks`. No community or HQ tables are present.
 - The isolated public `GET /api/freshness` exposes only safe recency status: `pending`, `current`, `delayed`, `unavailable`; it never emits database IDs, credentials, raw errors or private run IDs. Its `current` state requires a recent successful mirror and recent native UK source import.
 - The UI reports freshness cautiously and always links users to the official source. It does **not** claim that every vacancy has been verified or that a production release is authorized.
 - SQL schema recorded in `uk-mirror-schema.sql`. Logic is first-party ESM using SQLite-like SQL, with reusable Node/D1 tests; it does not require a third-party SaaS collector.
+
+## Official vacancy lifecycle safeguards (staging)
+
+- **Expiry:** Every private mirror run applies `closing_at <= current UTC time` to the UK-only mirror, marking expired listings regardless of whether `last_seen_at` changed in the paginated source feed. Public notice SQL independently excludes both non-open states and past deadlines.
+- **Conservative withdrawal:** Only candidates at least **48 hours since last seen** with an unexpired closing date are eligible for a bounded direct official-site check. Maximum **four GET requests per three-hour Cron**; only the original HTTPS `teaching-vacancies.service.gov.uk/jobs/` URL is queried, with no cross-origin redirects followed.
+- **HTTP outcomes:** a 200 resets prior suspicion; a 404 is **not** conclusive and records a founder-review flag only after two independent checks; a direct 410 is only conclusive after **two separate observations at least three hours apart** and no newer source observation. 429, 403, 5xx, timeouts, redirects and network failures do not count as proof.
+- **Evidence retention:** `uk_withdrawal_checks` stores the URL-observation code, source `last_seen_at` value, bounded proof count, last-check time and review flag. Only the private scheduled Worker writes this table. No public API exposes evidence internals.
+- **No silent deletion:** `withdrawn_confirmed` remains in the D1 database for audit. Public notice queries require `life_status='open'`; the confirmed-withdrawn row therefore disappears from search results without a destructive delete.
+- **Recovery:** A new genuine official-feed observation can supersede an old withdrawn state. Upserts explicitly prevent a stale or equal-timestamp source copy from silently reopening a previously confirmed withdrawn listing. An old, disappeared or omitted feed-page record never triggers a delete.
+- **Testing:** `uk-mirror-lifecycle.test.mjs` covers one-page omission, deadline expiry without updated cursors, single and repeated 404/410, minimum time separation, source reappearance, error responses, spoofed URLs and the four-probe limit. Tests run in CI.
+- **Remaining review:** An intermittent 404 can indicate a genuine withdrawal, but is deliberately **not auto-confirmed**. Founder review should resolve such records before commercial launch; these checks are not a claim to independently verify every job in the feed.
 
 ## Verification and limits
 
@@ -38,7 +49,7 @@ The account moved from **4 to 5 configured Cron triggers**. None of the other fo
 - Read-only operator verification from Cloudflare D1:
   `SELECT id, scheduled_at, state, rows_upserted, error_code FROM uk_mirror_runs ORDER BY scheduled_at DESC LIMIT 6`
   and `SELECT status,last_success_at,last_native_source_at,last_rows_upserted FROM uk_mirror_state WHERE id=1`.
-- No source-driven removal/withdrawal synchronization yet. Public notice queries continue filtering expired and stale records; a reviewed withdrawal/tombstone design is still needed before a broader commercial release.
+- **Non-destructive withdrawal evidence is now implemented in staging**, but has not yet been demonstrated during a completed unattended mirror run. Missing records from a partial official feed never imply withdrawal. A direct HTTP 404 is review-only even after repeated checks. Two independent direct HTTP **410 Gone** responses, at least three hours apart with unchanged official-source evidence, can mark a listing `withdrawn_confirmed` without deleting the row. A broader confirmed-removal, reappearance, moderation and restoration workflow remains a public-release review gate.
 - **Do not merge either draft PR or attach this isolated preview to a public domain without founder review.** Staging Workers, HQ Workers, secrets, `yorphives.com` and Cloudflare billing were not changed except the two GovRadar staging components described here.
 
 ## Rollback
