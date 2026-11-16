@@ -16,10 +16,13 @@ const directory=await read('tools/index.html');
 const homepage=await read('index.html');
 if(!homepage.includes('One founder.')||!homepage.includes('An AI team.')||
    !homepage.includes('Ideas in motion.')||
-   !homepage.includes('AI business operating system')||
-   !homepage.includes('The founder decides what we pursue and build.')||
+   !homepage.includes('YorpHivesHQ (YorpHives Headquarters) operates this website')||
+   !homepage.includes('I make the final decisions based on evidence.')||
    !homepage.includes('href="#connect"'))
-  problems.push('Founder-owned AI venture studio identity, decision rights or contact CTA missing.');
+  problems.push('YorpHivesHQ website operations, founder authority or contact CTA missing.');
+if(!homepage.includes('It does not independently approve launches or publish code changes.')||
+   !homepage.includes('The final decision to pursue a venture, change the website or launch a project stays with me, the founder.'))
+  problems.push('YorpHivesHQ operational boundary and final founder release control missing.');
 if(!homepage.includes('id="our-ai-team"')||
    !homepage.includes('id="projects-collection"')||
    !homepage.includes('final founder approval'))
