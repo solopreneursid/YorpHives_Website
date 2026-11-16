@@ -223,7 +223,8 @@ async function auditHtml(dir=''){
  for(const entry of await readdir(resolve(dest,dir),{withFileTypes:true})){
   const path=join(dir,entry.name).replaceAll('\\','/');
   if(entry.isDirectory())await auditHtml(path);
-  else if(entry.isFile()&&path.endsWith('.html')&&!publicPages.has(path))
+  else if(entry.isFile()&&path.endsWith('.html')&&!publicPages.has(path)&&
+   !(target==='preview'&&path==='concept/index.html'))
    throw Error('Public HTML page is not registered for direct discovery: '+path);
  }
 }
