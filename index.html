@@ -10,7 +10,9 @@
 <link rel="stylesheet" href="next.css">
 <link rel="stylesheet" href="next-responsive.css">
 <link rel="stylesheet" href="home-experience.css">
+<link rel="stylesheet" href="impact.css">
 <script src="next.js" defer></script>
+<script type="module" src="impact.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -92,6 +94,84 @@
       <span>DISCOVER</span><b>→</b><span>VERIFY</span><b>→</b><span class="stage-founder">FOUNDER</span><b>→</b><span>BUILD</span>
     </div>
    </div>
+  </div>
+ </section>
+
+<!-- IMPACT: evidence-first public progress; real counts only -->
+ <section class="impact-section" id="home-impact" aria-labelledby="impact-title">
+  <div class="shell">
+   <div class="impact-header">
+    <div class="impact-heading">
+     <span class="impact-overline"><span class="impact-signal" aria-hidden="true"></span> YORPHIVES / IMPACT</span>
+     <h2 id="impact-title">Progress, <em>made visible.</em></h2>
+     <p>Real activity. Verified milestones. No inflated numbers.</p>
+    </div>
+    <span class="impact-proof"><span aria-hidden="true">✓</span> EVIDENCE FIRST</span>
+   </div>
+   <div class="impact-metrics" aria-label="Public YorpHives metrics">
+    <article class="impact-metric impact-metric-primary">
+     <span class="impact-metric-label">PUBLISHED UTILITIES <span aria-hidden="true">↗</span></span>
+     <strong class="impact-metric-value" id="impact-tools">—</strong>
+     <span class="impact-metric-foot" id="impact-tools-note">Checking public catalogue</span>
+    </article>
+    <article class="impact-metric">
+     <span class="impact-metric-label">VENTURES LAUNCHED <span aria-hidden="true">✳</span></span>
+     <strong class="impact-metric-value" id="impact-ventures">—</strong>
+     <span class="impact-metric-foot" id="impact-ventures-note">Founder-approved only</span>
+    </article>
+    <article class="impact-metric">
+     <span class="impact-metric-label">VISITORS / 30 DAYS <span aria-hidden="true">◉</span></span>
+     <strong class="impact-metric-value" id="impact-visitors">—</strong>
+     <span class="impact-metric-foot" id="impact-visitors-note">Awaiting verified reporting</span>
+    </article>
+    <article class="impact-metric">
+     <span class="impact-metric-label">VERIFIED PARTNERS <span aria-hidden="true">◇</span></span>
+     <strong class="impact-metric-value" id="impact-partners">—</strong>
+     <span class="impact-metric-foot" id="impact-partners-note">Confirmed partnerships only</span>
+    </article>
+   </div>
+   <div class="impact-insights">
+    <article class="impact-insight impact-revenue" aria-labelledby="impact-revenue-title">
+     <div class="impact-panel-head">
+      <div><span class="impact-kicker">BUSINESS MOMENTUM</span><h3 id="impact-revenue-title">Revenue direction <span class="impact-trend-icon" aria-hidden="true">↗</span></h3></div>
+      <span class="impact-panel-tag">TREND ONLY</span>
+     </div>
+     <div class="impact-empty-chart" id="impact-revenue-empty">
+      <div class="impact-chart-grid" aria-hidden="true"></div>
+      <div class="impact-chart-empty-copy"><span class="impact-empty-symbol" aria-hidden="true">⌁</span><strong>No published trend yet</strong><span>Appears after verified financial reporting.</span></div>
+     </div>
+     <div class="impact-chart" id="impact-revenue-chart" hidden>
+      <svg id="impact-trend-svg" viewBox="0 0 660 184" preserveAspectRatio="none" role="img" aria-label="Founder-approved revenue direction trend, with no amounts disclosed">
+       <defs><linearGradient id="impact-graph-fill" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#9cfaaf" stop-opacity=".33"/><stop offset="1" stop-color="#9cfaaf" stop-opacity="0"/></linearGradient></defs>
+       <path id="impact-trend-area" fill="url(#impact-graph-fill)"></path>
+       <path id="impact-trend-line" fill="none" stroke="#a9f5bd" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"></path>
+      </svg>
+      <div class="impact-chart-months" id="impact-revenue-months"></div>
+     </div>
+     <div class="impact-panel-foot"><span><span class="impact-lock" aria-hidden="true">◇</span> Actual revenue stays private.</span><span id="impact-trend-status">Verification pending</span></div>
+    </article>
+    <article class="impact-insight impact-usage" aria-labelledby="impact-popular-title">
+     <div class="impact-panel-head">
+      <div><span class="impact-kicker">PEOPLE &amp; PRODUCTS</span><h3 id="impact-popular-title">Trending ventures</h3></div>
+      <span class="impact-panel-tag">PRODUCT USE</span>
+     </div>
+     <div id="impact-apps" class="impact-app-list" aria-live="polite">
+      <div class="impact-app-empty"><span class="impact-app-orb" aria-hidden="true">✳</span><strong>Building the next chapter</strong><p>Rankings appear when verified usage is available.</p></div>
+     </div>
+     <a class="impact-app-link" href="#explore">Discover HQventures <span aria-hidden="true">↗</span></a>
+    </article>
+   </div>
+   <div class="impact-milestones">
+    <div class="impact-milestones-intro">
+     <span class="impact-kicker">OUR JOURNEY</span>
+     <h3>Milestones, <em>not promises.</em></h3>
+     <p>Every published achievement is backed by evidence.</p>
+    </div>
+    <div id="impact-milestone-list" class="impact-milestone-list" aria-live="polite">
+     <div class="impact-milestone-empty"><span class="impact-milestone-dot" aria-hidden="true"></span><div><strong>Our record starts with real results.</strong><span>Verified milestones will appear here.</span></div></div>
+    </div>
+   </div>
+   <div class="impact-transparency"><span class="impact-transparency-symbol" aria-hidden="true">✧</span><span><strong>Public by choice. Verified by evidence.</strong> YorpHivesHQ prepares insights; the founder approves what is shared.</span><span class="impact-published" id="impact-updated">Reporting not yet active</span></div>
   </div>
  </section>
 
@@ -216,7 +296,7 @@
  <form id="contact-form" class="contact-form"><div class="field-grid"><label>Your name<input name="Name" autocomplete="name" required placeholder="Your name"></label><label>Email address<input name="Email" type="email" autocomplete="email" required placeholder="you@example.com"></label><label>I am<select name="I am"><option>Individual</option><option>Founder</option><option>Freelancer</option><option>Business</option><option>Organization</option></select></label><label>I'm looking for<select name="Looking for" id="project-type"><option>Website or app</option><option>AI agents or automation</option><option>A new product</option><option>Suggest a free tool</option><option>Builders or paid work</option><option>Partnership</option><option>Something else</option></select></label></div><label>Your message<textarea name="Message" required rows="5" placeholder="Tell us about your idea…"></textarea></label><label>Timeline <span class="optional">OPTIONAL</span><input name="Timeline" placeholder="Anything useful to know?"></label><button class="btn btn-dark form-submit" type="submit">Prepare email <span aria-hidden="true">↗</span></button><p class="form-disclaimer">Nothing is uploaded by this form.</p></form></div>
 </section>
 </main>
-<footer class="site-footer"><div class="shell footer-top"><div><a class="brand" href="#home"><img src="tools/brand-icon.webp" width="38" height="38" alt=""><span class="brand-word">yorp<span>Hives</span><small>IDEAS IN MOTION</small></span></a><p>An AI-powered venture studio.<br>Ideas in motion.</p></div><nav class="footer-nav" aria-label="Footer"><div><span>DISCOVER</span><a href="#tools">Free tools</a><a href="#explore">HQventures</a><a href="#builders">Builders</a><a href="tools/">Tools A–Z</a></div><div><span>CONNECT</span><a href="#connect">Say hello</a><a href="mailto:connect@yorphives.com">Email YorpHives</a></div></nav></div>
+<footer class="site-footer"><div class="shell footer-top"><div><a class="brand" href="#home"><img src="tools/brand-icon.webp" width="38" height="38" alt=""><span class="brand-word">yorp<span>Hives</span><small>IDEAS IN MOTION</small></span></a><p>An AI-powered venture studio.<br>Ideas in motion.</p></div><nav class="footer-nav" aria-label="Footer"><div><span>DISCOVER</span><a href="#tools">Free tools</a><a href="#explore">HQventures</a><a href="#home-impact">Impact</a><a href="#builders">Builders</a><a href="tools/">Tools A–Z</a></div><div><span>CONNECT</span><a href="#connect">Say hello</a><a href="mailto:connect@yorphives.com">Email YorpHives</a></div></nav></div>
 
 <div class="shell footer-bottom"><span>© <span id="current-year">2026</span> YORPHIVES</span><span>INDEPENDENT BY DESIGN</span><a href="#home">BACK TO TOP ↑</a></div></footer>
 <nav class="mobile-dock" aria-label="Mobile navigation"><a href="#home" data-nav="home"><span class="dock-icon" aria-hidden="true">⌂</span><span>Home</span></a><a href="#tools" data-nav="tools"><span class="dock-icon" aria-hidden="true">▦</span><span>Tools</span></a><a href="#explore" data-nav="explore"><span class="dock-icon" aria-hidden="true">◇</span><span>HQventures</span></a><a href="#builders" data-nav="builders"><span class="dock-icon" aria-hidden="true">♧</span><span>Builders</span></a><a href="#connect" data-nav="connect"><span class="dock-icon" aria-hidden="true">✉</span><span>Contact</span></a></nav>
