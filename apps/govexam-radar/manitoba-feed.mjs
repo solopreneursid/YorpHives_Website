@@ -69,27 +69,50 @@ const hash=async value=>{
  const result=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value));
  return [...new Uint8Array(result)].map(v=>v.toString(16).padStart(2,"0")).join("");
 };
+// One same-origin redirect, one bounded retry. A redirect to another site is
+// never silently followed (and never treated as valid government-source evidence).
 async function fetchRss(fetcher=fetch){
- const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),11000);
- try{
-  const response=await fetcher(MANITOBA.url,{method:"GET",signal:ctl.signal,redirect:"error",headers:{"Accept":"application/rss+xml, application/xml, text/xml"}});
-  if(!response.ok)return{error:"http_"+response.status,httpStatus:response.status};
-  const ct=response.headers.get("content-type")||"";
-  if(!/xml|rss/i.test(ct))return{error:"bad_content_type",httpStatus:response.status};
-  if(Number(response.headers.get("content-length")||0)>MAX_BYTES)return{error:"feed_too_big",httpStatus:response.status};
-  let xml="";
-  const reader=response.body?.getReader();
-  if(reader){
-   const decoder=new TextDecoder();
-   try{while(true){const {done,value}=await reader.read();if(done)break;
-     xml+=decoder.decode(value,{stream:true});if(xml.length>MAX_BYTES){await reader.cancel();return{error:"feed_too_big",httpStatus:response.status};}}
-     xml+=decoder.decode();
-   }finally{reader.releaseLock();}
-  }else{xml=await response.text();}
-  if(xml.length>MAX_BYTES)return{error:"feed_too_big",httpStatus:response.status};
-  return{xml,httpStatus:response.status};
- }catch(e){return{error:e?.name==="AbortError"?"timeout":"network_error",httpStatus:null};}
- finally{clearTimeout(timer);}
+ let target=MANITOBA.url;
+ for(let attempt=0;attempt<2;attempt++){
+  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),11000);
+  try{
+   for(let hop=0;hop<=1;hop++){
+    const response=await fetcher(target,{method:"GET",signal:ctl.signal,redirect:"manual",headers:{"Accept":"application/rss+xml, application/xml, text/xml"}});
+    if([301,302,303,307,308].includes(response.status)){
+     let next;
+     try{next=new URL(response.headers.get("location"),target);}catch{return{error:"invalid_redirect",httpStatus:response.status};}
+     if(hop===1||next.protocol!=="https:"||next.hostname!=="jobsearch.gov.mb.ca"||next.pathname!=="/rss/newJobPostingsFeed.rss"||next.search)
+      return{error:"unsafe_redirect",httpStatus:response.status};
+     target=next.toString();continue;
+    }
+    if([429,502,503,504].includes(response.status)&&attempt===0)break;
+    if(!response.ok)return{error:"http_"+response.status,httpStatus:response.status};
+    const ct=response.headers.get("content-type")||"";
+    if(!/xml|rss/i.test(ct))return{error:"bad_content_type",httpStatus:response.status};
+    if(Number(response.headers.get("content-length")||0)>MAX_BYTES)return{error:"feed_too_big",httpStatus:response.status};
+    let xml="",bytes=0;
+    const reader=response.body?.getReader();
+    if(reader){
+     const decoder=new TextDecoder();
+     try{
+      while(true){
+       const {done,value}=await reader.read();if(done)break;
+       bytes+=value.byteLength;
+       if(bytes>MAX_BYTES){await reader.cancel();return{error:"feed_too_big",httpStatus:response.status};}
+       xml+=decoder.decode(value,{stream:true});
+      }
+      xml+=decoder.decode();
+     }finally{reader.releaseLock();}
+    }else{xml=await response.text();if(new TextEncoder().encode(xml).byteLength>MAX_BYTES)return{error:"feed_too_big",httpStatus:response.status};}
+    return{xml,httpStatus:response.status};
+   }
+  }catch(e){
+   if(attempt===1)return{error:e?.name==="AbortError"?"timeout":"network_error",httpStatus:null};
+  }finally{clearTimeout(timer);}
+  if(attempt===0)await new Promise(resolve=>setTimeout(resolve,350));
+  target=MANITOBA.url;
+ }
+ return{error:"temporary_upstream_failure",httpStatus:null};
 }
 export async function ingestManitoba(db,fetcher=fetch,now=Date.now()){
  if(!db)throw Error("D1 binding required");
