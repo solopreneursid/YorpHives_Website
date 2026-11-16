@@ -165,6 +165,8 @@ export async function ingestDfE(db,fetcher=fetch,clock=Date.now()){
   console.log(JSON.stringify({event:"official_feed_ingestion",source:DFE_SOURCE.id,outcome:outcome.state,count:outcome.accepted,rejected:outcome.discarded,reason:outcome.errorCode}));
  }
 }
+// Multi-source public notice query: government public employment and publicly funded education
+// remain distinguishable in both metadata and each individual record.
 export async function serveOfficialNotices(db,params){
  if(!db)return json({error:"not_configured",notices:[]},503);
  try{
@@ -172,23 +174,40 @@ export async function serveOfficialNotices(db,params){
   const page=Math.max(1,Math.min(1000,Number(params.get("page"))||1));
   const keyword=plain(params.get("q"),60);
   const stream=["Technical","Non-technical","Unclassified"].includes(params.get("stream"))?params.get("stream"):"";
-  const where=["life_status='open'","closing_at>?","last_seen_at>=?", "review_state IN ('official_feed_unreviewed','founder_reviewed')"];
+  const allowedSources=[DFE_SOURCE.id,"manitoba-jobs"];
+  const sourceId=allowedSources.includes(params.get("source"))?params.get("source"):"";
+  const allowedCountries=["Canada","United Kingdom"];
+  const country=allowedCountries.includes(params.get("country"))?params.get("country"):"";
+  const jurisdiction=plain(params.get("jurisdiction"),30);
+  const levels=["national","province","state","municipal","devolved","public_education"];
+  const level=levels.includes(params.get("level"))?params.get("level"):"";
+  const where=["life_status='open'","closing_at>?","last_seen_at>=?","review_state IN ('official_feed_unreviewed','founder_reviewed')"];
   const bind=[new Date().toISOString(),Date.now()-14*86400000];
+  if(sourceId){where.push("source_id=?");bind.push(sourceId);}
+  if(country){where.push("country=?");bind.push(country);}
+  if(level){where.push("government_tier=?");bind.push(level);}
+  if(jurisdiction){where.push("jurisdiction_code=?");bind.push(jurisdiction);}
   if(stream){where.push("stream=?");bind.push(stream);}
-  if(keyword){where.push("(title LIKE ? OR employer LIKE ? OR region LIKE ?)");bind.push(...Array(3).fill("%"+keyword+"%"));}
-  const rows=await db.prepare("SELECT id,source_id as sourceId,title,employer,country,region,stream,source_page as sourceUrl,published_at as publishedAt,closing_at as closingAt,first_seen_at as firstSeenAt,last_seen_at as lastSeenAt,review_state as reviewState FROM official_job_notices WHERE "+where.join(" AND ")+" ORDER BY first_seen_at DESC,id ASC LIMIT ? OFFSET ?")
+  if(keyword){where.push("(title LIKE ? OR employer LIKE ? OR region LIKE ? OR jurisdiction_name LIKE ?)");bind.push(...Array(4).fill("%"+keyword+"%"));}
+  const sqlWhere=where.join(" AND ");
+  const rows=await db.prepare("SELECT id,source_id as sourceId,title,employer,country,region,stream,source_page as sourceUrl,published_at as publishedAt,closing_at as closingAt,first_seen_at as firstSeenAt,last_seen_at as lastSeenAt,review_state as reviewState,jurisdiction_code as jurisdictionCode,jurisdiction_name as jurisdiction,government_tier as level,employer_type as employerType FROM official_job_notices WHERE "+sqlWhere+" ORDER BY last_seen_at DESC,id ASC LIMIT ? OFFSET ?")
    .bind(...bind,limit,(page-1)*limit).all();
-  const total=await db.prepare("SELECT COUNT(*) AS total FROM official_job_notices WHERE "+where.join(" AND ")).bind(...bind).first();
-  return json({source:{id:DFE_SOURCE.id,name:DFE_SOURCE.name,licence:DFE_SOURCE.licence,licenceUrl:DFE_SOURCE.licenceUrl,termsUrl:DFE_SOURCE.termsUrl},
-    notices:rows.results||[],total:total?.total||0,page,limit,
-    disclaimer:"Records were retrieved from an official source feed; individual posts, eligibility and closing dates have NOT been independently verified. Check each linked official notice."});
+  const total=await db.prepare("SELECT COUNT(*) AS total FROM official_job_notices WHERE "+sqlWhere).bind(...bind).first();
+  const sources=[
+   {id:DFE_SOURCE.id,name:DFE_SOURCE.name,country:"United Kingdom",jurisdiction:"England",level:"national",employerType:"public_education",licence:DFE_SOURCE.licence,licenceUrl:DFE_SOURCE.licenceUrl,termsUrl:DFE_SOURCE.termsUrl},
+   {id:"manitoba-jobs",name:"Government of Manitoba Job Opportunities",country:"Canada",jurisdiction:"Manitoba",level:"province",employerType:"provincial_government",licence:"Government of Manitoba public RSS; reuse minimal factual fields with attribution",licenceUrl:"https://jobsearch.gov.mb.ca/rssFeeds.action"}
+  ];
+  return json({sources,notices:rows.results||[],total:total?.total||0,page,limit,
+   filters:{source:sourceId,country,jurisdiction,level,stream,keyword},
+   disclaimer:"Government employer and public education sector listings are distinguished. Records were retrieved from an official source feed, but each vacancy, eligibility and closing time must be confirmed on the original authority's site. A date-only closing field is not an exact local-time deadline."});
  }catch(e){console.error(JSON.stringify({event:"official_notices_read_failed",reason:String(e?.message||e)}));return json({error:"temporarily_unavailable",notices:[]},503);}
 }
 export async function serveIngestionStatus(db){
  if(!db)return json({error:"not_configured"},503);
  try{
-  const latest=await db.prepare("SELECT source_id as sourceId,started_at as startedAt,finished_at as finishedAt,state,received,accepted,discarded,error_code as errorCode,details FROM source_ingest_runs ORDER BY finished_at DESC LIMIT 5").all();
+  const latest=await db.prepare("SELECT source_id as sourceId,started_at as startedAt,finished_at as finishedAt,state,received,accepted,discarded,error_code as errorCode,details FROM source_ingest_runs ORDER BY finished_at DESC LIMIT 8").all();
   const c=await db.prepare("SELECT COUNT(*) AS total FROM official_job_notices WHERE life_status='open' AND closing_at>?").bind(new Date().toISOString()).first();
-  return json({source:DFE_SOURCE.name,openImportedNotices:c?.total||0,latest:latest.results||[],status:"official_feed_imports_not_independently_verified"});
+  const bySource=await db.prepare("SELECT source_id AS sourceId,country,jurisdiction_name AS jurisdiction,government_tier AS level,employer_type AS employerType,COUNT(*) AS count FROM official_job_notices WHERE life_status='open' AND closing_at>? GROUP BY source_id,country,jurisdiction_name,government_tier,employer_type").bind(new Date().toISOString()).all();
+  return json({source:"multiple official sources",openImportedNotices:c?.total||0,bySource:bySource.results||[],latest:latest.results||[],status:"official_feed_imports_not_independently_verified"});
  }catch{return json({error:"status_unavailable"},503);}
 }
