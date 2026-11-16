@@ -15,8 +15,10 @@ test('homepage explicitly communicates one founder, private evolving AI workforc
  assert.match(h,/The founder decides what we pursue and build/);
  assert.match(h,/Founder-approved decisions/);
  assert.match(h,/id="our-ai-team"/);
- assert.match(h,/privately controlled AI business OS/i);
- assert.match(h,/methods designed to evolve/i);
+ assert.match(h,/private, self-hostable AI business OS/i);
+ assert.match(h,/adaptable open-weight models/i);
+ assert.match(h,/founder-reviewed feedback/i);
+ assert.match(h,/system can evolve without being locked to one model/i);
  assert.match(h,/The final decision to pursue an idea, build a product or launch a business stays with the founder/i);
  assert.match(h,/HUMAN CONTROL/);
 });
