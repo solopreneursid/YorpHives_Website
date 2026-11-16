@@ -1,0 +1,23 @@
+name: GovRadar checks
+on:
+  push:
+    paths:
+      - 'apps/govexam-radar/**'
+      - '.github/workflows/govexam-radar-ci.yml'
+  pull_request:
+    paths:
+      - 'apps/govexam-radar/**'
+      - '.github/workflows/govexam-radar-ci.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify GovRadar app
+        run: node --test apps/govexam-radar/worker.test.mjs
