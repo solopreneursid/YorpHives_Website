@@ -20,6 +20,7 @@ let pulseEntries=[];
 let pulseIndex=0;
 let latestCatalogItems=[];
 let publishedUsage=null;
+let usageMode='approved';
 const cards={};
 const zones=new Map();
 const observer='IntersectionObserver'in window?new IntersectionObserver(entries=>{
@@ -135,14 +136,14 @@ function showPulse(){
  byId('yh-pulse-number').textContent=String(pulseIndex+1).padStart(2,'0')+' / '+pulseEntries.length;
  byId('yh-pulse-name').textContent=item.name;
  byId('yh-pulse-kind').textContent=item.type==='tool'?'FREE TOOL':'HQVENTURES';
- byId('yh-pulse-label').textContent='MOST USED / LAST 30 DAYS';
- a.title='Open '+item.name;
+ byId('yh-pulse-label').textContent=usageMode==='observed'?'COMPLETED ACTIONS / 30 DAYS':'MOST USED / LAST 30 DAYS';
+ a.title=(usageMode==='observed'?'Observed browser-reported completed actions — not independently verified. Open ':'Open ')+item.name;
 }
 function resetPulse(){
  pulseEntries=[];pulseIndex=0;
  const a=byId('yh-pulse-item');a.href='#impact';a.classList.add('is-placeholder');
  byId('yh-pulse-number').textContent='—';
- byId('yh-pulse-name').textContent='Most-used rankings will appear after verified reporting.';
+ byId('yh-pulse-name').textContent='Live usage collection is starting. Rankings appear after completed tool actions.';
  byId('yh-pulse-kind').textContent='EVIDENCE FIRST';
  byId('yh-pulse-label').textContent='MOST USED / 30 DAYS';
  byId('yh-pulse-toggle').disabled=true;
@@ -163,7 +164,32 @@ function applyUsageSnapshot(data){
  showPulse();
  const toggle=byId('yh-pulse-toggle');toggle.disabled=pulseEntries.length<2;
 }
+
+function applyObservedUsage(rows){
+ const eligible=latestCatalogItems.filter(x=>publicTool(x)||qualifiedProducts([x]).length);
+ const valid=new Map(eligible.map(x=>[x.url,x]));
+ const seen=new Set(),list=[];
+ for(const row of rows){
+  if(!row||typeof row.url!=='string'||seen.has(row.url)||!valid.has(row.url)||
+   !Number.isSafeInteger(row.completedActions)||row.completedActions<1)continue;
+  seen.add(row.url);list.push(valid.get(row.url));
+  if(list.length>=10)break;
+ }
+ if(!list.length){resetPulse();return;}
+ usageMode='observed';
+ pulseEntries=list;pulseIndex=0;showPulse();
+ byId('yh-pulse-toggle').disabled=list.length<2;
+}
 async function refreshUsage(){
+ const observed=await getJson('/api/insights/public');
+ if(observed?.available===true&&observed.schemaVersion===1&&observed.periodDays===30&&
+  observed.usage?.metric==='browser_reported_completed_actions'&&
+  Array.isArray(observed.usage.ranked)){
+  publishedUsage=null;
+  if(observed.usage.ranked.length)applyObservedUsage(observed.usage.ranked);
+  else resetPulse();
+  return;
+ }
  const snapshot=await getJson('usage-public.json');
  if(!approvedUsage(snapshot)){
   publishedUsage=null;

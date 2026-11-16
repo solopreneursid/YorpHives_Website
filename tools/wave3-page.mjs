@@ -55,6 +55,7 @@ form.addEventListener('submit',async event=>{
   if(result.image){visual.src=outputUrl;visual.hidden=false;}
   else if(id==='audio-trimmer'){audioPreview.src=outputUrl;audioPreview.hidden=false;}
   notice(result.summary||'Ready to download.');
+  window.dispatchEvent(new Event('yorphives:tool-completed'));
  }catch(e){if(token===revision)notice(e?.message||'Conversion could not finish.',true);}
  finally{run.disabled=false;}
 });

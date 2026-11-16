@@ -31,6 +31,7 @@ form.addEventListener('submit',async event=>{
   if(output.image){preview.src=url;preview.hidden=false;}
   if(output.text!==undefined){textArea.value=output.text;textWrap.hidden=false;copy.hidden=false;}
   result.hidden=false;message(output.summary||'Your output is ready.');
+  window.dispatchEvent(new Event('yorphives:tool-completed'));
  }catch(error){if(token===revision)message(error?.message||'This tool could not finish processing.',true);}
  finally{run.disabled=false;}
 });

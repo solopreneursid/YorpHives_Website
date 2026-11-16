@@ -49,6 +49,16 @@ for(const file of ['index.html','app.js','style.css','next.css','next-responsive
  await cp(resolve(root,file),resolve(dest,file));
 // Keep private or unqualified catalog candidates out of public static assets.
 await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
+// One first-party analytics client for the marketing site and published tools.
+await cp(resolve(root,'insights-client.mjs'),resolve(dest,'insights-client.mjs'));
+
+// Only the analytics API invokes Pages Functions. All static pages and tool
+// assets bypass function compute and retain free static asset delivery.
+await write('_routes.json',JSON.stringify({
+ version:1,include:['/api/insights/*'],exclude:[]
+},null,2)+'\n');
+
+
 const roots=new Set(['tools',...published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0])]);
 for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory()).catch(()=>false))
  await cp(resolve(root,dir),resolve(dest,dir),{recursive:true});
@@ -156,7 +166,10 @@ for(const item of published){
   entity
  ];
  html=injectHead(html,metadata(url,graph));
- html=injectSiteSupport(html,path);
+ html=injectSiteSupport(html,path)
+  if(path.startsWith('tools/')&&path.endsWith('index.html')&&path!=='tools/index.html'){
+   html=html.replace('</body>','<script type="module" src="../../insights-client.mjs"></script></body>');
+  };
  html=injectToolSuite(html,item);
  html=injectNextToolUI(html,item);
  await write(path,html);
@@ -264,6 +277,7 @@ if(target==='preview'){
  await cp(resolve(root,'review/browser-interaction.mjs'),resolve(dest,'browser-interaction.mjs'));
  await cp(resolve(root,'review/next-ui-qa.mjs'),resolve(dest,'next-ui-qa.mjs'));
  await cp(resolve(root,'review/next-word-tool-qa.mjs'),resolve(dest,'next-word-tool-qa.mjs'));
+ await cp(resolve(root,'review/insights-e2e.mjs'),resolve(dest,'insights-e2e.mjs'));
  await cp(resolve(root,'review/library-qa.mjs'),resolve(dest,'library-qa.mjs'));
  await cp(resolve(root,'review/wave1-qa.mjs'),resolve(dest,'wave1-qa.mjs'));
  await cp(resolve(root,'review/wave1-ui-qa.mjs'),resolve(dest,'wave1-ui-qa.mjs'));
@@ -318,6 +332,7 @@ async function publishReimaginedRoot(prefix=''){
   await cp(resolve(root,'reimagined',asset),resolve(dest,prefix+asset));
  // Browser fixture is isolated to preview acceptance; never ship it on production root.
  if(prefix)await cp(resolve(root,'reimagined/catalog-sync-qa.mjs'),resolve(dest,prefix+'catalog-sync-qa.mjs'));
+ if(prefix)await cp(resolve(root,'reimagined/insights-qa.mjs'),resolve(dest,prefix+'insights-qa.mjs'));
 
  const source=await readFile(resolve(root,'reimagined/index.html'),'utf8');
  let homepage=source.replace(

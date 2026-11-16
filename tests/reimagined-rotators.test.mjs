@@ -51,7 +51,7 @@ test('YHpulse publishes no fake most-used list without founder-approved verified
  assert.equal(data.publication.periodDays,30);
  assert.deepEqual(data.ranked,[]);
  const [html,js]=await Promise.all([read('reimagined/index.html'),read('reimagined/rotators.js')]);
- assert.match(html,/Most-used rankings will appear after verified reporting/);
+ assert.match(html,/Rankings appear after completed tool actions are recorded./);
  assert.match(html,/id="yh-pulse-toggle"[^>]+disabled/);
  assert.match(js,/data\.ranked\.length<=10/);
  assert.match(js,/p\.approvedByFounder===true/);

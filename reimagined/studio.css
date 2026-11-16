@@ -75,3 +75,16 @@
  .topbar .logo>span{font-size:17px}
  .kofi-support{min-width:84px;width:84px}
 }
+
+
+/* Privacy settings belong in the footer, not a blocking banner. */
+.analytics-choice{background:transparent;border:1px solid currentColor;border-radius:9px;
+ color:inherit;min-height:36px;padding:7px 11px;font:inherit;font-size:11px;
+ cursor:pointer;opacity:.85;transition:opacity .2s,border-color .2s}
+.analytics-choice:hover,.analytics-choice:focus-visible{opacity:1;border-color:#7be7ad}
+.analytics-choice:disabled{opacity:.5;cursor:not-allowed}
+.impact-privacy-note{font-size:12px;line-height:1.65;max-width:780px;margin:16px 0 0;
+ color:#638277}
+.impact-privacy-note a{color:#126d48;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:460px){.analytics-choice{font-size:10px;padding:6px 8px}
+ .impact-privacy-note{font-size:11px}}
