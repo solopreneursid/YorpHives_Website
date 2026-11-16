@@ -36,3 +36,9 @@ CREATE TABLE IF NOT EXISTS source_ingest_runs(
  details TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS ingest_runs_source ON source_ingest_runs(source_id,finished_at DESC);
+CREATE TABLE IF NOT EXISTS source_feed_cursors (
+ source_id TEXT PRIMARY KEY,
+ next_page INTEGER NOT NULL DEFAULT 1,
+ last_total_pages INTEGER NOT NULL DEFAULT 1,
+ last_success_at INTEGER
+);
