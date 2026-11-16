@@ -60,5 +60,8 @@ jobs:
           curl --fail --show-error --silent --max-time 25 https://hqventures-govexam-radar.solopreneursid-proy.workers.dev/full.css | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{if(s.length<20000||!s.includes(".bg-indigo-600"))process.exit(1);console.log("Self-hosted production CSS verified",s.length);})'
           curl --fail --show-error --silent --max-time 25 https://hqventures-govexam-radar.solopreneursid-proy.workers.dev/ | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{if(!s.includes("Research Preview")||!s.includes("/enhance.js"))process.exit(1);console.log("Six-tab full release HTML verified");})'
 
+      - name: One-shot official DfE feed compatibility probe (read-only)
+        run: node apps/govexam-radar/probe-dfe.mjs
+
       - name: Verify D1 community API on isolated preview
         run: node apps/govexam-radar/community-smoke.mjs
