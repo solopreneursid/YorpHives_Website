@@ -34,12 +34,12 @@
   });
   window.addEventListener('resize',()=>{if(innerWidth>760&&!menuPanel.hidden)closeMenu();});
 
-  const subpages = new Set(['post','opportunities','membership','partners']);
+  const subpages = new Set(['post','opportunities','membership','partners','how-it-works']);
   function route() {
     let hash=location.hash.slice(1);
     try{hash=decodeURIComponent(hash);}catch{hash='home';}
     const subpage=subpages.has(hash);
-    const active=subpage?'builders':Object.hasOwn(names,hash)?hash:'home';
+    const active=hash==='how-it-works'?'home':subpage?'builders':Object.hasOwn(names,hash)?hash:'home';
     pages.forEach(page=>{page.hidden=page.id!==active;});
     document.querySelectorAll('[data-nav]').forEach(link=>{
       if(link.dataset.nav===active)link.setAttribute('aria-current','page');
@@ -61,6 +61,16 @@
     event.preventDefault();document.getElementById('main').focus();
   });
   document.getElementById('current-year').textContent=String(new Date().getFullYear());
+  // Keep the live site's direct invitation to suggest a useful free tool.
+  // Only preselects the enquiry topic; the visitor still reviews their email.
+  document.querySelectorAll('[data-contact-reason]').forEach(link=>{
+    link.addEventListener('click',()=>{
+      const selector=document.getElementById('project-type');
+      const value=link.getAttribute('data-contact-reason');
+      if(selector && [...selector.options].some(option=>option.value===value))selector.value=value;
+    });
+  });
+
 
   // Founder-controlled contact: nothing leaves the browser until the visitor
   // reviews and sends their prepared message from their email app.
