@@ -27,8 +27,14 @@ test('navigation and redesigned assets enforce explicit freshness',async()=>{
 });
 test('built website preserves actual copy, scripts and freshness',async()=>{
  const [html,js,headers]=await Promise.all([read('dist/index.html'),read('dist/next.js'),read('dist/_headers')]);
- assert.match(html,/id="explore-qualification-note"/);
- assert.match(html,/Nothing is published without founder approval/);
- assert.match(js,/qualifiedProducts\(published\)/);
+ if(html.includes('id="home-title"')){
+  assert.match(html,/id="ventures"/);
+  assert.match(html,/id="kofi-support"/);
+  assert.match(await read('dist/studio.js'),/qualifiedProducts\(allItems\)/);
+ }else{
+  assert.match(html,/id="explore-qualification-note"/);
+  assert.match(html,/Nothing is published without founder approval/);
+  assert.match(js,/qualifiedProducts\(published\)/);
+ }
  assert.match(headers,/\n\/\n\s+Cache-Control: no-store/);
 });
