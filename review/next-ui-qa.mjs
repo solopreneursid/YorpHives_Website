@@ -45,6 +45,14 @@ try{
  location.hash='#builders';
  await wait(()=>!document.getElementById('builders').hidden);
  check(document.querySelector('.mobile-dock [data-nav="builders"]')?.getAttribute('aria-current')==='page','builders navigation');
+ location.hash='#how-it-works';
+ await wait(()=>!document.getElementById('home').hidden);
+ check(document.querySelector('.mobile-dock [data-nav="home"]')?.getAttribute('aria-current')==='page','how-it-works resolves to home');
+ check(!!document.getElementById('our-ai-team')?.querySelector('.os-founder'),'founder and AI team panel');
+ location.hash='#projects-collection';
+ await wait(()=>!document.getElementById('explore').hidden);
+ check(document.querySelector('.mobile-dock [data-nav="explore"]')?.getAttribute('aria-current')==='page','project collection deep link resolves to Explore');
+ check(!!document.getElementById('explore-process-title'),'Explore provenance process is visible');
  location.hash=originalHash||'#home';
  check(document.documentElement.scrollWidth<=innerWidth+2,'no document overflow');
  status.dataset.status='passed';
