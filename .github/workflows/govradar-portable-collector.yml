@@ -11,6 +11,11 @@ on:
         type: boolean
   schedule:
     - cron: '55 */3 * * *'
+  push:
+    branches:
+      - feat/govradar-phase1-sources-20261116
+    paths:
+      - '.github/workflows/govradar-portable-collector.yml'
   pull_request:
     paths:
       - 'apps/govexam-radar/**'
@@ -35,6 +40,21 @@ jobs:
         env:
           GOVRADAR_COLLECTOR_TARGET: https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev
         run: node apps/govexam-radar/collector-client.mjs --dry-run
+      # One-shot trusted-branch staging proof, removed immediately after completion.
+      - name: One-time signed atomic audit verification
+        if: >-
+          github.event_name == 'push' &&
+          github.ref == 'refs/heads/feat/govradar-phase1-sources-20261116' &&
+          github.event.head_commit.message == 'test(govradar): one-time atomic claim signed staging'
+        env:
+          GOVRADAR_COLLECTOR_KEY: ${{ secrets.GOVRADAR_COLLECTOR_KEY }}
+          GOVRADAR_COLLECTOR_TARGET: https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev
+        run: |
+          if [ -z "${GOVRADAR_COLLECTOR_KEY}" ]; then
+            echo "Protected repository collector secret is unavailable."
+            exit 1
+          fi
+          node --input-type=module -e 'import {collectOnce} from "./apps/govexam-radar/collector-client.mjs";const out=await collectOnce({target:process.env.GOVRADAR_COLLECTOR_TARGET,source:"manitoba",key:process.env.GOVRADAR_COLLECTOR_KEY,dryRun:false,now:Date.now()+10800000});if(out[0]?.state!=="published")process.exit(1);console.log(JSON.stringify({test:"signed_audit_commit",status:out[0].state,accepted:out[0].accepted}));'
       - name: Signed publish — only scheduled or founder manual approval
         if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.publish == true)
         env:
