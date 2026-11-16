@@ -36,6 +36,7 @@ form.addEventListener('submit',async event=>{
     if(value.image){image.src=blobUrl;image.hidden=false;}
     if(value.text!==undefined){output.value=value.text;output.closest('label').hidden=false;copy.hidden=false;}
     result.hidden=false;message(value.summary);
+    window.dispatchEvent(new Event('yorphives:tool-completed'));
   }catch(error){if(token===revision)message(error?.message||'Could not process the selected file.',true);}
   finally{button.disabled=false;}
 });
