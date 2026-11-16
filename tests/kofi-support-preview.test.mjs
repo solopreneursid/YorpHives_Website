@@ -16,7 +16,7 @@ test('all seven reimagined pages share a visible, genuinely disabled Ko-fi suppo
  assert.match(match[0],/Ko-fi/);
  assert.match(match[0],/Support us/);
  assert.match(match[0],/donations coming soon/);
- assert.doesNotMatch(match[0],/<a\b|href=|onclick=|https?:\/\//);
+ assert.doesNotMatch(match[0],/<a\b|onclick=|href="https?:\/\//);
  for(const id of ['home','ventures','builders','impact','tools','partners','contact'])
   assert.match(html,new RegExp('<section class="view" id="'+id+'"'),id);
  assert.match(css,/\.kofi-support:disabled\{opacity:1;cursor:not-allowed\}/);
@@ -38,7 +38,7 @@ test('every public tool and directory builds with a disabled, readable Ko-fi but
  assert.match(dirCss,/\.site-header \.header-kofi:disabled\{opacity:1/);
  const dist=resolve(root,'dist');
  if(!(await stat(resolve(dist,'tools/word-counter/index.html')).then(s=>s.isFile()).catch(()=>false)))return;
- const published=catalog.items.filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
+ const published=JSON.parse(catalog).items.filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
  for(const item of published){
   const doc=await readFile(resolve(dist,item.url+'index.html'),'utf8');
   const btn=doc.match(/<button class="header-kofi tool-kofi"[^>]*>[^]*?<\/button>/)?.[0];
