@@ -33,7 +33,7 @@
   :root{--radius:17px}
   html{scroll-padding-top:75px}
   html,body{max-width:100%;overflow-x:clip}
-  body{padding-bottom:calc(73px + env(safe-area-inset-bottom,0px))}
+  body{padding-bottom:0}.site-footer{padding-bottom:calc(73px + env(safe-area-inset-bottom,0px))}
   .shell{width:calc(100% - 2 * clamp(16px,4.6vw,26px))}
   .site-header{min-height:65px;height:65px;padding:0 clamp(16px,4.6vw,26px);gap:12px}
   .brand img{height:35px;width:35px}.brand-word{font-size:19px}.brand-word small{font-size:6px;margin-top:5px}
