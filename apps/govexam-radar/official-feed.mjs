@@ -1,5 +1,6 @@
 // GovRadar government recruitment feed adapter, source-bound and portable SQLite/D1.
 import { INDIA_EMPLOYMENT_NEWS } from "./india-employment-news.mjs";
+import {OFFICIAL_SOURCE_RIGHTS} from "./source-rights.mjs";
 // First supported adapter: UK Department for Education Teaching Vacancies (OGL v3).
 // Source: https://teaching-vacancies.service.gov.uk/api/v1/jobs.json
 // Licence: https://teaching-vacancies.service.gov.uk/pages/terms-and-conditions
@@ -227,11 +228,16 @@ export async function serveOfficialNotices(db,params){
   const rows=await db.prepare("SELECT id,source_id as sourceId,title,employer,country,region,stream,source_page as sourceUrl,published_at as publishedAt,closing_at as closingAt,first_seen_at as firstSeenAt,last_seen_at as lastSeenAt,review_state as reviewState,jurisdiction_code as jurisdictionCode,jurisdiction_name as jurisdiction,government_tier as level,employer_type as employerType FROM official_job_notices WHERE "+sqlWhere+" ORDER BY last_seen_at DESC,id ASC LIMIT ? OFFSET ?")
    .bind(...bind,limit,(page-1)*limit).all();
   const total=await db.prepare("SELECT COUNT(*) AS total FROM official_job_notices WHERE "+sqlWhere).bind(...bind).first();
-  const sources=[
-   {id:DFE_SOURCE.id,name:DFE_SOURCE.name,country:"United Kingdom",jurisdiction:"England",level:"national",employerType:"public_education",licence:DFE_SOURCE.licence,licenceUrl:DFE_SOURCE.licenceUrl,termsUrl:DFE_SOURCE.termsUrl},
-   {id:"manitoba-jobs",name:"Government of Manitoba Job Opportunities",country:"Canada",jurisdiction:"Manitoba",level:"province",employerType:"provincial_government",licence:"Government of Manitoba public RSS; reuse minimal factual fields with attribution",licenceUrl:"https://jobsearch.gov.mb.ca/rssFeeds.action"},
-    {id:INDIA_EMPLOYMENT_NEWS.id,name:INDIA_EMPLOYMENT_NEWS.name,country:"India",jurisdiction:"India",level:"unclassified",employerType:"government_recruitment_digest",licence:"Commercial republication permission not established; no India import is enabled. Link to official Employment News source only",licenceUrl:INDIA_EMPLOYMENT_NEWS.url}
-  ];
+  // Rights must be scoped to each source; OGL covers only the UK DfE data.
+  // A public RSS endpoint is not evidence of unrestricted commercial reuse.
+  const sources=OFFICIAL_SOURCE_RIGHTS.map(rights=>{
+   if(rights.id===DFE_SOURCE.id)return{...rights,name:DFE_SOURCE.name,country:"United Kingdom",
+    jurisdiction:"England",level:"national",employerType:"public_education"};
+   if(rights.id==="manitoba-jobs")return{...rights,name:"Government of Manitoba Job Opportunities",
+    country:"Canada",jurisdiction:"Manitoba",level:"province",employerType:"provincial_government"};
+   return{...rights,name:INDIA_EMPLOYMENT_NEWS.name,country:"India",jurisdiction:"India",
+    level:"unclassified",employerType:"government_recruitment_digest"};
+  });
   return json({sources,notices:rows.results||[],total:total?.total||0,page,limit,
    filters:{source:sourceId,country,jurisdiction,level,stream,keyword},
    disclaimer:"Government employer and public education sector listings are distinguished. Records were retrieved from an official source feed, but each vacancy, eligibility and closing time must be confirmed on the original authority's site. An India Employment News row is a government-published summary index, not an independently verified employer vacancy or direct application link. A date-only closing field is not an exact local-time deadline."});
