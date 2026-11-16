@@ -14,6 +14,7 @@ test("full original six-tab experience and separate simple interface",async()=>{
     assert.match(lite.headers.get("Content-Security-Policy"),/script-src 'self'/);
   });
 test("assets, manifest, PWA and service worker are served",async()=>{for(const path of ["/app.css","/app.js","/icon.svg","/manifest.webmanifest","/sw.js"]){const r=await request(path);assert.equal(r.status,200,path);assert.ok((await r.text()).length>40,path);}});
+test("self-hosted full CSS is served",async()=>{const r=await request("/full.css");assert.equal(r.status,200);assert.match(await r.text(),/\.bg-indigo-600/);});
 test("browser enhancements are independently served",async()=>{const r=await request("/enhance.js");assert.equal(r.status,200);const js=await r.text();assert.match(js,/runFeedSync/);assert.match(js,/handleCommunityLogin/);});
 test("public OpenAPI contract is machine readable",async()=>{const r=await request("/openapi.json");assert.equal(r.status,200);const spec=await r.json();assert.equal(spec.openapi,"3.1.0");assert.ok(spec.paths["/api/catalog"]);});
 test("unsafe paths and methods are rejected",async()=>{assert.equal((await request("/api/check?id=https://evil.invalid")).status,404);assert.equal((await request("/does-not-exist")).status,404);assert.equal((await request("/api/catalog","POST")).status,405);});
