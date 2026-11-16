@@ -113,3 +113,14 @@ The Worker Free plan has request and CPU caps; zero cost applies **within free-t
 ### Release boundary
 
 This remains an isolated Cloudflare staging Worker plus a **draft GitHub pull request**. The main branch and `yorphives.com` have not been modified by this phase. Stay within Cloudflare's free-tier request/D1 allowances or migrate the portable runtime to the owner's server.
+
+
+## Phase 1 source automation pilot — 16 November 2026
+
+- The staging Worker has three explicitly configured schedules: source-site reachability (`0 */3 * * *`), the DfE jobs JSON page reader (`20 */3 * * *`), and the Manitoba civil-service RSS reader (`40 */3 * * *`). A scheduler being configured is **not** proof of successful unattended import.
+- The first scheduled UK and Manitoba attempts both recorded `network_error` from the Worker. The bounded, same-official-host redirect/retry fixes are now deployed to the **isolated preview**, but recurrence after the fixes must still be demonstrated by successful source-specific D1 audits.
+- `GET /api/ingestion-status` now returns `automation.observedForAllSources` and `automation.healthy`, excluding `bootstrap-*` one-time imports. The frontend does not call a bootstrap or failed fetch a healthy live sync.
+- A new adapter can read only minimal date-labeled entries from India's official Employment News index. Its read-only government site probe returned HTTP 200 and parsed two future-closing summaries from the current snapshot. Because prior written permission for commercial republication has **not** been established, the **India importer is deliberately not scheduled or bootstrapped**. Never claim its listings are available in GovRadar before that changes.
+- Consult `PHASE1_RELEASE_GATE.md` for the evidence, policy review and remaining release conditions. Prefer officially reusable open datasets under India's Government Open Data License or direct authorized recruitment feeds rather than assuming all official websites grant commercial republication rights.
+- Keep deployment portable: the modules use standard Fetch APIs and SQLite-compatible D1 SQL; any fallback collector must remain first-party and independently verified. No production YorpHives website deployment was made.
+
