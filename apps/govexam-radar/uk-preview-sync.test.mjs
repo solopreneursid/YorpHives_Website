@@ -31,6 +31,8 @@ test("SQL has <=84 bound variables and only UK fields in each batch",()=>{
  const batch=makeUkMirrorInsert([row("uk-1"),row("uk-2"),row("uk-3"),row("uk-4")]);
  assert.match(batch.sql,/INSERT INTO official_job_notices/);
  assert.match(batch.sql,/ON CONFLICT\(id\) DO UPDATE SET/);
+ assert.match(batch.sql,/withdrawn_confirmed/);
+ assert.match(batch.sql,/excluded\.last_seen_at<=official_job_notices\.last_seen_at/);
  assert.equal(batch.params.length,4*UK_MIRROR_COLUMNS.length);
  assert.equal(batch.params.length,84);
  assert.ok(batch.sql.includes("source_id"));
