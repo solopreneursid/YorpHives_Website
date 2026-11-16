@@ -52,6 +52,13 @@ await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
 // One first-party analytics client for the marketing site and published tools.
 await cp(resolve(root,'insights-client.mjs'),resolve(dest,'insights-client.mjs'));
 
+// Only the analytics API invokes Pages Functions. All static pages and tool
+// assets bypass function compute and retain free static asset delivery.
+await write('_routes.json',JSON.stringify({
+ version:1,include:['/api/insights/*'],exclude:[]
+},null,2)+'\n');
+
+
 const roots=new Set(['tools',...published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0])]);
 for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory()).catch(()=>false))
  await cp(resolve(root,dir),resolve(dest,dir),{recursive:true});
