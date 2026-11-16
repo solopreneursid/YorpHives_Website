@@ -153,7 +153,18 @@ jobs:
             throw Error('Extra routes exposed in OpenAPI');
           const denied=await fetch(origin+'/api/collector/ingest',{method:'POST',body:'{}'});
           if(denied.status!==405)throw Error('Write method unexpectedly accepted');
-          console.log('UK-only isolated Worker verified: UK notices',data.total,'zero exposed write/research routes, noindex enabled');
+          const freshnessResponse=await fetch(origin+'/api/freshness',{cache:'no-store'});
+          if(freshnessResponse.status!==200||freshnessResponse.headers.get('cache-control')!=='no-store')
+            throw Error('UK mirror freshness endpoint unavailable');
+          const freshness=await freshnessResponse.json();
+          if(!['pending','current','delayed','unavailable'].includes(freshness.status)||
+             typeof freshness.fresh!=='boolean'||freshness.publicLaunchAuthorized!==false||
+             JSON.stringify(freshness).includes('database_id')||JSON.stringify(freshness).includes('error_code'))
+            throw Error('UK mirror freshness disclosure unsafe');
+          const script=await dict['/release-preview.js'].text();
+          if(!script.includes('/api/freshness')||!landing.includes('id="preview-freshness"'))
+            throw Error('UK mirror freshness not visible in preview');
+          console.log('UK-only isolated Worker verified: UK notices',data.total,'freshness',freshness.status,'zero write/research routes');
           NODE
 
       - name: Verify D1 community API on isolated preview
