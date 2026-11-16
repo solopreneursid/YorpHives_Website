@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {checkUkMirrorRow,makeUkMirrorInsert,reconcileMirrorIds,syncUkPreview,
- UK_MIRROR_COLUMNS,UK_SOURCE} from "./uk-preview-sync.mjs";
+ UK_MIRROR_COLUMNS,UK_SOURCE,parseMirrorArgs} from "./uk-preview-sync.mjs";
 const src="b1f499a6-283b-47e8-8cd7-ef2b5f7245bc";
 const dst="c5e0b548-528c-4698-a172-a527abf68e27";
 const acct="69234e51e08d8013980a7ff869746609";
@@ -95,4 +95,12 @@ test("explicit approved snapshot update uses bounded owner-controlled D1 only, w
  assert.equal(mutations[0].path.includes(dst),true);
  assert.equal(mutations[0].body.params.length,42);
  assert.ok(calls.every(c=>!c.body?.sql?.includes("DELETE")));
+});
+
+test("mirror CLI flags default to read-only and cannot accidentally apply",()=>{
+ assert.deepEqual(parseMirrorArgs([]),{apply:false});
+ assert.deepEqual(parseMirrorArgs(["--dry-run"]),{apply:false});
+ assert.deepEqual(parseMirrorArgs(["--apply"]),{apply:true});
+ for(const args of [["--apply","--dry-run"],["--bad"],["node","--apply"],["--apply","--apply"]])
+  assert.throws(()=>parseMirrorArgs(args),/unknown_or_conflicting_sync_option/);
 });
