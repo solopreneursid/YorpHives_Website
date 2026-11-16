@@ -56,9 +56,12 @@ try{
  check(catPause.getAttribute('aria-pressed')==='true','category animation pause control');
  catPause.click();
  check(catPause.getAttribute('aria-pressed')==='false','category animation resume control');
+ check(getComputedStyle(document.querySelector('#category-ribbon-track')).animationName==='rail-drift','category motion resumes after touching pause button');
  const pulsePause=document.querySelector('#home [data-motion-toggle="pulse"]');
  pulsePause.click();
+ check(getComputedStyle(document.querySelector('#home-pulse-viewport .pulse-track')).animationName==='pulse-scroll','YHpulse resumes after touch');
  check(pulsePause.getAttribute('aria-pressed')==='true','YHpulse pause control');
+ check(getComputedStyle(document.querySelector('#home-pulse-viewport .pulse-track')).animationName==='none','YHpulse stops on pause');
  pulsePause.click();
  location.hash='#projects-collection';
  await wait(()=>!document.getElementById('explore').hidden);
