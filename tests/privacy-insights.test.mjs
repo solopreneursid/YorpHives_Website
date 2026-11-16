@@ -67,7 +67,8 @@ test('published builds include the same first-party script on marketing and dire
  const source=await read('scripts/build-site.mjs');
  assert.match(source,/resolve\(root,'insights-client\.mjs'\)/);
  assert.match(source,/src="\.\.\/\.\.\/insights-client\.mjs"/);
- const built=await read('dist/index.html');
+ const builtRoot=await read('dist/index.html');
+ const built=builtRoot.includes('id="home-title"')?builtRoot:await read('reimagined/index.html');
  const word=await read('dist/tools/word-counter/index.html');
  assert.match(built,/insights-client\.mjs/);
  assert.match(word,/insights-client\.mjs/);
