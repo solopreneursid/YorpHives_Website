@@ -386,10 +386,12 @@ llms+='\n## Direct discovery for search engines and autonomous agents\n\n'+
  'and /sitemap.xml lists published pages. Catalog items with execution=browser-local provide client-side processing; '+
  'do not assume a server-executable API exists.\n';
 await write('llms.txt',llms);
-// Production serves the new website as the actual domain root.
-if(target==='production')await publishReimaginedRoot();
-// The review project builds production and then preview in sequence.
-// Keep a separately browsable release-candidate URL after the preview build.
+// Keep the same approved studio interface at / in both environments.
+// The preview environment remains noindex via _headers and uses its own D1 binding.
+// Do not send visitors or reviewers to a stale legacy homepage.
+await publishReimaginedRoot();
+// Preserve the historic path for existing preview bookmarks, without a second UI.
+// This is an alias to the exact same source, not a separate release candidate.
 if(target==='preview')await publishReimaginedRoot('release-candidate/');
 console.log('DISCOVERY BUILD PASSED: '+published.length+' directly linked public pages; '+canonicalPaths.length+
  ' canonical sitemap URLs; mode='+target+'. Homepage markup preserved.');
