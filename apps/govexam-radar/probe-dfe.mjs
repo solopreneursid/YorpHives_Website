@@ -1,4 +1,3 @@
-import {createHash} from "node:crypto";
 import { parseOfficialFeed } from "./official-feed.mjs";
 // One-shot, read-only official UK DfE API compatibility probe.
 // Diagnostic only: does not publish, cache or store vacancies.
@@ -27,14 +26,6 @@ try{
   const normalized=parseOfficialFeed(data);
   console.log("REAL_OFFICIAL_RECORD_VALIDATION "+JSON.stringify({received:normalized.received,accepted:normalized.valid.length,rejected:normalized.rejected,totalPages:normalized.totalPages,firstValidFields:normalized.valid[0]?Object.keys(normalized.valid[0]):[]}));
   if(normalized.received && normalized.valid.length===0)process.exitCode=1;
-  // One-off bootstrap snapshot: licensed official public notice data, no applicant records.
-  const digest=x=>createHash("sha256").update(x).digest("hex");
-  const seed=normalized.valid.map(x=>({
-    id:"uk-dfe-teaching-vacancies:"+digest(x.sourceRef).slice(0,32),
-    ...x,
-    evidenceSha256:digest(JSON.stringify([x.sourceRef,x.title,x.employer,x.closingAt,x.region,x.publishedAt]))
-  }));
-  console.log("GOVRADAR_BOOTSTRAP_DATA="+JSON.stringify({at:new Date().toISOString(),totalPages:normalized.totalPages,records:seed}));
 
  }catch(e){console.log("FEED_SCHEMA_ERROR",String(e?.message||e));process.exitCode=1;}
 }catch(e){console.log("FEED_PROBE_ERROR",String(e?.message||e).slice(0,300));}finally{clearTimeout(timer);}
