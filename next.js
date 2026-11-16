@@ -304,7 +304,7 @@
   const featuredSlugs=['word-counter','pdf-merge','image-resizer','json-formatter','qr-code-generator','password-generator'];
   function renderHomeTools(items){
     // Only genuine published, locally executable catalog tools appear here.
-    const safe=items.filter(item=>/^tools\\/[a-z0-9][a-z0-9-]*\\/$/.test(item.url));
+    const safe=items.filter(item=>/^tools\/[a-z0-9][a-z0-9-]*\/$/.test(item.url));
     const curated=featuredSlugs.map(slug=>safe.find(t=>t.url==='tools/'+slug+'/')).filter(Boolean);
     const pool=curated.concat(safe.filter(t=>!curated.includes(t))).slice(0,6);
     const nodes=pool.map(item=>{
@@ -335,7 +335,7 @@
     const title=document.createElement('strong');title.textContent=item.name;
     const desc=document.createElement('small');desc.textContent=item.description;
     container.append(badge,title,desc);
-    if(/^(?:products|apps)\\/[a-z0-9][a-z0-9-]*\\/$/.test(String(item.url||''))){
+    if(/^(?:products|apps)\/[a-z0-9][a-z0-9-]*\/$/.test(String(item.url||''))){
       const link=document.createElement('a');link.href=item.url;link.textContent='Open project ↗';container.append(link);
     }
     const icon=document.createElement('div');icon.className='project-abstract';icon.setAttribute('aria-hidden','true');
