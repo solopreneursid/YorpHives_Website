@@ -238,3 +238,28 @@ $('contact-form').addEventListener('submit',e=>{
 
 await loadCatalog();
 await Promise.all([loadImpact(),loadActivity()]);
+
+/* First-party aggregate reporting; browser-tab sessions are not unique people.
+ * Never infer revenue, partner counts, or historical traffic from session counts.
+ */
+async function loadRealInsights(){
+ try{
+  const response=await fetch('/api/insights/public',{cache:'no-store'});
+  if(!response.ok)return;
+  const data=await response.json();
+  if(data?.schemaVersion!==1||data.available!==true||data.periodDays!==30)return;
+  const count=data.traffic?.estimatedSessions30d;
+  const views=data.traffic?.pageViews30d;
+  if(validCount(count)){
+   $('impact-visitors').textContent=number(count);
+   $('impact-visitors-note').textContent='Anonymous browser-tab sessions · 30 days'+
+    (validCount(views)?' · '+number(views)+' page views':'');
+  }
+  if(typeof data.generatedAt==='string'&&Number.isFinite(Date.parse(data.generatedAt)))
+   $('impact-last-reviewed').textContent='First-party activity · updated '+
+    new Date(data.generatedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'});
+ }catch{/* Analytics failure must not affect the main website. */}
+}
+await loadRealInsights();
+window.setInterval(()=>{if(!document.hidden)void loadRealInsights()},300_000);
+window.addEventListener('focus',()=>{if(!document.hidden)void loadRealInsights()});
