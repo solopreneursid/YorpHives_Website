@@ -18,3 +18,5 @@ test("self-hosted full CSS is served",async()=>{const r=await request("/full.css
 test("browser enhancements are independently served",async()=>{const r=await request("/enhance.js");assert.equal(r.status,200);const js=await r.text();assert.match(js,/runFeedSync/);assert.match(js,/handleCommunityLogin/);});
 test("public OpenAPI contract is machine readable",async()=>{const r=await request("/openapi.json");assert.equal(r.status,200);const spec=await r.json();assert.equal(spec.openapi,"3.1.0");assert.ok(spec.paths["/api/catalog"]);});
 test("unsafe paths and methods are rejected",async()=>{assert.equal((await request("/api/check?id=https://evil.invalid")).status,404);assert.equal((await request("/does-not-exist")).status,404);assert.equal((await request("/api/catalog","POST")).status,405);});
+
+test("source status endpoint does not fake checks when binding is missing",async()=>{const r=await request("/api/source-status");assert.equal(r.status,503);const x=await r.json();assert.equal(x.error,"not_configured");});
