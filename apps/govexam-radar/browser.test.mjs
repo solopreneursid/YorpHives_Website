@@ -446,3 +446,31 @@ test("opportunity cards show truthful source evidence, compact actions and saved
   assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });
+
+test("mobile quick country, stream and region filters share original search state",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:812}});
+ const errors=[];page.on("pageerror",e=>errors.push(e.message));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#exam-cards-grid article").first().waitFor();
+  assert.ok((await page.locator("#discovery-country-chips button").count())>=5);
+  await page.locator('[data-quick-country="India"]').click();
+  assert.equal(await page.locator('[data-quick-country="India"]').getAttribute("aria-pressed"),"true");
+  const india=await page.locator("#exam-cards-grid .govradar-card-location").allTextContents();
+  assert.ok(india.length>0);
+  assert.ok(india.every(x=>x.includes("India")),JSON.stringify(india));
+  await page.locator('[data-quick-stream="Technical"]').click();
+  assert.equal(await page.locator('[data-quick-stream="Technical"]').getAttribute("aria-pressed"),"true");
+  const cards=await page.locator("#exam-cards-grid article").count();
+  assert.ok(cards>0);
+  const types=await page.locator("#exam-cards-grid .govradar-card-tags").allTextContents();
+  assert.ok(types.every(x=>x.includes("Technical")));
+  assert.ok((await page.locator("#discovery-region-quick option").count())>=2);
+  await page.locator("#discovery-clear-quick").click();
+  assert.equal(await page.locator('[data-quick-stream="ALL"]').getAttribute("aria-pressed"),"true");
+  assert.equal(await page.locator('[data-quick-country="ALL"]').getAttribute("aria-pressed"),"true");
+  await page.locator("#exam-cards-grid .govradar-details-button").first().click();
+  assert.match(await page.locator("#modal-body").textContent(),/Research lead · not independently verified/);
+  assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
