@@ -97,7 +97,8 @@ test("saved UK search remains private to a browser and survives reload",async()=
   const stored=await page.evaluate(()=>localStorage.getItem("govradar-uk-saved-search-v1"));
   assert.deepEqual(JSON.parse(stored),{version:1,term:"mathematics",stream:"Non-technical"});
   await page.locator("#clear-saved-search").click();
-  assert.equal(await page.evaluate(()=>localStorage.length),0);
+  assert.equal(await page.evaluate(()=>localStorage.getItem("govradar-uk-saved-search-v1")),null);
+  assert.ok(await page.evaluate(()=>localStorage.getItem("govradar-uk-viewed-notices-v1")),"removing a saved search must not erase separately stored viewed-listing history");
   assert.equal(await page.locator("#use-saved-search").isDisabled(),true);
  }finally{await context.close();}
 });
