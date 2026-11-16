@@ -43,7 +43,7 @@ test('SEO publishing preserves homepage markup outside the generated YHpulse fee
    assert.ok(i>=0&&j>i,'YHpulse markers must exist once');
    assert.equal(html.indexOf(start,i+1),-1);
    assert.equal(html.indexOf(end,j+1),-1);
-   return html.slice(0,i+start.length)+html.slice(j);
+   return (html.slice(0,i+start.length)+html.slice(j)).replace(/LATEST \d+ UPDATES/g,'<!-- PULSE_COUNT -->');
  };
  assert.equal(strip(built),strip(source));
  assert.match(built,/LATEST 20 UPDATES/);
