@@ -7,6 +7,7 @@ import {
  makeMirrorUpsertSql,mirrorRowParams,validateNativeSourceStatus,
  validateMirroringCron,advanceCursor
 } from "./uk-mirror-core.mjs";
+import {reconcileUkClosures} from "./uk-mirror-lifecycle.mjs";
 const SUCCESS_STATES=new Set(["ok","partial"]);
 const truncate=e=>String(e?.message||"uk_mirror_failed").replace(/[^a-zA-Z_0-9]/g,"_").slice(0,72);
 export async function mirrorUkSnapshot(env,controller,clock=()=>Date.now()){
@@ -77,6 +78,11 @@ export async function mirrorUkSnapshot(env,controller,clock=()=>Date.now()){
    }
    if(items.length<limit){fullPage=false;break;}
   }
+  // Expiry is deterministic and MUST be evaluated independently of
+  // last_seen_at: source-side closing status can change without a refreshed
+  // pagination cursor. Official-page withdrawal checks are separately
+  // bounded, audited and NEVER infer absence from a partial feed.
+  const closure=await reconcileUkClosures(source,target,clock());
   // If the run hit its 500-row safety cap, don't mislabel a partial mirror as
   // fully current. It resumes at this cursor at the next scheduled invocation.
   const status=fullPage&&moved===MAX_ROWS_PER_RUN?"partial":"ok";
@@ -91,7 +97,7 @@ export async function mirrorUkSnapshot(env,controller,clock=()=>Date.now()){
   ]);
   if(!Array.isArray(results)||results.length!==2||
      results.some(r=>r?.meta?.changes!==1))throw Error("uk_mirror_audit_commit_failed");
-  console.log(JSON.stringify({event:"uk_mirror_scheduled",state:status,rowsUpserted:moved}));
+  console.log(JSON.stringify({event:"uk_mirror_scheduled",state:status,rowsUpserted:moved,expired:closure.expired,confirmedWithdrawals:closure.verifiedWithdrawals,reviewFlags:closure.flaggedForReview}));
   return{status,rowsUpserted:moved,sourceNativeAt:nativeAt};
  }catch(error){
   const code=truncate(error),ended=clock();
