@@ -75,10 +75,20 @@ This establishes Cloudflare D1 point-in-time recovery **on a disposable database
 ## Final production release blockers
 
 - Two observed native scheduled successes per source within the defined gate, with no more recent native failure. **Not yet achieved at the time of the first reading (one per source).**
-- Billing Read or founder dashboard evidence confirming Workers plan and **actual account-wide daily Workers requests**. Configured Cron count was reduced from six to four, but the plan's true tier remains unverified.
-- Permission/accuracy checks for new sources, India licensing, and source freshness.
+- **Workers Paid tier is confirmed by founder dashboard screenshots** (current plan, $5 USD/month base plus usage); founder permits using it while developing rather than insisting on permanent zero-cost hosting. Monthly included request usage showed 151.1K/10M and CPU time 406.73K/30M ms for the current billing period, with $0.00 additional usage fees. This is billing-period cumulative usage, not daily request consumption; continue checking cost exposure, especially because the dashboard showed no spending limit set. **Do not change the account plan without explicit founder authorization.**
+- **Source-specific licensing/accuracy**: UK DfE is conditionally reusable under OGL; Manitoba Public Service Commission's reproduction terms appear narrower than the province-wide OpenMB licence, so commercial republication remains pending clarification; India remains research-only with no scheduled imports. The API and UI now label each source separately and prohibit implying a universal OGL licence. Founder must review before monetized release.
 - Founder-reviewed release of the **currently draft PRs** to the appropriate deployment branch. GitHub signed collector's scheduled fallback still runs **only on a reviewed default-branch release**; do not claim it is already recurring.
 - Continue verifying long-term reliability; a two-cycle gate is useful evidence but not proof of months of operation.
+
+## Verified commercial-source attribution and portable release gate
+
+- `source-rights.mjs` enumerates the UK DfE, Manitoba, and India source rights independently and prevents commercial release of sources with unresolved terms via `assertSourceRightsForCommercialRelease`. Production rollout must invoke an appropriately reviewed gate and remain founder-controlled; metadata labels or PR tests alone do not authorize a public monetized launch.
+- UK terms: https://teaching-vacancies.service.gov.uk/pages/terms-and-conditions
+- Manitoba general OpenMB licence: https://www.gov.mb.ca/asset_library/en/legal/OpenMB-Information-Data-Use-Licence.pdf
+- Manitoba Public Service Commission disclaimer: https://www.gov.mb.ca/csc/aboutpsc/disclaim.html
+- Manitoba government permissions channel: https://www.gov.mb.ca/legal/permission.html
+- Source metadata in `/api/notices` includes status, licence URLs, attributions, and an explicit boolean for commercial reuse; user-visible mixed-source listing attribution is restricted to the correct authority rather than treating UK OGL as globally applicable. Commercial release remains blocked pending rights review of Manitoba and India. No India rows have been ingested.
+- The founder permits a lean **growth-based paid infrastructure** approach; optional Free-tier migration is no longer a release condition. All development should remain provider-portable and self-hostable.
 
 ## Official references
 
