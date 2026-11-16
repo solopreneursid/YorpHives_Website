@@ -44,7 +44,7 @@ test('impact counts come from canonical catalog and signed-off products, not inv
  assert.match(js,/fetch\('catalog\.json'/);
  assert.match(js,/qualifiedProducts\(data\.items\)/);
  assert.match(js,/renderCounters\(d\.metrics\)/);
- assert.match(js,/p\.approvedByFounder===true/);
+ assert.match(js,/p\?\.approvedByFounder===true/);
  assert.match(js,/p\.approvedAt<=new Date/);
  assert.match(js,/return;\s*renderCounters/);
  assert.doesNotMatch(js,/fetch\(.*analytics-provider|google-analytics|posthog/i);
