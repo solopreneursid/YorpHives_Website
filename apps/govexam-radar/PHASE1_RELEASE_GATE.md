@@ -101,6 +101,18 @@ This checklist is intentionally evidence-based. **Do not mark automatic synchron
 - The revised source metadata and UI were deployed to **only** the standalone GovRadar staging Worker (18 modules). A follow-up Cloudflare settings read independently verified that the encrypted `INGEST_HMAC_KEY` and original D1 binding survived, and the single consolidated Cron trigger remains configured. An immediate post-upload binding read returned incomplete results; subsequent independent reads resolved them, so verify deployment after propagation rather than treating the first read as authoritative.
 - The two native Cron sources still each have **one observed successful unattended import** in D1 as of 13:55 UTC; the next 15:20/15:40 UTC slots must be checked rather than claimed completed.
 
+## UK-only launch candidate verified in independent staging (2026-11-16)
+
+- Implemented a **separate read-only UK-only release preview**: `/release-preview` and `/api/release-preview/notices`. It is **not** a production launch, is noindexed, and returns `releaseProfile=uk_only_release_preview`, `publicLaunchAuthorized=false`.
+- The server itself decides the release profile; visitor query strings cannot select the `research` mode. `allowedCommercialPreviewSources` is backed by the fail-closed source licence registry and currently permits **only** `uk-dfe-teaching-vacancies`.
+- UK-only source restriction is enforced in the **D1 SQL WHERE clause for both notices and totals**, not just UI rendering. Manitoba, India, and unknown explicit `?source=` requests fail with HTTP 403. Filtered requests `?country=Canada` yield an empty list under the UK-only scope.
+- Built a responsive, first-party, privacy-minimal experience with source transparency, search, category filters, pagination, official job links and zero fabricated data. UI output uses DOM `textContent` to prevent upstream title injection; official URLs must belong to `teaching-vacancies.service.gov.uk/jobs/`.
+- Automated tests cover query bypass attempts, absent D1, an unknown release scope, XSS in synthetic fixture data, search and reset behaviour, and browser sizes 320/375/768/1440 px. Synthetic fixtures exist **only in tests**, not in the deployed application.
+- Staging Worker uploaded **19 first-party modules** using `?bindings_inherit=strict`; Cloudflare independently confirmed encrypted `INGEST_HMAC_KEY`, the original D1 binding, and the one-Cron schedule all survived.
+- GitHub staging HTTP smoke verified the live page assets, noindex header, official source scope, UK-only record metadata, banned Manitoba request and a Canada filter returning zero UK results. Continue checking code and browser CI for the latest HEAD before release.
+- **Important:** the existing separate research routes still show other jurisdictions. This candidate is for founder evaluation; it does **not** make the whole Worker a safe public commercial deployment. A reviewed commercial target must fence **all** routes, caches, exports and search endpoints before any live monetized launch.
+- Read the scoped architecture and release checklist in `UK_ONLY_RELEASE_CANDIDATE.md`. Both PRs stay draft; the live website remains unchanged.
+
 ## Evidence URLs
 - Draft PR 7: https://github.com/solopreneursid/YorpHives_Website/pull/7
 - Official India index: https://employmentnews.gov.in/newemp/AllJobs.aspx?k=All
