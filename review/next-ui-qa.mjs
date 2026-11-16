@@ -18,8 +18,19 @@ const wait=async(fn,ms=10000)=>{
 try{
  await wait(()=>document.getElementById('tool-total')?.textContent.includes('free tools'));
  check(document.querySelectorAll('.mobile-dock a').length===5,'five mobile destinations');
- check(document.querySelectorAll('#home .studio-step').length===5,'five journey stages');
- const originalHash=location.hash;
+ check(['home-explore','home-use','home-connect'].every(id=>!!document.getElementById(id)),'three distinct home experiences');
+ check(!document.querySelector('#home .os-board')&&!document.querySelector('#home .spotlight-panel'),'old repetitive HQ diagrams are removed');
+ check(!!document.querySelector('#home .hero-identity-mark'),'logo-inspired geometric animated background');
+ check(document.querySelectorAll('#home-pulse-viewport .pulse-track').length===1,'only one verified YHpulse');
+ const firstTools=[...document.querySelectorAll('#home-tools-list .home-tool-card')];
+ check(firstTools.length>=4,'featured tools populated from the published catalog');
+ check(firstTools.every(x=>/^tools\\/[a-z0-9-]+\\/$/.test(x.getAttribute('href'))),'featured links use local tool routes');
+ const homeSearch=document.getElementById('home-tool-search');
+ homeSearch.value='word counter';
+ document.getElementById('home-tool-search-form').requestSubmit();
+ await wait(()=>!document.getElementById('tools').hidden);
+ check(document.getElementById('tool-search').value==='word counter','homepage search transfers its query');
+  const originalHash=location.hash;
  location.hash='#tools';
  await wait(()=>!document.getElementById('tools').hidden);
  check(document.querySelector('.mobile-dock [data-nav="tools"]')?.getAttribute('aria-current')==='page','tools route active');
@@ -48,7 +59,8 @@ try{
  location.hash='#how-it-works';
  await wait(()=>!document.getElementById('home').hidden);
  check(document.querySelector('.mobile-dock [data-nav="home"]')?.getAttribute('aria-current')==='page','how-it-works resolves to home');
- check(!!document.getElementById('our-ai-team')?.querySelector('.os-decision'),'visual founder approval gate');
+ check(!!document.querySelector('#home-explore .stage-founder'),'founder approval gate inside project showcase');
+ check(!!document.querySelector('#home-connect .connection-network'),'visual connection network');
  check(document.querySelectorAll('#category-ribbon-track .rail-set').length===2,'seamless animated category rail');
  check(!!document.querySelector('#home-pulse-viewport .pulse-track')&&!document.querySelector('#footer-pulse'),'only homepage YHpulse is built');
  const catPause=document.querySelector('#home [data-motion-toggle="categories"]');
