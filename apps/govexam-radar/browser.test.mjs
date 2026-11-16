@@ -291,3 +291,35 @@ test("private moderation page loads without exposing content",async()=>{
   assert.equal(await page.locator("#dashboard").isVisible(),false);
  }finally{await page.close();}
 });
+
+test("portable bookmark export and import work on mobile without exporting credentials",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:820},acceptDownloads:true});
+ const errors=[];page.on("pageerror",e=>errors.push(String(e)));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#portable-bookmark-tools").waitFor({timeout:16000});
+  await page.evaluate(()=>{
+   localStorage.setItem("govradar_saved_sources_v1",JSON.stringify(["manitoba-jobs","bpsc-bihar"]));
+   localStorage.setItem("hqventures_govradar_full_v3",JSON.stringify({saved:["rrb-je"],emailSettings:{email:"private-address@example.net"},communityToken:"sensitive"}));
+  });
+  await page.evaluate(()=>window.switchTab("saved"));
+  const downloadPromise=page.waitForEvent("download",{timeout:10000});
+  await page.locator("#portable-export").click();
+  const download=await downloadPromise;
+  assert.match(download.suggestedFilename(),/GovRadar-bookmarks-.*\.json/);
+  const stream=await download.createReadStream(),chunks=[];
+  for await(const chunk of stream)chunks.push(chunk);
+  const raw=Buffer.concat(chunks).toString("utf8"),snapshot=JSON.parse(raw);
+  assert.equal(snapshot.format,"GovRadarBookmarkTransfer");
+  assert.ok(snapshot.governmentSources.includes("manitoba-jobs"));
+  assert.ok(snapshot.exampleExamIds.includes("rrb-je"));
+  assert.equal(raw.includes("private-address@example.net"),false);
+  assert.equal(raw.includes("sensitive"),false);
+  await page.locator("#portable-file").setInputFiles({name:"govradar-transfer.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify({...snapshot,bookmarks:[{id:"uk-dfe-teaching-vacancies:test",title:"Official source demo",employer:"School",closingAt:"2026-12-31T23:59:00.000Z",sourceUrl:"https://teaching-vacancies.service.gov.uk/jobs/example"},{id:"bad",title:"Not official",closingAt:"2026-12-31T23:59:00.000Z",sourceUrl:"https://fraud.invalid/"}]}))});
+  await page.waitForFunction(()=>document.querySelector("#portable-transfer-status")?.textContent.includes("Imported"),{timeout:10000});
+  const imported=await page.evaluate(()=>JSON.parse(localStorage.getItem("govradar_official_saved_v1")));
+  assert.equal(imported.length,1);
+  assert.equal(imported[0].title,"Official source demo");
+  assert.equal(errors.length,0,errors.join("; "));
+ }finally{await page.close();}
+});
