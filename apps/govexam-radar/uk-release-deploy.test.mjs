@@ -5,7 +5,7 @@ import {validateIsolatedStagingState,parseUkDeploymentArgs,
  from "./uk-release-deploy.mjs";
 const x=UK_ISOLATED_STAGING;
 const state=()=>({bindings:[{type:"d1",name:"DB",database_id:x.database}],
- secrets:[],crons:[],tableNames:["official_job_notices","uk_mirror_runs","uk_mirror_state"],sourceRows:250,
+ secrets:[],crons:[],tableNames:["official_job_notices","uk_mirror_runs","uk_mirror_state","uk_withdrawal_checks"],sourceRows:250,
  unapprovedRows:0,workerSubdomain:{enabled:true,previews_enabled:false}});
 test("standalone UK Worker accepts exactly one UK data binding and no other capabilities",()=>{
  assert.equal(validateIsolatedStagingState(state()),true);
@@ -53,7 +53,7 @@ test("staging dry-run inspects exact DB and Worker without making any edits",asy
   else if(path.endsWith("/subdomain"))result=state().workerSubdomain;
   else if(path.endsWith("/d1/database/"+x.database))result={uuid:x.database,name:x.databaseName};
   else if(path.endsWith("/query")){
-   if(body.sql.includes("sqlite_master"))result=[{results:[{name:"official_job_notices"},{name:"uk_mirror_runs"},{name:"uk_mirror_state"}]}];
+   if(body.sql.includes("sqlite_master"))result=[{results:[{name:"official_job_notices"},{name:"uk_mirror_runs"},{name:"uk_mirror_state"},{name:"uk_withdrawal_checks"}]}];
    else if(body.sql.includes("source_id!=?"))result=[{results:[{n:0}]}];
    else result=[{results:[{n:250}]}];
   }else throw Error("Unexpected endpoint "+path);
