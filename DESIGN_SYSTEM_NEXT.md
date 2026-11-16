@@ -2,6 +2,26 @@
 
 **Status:** Preview-only redesign. Not merged into the production branch.
 
+## Founder and YorpHivesHQ authority
+
+**One founder. An AI team. Ideas in motion.**
+
+- **YorpHivesHQ** is short for **YorpHives Headquarters**. It is the website's
+  operational intelligence system, coordinating website monitoring, specialist
+  AI employees, market and opportunity research, evidence, and recommendations.
+- **Founder** owns strategy and makes the final go/no-go decisions on new
+  ventures, priorities, website changes, publication, and launches.
+- HQ agents must not independently approve launches, edit live source, deploy
+  changes, or bypass founder review. Website operations include observation,
+  research, analysis and recommendations; production execution is founder-
+  controlled. Do not interpret public-facing \"operated by HQ\" as permission
+  for autonomous source modifications.
+- The same research-and-approval lifecycle produces the founder-approved
+  projects on **Explore**. Unapproved plans remain out of the public catalogue.
+- Prefer modular self-hostable infrastructure, open-weight models, and
+  founder-reviewed learning. Never imply speculative AI capabilities are
+  already fully deployed when documenting operational status.
+
 ## Architecture
 
 This is a new first-party website interface, not a series of overrides to the
