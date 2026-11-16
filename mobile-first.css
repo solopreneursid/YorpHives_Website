@@ -214,10 +214,10 @@
  #home .category-ribbon .category-ribbon-set[aria-hidden="true"]{display:none!important}
  
  /* FREE TOOLS: search-first, tighter headers, real touch targets. */
- #tools .page-hero-copy{padding-top:27px!important;padding-bottom:22px!important}
- #tools .page-hero-copy h1{font-size:clamp(34px,8.5vw,48px)!important;margin:12px 0}
- #tools .page-hero-copy>p:not(.eyebrow){font-size:13px;line-height:1.55;margin-bottom:9px}
- #tools .page-hero-copy>.text-link{margin-top:9px}
+ #tools .page-hero-copy{padding-top:18px!important;padding-bottom:14px!important}
+ #tools .page-hero-copy h1{font-size:clamp(29px,7.8vw,39px)!important;margin:8px 0 10px}
+ #tools .page-hero-copy>p:not(.eyebrow){display:none}
+ #tools .page-hero-copy>.text-link{margin-top:4px;font-size:11px}
  #tools .listing-section{padding-block:14px 38px!important}
  #tools .listing-heading{display:none!important}
  #tools .tool-launcher{margin:0;min-width:0;overflow:visible}
@@ -246,7 +246,7 @@
  #tools .launcher-main-head{display:flex;align-items:center;gap:10px;margin-bottom:15px}
  #tools .launcher-main-head>div{flex:1;min-width:0}
  #tools .launcher-main-head h3{
-   font-size:23px;line-height:1.2;letter-spacing:-.04em;margin:5px 0
+   font-size:20px;line-height:1.2;letter-spacing:-.04em;margin:5px 0
  }
  #tools .launcher-main-head p{font-size:11px;line-height:1.4}
  #tools .launcher-sort{flex-direction:column;align-items:flex-end;gap:4px}
