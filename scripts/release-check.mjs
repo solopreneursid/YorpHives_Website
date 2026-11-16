@@ -14,6 +14,50 @@ if(tools.length<90)problems.push('Expected at least the 90 established tools.');
 if(new Set(items.map(x=>x.url)).size!==items.length)problems.push('Duplicate public URL.');
 const directory=await read('tools/index.html');
 const homepage=await read('index.html');
+// A release may use either the approved legacy homepage or the completely
+// reimagined site. Keep every common SEO/security/tool gate after this block.
+const isReimagined=homepage.includes('id="home-title"')&&homepage.includes('id="yh-pulse"');
+if(isReimagined){
+ const ids=['home','ventures','builders','impact','tools','partners','contact'];
+ for(const id of ids)if(!homepage.includes('<section class="view" id="'+id+'"'))
+  problems.push('Reimagined public route missing: '+id);
+ const css=await read('studio.css');
+ const js=await read('studio.js');
+ const rotators=await read('rotators.js');
+ const catalogSync=await read('catalog-sync.mjs');
+ for(const filename of ['rotators.css','impact-public.json','usage-public.json','builders-updates.json'])
+  try{await stat(resolve(root,filename));}catch{problems.push('New homepage asset missing: '+filename);}
+ if(!homepage.includes('CLOUD-BASED · AI-POWERED VENTURE STUDIO')||
+    !homepage.includes('YorpHivesHQ finds the signal')||
+    !homepage.includes('class="kofi-support" id="kofi-support" type="button" disabled')||
+    !homepage.includes('id="yh-pulse-item"'))
+  problems.push('Venture studio identity, disabled support action, or transparent YHpulse missing.');
+ if(homepage.includes('DESIGN PREVIEW · NOT LIVE')||
+    homepage.includes('name="robots" content="noindex')||
+    !homepage.includes('rel="canonical" href="https://yorphives.com/"'))
+  problems.push('Unremoved preview labels, noindex, or missing canonical on public root.');
+ if(!css.includes('@media(max-width:350px)')||
+    !css.includes('prefers-reduced-motion:reduce')||
+    !js.includes('qualifiedProducts(allItems)')||
+    !rotators.includes('qualifiedProducts(items)')||
+    !catalogSync.includes("fetch('../catalog.json'"))
+  problems.push('Responsive, founder-qualified, or first-party catalogue discovery incomplete.');
+ const impact=JSON.parse(await read('impact-public.json'));
+ const usage=JSON.parse(await read('usage-public.json'));
+ if(impact.publication?.status!=='unpublished'||
+    impact.publication?.approvedByFounder!==false||
+    usage.publication?.status!=='unpublished'||
+    usage.publication?.approvedByFounder!==false||
+    (usage.ranked||[]).length)
+  problems.push('Unverified Impact or top-ten usage must not be published.');
+ const builderFeed=JSON.parse(await read('builders-updates.json'));
+ if(!Array.isArray(builderFeed.items)||builderFeed.items.length>10||
+    builderFeed.items.some(x=>x.kind!=='builders'||x.url!=='#builders'))
+  problems.push('Builders update feed includes unverified or invalid entries.');
+ if(/data-form="opportunity"|<form[^>]*id="post"|id="job-listings"/i.test(homepage))
+  problems.push('Public job listing unavailable until paid membership enforcement exists.');
+}else{
+
 // The homepage must do three different jobs: projects, usable tools, connection.
 // The HQ approval authority remains visible without repeating entire diagrams.
 if(!homepage.includes('Founder-led.')||!homepage.includes('Intelligence-powered.')||
@@ -108,6 +152,7 @@ if(!homepage.includes('Jobs and posting require verified paid membership.')||
    !homepage.includes('Enrollment is not open yet.'))
  problems.push('Builders paid-access disclosure missing.');
 
+}
 const sitemap=await read('sitemap.xml');
 const headers=await read('_headers');
 const robots=await read('robots.txt');
