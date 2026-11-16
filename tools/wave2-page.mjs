@@ -81,6 +81,7 @@ form.addEventListener('submit',async event=>{
    const textarea=document.createElement('textarea');textarea.readOnly=true;textarea.rows=6;textarea.value=output.text;label.append(textarea);results.append(label);
   }
   results.hidden=false;message(output.summary||'File is ready to download.');
+  window.dispatchEvent(new Event('yorphives:tool-completed'));
  }catch(error){if(token===revision)message(error?.message||'This file could not be processed.',true);}
  finally{run.disabled=id==='pdf-form-filler'?!fieldReady:false;}
 });
