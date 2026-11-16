@@ -120,5 +120,41 @@ jobs:
         continue-on-error: true
         run: node apps/govexam-radar/probe-india.mjs
 
+      - name: Verify independent UK-only Worker and data-isolated staging deployment
+        run: |
+          node --input-type=module <<'NODE'
+          const origin='https://hqventures-govradar-uk-isolated-preview.solopreneursid-proy.workers.dev';
+          const paths=['/','/api/notices?limit=50','/api/notices?country=Canada',
+            '/api/notices?source=manitoba-jobs','/api/collector/plan',
+            '/api/community/posts','/api/moderation/reports','/openapi.json','/robots.txt',
+            '/release-preview.css','/release-preview.js'];
+          const responses=await Promise.all(paths.map(async path=>[path,await fetch(origin+path)]));
+          const dict=Object.fromEntries(responses);
+          const ok=(path,status)=>{if(dict[path]?.status!==status)throw Error(path+' returned '+dict[path]?.status+', expected '+status);};
+          for(const path of ['/','/api/notices?limit=50','/api/notices?country=Canada','/openapi.json','/robots.txt','/release-preview.css','/release-preview.js'])ok(path,200);
+          ok('/api/notices?source=manitoba-jobs',403);
+          for(const path of ['/api/collector/plan','/api/community/posts','/api/moderation/reports'])ok(path,404);
+          const landing=await dict['/'].text();
+          if(!landing.includes('RELEASE CANDIDATE · STAGING ONLY')||
+             !landing.includes('id="preview-grid"')||
+             !dict['/'].headers.get('x-robots-tag')?.includes('noindex'))
+            throw Error('Noindex staging landing contract invalid');
+          const data=await dict['/api/notices?limit=50'].json();
+          if(data.releaseProfile!=='uk_only_release_preview'||data.publicLaunchAuthorized!==false||
+             !Array.isArray(data.sources)||data.sources.length!==1||
+             data.sources[0]?.id!=='uk-dfe-teaching-vacancies'||
+             !Number.isSafeInteger(data.total)||data.total<1||
+             !Array.isArray(data.notices)||data.notices.some(x=>x.sourceId!=='uk-dfe-teaching-vacancies'))
+            throw Error('Isolated UK data protection failure');
+          const canada=await dict['/api/notices?country=Canada'].json();
+          if(canada.notices.length!==0||canada.total!==0)throw Error('Unexpected non-UK rows');
+          const api=await dict['/openapi.json'].json();
+          if(JSON.stringify(Object.keys(api.paths).sort())!==JSON.stringify(['/api/health','/api/notices']))
+            throw Error('Extra routes exposed in OpenAPI');
+          const denied=await fetch(origin+'/api/collector/ingest',{method:'POST',body:'{}'});
+          if(denied.status!==405)throw Error('Write method unexpectedly accepted');
+          console.log('UK-only isolated Worker verified: UK notices',data.total,'zero exposed write/research routes, noindex enabled');
+          NODE
+
       - name: Verify D1 community API on isolated preview
         run: node apps/govexam-radar/community-smoke.mjs
