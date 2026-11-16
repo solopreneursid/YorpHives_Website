@@ -20,11 +20,11 @@ Date: 2026-11-16. **Non-production**, independent of `yorphives.com`, YorpHives 
 
 ## Current limitation: dataset freshness
 
-**The 250 records are a manually refreshed staging snapshot, not an automatically synchronized public feed.** The isolated Worker intentionally has no ingest route, scheduler or database write capability. A portable first-party synchronizer is now available as `uk-preview-sync.mjs` with default read-only dry-run, UK-only source validation, <=84 SQL parameters per batch, explicit founder approval for `--apply`, no silent deletion of source-missing rows, and reconciled target counts. **Its real scheduled operation has not been enabled or independently observed**. The main GovRadar research feed's UK 3-hour Cron does not automatically update this new database. A controlled, first-party **UK-only, source-verified snapshot synchronization** must be implemented, tested and authorized before a public launch can promise continuously fresh data. The UK-only API filters outdated or expired records; it must not silently present stale dates as live opportunities.
+**The 250 records are a manually refreshed staging snapshot, not an automatically synchronized public feed.** The isolated Worker intentionally has no ingest route, scheduler or database write capability. A portable first-party synchronizer is now available as `uk-preview-sync.mjs` with default read-only dry-run, UK-only source validation, <=84 SQL parameters per batch, explicit founder approval for `--apply`, no silent deletion of source-missing rows, and reconciled target counts. **The new private scheduled mirror is configured and deployed, but its first genuine unattended execution has not yet been observed.** The separate `hqventures-govradar-uk-mirror-watch` Worker uses two D1 bindings, no public HTTP endpoint, no Secrets, and a `55 */3 * * *` UTC Cron. It validates the most recent native UK feed import, moves approved records by a resumable cursor, and logs errors without advancing the cursor on failure. We must verify an actual successful scheduled run before claiming an automatically current dataset. The UK-only API filters outdated or expired records; it must not silently present stale dates as live opportunities.
 
-Do not enable scheduled cross-database synchronization, create write credentials on this public-facing Worker, or merge a fallback workflow onto the default branch without reviewing the design and founder authorization.
+Automated cross-database synchronization is enabled only on the **private staging mirror Worker**, with a separate audit; do not grant write access or Cron scheduling to the public-facing Worker, and do not merge a fallback workflow onto the default branch without founder review.
 
-## Controlled UK-only snapshot maintenance (staging; no automatic writes)
+## Founder-controlled manual UK snapshot maintenance (optional fallback)
 
 From `apps/govexam-radar` on an owner-controlled Node.js 22+ machine with a private Cloudflare API token and Cloudflare account ID supplied through environment variables:
 
@@ -33,6 +33,10 @@ From `apps/govexam-radar` on an owner-controlled Node.js 22+ machine with a priv
 - Never put Cloudflare API tokens into a repository, browser, public workflow log or web page. Use a narrowly scoped token, keep it private, and revoke it if compromised.
 - The current script does **not** delete records if the source has fewer rows or withdraws notices; instead it rejects orphaned records for a founder-reviewed reconciliation. A future production mirror must define safe withdrawal and tombstone semantics with audit trails.
 - A manual mirror update is not evidence of scheduled feed reliability. A separate reviewed synchronization architecture and deployment control is required for a commercial release.
+
+## Automated private UK sync (no public write access)
+
+See `UK_PRIVATE_MIRROR_OPERATIONS.md` for the complete private scheduler inventory, source-freshness gate, bounded D1 batches, audit state, rollback procedure and first-run verification requirements. Its schema is versioned in `uk-mirror-schema.sql`. The isolated public `/api/freshness` endpoint reveals only safe status values; it cannot trigger ingestion or database writes.
 
 ## Safe isolated-Worker redeployment
 
@@ -54,7 +58,7 @@ From `apps/govexam-radar` on an owner-controlled Node.js 22+ machine with a priv
 ## Remaining launch conditions
 
 1. **Initial two-cycle Cron gate satisfied** on 2026-11-16 at 15:41 UTC: UK and Manitoba each have two audited, independent native successful scheduled imports and the gate calculation returned true. Continue observing scheduled runs across days; a two-cycle pass is not proof of permanent reliability.
-2. Design a secure **source-verified UK mirror refresh**, limited to approved fields and official URLs, outside the public-facing Worker. It must fail safely and publish source recency status.
+2. **Private UK mirror implemented and scheduled in staging** (55 minutes past every third UTC hour). Its exact URL-free Worker and source/target D1 bindings were verified, but **the first completed native scheduled mirror still needs independent D1 audit proof**. Confirm recency, failure recovery and the stale-record/withdrawal policy before public release.
 3. Confirm all security, privacy, accessibility and source compliance checks, with explicit release approval. The founder controls domain association, go-live, rollback and monetization.
 4. Noindex and `publicLaunchAuthorized=false` are mandatory in this staging candidate. Public SEO/indexing is a separate founder-approved decision.
 5. Cloudflare Workers Paid is currently accepted as a modest development cost; monitor metered requests/CPU/D1 usage and keep architecture portable to owner-operated Node/SQLite.
