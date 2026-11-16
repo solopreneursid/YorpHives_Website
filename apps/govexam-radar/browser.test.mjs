@@ -93,7 +93,7 @@ test("simple mode remains fully functional",async()=>{
  const page=await browser.newPage({viewport:{width:375,height:800}});
  try{
    await page.goto(origin+"/lite",{waitUntil:"networkidle"});
-   await page.locator("#stat-sources").getByText("17").waitFor();
+   await page.locator("#stat-sources").getByText("40").waitFor();
    assert.equal(await page.locator("#leads-grid .lead-card").count(),10);
    await page.locator("#search").fill("UPSC");
    assert.equal(await page.locator("#leads-grid .lead-card").count(),2);
@@ -219,4 +219,37 @@ test("actual Cloudflare preview displays official-source cards with responsive l
   assert.equal(await page.locator("#inapp-official-alerts").count(),1);
   assert.equal(errors.length,0,"Remote staging JS exceptions: "+errors.join("; "));
  }finally{await page.close();}
+});
+
+test("state, province and municipal source browser filters and saved source preferences",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:860}});
+ const errors=[];page.on("pageerror",e=>errors.push(String(e)));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#regional-source-grid article").first().waitFor({timeout:25000});
+  assert.equal(await page.locator("#regional-source-count").getAttribute("role"),"status");
+  assert.equal(await page.locator("#regional-source-grid article").count(),9);
+  await page.locator("#regional-country").selectOption("Canada");
+  await page.locator("#regional-tier").selectOption("province");
+  assert.equal(await page.locator("#regional-source-grid article").count(),4);
+  await page.locator("#regional-subdivision").selectOption("CA-MB");
+  assert.equal(await page.locator("#regional-source-grid article").count(),1);
+  assert.match(await page.locator("#regional-source-grid article").innerText(),/Manitoba/);
+  await page.locator("#regional-source-grid [data-source-bookmark]").click();
+  await page.evaluate(()=>window.switchTab("saved"));
+  assert.equal(await page.locator("#saved-source-grid article").count(),1);
+  await page.reload({waitUntil:"domcontentloaded"});
+  await page.locator("#regional-source-grid article").first().waitFor();
+  await page.evaluate(()=>window.switchTab("saved"));
+  assert.equal(await page.locator("#saved-source-grid article").count(),1);
+  assert.equal(errors.length,0,"Regional UI JS exceptions: "+errors.join("; "));
+ }finally{await page.close();}
+});
+test("jurisdiction directory includes municipal and provincial official links only",async()=>{
+ const request=await fetch(origin+"/api/jurisdictions?level=municipal");
+ assert.equal(request.status,200);const res=await request.json();
+ assert.ok(res.total>=2);
+ assert.ok(res.sources.every(x=>x.level==="municipal"&&new URL(x.url).protocol==="https:"));
+ const byProvince=await (await fetch(origin+"/api/jurisdictions?jurisdiction=CA-MB")).json();
+ assert.equal(byProvince.total,1);assert.equal(byProvince.sources[0].name.includes("Manitoba"),true);
 });
