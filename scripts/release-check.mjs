@@ -14,8 +14,19 @@ if(tools.length<90)problems.push('Expected at least the 90 established tools.');
 if(new Set(items.map(x=>x.url)).size!==items.length)problems.push('Duplicate public URL.');
 const directory=await read('tools/index.html');
 const homepage=await read('index.html');
-if(!homepage.includes('You bring the idea.')||!homepage.includes('real product.')||
-   !homepage.includes('href="#connect"'))problems.push('Idea-to-product homepage identity or contact CTA missing.');
+if(!homepage.includes('One founder.')||!homepage.includes('An AI team.')||
+   !homepage.includes('Ideas in motion.')||
+   !homepage.includes('YorpHivesHQ (YorpHives Headquarters) operates this website')||
+   !homepage.includes('I make the final decisions based on evidence.')||
+   !homepage.includes('href="#connect"'))
+  problems.push('YorpHivesHQ website operations, founder authority or contact CTA missing.');
+if(!homepage.includes('It does not independently approve launches or publish code changes.')||
+   !homepage.includes('The final decision to pursue a venture, change the website or launch a project stays with me, the founder.'))
+  problems.push('YorpHivesHQ operational boundary and final founder release control missing.');
+if(!homepage.includes('id="our-ai-team"')||
+   !homepage.includes('id="projects-collection"')||
+   !homepage.includes('final founder approval'))
+  problems.push('AI research, human approval and public Explore project linkage must be visible.');
 if((homepage.match(/<li class="studio-step stage-/g)||[]).length!==5)
  problems.push('The five-stage idea-to-product journey is incomplete.');
 if(!homepage.includes('href="#tools"'))problems.push('Homepage tool navigation missing.');

@@ -26,82 +26,51 @@ test('robots points crawlers to the canonical sitemap',async()=>{
  assert.match(await read('robots.txt'),/^Sitemap: https:\/\/yorphives.com\/sitemap\.xml$/m);
 });
 
-test('Ko-fi header and footer are visibly present but disabled until donations are configured',async()=>{
- const html=await read('index.html'),js=await read('app.js'),css=await read('style.css');
- const header=html.match(/<header class="site-header">([\s\S]*?)<\/header>/)?.[1]||'';
- assert.match(header,/<button class="header-kofi" id="header-kofi" type="button" disabled/);
- assert.match(header,/<strong>Ko-fi<\/strong>\s*<small>support my work<\/small>/);
- assert.match(html,/<button class="header-kofi footer-kofi" id="footer-kofi" type="button" disabled/);
- assert.match(html,/title="Donations coming soon"/);
- assert.doesNotMatch(html,/id="support-note"/);
- assert.doesNotMatch(js,/getElementById\('header-kofi'\)\?\.addEventListener/);
- assert.doesNotMatch(js,/footerKofi\?\.addEventListener/);
- assert.doesNotMatch(js,/showSupportStatus|showingSupport/);
- assert.match(css,/\.header-kofi:disabled\{cursor:default/);
- assert.match(css,/\.header-kofi:not\(:disabled\):hover/);
+test('public design offers no unapproved donations or payment actions',async()=>{
+ const html=await read('index.html'),js=await read('next.js');
+ assert.doesNotMatch(html,/<a[^>]*href="https?:\/\/(?:ko-fi|buymeacoffee|stripe|checkout)/i);
+ assert.doesNotMatch(html,/<button[^>]*>Pay now|Payment successful|Subscription active/i);
+ assert.doesNotMatch(js,/stripe|checkout|showSupportStatus/);
 });
-test('Ko-fi header stays compact and readable across desktop and mobile',async()=>{
- const css=await read('style.css');
- assert.ok(css.includes('min-width:98px;min-height:44px'),'Desktop header button should be small');
- assert.ok(css.includes('.header-kofi strong{font-size:13px'),'Ko-fi label should be understated');
- assert.ok(css.includes('.header-kofi{min-width:85px;min-height:40px'),'Phone button should be compact');
- assert.ok(css.includes('.header-kofi:focus-visible{outline:3px'),'Button must remain keyboard accessible');
+test('new design exposes direct navigation and an accessible mobile menu',async()=>{
+ const [html,css,js]=await Promise.all([read('index.html'),read('next-responsive.css'),read('next.js')]);
+ assert.match(html,/class="desktop-nav"/);
+ assert.match(html,/class="mobile-dock"/);
+ assert.match(html,/id="menu-toggle"/);
+ assert.match(css,/\.mobile-menu:not\(\[hidden\]\)/);
+ assert.match(js,/menuPanel\.hidden = !opening/);
 });
-
-test('footer shares the compact Ko-fi styling without any payment or scrolling action',async()=>{
- const html=await read('index.html'),css=await read('style.css'),js=await read('app.js');
- assert.match(html,/<button class="header-kofi footer-kofi" id="footer-kofi" type="button" disabled/);
- assert.doesNotMatch(html,/Support YorpHives<\/button>/);
- assert.match(css,/\.footer-support \.footer-kofi\{display:inline-flex/);
- assert.doesNotMatch(js,/support\.scrollIntoView|document\.getElementById\('support'\)\?\.scrollIntoView/);
-});
-test('Ko-fi is consistently disabled in the main navigation across all homepage sections',async()=>{
- const html=await read('index.html'),css=await read('style.css'),js=await read('app.js');
- assert.match(html,/<header class="site-header">[\s\S]*?<button class="header-kofi" id="header-kofi" type="button" disabled/);
- assert.match(css,/\.header-kofi\{order:3;flex:none;display:inline-flex/);
- assert.doesNotMatch(css,/\.is-home \.header-kofi\{display:inline-flex\}/);
- assert.doesNotMatch(js,/showingSupport|showSupportStatus/);
-});
-
-
-test('Tool Launcher only replaces Free Tools browsing and keeps the hero',async()=>{
- const html=await read('index.html'),js=await read('app.js'),css=await read('style.css');
- assert.match(html,/<div class="page-hero tools-hero">[\s\S]*?Little tools<br><em>Big momentum<\/em>/);
- assert.match(html,/id="tool-search" type="search"/);
- assert.match(html,/class="launcher-workspace"/);
- assert.match(html,/id="tool-categories" aria-label="Tool categories"/);
- assert.match(html,/id="tool-mobile-categories"/);
+test('Free Tools is search-first with live categories, favorites and pagination',async()=>{
+ const [html,js,css]=await Promise.all([read('index.html'),read('next.js'),read('next.css')]);
+ assert.match(html,/id="tool-search"/);
+ assert.match(html,/id="tool-categories"/);
  assert.match(html,/id="tool-prev"/);
  assert.match(html,/id="tool-next"/);
- assert.match(html,/id="tool-back"/);
- assert.match(html,/id="tool-count" role="status"/);
- assert.doesNotMatch(html,/id="tool-more"/);
- assert.match(js,/const pageSize = 8/);
- assert.match(js,/Math\.ceil\(matches\.length\/pageSize\)/);
- assert.match(js,/launcher-tool-row/);
- assert.match(js,/storageKey = 'yorphives\.tool-favorites\.v1'/);
+ assert.match(html,/id="tool-count"/);
+ assert.match(html,/id="tool-favorites"/);
+ assert.match(html,/id="tool-no-results"/);
+ assert.match(js,/const pageSize=10/);
+ assert.match(js,/function renderCategories\(/);
  assert.match(js,/localStorage\.setItem\(storageKey/);
- assert.match(js,/if \(!assigned\.has\(category\)\) groups\.push/);
- assert.match(js,/setupCategoryRibbon\(tools, category => \{/);
- assert.match(css,/#tools \.page-hero\{min-height:315px/);
- assert.match(css,/\.launcher-workspace\{display:grid;grid-template-columns:232px minmax\(0,1fr\)/);
- assert.match(css,/\.launcher-rows:empty\{display:none;min-height:0\}/);
- assert.match(css,/@media\(max-width:800px\)\{[\s\S]*?\.launcher-sidebar\{display:none\}/);
+ assert.match(js,/function filteredTools\(/);
+ assert.match(css,/\.search-panel\{/);
+ assert.match(css,/\.tool-card\{/);
 });
-test('All tools directory stays fully crawlable while categories collapse by default',async()=>{
- const dir=await read('tools/index.html',resolve(root,'dist')),style=await read('tools/tool.css');
- const source=await read('tools/index.html');
+test('A–Z source and built directory are fully crawlable and category-based',async()=>{
+ const [html,source,css]=await Promise.all([
+   read('tools/index.html',resolve(root,'dist')),
+   read('tools/index.html'),
+   read('tools/directory-next.css')
+ ]);
+ const items=JSON.parse(await read('catalog.json')).items.filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
  assert.match(source,/<!-- TOOL_DIRECTORY_START -->/);
- const catalog=JSON.parse(await read('catalog.json'));
- const toolUrls=catalog.items.filter(x=>x.type==='tool').map(x=>x.url);
- assert.equal((dir.match(/<details class="directory-section">/g)||[]).length,new Set(catalog.items.filter(x=>x.type==='tool').map(x=>x.category)).size);
- assert.equal((dir.match(/<summary>/g)||[]).length,new Set(catalog.items.filter(x=>x.type==='tool').map(x=>x.category)).size);
- assert.equal((dir.match(/class="directory-card"/g)||[]).length,toolUrls.length);
- for(const url of toolUrls)assert.ok(dir.includes('href="../'+url+'"'),url);
- assert.match(dir,/href="\.\.\/#tools">⌕/);
- assert.match(style,/details\.directory-section>summary/);
+ assert.match(source,/<!-- TOOL_DIRECTORY_END -->/);
+ assert.equal((html.match(/<details class="directory-section">/g)||[]).length,new Set(items.map(x=>x.category||'Other')).size);
+ assert.equal((html.match(/class="directory-card"/g)||[]).length,items.length);
+ for(const tool of items)assert.ok(html.includes('href="../'+tool.url+'"'),tool.url);
+ assert.match(html,/href="\.\.\/#tools"/);
+ assert.match(css,/details\.directory-section>summary/);
 });
-
 test('directory categories and tool counts are derived from public catalog on every build',async()=>{
  const catalog=JSON.parse(await read('catalog.json'));
  const items=catalog.items.filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');

@@ -6,6 +6,7 @@ import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createEntity} from './discovery-schema.mjs';
 import {isQualifiedProduct} from '../product-policy.mjs';
+import {injectNextToolUI} from './next-tool-shell.mjs';
 import {collectPublicActivity,discoverPublicPageUpdates,discoverToolEditTimes,loadActivityNotes,renderFooterPulse} from './activity-feed.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
@@ -44,7 +45,7 @@ for(const item of published){
 }
 await rm(dest,{recursive:true,force:true});
 await mkdir(dest,{recursive:true});
-for(const file of ['index.html','app.js','style.css','catalog.json','product-policy.mjs','_headers','_redirects','robots.txt','llms.txt'])
+for(const file of ['index.html','app.js','style.css','next.css','next-responsive.css','next.js','catalog.json','product-policy.mjs','_headers','_redirects','robots.txt','llms.txt'])
  await cp(resolve(root,file),resolve(dest,file));
 // Keep private or unqualified catalog candidates out of public static assets.
 await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
@@ -152,6 +153,7 @@ for(const item of published){
  html=injectHead(html,metadata(url,graph));
  html=injectSiteSupport(html,path);
  html=injectToolSuite(html,item);
+ html=injectNextToolUI(html,item);
  await write(path,html);
 }
 // A directory stays crawlable and provides standard links to every item.
@@ -233,6 +235,8 @@ if(target==='preview'){
  // Browser smoke harness is intentionally preview-only, excluded from production assets.
  await cp(resolve(root,'review/browser-smoke.mjs'),resolve(dest,'browser-smoke.mjs'));
  await cp(resolve(root,'review/browser-interaction.mjs'),resolve(dest,'browser-interaction.mjs'));
+ await cp(resolve(root,'review/next-ui-qa.mjs'),resolve(dest,'next-ui-qa.mjs'));
+ await cp(resolve(root,'review/next-word-tool-qa.mjs'),resolve(dest,'next-word-tool-qa.mjs'));
  await cp(resolve(root,'review/library-qa.mjs'),resolve(dest,'library-qa.mjs'));
  await cp(resolve(root,'review/wave1-qa.mjs'),resolve(dest,'wave1-qa.mjs'));
  await cp(resolve(root,'review/wave1-ui-qa.mjs'),resolve(dest,'wave1-ui-qa.mjs'));
