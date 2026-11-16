@@ -5,7 +5,7 @@ GovRadar is a transparent, zero-dependency government recruitment **source direc
 ## Honest scope (v2.2 pilot)
 
 - Full six-section founder-uploaded interface with advanced location / country / citizenship / stream / stage filters, imported example records, archived data, demo lifecycle, custom personal leads, email preference settings, and 4-part guide.
-- 17 government-related official portals across 10 geographic categories.
+- 58 official national and subnational recruitment portals in 11 countries, including state, provincial, territory, devolved, municipal and prefectural government career sources.
 - 10 imported prototype opportunity *research leads*, explicitly **unverified** and not represented as live vacancies.
 - Country / keyword / technical-stream filtering, browser-local bookmarks and responsive mobile-first interface.
 - Real **on-device** notification inbox in the Alerts tab: new official-source imports since your last visit and personal bookmarks within 7 days of their source closing date. No automatic email, remote push or background alert delivery.
@@ -24,7 +24,7 @@ GovRadar is a transparent, zero-dependency government recruitment **source direc
 - `GET /api/health`: worker health and version.
 - `GET /api/catalog`: official source registry, unverified leads and an empty verified listing dataset.
 - `GET /api/check?id=upsc`: on-demand reachability for a registry entry. Public API rejects arbitrary URLs.
-- `GET /api/source-status`: persisted reachability status, freshness and last check timestamp for the 17 known source URLs.
+- `GET /api/source-status`: persisted reachability status, freshness and last check timestamp for the 58 known source URLs.
 - `GET /api/notices`: separate DfE official-feed notice records with server-side pagination, search and inferred job category.
 - `GET /api/ingestion-status`: latest source-ingestion outcomes; a failed import never fabricates vacancy data. Read-only inspection only.
 - Community API: register / posts / post / reply / vote / report / export / delete-post / delete-account. Posts and replies are held in D1; no third-party account provider.
@@ -64,7 +64,7 @@ The Worker Free plan has request and CPU caps; zero cost applies **within free-t
 
 ## Scheduled monitoring (verified source availability only)
 
-- The **staging** Worker has Cloudflare Cron Trigger `0 */3 * * *` (UTC): 3 of 17 portal URLs each run, prioritizing the least recently checked. The whole directory is normally checked within a day.
+- The **staging** Worker has Cloudflare Cron Trigger `0 */3 * * *` (UTC): six of 58 portal URLs per run, prioritizing the least recently checked. Full directory reachability normally rotates in approximately 30 hours; URL reachability does not verify job vacancies.
 - No browser session or AI model needs to stay online. The D1 tables `portal_status` and `portal_history` hold 30-day reachability history. See `portal-status.sql` for a portable SQLite schema.
 - A successful HTTP response, including redirect, means the **site responded**. It is never evidence that a vacancy exists or that a listed examination is current. Some government sites reject automated checks; those are explicitly flagged as restricted or unconfirmed.
 - Free-tier quotas, external website policies and rate limits remain binding. Monitoring cadence may be reduced if required. Do not add large-scale scraping without source permissions.
@@ -95,3 +95,20 @@ The Worker Free plan has request and CPU caps; zero cost applies **within free-t
 - Current draft PR CI passed at 320, 375, 768, 1440px and on live preview mobile. These records remain **source-confirmed, not independently verified**, and the pilot is not yet exhaustive.
 - The bootstrap was a single operation. It does **not** prove the future Cron Trigger can fetch this source from Cloudflare; observe and independently verify the first scheduled ingestion outcome. Until then, scheduled ingestion is configured but not operationally proven. Until then do not claim unattended recruitment synchronization is operational.
 - The experimental minute-frequency schedule was removed. Only conservative 3-hour recurring checks remain enabled on the separate staging Worker. No production website files were changed.
+
+## Phase 3: Major country state/provincial/territorial jobs (v2.5)
+
+- Verified directory: **58 official government recruitment portals** in **11 countries**, including regional and city employers where available, with country, government-level and state/province/territory filters and device-local official-portal bookmarks. A portal is not an imported vacancy or proof of current openings.
+- **Two actual official-source datasets** (as of 16 November 2026): **100** records from the UK Department for Education Teaching Vacancies JSON public-data feed (**public education**, not asserted to be civil service); **53** records from the **Manitoba provincial civil-service RSS** (56 published feed items read; 53 valid, 3 rejected). Both preserve source URLs, employer, jurisdiction, closing date and SHA-256 provenance. All records remain individually **unverified**.
+- Manitoba RSS published by the Government of Manitoba: `https://jobsearch.gov.mb.ca/rss/newJobPostingsFeed.rss`; the official directory of government RSS feeds: `https://jobsearch.gov.mb.ca/rssFeeds.action`. Date-only deadlines are displayed as calendar dates, not precise closing times; always check official source.
+- To add a source with no machine-readable feed or no closing-date information: add its **official recruiting portal only**. **Never fabricate vacancies, closing dates, qualifications or citizenship eligibility**. Inspect use rights and format before introducing a source-specific read adapter.
+- Two bounded ingesters run via scheduled Worker events: `20 */3 * * *` for UK DfE (one page at a time) and `40 */3 * * *` for Manitoba (up to 15 notices per pass). These triggers are configured, but **reliable unattended runs are not yet proven**; D1 currently records verified one-time bootstraps, not confirmed recurring executions. Future source additions must be individually audited for access and rate limits.
+- All read APIs are labelled: `/api/jurisdictions` (58 directory sources), `/api/notices` (actual imported source records with country, source, province and stream filters), `/api/notice-changes` (official source-observed title/deadline changes only), `/api/ingestion-status` (read-only audit), `/api/source-status` (reachability only).
+- Notice expiration runs on observed source closing timestamps. Missing records from partial pages are **never** declared withdrawn without reliable official withdrawal evidence. Revision history is retained in `notice_revisions` and cleaned up after 90 days.
+- Migrations: `official-notices.sql`, `official-notices-jurisdictions.sql`, `official-notices-revisions.sql` and `moderation.sql`. SQLite/D1 compatible; no proprietary agent orchestration.
+- **Human moderation:** `/moderation` interface, `/api/moderation/reports`, `/api/moderation/decide`, `/api/moderation/hidden`, `/api/moderation/restore`. All actions require the founder-only `MODERATOR_TOKEN` secret, and return `503` when it is not configured; no privileged guest access, no HQ agent access.
+- **Still pending:** independently verified unattended Worker Cron source access, authentic live recruitment ingestion for Indian PSCs and all remaining subnational portals, admit-card/result change detection, delivered email alerts (requires a real opt-in mail transport, preferably owner-hosted SMTP), cross-device account recovery, scalable regional directory vetting and user-facing launch privacy/terms.
+
+### Release boundary
+
+This remains an isolated Cloudflare staging Worker plus a **draft GitHub pull request**. The main branch and `yorphives.com` have not been modified by this phase. Stay within Cloudflare's free-tier request/D1 allowances or migrate the portable runtime to the owner's server.
