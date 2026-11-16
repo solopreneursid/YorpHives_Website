@@ -335,9 +335,9 @@ async function publishReimaginedRoot(prefix=''){
   '<meta property="og:image" content="https://yorphives.com/tools/brand-icon.webp">',
   '<meta property="og:image:alt" content="YorpHives brand emblem">',
   '<meta name="twitter:card" content="summary">'
- ].join('\\n');
+ ].join('\n');
  if(!homepage.includes('<meta name="description"'))throw Error('Public description missing.');
- homepage=homepage.replace(/<meta name="description"[^>]*>/,match=>match+'\\n'+sharing);
+ homepage=homepage.replace(/<meta name="description"[^>]*>/,match=>match+'\n'+sharing);
 
  if(homepage.includes('DESIGN PREVIEW · NOT LIVE')||
     homepage.includes('name="robots" content="noindex')||
