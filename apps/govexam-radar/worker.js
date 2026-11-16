@@ -9,6 +9,7 @@ import { OFFICIAL_UI_JS } from "./official-ui.mjs";
 import { combinedSources, filterSources, REGIONAL_SOURCES } from "./regional-sources.mjs";
 import { REGIONAL_UI_JS } from "./regional-ui.mjs";
 import { ingestManitoba } from "./manitoba-feed.mjs";
+import { ingestEmploymentNews } from "./india-employment-news.mjs";
 import { expireKnownDeadlines, serveNoticeChanges } from "./notice-lifecycle.mjs";
 import { handleModeration } from "./moderation-api.mjs";
 import { MODERATION_HTML, MODERATION_JS } from "./moderation-ui.mjs";
@@ -87,12 +88,13 @@ export default {
     return JSONResponse({ error: "not_found" }, 404, "no-store");
   },
   async scheduled(controller,env,ctx){
-    // Three deliberately bounded schedules. Do not mistake lack of data for a withdrawn job.
+    // Bounded independent source schedules. Never mistake a missing page for a withdrawn vacancy.
     const run=async()=>{
       const cron=controller?.cron||"";
       let result;
       if(cron==="20 */3 * * *")result=await ingestDfE(env.DB);
       else if(cron==="40 */3 * * *")result=await ingestManitoba(env.DB);
+       else if(cron==="10 */6 * * *")result=await ingestEmploymentNews(env.DB);
       else if(cron==="0 */3 * * *")result=await runScheduledPortalChecks(env.DB,SOURCES);
       else {console.error(JSON.stringify({event:"unrecognized_cron",cron}));return;}
       await expireKnownDeadlines(env.DB);
