@@ -10,7 +10,7 @@ function mockDb(){
   return{bind(...args){bound=args;return this;},
    async all(){
     if(bound.includes("Canada")||bound.includes("manitoba-jobs"))return{results:[]};
-    return{results:[{id:"uk-only-test",sourceId:"uk-dfe-teaching-vacancies",
+    return{results:[{id:"uk-dfe-teaching-vacancies:uk-only-test",sourceId:"uk-dfe-teaching-vacancies",
       title:"<img src=x onerror=alert(1)> Mathematics Teacher",
       employer:"Example Primary School",country:"United Kingdom",region:"London",
       jurisdiction:"England",stream:"Non-technical",
@@ -99,5 +99,28 @@ test("saved UK search remains private to a browser and survives reload",async()=
   await page.locator("#clear-saved-search").click();
   assert.equal(await page.evaluate(()=>localStorage.length),0);
   assert.equal(await page.locator("#use-saved-search").isDisabled(),true);
+ }finally{await context.close();}
+});
+
+test("revisited UK listing changes are highlighted without a notification server",async()=>{
+ const context=await browser.newContext();
+ const page=await context.newPage();
+ try{
+  await page.goto(origin+"/",{waitUntil:"domcontentloaded"});
+  await page.locator(".job-card").waitFor();
+  assert.match(await page.locator("#preview-changes").textContent(),/No changes detected/);
+  await page.route("**/api/release-preview/notices?**",async(route)=>{
+   const response=await route.fetch();
+   const json=await response.json();
+   json.notices[0].closingAt="2026-12-10T12:00:00Z";
+   await route.fulfill({response,json});
+  });
+  await page.reload({waitUntil:"domcontentloaded"});
+  await page.locator(".change-badge").waitFor();
+  assert.match(await page.locator(".change-badge").textContent(),/Closing date changed/);
+  assert.match(await page.locator("#preview-changes").textContent(),/1 previously viewed/);
+  await page.reload({waitUntil:"domcontentloaded"});
+  await page.locator(".job-card").waitFor();
+  assert.equal(await page.locator(".change-badge").count(),0,"unchanged repeat view must not keep alerting");
  }finally{await context.close();}
 });
