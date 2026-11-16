@@ -17,6 +17,8 @@
   Cache-Control: no-cache, max-age=0, must-revalidate
 /next.js
   Cache-Control: no-cache, max-age=0, must-revalidate
+/catalog.json
+  Cache-Control: no-store
 /next.css
   Cache-Control: no-cache, max-age=0, must-revalidate
 /next-responsive.css
