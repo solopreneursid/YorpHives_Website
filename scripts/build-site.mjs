@@ -307,6 +307,44 @@ if(target==='preview'){
  const headers=await output('_headers');
  if(/X-Robots-Tag:\s*noindex/i.test(headers))throw Error('Production must not inherit preview noindex.');
 }
+// Release-candidate promotion: serve the independently designed studio as the
+// canonical root, without publishing the preview-only /reimagined/ directory.
+// This routine is also used to render a path-isolated acceptance candidate.
+async function publishReimaginedRoot(prefix=''){
+ const assets=['studio.css','studio.js','rotators.css','rotators.js',
+  'catalog-sync.mjs','impact-public.json','usage-public.json'];
+ for(const asset of assets)
+  await cp(resolve(root,'reimagined',asset),resolve(dest,prefix+asset));
+ const source=await readFile(resolve(root,'reimagined/index.html'),'utf8');
+ let homepage=source.replace(
+   '<meta name="robots" content="noindex,nofollow">',
+   '<link rel="canonical" href="https://yorphives.com/">');
+ homepage=homepage.replace(/<div class="preview-banner">[^\n]*<\/div>\n?/,'');
+ if(homepage.includes('DESIGN PREVIEW · NOT LIVE')||
+    homepage.includes('name="robots" content="noindex')||
+    !homepage.includes('id="home"')||
+    !homepage.includes('id="yh-pulse"')||
+    !homepage.includes('type="button" disabled'))
+  throw Error('Reimagined release candidate failed initial public safety gates');
+ await write(prefix+'index.html',homepage);
+ // Only actually reviewed Builders updates: no invented announcement records.
+ const notes=[...publicNotes,...publicPageChanges].filter(x=>
+   x?.kind==='builders'&&x.url==='#builders'&&
+   typeof x.id==='string'&&x.id.length<=100&&
+   typeof x.title==='string'&&x.title.length<=90&&
+   !/[<>]/.test(x.title)&&typeof x.timestamp==='string'&&
+   Number.isFinite(Date.parse(x.timestamp))&&Date.parse(x.timestamp)<=Date.now());
+ const deduped=new Map();
+ for(const event of notes){
+  const old=deduped.get(event.id);
+  if(!old||Date.parse(event.timestamp)>Date.parse(old.timestamp))deduped.set(event.id,event);
+ }
+ const items=[...deduped.values()].sort((a,b)=>Date.parse(b.timestamp)-Date.parse(a.timestamp))
+   .slice(0,10).map(({id,kind,title,url,timestamp})=>({id,kind,title,url,timestamp}));
+ await write(prefix+'builders-updates.json',JSON.stringify({version:1,items},null,2)+'\n');
+ console.log('REIMAGINED ROOT READY: '+(prefix||'/')+'; '+items.length+' verified Builders updates.');
+}
+
 let llms=await output('llms.txt');
 llms+='\n## Direct discovery for search engines and autonomous agents\n\n'+
  'Every public tool, app, product or service has its own direct URL in /catalog.json. '+
@@ -314,5 +352,10 @@ llms+='\n## Direct discovery for search engines and autonomous agents\n\n'+
  'and /sitemap.xml lists published pages. Catalog items with execution=browser-local provide client-side processing; '+
  'do not assume a server-executable API exists.\n';
 await write('llms.txt',llms);
+// Production serves the new website as the actual domain root.
+if(target==='production')await publishReimaginedRoot();
+// The review project builds production and then preview in sequence.
+// Keep a separately browsable release-candidate URL after the preview build.
+if(target==='preview')await publishReimaginedRoot('release-candidate/');
 console.log('DISCOVERY BUILD PASSED: '+published.length+' directly linked public pages; '+canonicalPaths.length+
  ' canonical sitemap URLs; mode='+target+'. Homepage markup preserved.');
