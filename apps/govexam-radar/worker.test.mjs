@@ -84,3 +84,24 @@ test("legacy Cron routing stays supported through a non-disruptive scheduler mig
  assert.equal(govradarScheduledTask({cron:"20 */3 * * *"}),"uk");
  assert.equal(govradarScheduledTask({cron:"40 */3 * * *"}),"manitoba");
 });
+
+test("UK release candidate is self-hosted, noindexed and remains staging-only",async()=>{
+ const html=await worker.fetch(new Request("https://app.example/release-preview"));
+ assert.equal(html.status,200);
+ const body=await html.text();
+ assert.match(body,/RELEASE CANDIDATE · STAGING ONLY/);
+ assert.match(body,/GovRadar · UK Education Release Preview/);
+ assert.match(body,/id="preview-grid"/);
+ assert.match(body,/UK DfE · OGL v3\.0/);
+ assert.match(html.headers.get("X-Robots-Tag"),/noindex/);
+ assert.match(html.headers.get("Content-Security-Policy"),/script-src 'self'/);
+ for(const [asset,pattern] of [["/release-preview.css",/grid-template-columns/],["/release-preview.js",/\/api\/release-preview\/notices/]]){
+  const r=await worker.fetch(new Request("https://app.example"+asset));
+  assert.equal(r.status,200,asset);
+  assert.match(await r.text(),pattern);
+ }
+ const notices=await worker.fetch(new Request("https://app.example/api/release-preview/notices?scope=research"));
+ assert.equal(notices.status,503,"no D1 means no invented commercial preview notices");
+ const spec=await (await worker.fetch(new Request("https://app.example/openapi.json"))).json();
+ assert.ok(spec.paths["/api/release-preview/notices"]);
+});
