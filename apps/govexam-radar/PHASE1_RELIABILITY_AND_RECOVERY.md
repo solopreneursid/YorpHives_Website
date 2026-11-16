@@ -35,9 +35,18 @@ Cloudflare D1 usage endpoint `GET /accounts/{account_id}/d1/insights/databases` 
 - GovRadar D1: **487,159 rows read**, **5,313 rows written**, **8,808 queries**.
 - Three **currently active** D1 databases. GovRadar D1 size at check: **466,944 bytes**.
 - Published Workers Free D1 allowances at verification: **5,000,000 rows read/day**, **100,000 written/day**, **10 D1 databases**, **500 MB per database**, **5 GB total account D1 storage**, **7-day Time Travel**. Do not assume all account services will stay within those allowances as traffic grows.
-- **Cron quota issue**: Cloudflare reports **six configured Cron triggers** across Workers. GovRadar has three (portal checks + UK + Manitoba); three belong to separate HQ Workers. Published Workers Free limit is **five per account**. No existing HQ schedules were changed. Before a $0 release claim, independently confirm the actual Workers plan and choose a safe consolidation of at least one existing schedule if using Workers Free. Never silently delete an HQ job.
+- **Cron quota issue resolved on staging**: The initial account inventory had **six configured Cron triggers** (three GovRadar + three HQ), above the published Workers Free limit of **five**. GovRadar's three were consolidated into one trigger `*/20 */3 * * *`, with a UTC `scheduledTime` dispatcher preserving the previous 0/20/40-minute slots every three hours. Cloudflare verified the **account now has four configured triggers**, with all three HQ schedules unchanged. The new configuration has passed unit routing tests; **actual future Cron executions after migration still need independent audit confirmation**. `schedule.mjs` provides an idempotent, staging-only reproducible configuration command.
 - Workers request-count billing usage was **not verified**: the account's current Cloudflare OAuth connection lacks Billing Read, and `GET /accounts/{account_id}/billing/usage?metrics=workersRequests` was rejected with HTTP 403. Workers observability **log event counts are not request/billing counts**. The account subscription list is also inaccessible with this OAuth connection (Billing Read required).
-- Avoid adding any new Cron trigger until the account plan/quotas are confirmed. Shared-account resource limits apply to HQ as well as GovRadar.
+- Do not add additional triggers without reviewing the shared account budget. Current configured Cron count is **4/5 of the published Free allowance**; the account plan and actual Workers billing request count remain unknown with the present OAuth permissions.
+
+## One-Cron operational migration (staging only)
+
+- New source constant: `GOVRADAR_SINGLE_CRON = "*/20 */3 * * *"`. It fires at UTC minutes 0, 20 and 40 only during UTC hours divisible by three.
+- The Worker routes on `controller.scheduledTime` (the intended UTC time) instead of wall-clock invocation delay. Minute 0 runs portal checks, minute 20 runs UK DfE ingestion, minute 40 runs Manitoba RSS ingestion. Invalid/missing timestamp and any India job are rejected. The original three expressions remain recognized by the code during migration.
+- The new Worker code was deployed to **only** `hqventures-govexam-parity-preview`, protecting `INGEST_HMAC_KEY` and the original D1 database binding. Cloudflare's schedule API then replaced the exact three old expressions with one new expression; `GET /schedules` confirmed only `*/20 */3 * * *`.
+- The account inventory was independently re-read: GovRadar **one** trigger; HQ pilot `*/5 * * * *`, HQ native preview `*/15 * * * *`, HQ watchdog `*/30 * * * *` (all unchanged). **Four configured triggers account-wide.**
+- To reproduce the staging-only configuration from owner-controlled Node 22 with private `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` environment variables, run `npm run schedule:staging` in `apps/govexam-radar`. It accepts only the exact pre-migration three expressions or the already-correct single expression; checks encrypted Secret and D1; refuses any other Worker/account or unexpected schedules.
+- Because Cloudflare Cron updates can take **up to 15 minutes** to propagate, judge reliability by subsequent D1 audit rows, not immediate API configuration status. A Cron configuration success is **not** proof the next UK or Manitoba import succeeded.
 
 ## Completed isolated restore drill — no live data copied
 
@@ -66,7 +75,7 @@ This establishes Cloudflare D1 point-in-time recovery **on a disposable database
 ## Final production release blockers
 
 - Two observed native scheduled successes per source within the defined gate, with no more recent native failure. **Not yet achieved at the time of the first reading (one per source).**
-- Billing Read or founder dashboard evidence confirming Workers plan and **actual account-wide daily Workers requests**, and resolution/clarification of **six configured Cron triggers against a Free limit of five**.
+- Billing Read or founder dashboard evidence confirming Workers plan and **actual account-wide daily Workers requests**. Configured Cron count was reduced from six to four, but the plan's true tier remains unverified.
 - Permission/accuracy checks for new sources, India licensing, and source freshness.
 - Founder-reviewed release of the **currently draft PRs** to the appropriate deployment branch. GitHub signed collector's scheduled fallback still runs **only on a reviewed default-branch release**; do not claim it is already recurring.
 - Continue verifying long-term reliability; a two-cycle gate is useful evidence but not proof of months of operation.
