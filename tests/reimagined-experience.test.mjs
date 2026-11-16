@@ -29,7 +29,9 @@ test('new frontend is independent, local-first, and protects original tool engin
  assert.doesNotMatch(html,/(?:src|href)="https?:\/\//i);
  assert.doesNotMatch(css,/@import|url\(['"]?https?:/i);
  assert.doesNotMatch(js,/google-analytics|gtag|posthog|mixpanel|segment\.io|fingerprintjs/i);
- assert.match(js,/fetch\('\.\.\/catalog\.json'/);
+ assert.match(js,/getCatalog\(\)/);
+ const sync=await read('reimagined/catalog-sync.mjs');
+ assert.match(sync,/fetch\('\.\.\/catalog\.json'/);
  assert.match(js,/qualifiedProducts\(allItems\)/);
  assert.match(js,/link\.href='\.\.\/'\+t\.url/);
  assert.match(js,/saved=new Set/);assert.match(js,/localStorage/);
