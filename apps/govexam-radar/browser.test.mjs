@@ -253,3 +253,25 @@ test("jurisdiction directory includes municipal and provincial official links on
  const byProvince=await (await fetch(origin+"/api/jurisdictions?jurisdiction=CA-MB")).json();
  assert.equal(byProvince.total,1);assert.equal(byProvince.sources[0].name.includes("Manitoba"),true);
 });
+
+
+test("real Manitoba provincial government jobs display with source and location filters",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:820}});
+ const errors=[];page.on("pageerror",e=>errors.push(String(e)));
+ try{
+  await page.goto("https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/",{waitUntil:"domcontentloaded",timeout:30000});
+  await page.locator("#official-notice-grid article").first().waitFor({timeout:30000});
+  await page.locator("#official-notice-country").selectOption("Canada");
+  await page.locator("#official-notice-filters button[type=submit]").click();
+  await page.waitForFunction(()=>document.querySelector("#official-notice-status")?.textContent.includes("imported official-source"),{timeout:15000});
+  assert.ok((await page.locator("#official-notice-grid article").count())>=1);
+  const cards=page.locator("#official-notice-grid article");
+  assert.match(await cards.first().innerText(),/Manitoba Government|Manitoba/);
+  assert.ok((await cards.first().locator('a[href*="jobsearch.gov.mb.ca"]').count())===1);
+  await page.screenshot({path:"govradar-province-manitoba-375.png",fullPage:false});
+  await cards.first().locator("button[data-save-notice]").click();
+  await page.evaluate(()=>window.switchTab("saved"));
+  assert.ok((await page.locator("#saved-official-notices article").count())>=1);
+  assert.equal(errors.length,0,"Provincial feed UI script errors: "+errors.join("; "));
+ }finally{await page.close();}
+});
