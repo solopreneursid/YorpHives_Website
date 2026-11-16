@@ -83,6 +83,14 @@ This checklist is intentionally evidence-based. **Do not mark automatic synchron
 - Detailed verified evidence and founder-controlled incident playbook: `PHASE1_RELIABILITY_AND_RECOVERY.md`.
 - Staging Worker was securely redeployed after implementing the two-cycle status, preserving its encrypted `INGEST_HMAC_KEY` and original D1 binding with strict inheritance. The first CI smoke run expected the new status before this deployment and failed; its unit and browser tests had passed. The next CI smoke must pass against the updated staging runtime before calling the change verified.
 
+## Cron consolidation completed — staging only (2026-11-16)
+
+- **Resolved configured-trigger Free-tier conflict**: Six triggers originally included three GovRadar schedules and three HQ schedules. After a safety-reviewed staging-only migration, the Worker now has one trigger `*/20 */3 * * *`; the account has **four configured triggers in total**, below Cloudflare's published Workers Free limit of five. All HQ Workers and their Cron schedules remained unchanged.
+- UTC routing in the GovRadar Worker keeps three distinct jobs at minute 0 (portal checks), 20 (UK DfE) and 40 (Manitoba RSS) in every third UTC hour, with no increase in planned invocations. Existing legacy expressions are supported by the code during migration. Any India Cron is disabled.
+- GitHub regression tests cover allowed UTC slots, invalid/off-hour timestamps, legacy migration and exact schedule inventory. The Worker was deployed with strict encrypted-secret inheritance before the API schedule change. Cloudflare confirmed exactly one GovRadar schedule and intact protected bindings.
+- The source-controlled, owner-operated `apps/govexam-radar/schedule.mjs` reproduces the one-trigger configuration without requiring a proprietary runtime or touching other Workers.
+- **Still not proven**: next real scheduled runs under the new Cron expression, the second successful native cycle for both sources, actual Workers daily request consumption and the account's billing plan (Cloudflare OAuth lacks Billing Read). See `PHASE1_RELIABILITY_AND_RECOVERY.md`.
+
 ## Evidence URLs
 - Draft PR 7: https://github.com/solopreneursid/YorpHives_Website/pull/7
 - Official India index: https://employmentnews.gov.in/newemp/AllJobs.aspx?k=All
