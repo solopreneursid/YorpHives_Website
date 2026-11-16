@@ -14,8 +14,16 @@ if(tools.length<90)problems.push('Expected at least the 90 established tools.');
 if(new Set(items.map(x=>x.url)).size!==items.length)problems.push('Duplicate public URL.');
 const directory=await read('tools/index.html');
 const homepage=await read('index.html');
-if(!homepage.includes('You bring the idea.')||!homepage.includes('real product.')||
-   !homepage.includes('href="#connect"'))problems.push('Idea-to-product homepage identity or contact CTA missing.');
+if(!homepage.includes('One founder.')||!homepage.includes('An AI team.')||
+   !homepage.includes('Ideas in motion.')||
+   !homepage.includes('AI business operating system')||
+   !homepage.includes('The founder decides what we pursue and build.')||
+   !homepage.includes('href="#connect"'))
+  problems.push('Founder-owned AI venture studio identity, decision rights or contact CTA missing.');
+if(!homepage.includes('id="our-ai-team"')||
+   !homepage.includes('id="projects-collection"')||
+   !homepage.includes('final founder approval'))
+  problems.push('AI research, human approval and public Explore project linkage must be visible.');
 if((homepage.match(/<li class="studio-step stage-/g)||[]).length!==5)
  problems.push('The five-stage idea-to-product journey is incomplete.');
 if(!homepage.includes('href="#tools"'))problems.push('Homepage tool navigation missing.');
