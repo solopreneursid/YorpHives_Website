@@ -280,7 +280,8 @@
       for(const category of [...new Set(allTools.map(x=>x.category||'Other'))].sort()){
         if(!assigned.has(category))groups.push({id:'other-'+groups.length,name:category,icon:'◇',categories:[category]});
       }
-      showProducts(published.filter(x=>x.type==='product'||x.type==='app'));
+      const {qualifiedProducts}=await import('./product-policy.mjs');
+      showProducts(qualifiedProducts(published));
       if(allTools.length){render();renderRibbon();}
       else{
         count.textContent='No tools available';
