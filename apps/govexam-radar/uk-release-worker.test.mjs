@@ -73,6 +73,7 @@ test("notice API and alias restrict both SQL rows and counts and prevent source 
   assert.equal(data.total,1);
   assert.equal(DB.seen.length,2);
   assert.ok(DB.seen.every(x=>x.sql.includes("source_id IN (?)")&&x.params.includes(UK)));
+  assert.ok(DB.seen.every(x=>x.sql.includes("life_status='open'")&&x.sql.includes("closing_at>?")),"SQL must omit expired and withdrawn listings");
   assert.equal(res.headers.get("cache-control"),"no-store");
   assert.match(res.headers.get("x-robots-tag"),/noindex/);
  }
