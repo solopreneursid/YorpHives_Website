@@ -93,7 +93,7 @@ test("simple mode remains fully functional",async()=>{
  const page=await browser.newPage({viewport:{width:375,height:800}});
  try{
    await page.goto(origin+"/lite",{waitUntil:"networkidle"});
-   await page.locator("#stat-sources").getByText("40").waitFor();
+   await page.locator("#stat-sources").getByText("58").waitFor();
    assert.equal(await page.locator("#leads-grid .lead-card").count(),10);
    await page.locator("#search").fill("UPSC");
    assert.equal(await page.locator("#leads-grid .lead-card").count(),2);
