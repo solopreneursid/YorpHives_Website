@@ -19,6 +19,24 @@
   Cache-Control: no-cache, max-age=0, must-revalidate
 /catalog.json
   Cache-Control: no-store
+
+/studio.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/rotators.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/studio.js
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/rotators.js
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/catalog-sync.mjs
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/impact-public.json
+  Cache-Control: no-store
+/usage-public.json
+  Cache-Control: no-store
+/builders-updates.json
+  Cache-Control: no-store
+
 /next.css
   Cache-Control: no-cache, max-age=0, must-revalidate
 /next-responsive.css
