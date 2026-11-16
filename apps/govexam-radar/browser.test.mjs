@@ -420,3 +420,29 @@ test("phone discovery is searchable, browsable, and has accessible filters",asyn
   assert.equal(await page.locator("#discovery-more-menu").isVisible(),false);
  }finally{await page.close();}
 });
+
+test("opportunity cards show truthful source evidence, compact actions and saved-state feedback",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:812}});
+ const errors=[];page.on("pageerror",e=>errors.push(String(e)));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  const card=page.locator("#exam-cards-grid .govradar-opportunity-card").first();
+  await card.waitFor();
+  assert.match(await card.locator(".govradar-card-evidence").textContent(),/Research lead/);
+  assert.match(await card.locator(".govradar-card-caution").textContent(),/not independently verified/);
+  assert.equal(await card.locator(".govradar-details-button").count(),1);
+  assert.equal(await card.locator(".govradar-save-button").count(),1);
+  assert.equal(await card.locator(".govradar-source-link").count(),1);
+  const title=await card.locator(".govradar-card-title").textContent();
+  await card.locator(".govradar-save-button").click();
+  const saved=page.locator("#exam-cards-grid .govradar-opportunity-card").first().locator(".govradar-save-button");
+  assert.equal(await saved.getAttribute("aria-pressed"),"true");
+  await page.evaluate(()=>window.switchTab("saved"));
+  assert.ok((await page.locator("#saved-exams-grid .govradar-opportunity-card").count())>=1);
+  assert.ok((await page.locator("#saved-exams-grid").textContent()).includes(title));
+  await page.locator("#saved-exams-grid .govradar-details-button").first().click();
+  assert.equal(await page.locator("#exam-detail-modal").isVisible(),true);
+  assert.match(await page.locator("#modal-body").textContent(),/Qualifications|Eligibility/);
+  assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
