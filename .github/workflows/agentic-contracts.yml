@@ -1,0 +1,38 @@
+name: Agentic stateless-tool interoperability and security
+on:
+  pull_request:
+    paths:
+      - 'agentic/**'
+      - 'edge/**'
+      - 'scripts/agent-callable.test.mjs'
+      - 'scripts/build-site.mjs'
+      - 'scripts/prod-edge-security.mjs'
+      - '.github/workflows/agentic-contracts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-agent-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned build dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Test provider-neutral deterministic tools and security gates
+        run: node --test scripts/agent-callable.test.mjs
+      - name: Build actual production agent-facing assets
+        run: |
+          node scripts/build-site.mjs --target=production
+          node --check dist/agentic-tools.mjs
+          node --check dist/agentic-browser.mjs
+          node scripts/release-check.mjs dist
+      - name: Document verification boundary
+        if: always()
+        run: |
+          {
+            echo '### Agentic contract verification'
+            echo 'Tests use synthetic tool inputs and mocked native rate limiters.'
+            echo 'No private HQ, database, OAuth secrets, paid APIs or production writes.'
+            echo 'This job does not prove live rate-limit counters or signed-in browser agent support.'
+          } >> "$GITHUB_STEP_SUMMARY"
