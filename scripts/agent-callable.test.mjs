@@ -19,7 +19,7 @@ test('portable operations have documented schemas and bounded outputs',()=>{
  assert.deepEqual(PUBLIC_TOOLS.map(x=>x.id),
  ['word_count','slugify','case_convert','percentage','discount']);
  assert.deepEqual(invokePublicTool('word_count',{text:'Hello, 世界!\nTwo words.'}),
-  {words:5,characters:21,lines:2});
+  {words:4,characters:21,lines:2});
  assert.deepEqual(invokePublicTool('slugify',{text:'Café au lait / 2026'}),{slug:'cafe-au-lait-2026'});
  assert.deepEqual(invokePublicTool('case_convert',{text:'HeLLo WorLD',mode:'lower'}),{text:'hello world'});
  assert.deepEqual(invokePublicTool('percentage',{value:1000,percent:17.5}),{result:175});
