@@ -390,7 +390,8 @@ llms+='\n## Agent-friendly discovery (read-only)\n\n'+
  'Public capabilities: /api/agent/v1/capabilities\n'+
  'OpenAPI 3.1: /api/agent/v1/openapi.json\n'+
  'Machine discovery: /.well-known/agentic.json (site-specific, not a universal standard).\n'+
- 'WebMCP browser discovery is progressive and experimental; no hosted remote tool execution, purchasing, or agent approvals.\n';
+ 'Five free stateless utility operations: /api/agent/v1/tools; every other published tool remains browser-local.\n'+
+ 'WebMCP is experimental; supported browsers can also invoke local utilities without uploading inputs. No payments or private HQ access.\n';
 await write('llms.txt',llms);
 await write('.well-known/agentic.json',JSON.stringify({
  version:1,site:'YorpHives',origin:'https://yorphives.com',
