@@ -19,6 +19,7 @@ test('production Worker has no preview analytics database binding or HQ modifica
  assert.doesNotMatch(contents,/a4348abe-f618-4a59-a8b0-7f994b106e5b/);
  assert.doesNotMatch(contents,/HQ|github|deploy.*token|api_token/i);
  const source=readFileSync('edge/worker.mjs','utf8');
- assert.ok(source.includes("if(p.startsWith('/api/'))return json({error:'unknown-endpoint'});"));
+ assert.ok(source.includes("else response=json({error:'unknown-endpoint'});"));
+ assert.ok(source.includes("headers.set('X-YorpHives-Edge-Runtime','workers-static')"));
  assert.ok(source.includes('return env.ASSETS.fetch(request)'));
 });
