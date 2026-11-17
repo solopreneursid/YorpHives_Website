@@ -3,6 +3,7 @@
  * are intentionally NOT agent-to-HQ, MCP proxies, payments or user-data storage.
  */
 import {invokePublicTool,publicToolDefinition,ToolInputError} from './tools-core.mjs';
+import {recordAgentUtilityCall} from './usage.mjs';
 const MAX_BODY=4096;
 const baseHeaders={'content-type':'application/json; charset=utf-8',
  'cache-control':'no-store','x-content-type-options':'nosniff'};
@@ -51,6 +52,8 @@ export async function invokeAgentTool(request,env,path){
   if(!raw)return reply({error:'invalid-json'},400);
   const args=JSON.parse(raw);
   const result=invokePublicTool(match[1],args);
+  // Only the allowlisted utility ID is recorded; never input values or caller identity.
+  recordAgentUtilityCall(env,match[1]);
   return reply({schemaVersion:1,tool:match[1],result,stateless:true,stored:false,
    charged:false});
  }catch(error){
