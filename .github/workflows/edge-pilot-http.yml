@@ -17,6 +17,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify deployed isolated Workers pilot
         run: node scripts/smoke-workers-pilot.mjs
+      - name: Check all 143 published routes and models
+        run: node scripts/smoke-worker-routes.mjs
       - name: Release policy
         run: |
           echo 'This workflow performs GET-only smoke tests against the dedicated pilot.'
