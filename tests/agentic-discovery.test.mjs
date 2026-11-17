@@ -18,13 +18,26 @@ test('agent discovery never publishes unapproved ventures, private tools or remo
  assert.equal(data.governance.headquartersReadOnly,true);
  assert.equal(published[0].interaction.remoteExecutionAvailable,false);
 });
-test('OpenAPI declares only read-only operations on official origin',()=>{
+test('OpenAPI lists only read-only discovery and tightly bounded stateless utility POSTs',()=>{
  const spec=openapi();
  assert.equal(spec.openapi,'3.1.0');
  assert.deepEqual(spec.servers,[{url:'https://yorphives.com'}]);
- assert.ok(Object.values(spec.paths).every(x=>x.get && Object.keys(x).length===1));
+ const callable=new Set(['word_count','slugify','case_convert','percentage','discount']);
+ const executed=new Set();
+ for(const [path,methods] of Object.entries(spec.paths)){
+  if(methods.get&&Object.keys(methods).length===1)continue;
+  const match=/^\/api\/agent\/v1\/tools\/([a-z_]+)\/invoke$/.exec(path);
+  assert.ok(match&&callable.has(match[1]),'Unexpected agent mutation operation: '+path);
+  assert.deepEqual(Object.keys(methods),['post']);
+  const operation=methods.post;
+  assert.equal(operation['x-yorphives-stateless'],true);
+  assert.equal(operation.requestBody?.content?.['application/json']?.schema?.additionalProperties,false);
+  assert.ok(operation.responses[429], 'No rate-limit response documented');
+  executed.add(match[1]);
+ }
+ assert.deepEqual([...executed].sort(),[...callable].sort());
 });
-test('edge and Pages compatible API is no-credential GET-only and fails closed',async()=>{
+test('read-only discovery remains GET-only and fails closed',async()=>{
  const req=(path,method='GET')=>new Request('https://yorphives.com'+path,{method});
  const missing=await agentGet(req('/api/agent/v1/capabilities'),{ASSETS:{fetch:async()=>new Response('Unavailable',{status:503})}},'/api/agent/v1/capabilities');
  assert.equal(missing.status,503);

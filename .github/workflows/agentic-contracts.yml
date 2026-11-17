@@ -6,6 +6,7 @@ on:
       - 'edge/**'
       - 'scripts/agent-callable.test.mjs'
       - 'scripts/agentic-markdown.test.mjs'
+      - 'tests/**'
       - 'scripts/build-site.mjs'
       - 'scripts/prod-edge-security.mjs'
       - '.github/workflows/agentic-contracts.yml'
@@ -31,6 +32,8 @@ jobs:
           node --check dist/agentic-browser.mjs
           node scripts/release-check.mjs dist
           node --test scripts/agentic-markdown.test.mjs
+      - name: Run entire website regression suite against generated assets
+        run: node --test tests/*.test.mjs
       - name: Document verification boundary
         if: always()
         run: |
