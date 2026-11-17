@@ -12,11 +12,11 @@ async function get(path,{redirect='follow'}={}){
 }
 const checks=[];
 function record(label,fn){checks.push((async()=>{await fn();console.log('PASS '+label)})());}
-record('staging homepage renders redesigned root and has noindex',async()=>{
+record('staging homepage renders redesigned root and carries noindex response header',async()=>{
  const {response,body}=await get('/');
  assert.equal(response.status,200);
  assert.match(body,/id="yh-pulse"/);
- assert.match(body,/noindex/i);
+ assert.match(response.headers.get('x-robots-tag')||'',/noindex/i);
 });
 record('tool directory and working direct tool page',async()=>{
  for(const path of ['/tools/','/tools/image-resizer/']){
