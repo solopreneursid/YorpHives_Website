@@ -38,10 +38,10 @@ test('analytics schema never stores sensitive content or identifiers',async()=>{
  for(const forbidden of ['ip_address','user_agent','email','filename','user_input','fingerprint'])
   assert.ok(!sql.includes(forbidden),forbidden);
 });
-test('Cloudflare Functions stay confined to /api/insights/* routes',async()=>{
+test('Cloudflare Functions stay confined to analytics and read-only agent discovery routes',async()=>{
  const s=await read('scripts/build-site.mjs');
  assert.ok(s.includes("'_routes.json'"));
- assert.ok(s.includes("include:['/api/insights/*']"));
+ assert.ok(s.includes("include:['/api/insights/*','/api/agent/v1/*']"));
  assert.ok(s.includes("insights-client.mjs"));
 });
 test('Impact and YHpulse show measured, not invented, business results',async()=>{
