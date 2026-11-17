@@ -8,7 +8,7 @@ async function scenario(name,fn){
  const context=await browser.newContext({baseURL:ORIGIN,serviceWorkers:'block',viewport:{width:1280,height:820}});
  const page=await context.newPage(),errors=[];
  await context.route('**/api/insights/collect',route=>route.fulfill({status:204,body:''}));
- page.on('pageerror',e=>errors.push(e.message));
+ page.on('pageerror',e=>errors.push(page.url()+': '+(e.stack||e.message).slice(0,350)));
  page.on('request',r=>{if(['POST','PATCH','PUT','DELETE'].includes(r.method())&&!r.url().endsWith('/api/insights/collect'))unexpectedWrites.push(r.method()+' '+r.url());});
  try{
   await fn(page,context);
@@ -57,6 +57,9 @@ try{
   await page.setViewportSize({width:390,height:844});
   for(const path of ['/','/tools/','/tools/word-counter/','/tools/json-formatter/','/tools/image-resizer/']){
    await open(page,path);
+   // Wait for this page's own async requests to settle before navigating away.
+   // Rapid navigation used to abort live first-party requests and throw 'Failed to fetch'.
+   await page.waitForLoadState('networkidle',{timeout:10000}).catch(async()=>{await page.waitForTimeout(750)});
    const layout=await page.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
    assert.ok(layout.scroll<=layout.client+8,path+' horizontal overflow: '+JSON.stringify(layout));
   }
