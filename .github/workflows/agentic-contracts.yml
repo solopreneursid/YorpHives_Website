@@ -5,6 +5,7 @@ on:
       - 'agentic/**'
       - 'edge/**'
       - 'scripts/agent-callable.test.mjs'
+      - 'scripts/agentic-markdown.test.mjs'
       - 'scripts/build-site.mjs'
       - 'scripts/prod-edge-security.mjs'
       - '.github/workflows/agentic-contracts.yml'
@@ -29,6 +30,7 @@ jobs:
           node --check dist/agentic-tools.mjs
           node --check dist/agentic-browser.mjs
           node scripts/release-check.mjs dist
+          node --test scripts/agentic-markdown.test.mjs
       - name: Document verification boundary
         if: always()
         run: |
