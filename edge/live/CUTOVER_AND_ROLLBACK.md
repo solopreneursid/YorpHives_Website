@@ -1,3 +1,27 @@
+## Recorded production release — 2026-11-17
+
+**Cutover completed and independently checked.** The exact active Workers Route in zone `yorphives.com` is:
+
+| Setting | Recorded value |
+| --- | --- |
+| Zone ID | `1ce6b0c59175928a8687797c3cdbff2f` |
+| Worker route ID | `efde34f924b84583a40bf0777b996658` |
+| Worker route pattern | `yorphives.com/*` |
+| Worker script | `yorphives-edge-static-live` |
+| Live D1 binding | `e7e3e27c-8cfb-44e1-bcd5-6c3a186ceaa7` |
+| Staging pilot D1 | `a4348abe-f618-4a59-a8b0-7f994b106e5b` |
+| Rollback Pages project | `yorphives-v1-live` |
+| DNS | Existing proxied apex/www CNAME to `yorphives-v1-live.pages.dev` unchanged |
+
+The separate `www.yorphives.com` Worker route is **not needed**: the existing canonical 301 redirect leads to `yorphives.com`, which is served by the Worker.
+
+**Verified external evidence:** Staging pilot browser tests 10/10 passed, pilot routes 143/143, model assets and API checks passed; full API/asset build 308 tests passed; release URL parity 143/143; post-cutover `Live YorpHives edge cutover integrity` GitHub Actions run `44039297052` passed for both apex and www with `X-YorpHives-Edge-Runtime: workers-static`. Production `noindex` was absent. Production analytics requests remained read-only.
+
+**Rollback procedure, using the Cloudflare API:** DELETE `/zones/1ce6b0c59175928a8687797c3cdbff2f/workers/routes/efde34f924b84583a40bf0777b996658`. The Pages CNAME and existing Pages custom domains were deliberately retained. Next check the runtime header is absent, the homepage, 143 tools and both public APIs still respond, and `www` still redirects. A routine live rollback drill was **not** performed during rollout, so fallback propagation timing is not measured.
+
+**Operations after release:** Never connect HQ to Worker write/deploy credentials. Keep Pages deployments and the Pages-hosted rollback until operational recovery has been independently tested. If rebuilding from the GitHub release branch, the connected Workers Build for `yorphives-edge-static-live` deploys the versioned Worker assets automatically; use reviewed commits and quality gates to prevent unapproved production changes. Keep `edge/pilot/` staging-only.
+
+---
 # Edge-native production Workers cutover — protected rollout
 
 Production Worker name: `yorphives-edge-static-live`. It uses the existing production D1 database; its `workers_dev` subdomain is **disabled**, and no custom domains or routes are declared in Wrangler. Uploading this Worker has **no production traffic impact**.

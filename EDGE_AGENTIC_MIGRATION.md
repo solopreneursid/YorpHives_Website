@@ -1,6 +1,6 @@
 # YorpHives Edge-Native and Agentic Internet Architecture
 
-Status: staged migration. Cloudflare Pages + Pages Functions currently serves production. A compatible Worker gateway is implemented in `edge/worker.mjs` but **has not replaced the production hostname**.
+Status: **production cutover completed 2026-11-17**. The apex `yorphives.com/*` Worker Route executes `yorphives-edge-static-live`, serving versioned Workers Static Assets and dynamic APIs. `www` retains its 301 canonical redirect to the apex. The previous Cloudflare Pages deployment, custom domains and proxied CNAME records remain untouched as rollback origin; no site assets depend on a new SaaS. `edge/pilot/` stays isolated with staging D1.
 
 ## What is already edge-native
 
@@ -20,7 +20,7 @@ Status: staged migration. Cloudflare Pages + Pages Functions currently serves pr
 7. **Portability:** all agent contracts are independent of Cloudflare; dynamic operations use Web Request/Response, SQLite-compatible SQL and an injectable `ASSETS` adapter. A self-hosted runtime and SQLite can implement the same contracts without another intermediary.
 8. **Content licensing:** do not infer universal reuse/training permission. Only publish content signals after founder policy review.
 
-## No-downtime rollout gates
+## Rollout history and ongoing safety gates
 
 **Gate A — current Pages production:** Add the agent-discovery endpoints as narrowly scoped Pages Functions, keep existing frontend, D1 and live domain. Test the production-style build, preview-style build, 143 tool routes, website headers/redirects, analytics and live API availability.
 
@@ -28,7 +28,7 @@ Status: staged migration. Cloudflare Pages + Pages Functions currently serves pr
 
 **Gate C — operational and security review:** Test authenticated founder controls (separate HQ), database retention, duplicate submissions, Rate Limit/WAF behavior, rollback, requests with DNT/GPC, robot handling, mobile UI, Lighthouse and synthetic runs. Verify a pilot request cannot access production D1.
 
-**Gate D — domain cutover only with evidence:** Point `yorphives.com` to the Workers Static Assets Worker only when Gates A-C pass and a tested rollback to the existing Pages route is available. Do not delete the existing Pages project or databases. Do not claim serverless Workers deployment complete before domain cutover is verified.
+**Gate D — completed on 2026-11-17:** `yorphives.com/*` is routed to `yorphives-edge-static-live` without DNS changes. The strict read-only GitHub Actions release suite verified the Workers runtime response marker, 143/143 tool routes, model assets, noindex-free SEO, API availability and both canonical and www access paths. The old Pages origin was retained and can be restored by deleting the single zone Worker Route. **A live rollback drill has not yet been performed**, so do not claim restoration timing has been proven.
 
 ## Cost and lock-in
 
