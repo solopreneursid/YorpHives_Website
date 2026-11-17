@@ -16,7 +16,11 @@ const fetcher=async(url,{method})=>{
  const check=CHECKS.find(c=>url.endsWith(c.path));
  const v=data[check?.id];
  return new Response(method==='HEAD'?null:v.body,{status:v.status,headers:{
-  'content-type':check?.id==='html'?'text/html':check?.id==='model'?'application/octet-stream':'application/json',
+  'content-type':check?.id==='home'?'text/html':check?.id==='model'?'application/octet-stream':'application/json',
+  ...(check?.id==='home'?{
+   'content-security-policy':"default-src 'self'; object-src 'none'; frame-ancestors 'none'",
+   'x-frame-options':'DENY','x-content-type-options':'nosniff'
+  }:{}),
   ...(check?.id!=='home'&&check?.id!=='missing'&&check?.id!=='model'?{'x-yorphives-edge-runtime':'workers-static'}:{})
  }});
 };
@@ -36,6 +40,20 @@ test('failure of edge marker and noindex prevent false green',async()=>{
   return r;
  };
  assert.equal((await probeOne(CHECKS[0],noindex)).reason,'production-noindex');
+});
+test('continuous monitor flags weakened CSP and missing anti-framing defenses',async()=>{
+ const weakened=async(url,opts)=>{
+  const response=await fetcher(url,opts);
+  if(url.endsWith('/'))response.headers.set('content-security-policy',"default-src 'self'");
+  return response;
+ };
+ assert.equal((await probeOne(CHECKS[0],weakened)).reason,'csp-weakened');
+ const framing=async(url,opts)=>{
+  const response=await fetcher(url,opts);
+  if(url.endsWith('/'))response.headers.delete('x-frame-options');
+  return response;
+ };
+ assert.equal((await probeOne(CHECKS[0],framing)).reason,'framing-not-denied');
 });
 test('KV records minimal recent evidence, failure streak and daily expiry',async()=>{
  const m=new Map(),history=[];
