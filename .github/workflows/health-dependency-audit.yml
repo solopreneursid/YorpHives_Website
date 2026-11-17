@@ -28,6 +28,11 @@ jobs:
           set -e
           echo "npm audit command exit status: $audit_exit"
           node scripts/health-dependency-audit.mjs
+      - name: Read-only live checks of all 143 published tool pages and agent APIs
+        env:
+          YH_HOST: yorphives.com
+          EXPECT_RUNTIME: workers
+        run: node scripts/live-cutover-check.mjs
       - name: Record scope and limitations
         if: always()
         run: |
