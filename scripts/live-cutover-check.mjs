@@ -58,7 +58,16 @@ for(const path of ['/api/insights/public','/api/insights/growth','/api/agent/v1/
 const gone=await fetchBound('/not-a-real-yh-asset-xyzzzy-927ab');
 if(marked)assert.equal(gone.status,404,'Worker must not serve an SPA fallback for missing files');
 else assert.ok([200,404].includes(gone.status),'Existing Pages fallback changed unexpectedly');
-const legacy=await fetchBound('/free-tools/',{redirect:'manual'});assert.equal(legacy.status,302);
-assert.match(legacy.headers.get('location')||'',/\/tools\/?$/);
+const legacy=await fetchBound('/free-tools/',{redirect:'manual'});
+if(host==='www.yorphives.com'){
+ assert.equal(legacy.status,301,'www canonical redirect must remain first');
+ assert.match(legacy.headers.get('location')||'',/^https:\/\/yorphives\.com\//i);
+ const apexLegacy=await fetch('https://yorphives.com/free-tools/',{redirect:'manual'});
+ assert.equal(apexLegacy.status,302,'Apex legacy redirect must remain intact');
+ assert.match(apexLegacy.headers.get('location')||'',/\/tools\/?$/);
+}else{
+ assert.equal(legacy.status,302);
+ assert.match(legacy.headers.get('location')||'',/\/tools\/?$/);
+}
 assert.ok(content.includes('agentic-browser.mjs'));
 console.log('LIVE CUTOVER CHECK PASSED: host='+host+' runtime='+(marked?'workers-static':'pages')+' routes='+count+' validated; noindex absent; agent and analytics routes available.');
