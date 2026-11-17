@@ -5,7 +5,8 @@
  * invoked at the edge; the remaining catalog stays browser-local.
  */
 import {qualifiedProducts} from '../product-policy.mjs';
-import {PUBLIC_TOOLS} from './tools-core.mjs';
+import {PUBLIC_TOOLS,PUBLIC_TOOL_PAGES} from './tools-core.mjs';
+const BY_ID=new Map(PUBLIC_TOOLS.map(x=>[x.id,x]));
 const TOOL=/^tools\/[a-z0-9][a-z0-9-]*\/$/;
 const OTHER=/^(?:apps|products)\/[a-z0-9][a-z0-9-]*\/$/;
 const headers={'Content-Type':'application/json; charset=utf-8','Cache-Control':'public, max-age=60, s-maxage=180','X-Content-Type-Options':'nosniff','Access-Control-Allow-Origin':'*'};
@@ -16,13 +17,27 @@ export const isPublic=x=>x?.published!==false&&x?.visibility!=='private'&&
 export function publishedAgentItems(items){
  const qualified=new Set(qualifiedProducts(items));
  return (Array.isArray(items)?items:[]).filter(x=>isPublic(x)&&
-   (x.type==='tool'||qualified.has(x))).map(x=>({
-    id:x.url,type:x.type,name:text(x.name),description:text(x.description),
-    category:text(x.category)||'Other',url:'https://yorphives.com/'+x.url,
-    markdown:'https://yorphives.com/'+(x.url.endsWith('/')?x.url+'index.md':x.url.replace(/\.html$/,'.md')),
-    interaction:{kind:'web-page',execution:'browser-local-or-human',
-     remoteExecutionAvailable:false,requiresUserInteraction:true}
- })).filter(x=>x.name&&x.description).sort((a,b)=>a.id.localeCompare(b.id));
+   (x.type==='tool'||qualified.has(x))).map(x=>{
+    const callable=x.type==='tool'?BY_ID.get(PUBLIC_TOOL_PAGES[x.url]):null;
+    return {
+     id:x.url,type:x.type,name:text(x.name),description:text(x.description),
+     category:text(x.category)||'Other',url:'https://yorphives.com/'+x.url,
+     markdown:'https://yorphives.com/'+(x.url.endsWith('/')?x.url+'index.md':x.url.replace(/\.html$/,'.md')),
+     interaction:callable?{
+      kind:'web-page-and-stateless-http-json',
+      execution:'browser-local-or-limited-stateless-remote',
+      remoteExecutionAvailable:true,
+      requiresUserInteraction:false,
+      remoteToolId:callable.id,
+      remoteEndpoint:'https://yorphives.com/api/agent/v1/tools/'+callable.id+'/invoke',
+      method:'POST',inputSchema:callable.inputSchema,
+      charged:false,storesInput:false
+     }:{
+      kind:'web-page',execution:'browser-local-or-human',
+      remoteExecutionAvailable:false,requiresUserInteraction:true
+     }
+    };
+   }).filter(x=>x.name&&x.description).sort((a,b)=>a.id.localeCompare(b.id));
 }
 async function catalog(request,env){
  const u=new URL('/catalog.json',request.url);
@@ -44,7 +59,7 @@ export function capabilities(items){
    callableTools:'/api/agent/v1/tools',llms:'/llms.txt',sitemap:'/sitemap.xml'},
   callableTools:{count:PUBLIC_TOOLS.length,registry:'/api/agent/v1/tools',
    interface:'stateless-json-over-https',paymentRequired:false},
-  actions:{browse:true,discover:true,executeRemote:false,purchase:false,post:false,authenticate:false},
+  actions:{browse:true,discover:true,executeRemote:false,callableUtilities:true,purchase:false,post:false,authenticate:false},
   governance:{requiresFounderApprovalForPublishing:true,headquartersReadOnly:true},
   itemsCount:items.length,items};
 }

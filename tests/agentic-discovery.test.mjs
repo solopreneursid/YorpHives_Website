@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {capabilities,openapi,publishedAgentItems,agentGet} from '../agentic/discovery.mjs';
 import edge from '../edge/worker.mjs';
-test('agent discovery never publishes unapproved ventures, private tools or remote execution claims',()=>{
+import {PUBLIC_TOOLS,PUBLIC_TOOL_PAGES} from '../agentic/tools-core.mjs';
+test('agent discovery never publishes unapproved ventures or private tools',()=>{
  const items=[
   {type:'tool',name:'Word Counter',description:'Counts words',url:'tools/word-counter/',published:true},
   {type:'tool',name:'Secret',description:'Private internal',url:'tools/private/',visibility:'private'},
@@ -16,7 +17,33 @@ test('agent discovery never publishes unapproved ventures, private tools or remo
  assert.equal(data.actions.executeRemote,false);
  assert.equal(data.actions.purchase,false);
  assert.equal(data.governance.headquartersReadOnly,true);
- assert.equal(published[0].interaction.remoteExecutionAvailable,false);
+ assert.equal(published[0].interaction.remoteExecutionAvailable,true);
+ assert.equal(published[0].interaction.remoteToolId,'word_count');
+ assert.equal(published[0].interaction.remoteEndpoint,
+  'https://yorphives.com/api/agent/v1/tools/word_count/invoke');
+ assert.equal(published[0].interaction.charged,false);
+});
+test('only five exact public pages expose matching bounded stateless HTTP metadata',()=>{
+ const candidates=Object.entries(PUBLIC_TOOL_PAGES).map(([url,id])=>({
+  type:'tool',name:id,description:'Validated free utility',url,published:true
+ })).concat([{type:'tool',name:'Text diff',description:'Local only',
+  url:'tools/text-diff/',published:true}]);
+ const listed=publishedAgentItems(candidates);
+ assert.equal(listed.length,6);
+ for(const [url,id] of Object.entries(PUBLIC_TOOL_PAGES)){
+  const item=listed.find(x=>x.id===url);
+  assert.ok(item);
+  assert.equal(item.interaction.remoteExecutionAvailable,true);
+  assert.equal(item.interaction.method,'POST');
+  assert.equal(item.interaction.remoteToolId,id);
+  assert.equal(item.interaction.storesInput,false);
+  assert.deepEqual(item.interaction.inputSchema,
+   PUBLIC_TOOLS.find(x=>x.id===id).inputSchema);
+ }
+ const local=listed.find(x=>x.id==='tools/text-diff/');
+ assert.equal(local.interaction.remoteExecutionAvailable,false);
+ assert.equal(local.interaction.requiresUserInteraction,true);
+ assert.equal(local.interaction.remoteEndpoint,undefined);
 });
 test('OpenAPI lists only read-only discovery and tightly bounded stateless utility POSTs',()=>{
  const spec=openapi();
