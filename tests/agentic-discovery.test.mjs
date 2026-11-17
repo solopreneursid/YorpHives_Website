@@ -37,6 +37,7 @@ test('edge and Pages compatible API is no-credential GET-only and fails closed',
  assert.equal(edgeBlocked.status,405);
  const unknown=await edge.fetch(req('/api/admin/deploy'),{},{});
  assert.equal(unknown.status,404);
+ assert.equal(unknown.headers.get('X-YorpHives-Edge-Runtime'),'workers-static');
  const noAssets=await edge.fetch(req('/'),{},{});
  assert.equal(noAssets.status,503);
 });
@@ -47,6 +48,7 @@ test('edge static and agent discovery work with ASSETS adapter',async()=>{
  const response=await edge.fetch(new Request('https://preview.example/api/agent/v1/capabilities'),env,{});
  const data=await response.json();
  assert.equal(response.status,200);
+ assert.equal(response.headers.get('X-YorpHives-Edge-Runtime'),'workers-static');
  assert.equal(data.itemsCount,1);
  assert.ok(seen.endsWith('/catalog.json'));
 });
