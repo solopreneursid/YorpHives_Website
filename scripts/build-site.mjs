@@ -394,11 +394,14 @@ llms+='\n## Agent-friendly discovery (read-only)\n\n'+
 await write('llms.txt',llms);
 await write('.well-known/agentic.json',JSON.stringify({
  version:1,site:'YorpHives',origin:'https://yorphives.com',
- status:'read-only',capabilities:'/api/agent/v1/capabilities',
+ status:'public-discovery-and-bounded-stateless-utilities',capabilities:'/api/agent/v1/capabilities',
  openapi:'/api/agent/v1/openapi.json',catalog:'/catalog.json',
- docs:'/llms.txt',remoteExecution:false,requiresFounderApproval:true
+ callableTools:'/api/agent/v1/tools',docs:'/llms.txt',
+ remoteExecution:'five-bounded-stateless-utilities-only',paymentAvailable:false,
+ requiresFounderApproval:true
 },null,2)+'\n');
 await cp(resolve(root,'agentic/browser-webmcp.mjs'),resolve(dest,'agentic-browser.mjs'));
+await cp(resolve(root,'agentic/tools-core.mjs'),resolve(dest,'agentic-tools.mjs'));
 // Agent discovery runs at the edge; no third-party agent service or remote execution.
 
 // Keep the same approved studio interface at / in both environments.
