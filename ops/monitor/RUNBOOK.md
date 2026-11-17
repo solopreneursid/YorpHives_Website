@@ -2,7 +2,7 @@
 
 A separate Worker (`yorphives-edge-watchdog`) checks `https://yorphives.com` every **15 minutes**. It does not run inside the production site Worker or HQ and therefore continues probing if the website itself fails.
 
-Checks: home and SEO noindex, API runtime marker, OpenAPI 3.1, read-only agent catalog, analytics availability, 30-day growth response, pinned model HEAD, missing-path 404. No analytics event POSTs, user data, source mutations, automatic code changes, deployments, credentials or outside AI tools.
+Checks: home and SEO noindex, API runtime marker, OpenAPI 3.1, read-only agent catalog, **five stateless callable-tool registry contracts (GET only)**, **agent-readable Word Counter Markdown**, analytics availability, 30-day growth response, pinned model HEAD, missing-path 404. The watchdog never invokes a tool or submits user data. No analytics event POSTs, user data, source mutations, automatic code changes, deployments, credentials or outside AI tools.
 
 Workers KV namespace `YORPHIVES_PROD_EDGE_HEALTH` stores only `latest` (24-hour TTL) and quarter-hour `history/YYYY-MM-DD/HHMM` (7-day TTL). This is a small low-cost incident evidence trail. Every unhealthy check logs `edge-health-failure` with affected probe IDs in Worker logs. KV may be eventually consistent, so status observations are indicative and not transactional.
 
@@ -11,7 +11,7 @@ Public endpoint: `https://yorphives-edge-watchdog.solopreneursid-proy.workers.de
 ## Verification and incident response
 
 1. Confirm the Worker deploys and the Cron Trigger is installed independently of YorpHives.
-2. After the first scheduled run, `/status` must report `available:true`, `stale:false`, and the seven probe states. A still-unavailable response means **monitoring is not proven**; inspect Worker logs and cron settings.
+2. After the first scheduled run, `/status` must report `available:true`, `stale:false`, and the nine probe states. A still-unavailable response means **monitoring is not proven**; inspect Worker logs and cron settings.
 3. On a failure, independently test live homepage, public API, models and Cloudflare route. Distinguish sustained outage from transient probes and propagation.
 4. The only website rollback is the founder-authorized deletion of the recorded route `efde34f924b84583a40bf0777b996658` in zone `1ce6b0c59175928a8687797c3cdbff2f`, which restores existing Pages origin routing. **This monitor never performs rollback itself.**
 5. Keep history and post-incident root cause in HQ research journal; founder reviews any remediation.
