@@ -5,6 +5,8 @@ const data={
  'home':{status:200,body:'<!doctype html><div id="yh-pulse"></div>'},
  'agent-api':{status:200,body:JSON.stringify({openapi:'3.1.0',paths:{'/api/agent/v1/capabilities':{get:{}}}})},
  'capabilities':{status:200,body:JSON.stringify({actions:{executeRemote:false},items:Array.from({length:143},()=>({}))})},
+ 'agent-tools':{status:200,body:JSON.stringify({interface:'stateless-json-over-https',limits:{perClientPerMinute:30},tools:Array.from({length:5},(_,i)=>({noStorage:true,charged:false,method:'POST',invoke:'/api/agent/v1/tools/tool_'+i+'/invoke'}))})},
+ 'agent-markdown':{status:200,body:'# Word Counter\nCanonical page: https://yorphives.com/tools/word-counter/\n'},
  'analytics':{status:200,body:JSON.stringify({available:true,schemaVersion:1,privacy:{rawIpStored:false}})},
  'growth':{status:200,body:JSON.stringify({available:true,schemaVersion:1,periodDays:30,revenue:{available:false}})},
  'model':{status:200,body:''},
@@ -16,17 +18,17 @@ const fetcher=async(url,{method})=>{
  const check=CHECKS.find(c=>url.endsWith(c.path));
  const v=data[check?.id];
  return new Response(method==='HEAD'?null:v.body,{status:v.status,headers:{
-  'content-type':check?.id==='home'?'text/html':check?.id==='model'?'application/octet-stream':'application/json',
+  'content-type':check?.id==='home'?'text/html':check?.id==='model'?'application/octet-stream':check?.id==='agent-markdown'?'text/markdown':'application/json',
   ...(check?.id==='home'?{
    'content-security-policy':"default-src 'self'; object-src 'none'; frame-ancestors 'none'",
    'x-frame-options':'DENY','x-content-type-options':'nosniff'
   }:{}),
-  ...(check?.id!=='home'&&check?.id!=='missing'&&check?.id!=='model'?{'x-yorphives-edge-runtime':'workers-static'}:{})
+  ...(!['home','missing','model','agent-markdown'].includes(check?.id)?{'x-yorphives-edge-runtime':'workers-static'}:{})
  }});
 };
-test('all seven deterministic read-only checks pass on verified production contracts',async()=>{
+test('all nine deterministic read-only checks pass on verified production contracts',async()=>{
  const r=await runChecks(fetcher,()=>new Date('2026-11-17T06:00:00Z'));
- assert.equal(r.checks.length,7);assert.equal(r.healthy,true);assert.deepEqual(r.failedChecks,[]);
+ assert.equal(r.checks.length,9);assert.equal(r.healthy,true);assert.deepEqual(r.failedChecks,[]);
 });
 test('failure of edge marker and noindex prevent false green',async()=>{
  const noMarker=async(url,opts)=>{
@@ -112,4 +114,19 @@ test('monitor status is read-only and never exposes KV keys or external actions'
  assert.equal((await worker.fetch(new Request('https://monitor.example/api/admin'),env)).status,404);
  assert.equal((await worker.fetch(new Request('https://monitor.example/status',{method:'POST'}),env)).status,404);
  assert.equal((await worker.fetch(new Request('https://monitor.example/status'),env)).status,503);
+});
+
+test('agent registry tampering and Markdown fallback are detected without invoking tools',async()=>{
+ const changedRegistry=async(url,opts)=>{
+  const r=await fetcher(url,opts);
+  if(url.endsWith('/api/agent/v1/tools')){
+   const d=await r.json();d.tools[0].noStorage=false;
+   return new Response(JSON.stringify(d),{status:200,headers:r.headers});
+  }
+  return r;
+ };
+ assert.equal((await probeOne(CHECKS.find(c=>c.id==='agent-tools'),changedRegistry)).reason,'contract-invalid');
+ const brokenMarkdown=async(url,opts)=>url.endsWith('/tools/word-counter/index.md')?
+  new Response('<!doctype html><title>fallback</title>',{status:200,headers:{'content-type':'text/html'}}):fetcher(url,opts);
+ assert.equal((await probeOne(CHECKS.find(c=>c.id==='agent-markdown'),brokenMarkdown)).reason,'agent-markdown-invalid');
 });
