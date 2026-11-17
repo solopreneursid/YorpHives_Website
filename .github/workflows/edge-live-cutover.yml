@@ -1,0 +1,30 @@
+name: Live YorpHives edge cutover integrity
+on:
+  pull_request:
+    paths:
+      - 'scripts/live-cutover-check.mjs'
+      - '.github/workflows/edge-live-cutover.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-apex:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test production homepage, analytics, and all 143 tools without writes
+        env:
+          YH_HOST: yorphives.com
+          EXPECT_RUNTIME: pages
+        run: node scripts/live-cutover-check.mjs
+  verify-www:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify www alias and runtime
+        env:
+          YH_HOST: www.yorphives.com
+          EXPECT_RUNTIME: pages
+        run: node scripts/live-cutover-check.mjs
