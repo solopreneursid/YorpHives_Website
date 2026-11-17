@@ -178,23 +178,23 @@ for(const item of published){
  await write(path,html);
  // Static Markdown companion for *every* approved public offering. Static
  // assets are free to serve and never invoke an AI model or live database.
- const mdPath=item.url.endsWith('/')?item.url+'index.md':item.url.replace(/\\.html$/,'.md');
- const singleLine=v=>String(v||'').replace(/[\\r\\n\\t]+/g,' ').replace(/\\s+/g,' ').replace(/[<>]/g,'').slice(0,500);
+ const mdPath=item.url.endsWith('/')?item.url+'index.md':item.url.replace(/\.html$/,'.md');
+ const singleLine=v=>String(v||'').replace(/[\r\n\t]+/g,' ').replace(/\s+/g,' ').replace(/[<>]/g,'').slice(0,500);
  const callableByPath={
   'tools/word-counter/':'word_count','tools/slug-generator/':'slugify',
   'tools/case-converter/':'case_convert','tools/percentage-calculator/':'percentage',
   'tools/discount-calculator/':'discount'
  };
  const callable=callableByPath[item.url];
- const md='# '+singleLine(item.name)+'\\n\\n'+singleLine(item.description)+'\\n\\n'+
-  '- Canonical page: '+url+'\\n'+
-  '- Type: '+singleLine(item.type)+'\\n'+
-  '- Category: '+singleLine(item.category||'Other')+'\\n'+
-  (callable?'- Remote stateless utility: /api/agent/v1/tools/'+callable+'/invoke (POST JSON; see /api/agent/v1/openapi.json)\\n':
-   '- Processing: browser-local or human interaction; no remote execution promised.\\n')+
-  '- Machine-readable catalog: /catalog.json\\n'+
-  '- Callable utilities: /api/agent/v1/tools\\n\\n'+
-  'Do not submit private files or credentials to public APIs. For privacy, use browser-local tools where available.\\n';
+ const md='# '+singleLine(item.name)+'\n\n'+singleLine(item.description)+'\n\n'+
+  '- Canonical page: '+url+'\n'+
+  '- Type: '+singleLine(item.type)+'\n'+
+  '- Category: '+singleLine(item.category||'Other')+'\n'+
+  (callable?'- Remote stateless utility: /api/agent/v1/tools/'+callable+'/invoke (POST JSON; see /api/agent/v1/openapi.json)\n':
+   '- Processing: browser-local or human interaction; no remote execution promised.\n')+
+  '- Machine-readable catalog: /catalog.json\n'+
+  '- Callable utilities: /api/agent/v1/tools\n\n'+
+  'Do not submit private files or credentials to public APIs. For privacy, use browser-local tools where available.\n';
  await write(mdPath,md);
 }
 // A directory stays crawlable and provides standard links to every item.
