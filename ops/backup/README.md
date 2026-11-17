@@ -25,10 +25,11 @@ The script creates `~/yorphives-backups` and automatically generates a private a
 To reverify an existing encrypted backup without accessing Cloudflare:
 
 ```bash
-bash ops/backup/verify-encrypted-backup.sh "$HOME/yorphives-backups/yorphives-production-<date>.sql.gz.age"
+LATEST="$(find "$HOME/yorphives-backups" -maxdepth 1 -type f -name 'yorphives-production-*.sql.gz.age' -printf '%T@ %p\\n' | sort -nr | cut -d" " -f2- | head -n1)"
+if [ -n "$LATEST" ]; then bash ops/backup/verify-encrypted-backup.sh "$LATEST"; fi
 ```
 
-Replace only the filename with one your own backup run printed. The command loads the encrypted SQL into a disposable **local** SQLite database, checks integrity and expected tables, then destroys the temporary files.
+This verifies the newest encrypted archive created on your own machine. It does not contact Cloudflare. The command loads the encrypted SQL into a disposable **local** SQLite database, checks integrity and expected tables, then destroys the temporary files.
 
 If using an external backup drive, set `YORPHIVES_BACKUP_DIR` to the drive's absolute path before running. Store the encryption key on **another** device. Avoid relying on just one disk. Review and rotate a properly scoped D1-read credential after setup.
 
