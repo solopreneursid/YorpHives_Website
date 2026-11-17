@@ -31,7 +31,7 @@ export async function probeOne(check,fetcher=fetch){
   const expected=check.kind==='missing'?404:200;
   if(response.status!==expected)return {id:check.id,ok:false,reason:'http-'+response.status,latencyMs};
   if(check.kind==='missing')return {id:check.id,ok:true,latencyMs};
-  if(check.kind==='model')return {id:check.id,ok:!!response.headers.get('content-type'),reason:response.headers.get('content-type')?undefined:'model-content-type-missing',latencyMs};
+  if(check.kind==='model'){const mime=(response.headers.get('content-type')||'').toLowerCase();const ok=!mime.includes('text/html');return {id:check.id,ok,reason:ok?undefined:'model-replaced-by-html',latencyMs};}
   if(response.headers.get('x-robots-tag')?.toLowerCase().includes('noindex'))
    return {id:check.id,ok:false,reason:'production-noindex',latencyMs};
   if(check.kind!=='html'&&response.headers.get('x-yorphives-edge-runtime')!=='workers-static')
@@ -88,11 +88,32 @@ export async function scheduledRun(env,fetcher=fetch,now=()=>new Date()){
  else console.log(JSON.stringify({event:'edge-health-ok',time:report.checkedAt,count:report.checks.length}));
  return output;
 }
+/**
+ * Bounded, read-only historical status. KV stores no visitors or personal data.
+ * Returned records contain only the seven named probe IDs, status and timing.
+ */
+export async function historyReport(env){
+ if(!env?.STATUS_KV)return {available:false,reason:'status-storage-unconfigured',records:[]};
+ const found=await env.STATUS_KV.list({prefix:'history/',limit:1000});
+ const names=(found?.keys||[]).map(x=>String(x.name||'')).filter(x=>/^history\/\d{4}-\d{2}-\d{2}\/\d{4}$/.test(x)).sort().slice(-24);
+ const rows=await Promise.all(names.map(name=>env.STATUS_KV.get(name,{type:'json'}).catch(()=>null)));
+ const records=rows.filter(x=>x&&Number.isFinite(Date.parse(x.checkedAt))&&Array.isArray(x.checks)).map(x=>({
+  checkedAt:x.checkedAt,healthy:x.healthy===true,
+  failedChecks:(x.failedChecks||[]).filter(v=>CHECKS.some(c=>c.id===v)).slice(0,7),
+  checks:x.checks.filter(c=>CHECKS.some(k=>k.id===c.id)).map(c=>({id:c.id,ok:c.ok===true})),
+  failureStreak:Number.isSafeInteger(x.failureStreak)?Math.max(0,Math.min(x.failureStreak,1000)):0
+ }));
+ return {schemaVersion:1,available:true,historyWindow:'last-24-samples',records};
+}
 export default {
  async scheduled(event,env,ctx){ctx.waitUntil(scheduledRun(env));},
  async fetch(request,env){
   const url=new URL(request.url);
-  if(request.method!=='GET'||url.pathname!=='/status')return new Response(null,{status:404,headers:{'cache-control':'no-store'}});
+  if(request.method!=='GET'||!['/status','/history'].includes(url.pathname))return new Response(null,{status:404,headers:{'cache-control':'no-store'}});
+  if(url.pathname==='/history'){
+   try{return new Response(JSON.stringify(await historyReport(env)),{status:200,headers:readOnlyHeaders});}
+   catch{return new Response(JSON.stringify({schemaVersion:1,available:false,records:[]}),{status:503,headers:readOnlyHeaders});}
+  }
   const latest=await env?.STATUS_KV?.get('latest',{type:'json'}).catch(()=>null);
   if(!latest)return new Response(JSON.stringify({available:false,reason:'awaiting-first-scheduled-check'}),{status:503,headers:readOnlyHeaders});
   const age=Date.now()-Date.parse(latest.checkedAt);
