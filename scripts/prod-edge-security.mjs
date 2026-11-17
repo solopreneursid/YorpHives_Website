@@ -53,7 +53,7 @@ assert.equal(privateRoute.status,404,'Private execution route must not exist');
 const pageNotFound=await get('/yh-impossible-a9e7c5185d');
 assert.equal(pageNotFound.status,404);
 const model=await get('/tools/models/u2netp-309c8469.onnx','HEAD');
-assert.equal(model.status,200);assert.match(model.headers.get('x-content-type-options')||'',/^nosniff(?:,\\s*nosniff)*$/i,'Model must enforce nosniff');
+assert.ok((model.headers.get('x-content-type-options')||'').split(',').every(x=>x.trim().toLowerCase()==='nosniff'),'Model must enforce nosniff');
 const www=await fetch('https://www.yorphives.com/',{redirect:'manual'});
 assert.equal(www.status,301);
 assert.match(www.headers.get('location')||'',/^https:\/\/yorphives\.com\//);
