@@ -1,0 +1,31 @@
+name: Live edge stateless-agent acceptance
+on:
+  push:
+    branches:
+      - release/yorphives-reimagined-20261116
+    paths:
+      - 'agentic/**'
+      - 'edge/**'
+      - 'scripts/build-site.mjs'
+      - 'scripts/prod-agent-callable-check.mjs'
+      - '.github/workflows/prod-agent-callable.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-live-agent-callability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify actual published agent contracts using bounded synthetic inputs
+        run: node scripts/prod-agent-callable-check.mjs
+      - name: Document testing scope
+        if: always()
+        run: |
+          {
+            echo '### Live Agentic Internet acceptance'
+            echo 'One synthetic stateless math POST, public GETs and HEAD-like checks only.'
+            echo 'No analytics inserts, HQ access, secrets, payments or customer data.'
+            echo 'Rate limiter is approximate per Cloudflare location; not billing-grade metering.'
+          } >> "$GITHUB_STEP_SUMMARY"
