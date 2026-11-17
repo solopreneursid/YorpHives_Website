@@ -6,12 +6,17 @@ const expectRuntime=process.env.EXPECT_RUNTIME||'either'; // pages, workers, eit
 if(!['yorphives.com','www.yorphives.com'].includes(host))throw Error('Host is not allowlisted');
 if(!['pages','workers','either'].includes(expectRuntime))throw Error('Invalid expectation');
 const origin='https://'+host;
-const fetchBound=async(path,{method='GET',redirect='manual'}={})=>{
+const fetchBound=async(path,{method='GET',redirect=host==='www.yorphives.com'?'follow':'manual'}={})=>{
  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),15000);
  try{return await fetch(origin+path,{method,redirect,signal:ctl.signal,
   headers:{'user-agent':'YorpHives-Nonmutating-Release-Check/1.0'}});}
  finally{clearTimeout(timer);}
 };
+if(host==='www.yorphives.com'){
+ const canonical=await fetchBound('/api/agent/v1/openapi.json',{redirect:'manual'});
+ assert.equal(canonical.status,301,'www must redirect to canonical apex');
+ assert.match(canonical.headers.get('location')||'',/^https:\/\/yorphives\.com\//i);
+}
 const open=await fetchBound('/api/agent/v1/openapi.json');
 assert.equal(open.status,200,'Agent API unavailable');
 const marked=open.headers.get('x-yorphives-edge-runtime')==='workers-static';
@@ -53,7 +58,7 @@ for(const path of ['/api/insights/public','/api/insights/growth','/api/agent/v1/
 const gone=await fetchBound('/not-a-real-yh-asset-xyzzzy-927ab');
 if(marked)assert.equal(gone.status,404,'Worker must not serve an SPA fallback for missing files');
 else assert.ok([200,404].includes(gone.status),'Existing Pages fallback changed unexpectedly');
-const legacy=await fetchBound('/free-tools/');assert.equal(legacy.status,302);
+const legacy=await fetchBound('/free-tools/',{redirect:'manual'});assert.equal(legacy.status,302);
 assert.match(legacy.headers.get('location')||'',/\/tools\/?$/);
 assert.ok(content.includes('agentic-browser.mjs'));
 console.log('LIVE CUTOVER CHECK PASSED: host='+host+' runtime='+(marked?'workers-static':'pages')+' routes='+count+' validated; noindex absent; agent and analytics routes available.');
