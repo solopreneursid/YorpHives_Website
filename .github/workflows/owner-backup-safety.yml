@@ -23,6 +23,10 @@ jobs:
           set -Eeuo pipefail
           bash -n ops/backup/backup-d1-local.sh
           bash -n ops/backup/verify-encrypted-backup.sh
+          bash -n ops/backup/google-drive-copy.sh
+          bash -n ops/backup/run-weekly-offsite.sh
+          bash -n ops/backup/install-weekly-timer.sh
+          bash -n ops/backup/test-drive-copy.sh
           python3 -m py_compile ops/backup/validate-sqlite.py
           ROOT="$(mktemp -d)"
           trap 'rm -rf -- "$ROOT"' EXIT
@@ -37,3 +41,4 @@ jobs:
             exit 1
           fi
           echo "PASS: Offline SQL recovery, encrypted payload, checksum tampering rejection. Production D1 never contacted."
+          bash ops/backup/test-drive-copy.sh
