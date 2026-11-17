@@ -1,12 +1,10 @@
-/* Optional edge-native Workers Static Assets entrypoint.
- * API response contracts shared with the current Pages Functions deployment.
- * Static assets served by the CDN; only /api/* reaches this Worker.
- * Deployment is intentionally separate from the live Pages domain until
- * full asset, redirect, D1 and authenticated smoke checks pass.
+/* Production Workers Static Assets entrypoint; only /api/* invokes the Worker.
+ * Stateless public agent operations never access private HQ, D1 or third-party AI.
  */
 import {collect,publicReport} from '../functions/_lib/insights.mjs';
 import {growthReport} from '../functions/_lib/growth.mjs';
 import {agentGet} from '../agentic/discovery.mjs';
+import {invokeAgentTool} from '../agentic/invoke.mjs';
 
 const json=(data,status=404)=>new Response(JSON.stringify(data),{status,headers:{
  'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'}});
@@ -16,7 +14,8 @@ export default {
   if(p.startsWith('/api/')){
    const context={request,env,ctx};
    let response;
-   if(p.startsWith('/api/agent/v1/'))response=await agentGet(request,env,p);
+   if(/^\/api\/agent\/v1\/tools\/[^/]+\/invoke$/.test(p))response=await invokeAgentTool(request,env,p);
+   else if(p.startsWith('/api/agent/v1/'))response=await agentGet(request,env,p);
    else if(p==='/api/insights/collect')response=await (request.method==='POST'?collect(context):json({error:'method-not-allowed'},405));
    else if(p==='/api/insights/public')response=await (request.method==='GET'?publicReport(context):json({error:'method-not-allowed'},405));
    else if(p==='/api/insights/growth')response=await (request.method==='GET'?growthReport(context):json({error:'method-not-allowed'},405));
