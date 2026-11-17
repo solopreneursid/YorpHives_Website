@@ -25,8 +25,6 @@ jobs:
           npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund
       - name: Test provider-neutral deterministic tools and security gates
         run: node --test scripts/agent-callable.test.mjs
-      - name: Run the complete existing website regression suite
-        run: node --test tests/*.test.mjs
       - name: Build actual production agent-facing assets
         run: |
           node scripts/build-site.mjs --target=production
@@ -34,6 +32,8 @@ jobs:
           node --check dist/agentic-browser.mjs
           node scripts/release-check.mjs dist
           node --test scripts/agentic-markdown.test.mjs
+      - name: Run entire website regression suite against generated assets
+        run: node --test tests/*.test.mjs
       - name: Document verification boundary
         if: always()
         run: |
