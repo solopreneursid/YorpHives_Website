@@ -172,6 +172,9 @@ for(const item of published){
   };
  html=injectToolSuite(html,item);
  html=injectNextToolUI(html,item);
+ // Progressive local browser agents can discover utilities from any public page.
+ if(!html.includes('agentic-browser.mjs'))
+  html=html.replace('</body>','<script type="module" src="/agentic-browser.mjs"></script></body>');
  await write(path,html);
  // Static Markdown companion for *every* approved public offering. Static
  // assets are free to serve and never invoke an AI model or live database.
