@@ -21,6 +21,20 @@ Public endpoint: `https://yorphives-edge-watchdog.solopreneursid-proy.workers.de
 
 The production D1 database has a recoverable point-in-time bookmark confirmed through Cloudflare's `GET /d1/database/{id}/time_travel/bookmark`. This proves a bookmark exists; it does **not** prove a restore or independent backup is functional. Never run a restoration against live D1 as a test. Use a separately created disposable D1 database and a verified export/restore test, validate tables and aggregates, then delete only the disposable copy after written evidence. Independent off-Cloudflare encrypted exports remain a further resiliency milestone.
 
+## Verified disposable D1 recovery exercise — 2026-11-17
+
+**Test database only:** `yorphives-recovery-drill-20261117` was created separately from production and staging.
+
+- Created an isolated SQLite-compatible `daily_pageviews` table and inserted a seven-view synthetic fixture.
+- Recorded the database's D1 Time Travel bookmark.
+- Deliberately inserted a second synthetic row, confirming two rows and 106 views.
+- Restored the **disposable** database to the earlier bookmark using the Cloudflare D1 Time Travel restore API.
+- Queried the recovered table: exactly one original `home` row with seven views remained.
+- Deleted the disposable D1 database; confirmed account database count returned to eight.
+- No production or staging database was restored, modified, or deleted during this exercise.
+
+**Result:** Real point-in-time restoration on an isolated D1 database passed. Production D1 bookmark availability is confirmed, and a staging D1 SQL export completed. The staging export URL could not be fetched from the available execution environment, so an actual SQL export-to-fresh-D1 import is **not yet verified**. Production off-provider backups, restore time objective and live rollback drill are still pending. Do not describe those gates as complete.
+
 ## Portable future state
 
 The monitor needs only standards-based `fetch`, `scheduled`, and a simple KV `get/put` adapter. For a self-hosted setup, replace KV with local SQLite and Cron with systemd timers, preserving the same check set and response contract. The monitoring implementation cannot issue changes to YorpHives, HQ or deployment infrastructure.
