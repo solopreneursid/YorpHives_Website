@@ -5,6 +5,7 @@ import {cp,mkdir,readFile,readdir,rm,stat,writeFile} from 'node:fs/promises';
 import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createEntity} from './discovery-schema.mjs';
+import {PUBLIC_TOOL_PAGES} from '../agentic/tools-core.mjs';
 import {isQualifiedProduct} from '../product-policy.mjs';
 import {injectNextToolUI} from './next-tool-shell.mjs';
 import {collectPublicActivity,discoverPublicPageUpdates,discoverToolEditTimes,loadActivityNotes,renderHomePulse} from './activity-feed.mjs';
@@ -180,12 +181,7 @@ for(const item of published){
  // assets are free to serve and never invoke an AI model or live database.
  const mdPath=item.url.endsWith('/')?item.url+'index.md':item.url.replace(/\.html$/,'.md');
  const singleLine=v=>String(v||'').replace(/[\r\n\t]+/g,' ').replace(/\s+/g,' ').replace(/[<>]/g,'').slice(0,500);
- const callableByPath={
-  'tools/word-counter/':'word_count','tools/slug-generator/':'slugify',
-  'tools/case-converter/':'case_convert','tools/percentage-calculator/':'percentage',
-  'tools/discount-calculator/':'discount'
- };
- const callable=callableByPath[item.url];
+ const callable=PUBLIC_TOOL_PAGES[item.url];
  const md='# '+singleLine(item.name)+'\n\n'+singleLine(item.description)+'\n\n'+
   '- Canonical page: '+url+'\n'+
   '- Type: '+singleLine(item.type)+'\n'+
