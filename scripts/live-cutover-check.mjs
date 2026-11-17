@@ -50,7 +50,9 @@ for(const path of ['/api/insights/public','/api/insights/growth','/api/agent/v1/
  if(path.includes('/insights/'))assert.equal(data.available,true,'Analytics unavailable at '+path);
  if(path.includes('/capabilities'))assert.equal(data.actions?.executeRemote,false,'Agent execution must remain disabled');
 }
-const gone=await fetchBound('/not-a-real-yh-asset-xyzzzy-927ab');assert.equal(gone.status,404);
+const gone=await fetchBound('/not-a-real-yh-asset-xyzzzy-927ab');
+if(marked)assert.equal(gone.status,404,'Worker must not serve an SPA fallback for missing files');
+else assert.ok([200,404].includes(gone.status),'Existing Pages fallback changed unexpectedly');
 const legacy=await fetchBound('/free-tools/');assert.equal(legacy.status,302);
 assert.match(legacy.headers.get('location')||'',/\/tools\/?$/);
 assert.ok(content.includes('agentic-browser.mjs'));
