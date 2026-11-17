@@ -1,0 +1,39 @@
+name: Owner-held encrypted D1 backup recovery test
+on:
+  pull_request:
+    paths:
+      - 'ops/backup/**'
+      - '.github/workflows/owner-backup-safety.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-restoration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install open-source local restore dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq age sqlite3
+      - name: Prove encrypted archive can be decrypted into a valid disposable SQLite database
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          bash -n ops/backup/backup-d1-local.sh
+          bash -n ops/backup/verify-encrypted-backup.sh
+          python3 -m py_compile ops/backup/validate-sqlite.py
+          ROOT="$(mktemp -d)"
+          trap 'rm -rf -- "$ROOT"' EXIT
+          age-keygen -o "$ROOT/identity.agekey" >/dev/null
+          RECIPIENT="$(age-keygen -y "$ROOT/identity.agekey")"
+          gzip -c ops/backup/test-fixture.sql | age -r "$RECIPIENT" -o "$ROOT/backup.sql.gz.age"
+          (cd "$ROOT" && sha256sum backup.sql.gz.age > backup.sql.gz.age.sha256)
+          YORPHIVES_BACKUP_KEY="$ROOT/identity.agekey" bash ops/backup/verify-encrypted-backup.sh "$ROOT/backup.sql.gz.age"
+          printf 'x' >> "$ROOT/backup.sql.gz.age"
+          if YORPHIVES_BACKUP_KEY="$ROOT/identity.agekey" bash ops/backup/verify-encrypted-backup.sh "$ROOT/backup.sql.gz.age"; then
+            echo "FAIL: Tampering was not detected" >&2
+            exit 1
+          fi
+          echo "PASS: Offline SQL recovery, encrypted payload, checksum tampering rejection. Production D1 never contacted."
