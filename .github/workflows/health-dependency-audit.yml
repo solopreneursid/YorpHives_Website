@@ -19,6 +19,8 @@ jobs:
           node-version: '22'
       - name: Resolve complete npm graph without installs or lifecycle scripts
         run: npm install --package-lock-only --ignore-scripts --no-fund --no-audit
+      - name: Export temporary resolved lockfile for reviewed pinning
+        run: node -e "console.log('YH_LOCKFILE_EXPORT_JSON='+JSON.stringify(require('node:fs').readFileSync('package-lock.json','utf8')))"
       - name: Query npm advisory database without modifying production artifacts
         shell: bash
         run: |
