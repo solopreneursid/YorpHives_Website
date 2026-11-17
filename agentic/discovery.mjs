@@ -19,6 +19,7 @@ export function publishedAgentItems(items){
    (x.type==='tool'||qualified.has(x))).map(x=>({
     id:x.url,type:x.type,name:text(x.name),description:text(x.description),
     category:text(x.category)||'Other',url:'https://yorphives.com/'+x.url,
+    markdown:'https://yorphives.com/'+(x.url.endsWith('/')?x.url+'index.md':x.url.replace(/\.html$/,'.md')),
     interaction:{kind:'web-page',execution:'browser-local-or-human',
      remoteExecutionAvailable:false,requiresUserInteraction:true}
  })).filter(x=>x.name&&x.description).sort((a,b)=>a.id.localeCompare(b.id));
@@ -39,7 +40,7 @@ export function capabilities(items){
  return {schemaVersion:1,site:'YorpHives',canonicalOrigin:'https://yorphives.com',
   description:'Founder-reviewed ventures and privacy-oriented, browser-local utilities.',
   interface:'read-only-public-discovery',generatedFrom:'published public catalog',
-  machineReadable:{catalog:'/catalog.json',openapi:'/api/agent/v1/openapi.json',
+  machineReadable:{catalog:'/catalog.json',markdown:'<canonical page>/index.md',openapi:'/api/agent/v1/openapi.json',
    callableTools:'/api/agent/v1/tools',llms:'/llms.txt',sitemap:'/sitemap.xml'},
   callableTools:{count:PUBLIC_TOOLS.length,registry:'/api/agent/v1/tools',
    interface:'stateless-json-over-https',paymentRequired:false},
