@@ -13,12 +13,20 @@ const json=(data,status=404)=>new Response(JSON.stringify(data),{status,headers:
 export default {
  async fetch(request,env,ctx){
   const url=new URL(request.url),p=url.pathname;
-  if(p.startsWith('/api/agent/v1/'))return agentGet(request,env,p);
-  const context={request,env,ctx};
-  if(p==='/api/insights/collect')return request.method==='POST'?collect(context):json({error:'method-not-allowed'},405);
-  if(p==='/api/insights/public')return request.method==='GET'?publicReport(context):json({error:'method-not-allowed'},405);
-  if(p==='/api/insights/growth')return request.method==='GET'?growthReport(context):json({error:'method-not-allowed'},405);
-  if(p.startsWith('/api/'))return json({error:'unknown-endpoint'});
+  if(p.startsWith('/api/')){
+   const context={request,env,ctx};
+   let response;
+   if(p.startsWith('/api/agent/v1/'))response=await agentGet(request,env,p);
+   else if(p==='/api/insights/collect')response=await (request.method==='POST'?collect(context):json({error:'method-not-allowed'},405));
+   else if(p==='/api/insights/public')response=await (request.method==='GET'?publicReport(context):json({error:'method-not-allowed'},405));
+   else if(p==='/api/insights/growth')response=await (request.method==='GET'?growthReport(context):json({error:'method-not-allowed'},405));
+   else response=json({error:'unknown-endpoint'});
+   // Observability only: proves the public response came from the Worker,
+   // without disclosing secrets or requiring another paid monitoring service.
+   const headers=new Headers(response.headers);
+   headers.set('X-YorpHives-Edge-Runtime','workers-static');
+   return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+  }
   if(!env.ASSETS)return json({error:'static-assets-not-configured'},503);
   return env.ASSETS.fetch(request);
  }
