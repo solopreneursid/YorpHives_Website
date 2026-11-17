@@ -6,6 +6,7 @@ on:
       - 'package-lock.json'
       - '.github/workflows/health-dependency-audit.yml'
       - 'scripts/health-dependency-audit.mjs'
+      - 'scripts/health-release-verify.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,6 +21,8 @@ jobs:
           node-version: '22'
       - name: Install exact locked dependency graph without lifecycle scripts
         run: npm ci --ignore-scripts --no-fund --no-audit
+      - name: Verify all legacy redirect aliases in source
+        run: node scripts/health-release-verify.mjs --source
       - name: Query npm advisory database without modifying production artifacts
         shell: bash
         run: |
