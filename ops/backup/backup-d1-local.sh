@@ -34,7 +34,7 @@ STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 OUT="$DEST/yorphives-production-$STAMP.sql.gz.age"
 if [[ -e "$OUT" ]]; then echo "Backup already exists; refusing overwrite" >&2;exit 3;fi
 echo "Exporting live D1 read-only; exports may briefly block other requests."
-npx --yes wrangler@4.163.0 d1 export yorphives-impact-analytics-live --remote --skip-confirmation --output="$TEMP/production.sql"
+npx --yes wrangler@4.163.0 d1 export yorphives-impact-analytics-live --config "$ROOT/edge/live/wrangler.jsonc" --remote --skip-confirmation --output="$TEMP/production.sql"
 [[ -s "$TEMP/production.sql" ]] || { echo "D1 export empty" >&2;exit 4; }
 sqlite3 -bail "$TEMP/pre-encryption-verify.sqlite" < "$TEMP/production.sql"
 python3 "$(dirname "${BASH_SOURCE[0]}")/validate-sqlite.py" "$TEMP/pre-encryption-verify.sqlite"
