@@ -21,7 +21,19 @@ export const PUBLIC_TOOLS=Object.freeze([
  {id:'discount',title:'Calculate a discount',description:'Calculate savings and final price for a percentage discount.',
   inputSchema:obj({price:num(0,1000000000),percent:num(0,100)},['price','percent'])}
 ].map(x=>Object.freeze({...x,inputSchema:Object.freeze(x.inputSchema)})));
+// The ONLY canonical public-page-to-stateless-operation mapping. Never infer
+// executability from a generic catalog entry or a similarly named page.
+export const PUBLIC_TOOL_PAGES=Object.freeze({
+ 'tools/word-counter/':'word_count',
+ 'tools/slug-generator/':'slugify',
+ 'tools/case-converter/':'case_convert',
+ 'tools/percentage-calculator/':'percentage',
+ 'tools/discount-calculator/':'discount'
+});
 const known=new Map(PUBLIC_TOOLS.map(x=>[x.id,x]));
+if(new Set(Object.values(PUBLIC_TOOL_PAGES)).size!==PUBLIC_TOOLS.length||
+ Object.values(PUBLIC_TOOL_PAGES).some(id=>!known.has(id)))
+ throw Error('Callable page registry does not match approved tools.');
 const round=x=>Math.round((x+Number.EPSILON)*1000000)/1000000;
 const has=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
 function validate(schema,input){
