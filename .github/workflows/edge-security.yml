@@ -1,0 +1,20 @@
+name: Production edge security posture
+on:
+  pull_request:
+    paths:
+      - 'scripts/prod-edge-security.mjs'
+      - '.github/workflows/edge-security.yml'
+      - '_headers'
+      - 'agentic/**'
+      - 'edge/worker.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  read-only-security-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run read-only production security checks
+        run: node scripts/prod-edge-security.mjs
