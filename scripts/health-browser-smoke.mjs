@@ -12,7 +12,7 @@ async function scenario(name,fn){
  page.on('request',r=>{if(['POST','PATCH','PUT','DELETE'].includes(r.method())&&!r.url().endsWith('/api/insights/collect'))unexpectedWrites.push(r.method()+' '+r.url());});
  try{
   await fn(page,context);
-  assert.deepEqual(errors,[],'Browser JavaScript exceptions');
+  assert.deepEqual(errors,[],'Browser JavaScript exceptions: '+errors.join(' | '));
   results.push({name,passed:true});
  }catch(error){
   results.push({name,passed:false,error:String(error?.message||error).slice(0,450)});
