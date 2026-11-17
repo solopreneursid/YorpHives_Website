@@ -1,0 +1,23 @@
+name: Workers Static Assets pilot HTTP smoke
+on:
+  pull_request:
+    paths:
+      - 'edge/**'
+      - 'agentic/**'
+      - 'scripts/smoke-workers-pilot.mjs'
+      - '.github/workflows/edge-pilot-http.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  remote-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify deployed isolated Workers pilot
+        run: node scripts/smoke-workers-pilot.mjs
+      - name: Release policy
+        run: |
+          echo 'This workflow performs GET-only smoke tests against the dedicated pilot.'
+          echo 'It neither promotes Worker traffic nor alters yorphives.com or live D1.'
