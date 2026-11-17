@@ -13,6 +13,6 @@ YorpHives is an independent digital studio with free browser-local tools for wri
 - Third-party library notices: /tools/vendor/README.md
 - Module usage and catalog instructions: /tools/README.md
 
-These are static browser-local tools. Agents can fetch the modules to use locally; no hosted execution API is currently provided. User inputs are not uploaded by these tools.
+Most tools are browser-local: agents can fetch supported modules to run locally without uploading user inputs. Five vetted, stateless utility operations are also callable over HTTPS; discover their exact JSON schemas at /api/agent/v1/tools or /api/agent/v1/openapi.json. Never send private files, credentials or secrets to public endpoints. Every published offering has a companion index.md at its canonical path.
 
 Contact: connect@yorphives.com

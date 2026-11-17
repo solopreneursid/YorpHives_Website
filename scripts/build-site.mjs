@@ -172,7 +172,30 @@ for(const item of published){
   };
  html=injectToolSuite(html,item);
  html=injectNextToolUI(html,item);
+ // Progressive local browser agents can discover utilities from any public page.
+ if(!html.includes('agentic-browser.mjs'))
+  html=html.replace('</body>','<script type="module" src="/agentic-browser.mjs"></script></body>');
  await write(path,html);
+ // Static Markdown companion for *every* approved public offering. Static
+ // assets are free to serve and never invoke an AI model or live database.
+ const mdPath=item.url.endsWith('/')?item.url+'index.md':item.url.replace(/\.html$/,'.md');
+ const singleLine=v=>String(v||'').replace(/[\r\n\t]+/g,' ').replace(/\s+/g,' ').replace(/[<>]/g,'').slice(0,500);
+ const callableByPath={
+  'tools/word-counter/':'word_count','tools/slug-generator/':'slugify',
+  'tools/case-converter/':'case_convert','tools/percentage-calculator/':'percentage',
+  'tools/discount-calculator/':'discount'
+ };
+ const callable=callableByPath[item.url];
+ const md='# '+singleLine(item.name)+'\n\n'+singleLine(item.description)+'\n\n'+
+  '- Canonical page: '+url+'\n'+
+  '- Type: '+singleLine(item.type)+'\n'+
+  '- Category: '+singleLine(item.category||'Other')+'\n'+
+  (callable?'- Remote stateless utility: /api/agent/v1/tools/'+callable+'/invoke (POST JSON; see /api/agent/v1/openapi.json)\n':
+   '- Processing: browser-local or human interaction; no remote execution promised.\n')+
+  '- Machine-readable catalog: /catalog.json\n'+
+  '- Callable utilities: /api/agent/v1/tools\n\n'+
+  'Do not submit private files or credentials to public APIs. For privacy, use browser-local tools where available.\n';
+ await write(mdPath,md);
 }
 // A directory stays crawlable and provides standard links to every item.
 
@@ -382,24 +405,28 @@ async function publishReimaginedRoot(prefix=''){
 
 let llms=await output('llms.txt');
 llms+='\n## Direct discovery for search engines and autonomous agents\n\n'+
- 'Every public tool, app, product or service has its own direct URL in /catalog.json. '+
+ 'Every public tool, app, product or service has its own direct URL in /catalog.json and a companion index.md. '+
  'Use that URL rather than the homepage. Structured data and canonical URLs are embedded in the HTML, '+
  'and /sitemap.xml lists published pages. Catalog items with execution=browser-local provide client-side processing; '+
  'do not assume a server-executable API exists.\n';
-llms+='\n## Agent-friendly discovery (read-only)\n\n'+
+llms+='\n## Agent-friendly discovery and stateless utilities\n\n'+
  'Public capabilities: /api/agent/v1/capabilities\n'+
  'OpenAPI 3.1: /api/agent/v1/openapi.json\n'+
  'Machine discovery: /.well-known/agentic.json (site-specific, not a universal standard).\n'+
- 'WebMCP browser discovery is progressive and experimental; no hosted remote tool execution, purchasing, or agent approvals.\n';
+ 'Five free stateless utility operations: /api/agent/v1/tools; every other published tool remains browser-local.\n'+
+ 'WebMCP is experimental; supported browsers can also invoke local utilities without uploading inputs. No payments or private HQ access.\n';
 await write('llms.txt',llms);
 await write('.well-known/agentic.json',JSON.stringify({
  version:1,site:'YorpHives',origin:'https://yorphives.com',
- status:'read-only',capabilities:'/api/agent/v1/capabilities',
+ status:'public-discovery-and-bounded-stateless-utilities',capabilities:'/api/agent/v1/capabilities',
  openapi:'/api/agent/v1/openapi.json',catalog:'/catalog.json',
- docs:'/llms.txt',remoteExecution:false,requiresFounderApproval:true
+ callableTools:'/api/agent/v1/tools',docs:'/llms.txt',
+ remoteExecution:'five-bounded-stateless-utilities-only',paymentAvailable:false,
+ requiresFounderApproval:true
 },null,2)+'\n');
 await cp(resolve(root,'agentic/browser-webmcp.mjs'),resolve(dest,'agentic-browser.mjs'));
-// Agent discovery runs at the edge; no third-party agent service or remote execution.
+await cp(resolve(root,'agentic/tools-core.mjs'),resolve(dest,'agentic-tools.mjs'));
+// Agent discovery and five bounded stateless calls are first-party; no MCP intermediary.
 
 // Keep the same approved studio interface at / in both environments.
 // The preview environment remains noindex via _headers and uses its own D1 binding.
