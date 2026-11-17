@@ -26,7 +26,7 @@ test('OpenAPI declares only read-only operations on official origin',()=>{
 });
 test('edge and Pages compatible API is no-credential GET-only and fails closed',async()=>{
  const req=(path,method='GET')=>new Request('https://yorphives.com'+path,{method});
- const missing=await agentGet(req('/api/agent/v1/capabilities'),{},'/api/agent/v1/capabilities');
+ const missing=await agentGet(req('/api/agent/v1/capabilities'),{ASSETS:{fetch:async()=>new Response('Unavailable',{status:503})}},'/api/agent/v1/capabilities');
  assert.equal(missing.status,503);
  const blocked=await agentGet(req('/api/agent/v1/capabilities','POST'),{},'/api/agent/v1/capabilities');
  assert.equal(blocked.status,405);
