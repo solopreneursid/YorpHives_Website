@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import {PUBLIC_TOOLS,invokePublicTool,ToolInputError} from '../agentic/tools-core.mjs';
 import {callableRegistry,openapi} from '../agentic/discovery.mjs';
 import {invokeAgentTool} from '../agentic/invoke.mjs';
+import {recordAgentUtilityCall} from '../agentic/usage.mjs';
 import worker from '../edge/worker.mjs';
 
 const base='https://yorphives.com';
@@ -120,4 +121,31 @@ test('browser execution imports same pure core with no network invocation',()=>{
   assert.equal(x.assets.run_worker_first[0],'/api/*');
  }
  assert.equal(/\b(?:INSERT|DELETE FROM|UPDATE SET|fetch\(.+hq|payment)\b/i.test(readFileSync('agentic/invoke.mjs','utf8')),false);
+});
+
+test('anonymous usage metering stores only tool names and count of successful calls',async()=>{
+ const events=[];
+ const withUsage={...env,AGENT_USAGE:{writeDataPoint:e=>events.push(e)}};
+ const sensitive='NEVER_UPLOAD_THIS_PRIVATE_PASSPHRASE';
+ const success=await invoke('word_count',{text:sensitive},withUsage);
+ assert.equal(success.status,200);
+ assert.equal(events.length,1);
+ assert.deepEqual(events[0],{blobs:['word_count','public-stateless','free'],
+  doubles:[1],indexes:['word_count']});
+ assert.equal(JSON.stringify(events).includes(sensitive),false);
+ assert.equal(JSON.stringify(events).includes('203.0.113.25'),false);
+ assert.equal((await invoke('word_count',{text:'x'.repeat(2001)},withUsage)).status,422);
+ assert.equal(events.length,1,'Invalid request must not be counted as successful use');
+ assert.equal(recordAgentUtilityCall(withUsage,'admin_deploy'),false);
+ assert.equal(events.length,1,'No unapproved tool IDs may be recorded');
+ const failing={...env,AGENT_USAGE:{writeDataPoint:()=>{throw Error('unavailable');}}};
+ assert.equal((await invoke('percentage',{value:10,percent:20},failing)).status,200,
+  'Analytics failures must never prevent a free deterministic calculation');
+ const without=await invoke('percentage',{value:10,percent:20},env);
+ assert.equal(without.status,200,'Self-hosted adapter can work without Cloudflare analytics');
+ const live=JSON.parse(readFileSync('edge/live/wrangler.jsonc','utf8'));
+ const pilot=JSON.parse(readFileSync('edge/pilot/wrangler.jsonc','utf8'));
+ assert.equal(live.analytics_engine_datasets[0].dataset,'yorphives_agent_usage_v1');
+ assert.equal(pilot.analytics_engine_datasets[0].dataset,'yorphives_agent_usage_preview_v1');
+ assert.notEqual(live.analytics_engine_datasets[0].dataset,pilot.analytics_engine_datasets[0].dataset);
 });
