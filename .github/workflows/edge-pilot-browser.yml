@@ -1,0 +1,23 @@
+name: Workers pilot real browser acceptance
+on:
+  pull_request:
+    paths:
+      - 'scripts/edge-pilot-browser.mjs'
+      - '.github/workflows/edge-pilot-browser.yml'
+      - 'edge/**'
+      - 'review/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  chromium-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Playwright (test runner only)
+        run: npm install --no-save --ignore-scripts playwright@1.58.2
+      - name: Install test browser
+        run: npx playwright install --with-deps chromium
+      - name: Test isolated Workers pilot (synthetic data never written)
+        run: node scripts/edge-pilot-browser.mjs
