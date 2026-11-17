@@ -20,7 +20,7 @@ export const PUBLIC_TOOLS=Object.freeze([
   inputSchema:obj({value:num(-1000000000,1000000000),percent:num(-10000,10000)},['value','percent'])},
  {id:'discount',title:'Calculate a discount',description:'Calculate savings and final price for a percentage discount.',
   inputSchema:obj({price:num(0,1000000000),percent:num(0,100)},['price','percent'])}
-].map(x=>Object.freeze({...x,inputSchema:Object.freeze(x.inputSchema)}))));
+].map(x=>Object.freeze({...x,inputSchema:Object.freeze(x.inputSchema)})));
 const known=new Map(PUBLIC_TOOLS.map(x=>[x.id,x]));
 const round=x=>Math.round((x+Number.EPSILON)*1000000)/1000000;
 const has=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
