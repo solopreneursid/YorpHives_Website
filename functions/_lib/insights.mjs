@@ -1,3 +1,4 @@
+import {loadPublishedCatalog} from './catalog-source.mjs';
 /* YorpHives first-party event aggregation. Portable SQLite/D1.
  * No raw IP, UA, files, user content, email or cookies stored.
  * Only cryptographically random browser-tab session digests and daily counts.
@@ -28,15 +29,11 @@ const hex=bytes=>[...new Uint8Array(bytes)].map(b=>b.toString(16).padStart(2,'0'
 export async function digest(value){
  return hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)));
 }
-const published=async request=>{
- const u=new URL('/catalog.json',request.url);
- const r=await fetch(u,{headers:{Accept:'application/json'},cf:{cacheTtl:60}});
- if(!r.ok)throw Error('Catalogue not available');
- const catalog=await r.json();
- if(!Array.isArray(catalog.items))throw Error('Invalid catalogue');
- const verifiedProducts=qualifiedProducts(catalog.items);
+const published=async (request,env)=>{
+ const items=await loadPublishedCatalog(request,env);
+ const verifiedProducts=qualifiedProducts(items);
  return new Set([
-  ...catalog.items.filter(t=>t?.type==='tool'&&t.published!==false&&t.visibility!=='private'&&validTarget(t.url)).map(t=>t.url),
+  ...items.filter(t=>t?.type==='tool'&&t.published!==false&&t.visibility!=='private'&&validTarget(t.url)).map(t=>t.url),
   ...verifiedProducts.filter(t=>validTarget(t.url)).map(t=>t.url)
  ]);
 };
@@ -59,7 +56,7 @@ export async function collect(ctx){
  if(data.event==='view'?!validRoute(target):!validTarget(target))
   return json({ok:false},422);
  if(data.event==='complete'){
-  try{if(!(await published(request)).has(target))return json({ok:false},422)}
+  try{if(!(await published(request,ctx.env)).has(target))return json({ok:false},422)}
   catch{return json({ok:false},503)}
  }
  const db=dbFor(ctx),now=dayNow();
@@ -99,7 +96,7 @@ export async function publicReport(ctx){
    query(db,'SELECT url,SUM(completions) AS actions FROM daily_completions WHERE day >= ? GROUP BY url ORDER BY actions DESC,url ASC LIMIT 50',start)
   ]);
   let eligible=new Set();
-  try{eligible=await published(ctx.request)}catch{}
+  try{eligible=await published(ctx.request,ctx.env)}catch{}
   const ranked=(usage.results||[]).filter(x=>eligible.has(x.url)&&
     Number.isSafeInteger(x.actions)&&x.actions>0).slice(0,10)
     .map(x=>({url:x.url,completedActions:x.actions}));
