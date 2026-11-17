@@ -1,3 +1,4 @@
+import {loadPublishedCatalog} from './catalog-source.mjs';
 /* Aggregate-only growth intelligence: shared by public dashboards and read-only HQ.
  * Compatible with SQLite/D1; no personal identifiers, revenue guesses or provider SDK.
  */
@@ -16,13 +17,10 @@ const response=(payload,status=200)=>new Response(JSON.stringify(payload),{
  'Cache-Control':status===200?'public, max-age=45, s-maxage=120':'no-store',
  'X-Content-Type-Options':'nosniff'}
 });
-async function catalogFor(request){
- const r=await fetch(new URL('/catalog.json',request.url),{headers:{Accept:'application/json'},cf:{cacheTtl:60}});
- if(!r.ok)throw Error('Catalog unavailable');
- const catalog=await r.json();
- if(!Array.isArray(catalog.items))throw Error('Catalog invalid');
- const toolItems=catalog.items.filter(t=>t?.type==='tool'&&t.published!==false&&t.visibility!=='private');
- const verified=qualifiedProducts(catalog.items);
+async function catalogFor(request,env){
+ const items=await loadPublishedCatalog(request,env);
+ const toolItems=items.filter(t=>t?.type==='tool'&&t.published!==false&&t.visibility!=='private');
+ const verified=qualifiedProducts(items);
  return new Map([...toolItems,...verified].filter(t=>safeTarget(t.url)).map(t=>[t.url,{
   url:t.url,name:String(t.name||t.url).slice(0,100),category:String(t.category||'Other').slice(0,60)
  }]));
@@ -68,7 +66,7 @@ export async function growthReport(ctx){
   const [v,c,eligible]=await Promise.all([
    db.prepare('SELECT day,route,views FROM daily_pageviews WHERE day >= ?').bind(since).all(),
    db.prepare('SELECT day,url,completions FROM daily_completions WHERE day >= ?').bind(since).all(),
-   catalogFor(ctx.request)
+   catalogFor(ctx.request,ctx.env)
   ]);
   return response(buildGrowthReport({days,views:v.results||[],completions:c.results||[],eligible}));
  }catch{return response({schemaVersion:1,available:false,reason:'temporarily-unavailable'},503)}
