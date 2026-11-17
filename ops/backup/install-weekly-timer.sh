@@ -6,9 +6,9 @@ for bin in systemctl realpath bash rclone node age flock; do
   command -v "$bin" >/dev/null || { echo "Missing command $bin; install it first" >&2; exit 2; }
 done
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
-case "$ROOT" in *[$'\n\r\t '"%]*)
-  echo "Please clone this repository to a folder without spaces or % signs" >&2;exit 2;;
-esac
+if [[ "$ROOT" =~ [[:space:]%] ]]; then
+  echo "Please clone this repository to a folder without spaces or % signs" >&2;exit 2
+fi
 if ! rclone listremotes | grep -Fxq 'yhdrive:'; then
   echo "Configure and verify rclone's yhdrive: OAuth remote first" >&2;exit 2
 fi
