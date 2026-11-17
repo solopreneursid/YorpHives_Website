@@ -6,6 +6,7 @@ on:
       - 'edge/**'
       - 'scripts/agent-callable.test.mjs'
       - 'scripts/agentic-markdown.test.mjs'
+      - 'tests/**'
       - 'scripts/build-site.mjs'
       - 'scripts/prod-edge-security.mjs'
       - '.github/workflows/agentic-contracts.yml'
@@ -24,6 +25,8 @@ jobs:
           npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund
       - name: Test provider-neutral deterministic tools and security gates
         run: node --test scripts/agent-callable.test.mjs
+      - name: Run the complete existing website regression suite
+        run: node --test tests/*.test.mjs
       - name: Build actual production agent-facing assets
         run: |
           node scripts/build-site.mjs --target=production
