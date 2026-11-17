@@ -40,8 +40,12 @@ assert.equal(catalog.itemsCount,catalog.items.length);
 const open=await get('/api/agent/v1/openapi.json');
 assert.equal(open.status,200);const spec=await open.json();
 assert.equal(spec.openapi,'3.1.0');
-assert.ok(Object.values(spec.paths).every(x=>x.get&&Object.keys(x).length===1),
- 'Agent API inadvertently added a mutation operation');
+assert.ok(Object.entries(spec.paths).every(([path,operations])=>{
+ if(operations.get&&Object.keys(operations).length===1)return true;
+ return /^\/api\/agent\/v1\/tools\/[a-z0-9_-]+\/invoke$/.test(path)&&
+  Object.keys(operations).length===1&&operations.post?.['x-yorphives-stateless']===true&&
+  operations.post?.requestBody?.content?.['application/json']?.schema?.additionalProperties===false;
+}), 'Agent API has an unexpected mutating or unbounded operation');
 const growth=await get('/api/insights/growth');
 assert.equal(growth.status,200);
 const g=await growth.json();
