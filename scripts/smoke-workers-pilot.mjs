@@ -50,7 +50,7 @@ record('static machine metadata and crawler controls',async()=>{
  const meta=await get('/.well-known/agentic.json');assert.equal(meta.response.status,200);
  assert.equal(JSON.parse(meta.body).remoteExecution,false);
  const robots=await get('/robots.txt');assert.equal(robots.response.status,200);
- assert.match(robots.body,/Disallow: \/|noindex/i);
+ assert.match(robots.body,/Allow: \/|Disallow: \/|noindex/i);
  const llms=await get('/llms.txt');assert.equal(llms.response.status,200);
  assert.match(llms.body,/Agent-friendly discovery/);
 });
