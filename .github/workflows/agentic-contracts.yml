@@ -6,6 +6,7 @@ on:
       - 'edge/**'
       - 'scripts/agent-callable.test.mjs'
       - 'scripts/agentic-markdown.test.mjs'
+      - 'scripts/agentic-portable-node.test.mjs'
       - 'tests/**'
       - 'scripts/build-site.mjs'
       - 'scripts/prod-edge-security.mjs'
@@ -25,6 +26,8 @@ jobs:
           npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund
       - name: Test provider-neutral deterministic tools and security gates
         run: node --test scripts/agent-callable.test.mjs
+      - name: Prove portable localhost API with genuine HTTP requests and rate limits
+        run: node --test scripts/agentic-portable-node.test.mjs
       - name: Build actual production agent-facing assets
         run: |
           node scripts/build-site.mjs --target=production
