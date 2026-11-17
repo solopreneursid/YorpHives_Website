@@ -40,7 +40,18 @@ export async function probeOne(check,fetcher=fetch){
    return {id:check.id,ok:false,reason:'payload-too-large',latencyMs};
   const raw=await response.text();
   if(raw.length>120000)return {id:check.id,ok:false,reason:'payload-too-large',latencyMs};
-  if(check.kind==='html')return {id:check.id,ok:raw.includes('id="yh-pulse"'),reason:raw.includes('id="yh-pulse"')?undefined:'home-marker-missing',latencyMs};
+  if(check.kind==='html'){
+   if(!raw.includes('id="yh-pulse"'))return {id:check.id,ok:false,reason:'home-marker-missing',latencyMs};
+   const csp=response.headers.get('content-security-policy')||'';
+   if(!csp.includes("object-src 'none'")||!csp.includes("frame-ancestors 'none'")||
+      !csp.includes("default-src 'self'"))
+    return {id:check.id,ok:false,reason:'csp-weakened',latencyMs};
+   const xframe=response.headers.get('x-frame-options')||'';
+   if(xframe.toUpperCase()!=='DENY')return {id:check.id,ok:false,reason:'framing-not-denied',latencyMs};
+   const nosniff=(response.headers.get('x-content-type-options')||'').split(',').every(x=>x.trim().toLowerCase()==='nosniff');
+   if(!nosniff)return {id:check.id,ok:false,reason:'nosniff-missing',latencyMs};
+   return {id:check.id,ok:true,latencyMs};
+  }
   const data=JSON.parse(raw);
   let good=false;
   if(check.kind==='openapi')good=data.openapi==='3.1.0'&&!!data.paths?.['/api/agent/v1/capabilities']?.get;
