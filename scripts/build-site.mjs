@@ -55,7 +55,7 @@ await cp(resolve(root,'insights-client.mjs'),resolve(dest,'insights-client.mjs')
 // Only the analytics API invokes Pages Functions. All static pages and tool
 // assets bypass function compute and retain free static asset delivery.
 await write('_routes.json',JSON.stringify({
- version:1,include:['/api/insights/*'],exclude:[]
+ version:1,include:['/api/insights/*','/api/agent/v1/*'],exclude:[]
 },null,2)+'\n');
 
 
@@ -386,6 +386,8 @@ llms+='\n## Direct discovery for search engines and autonomous agents\n\n'+
  'and /sitemap.xml lists published pages. Catalog items with execution=browser-local provide client-side processing; '+
  'do not assume a server-executable API exists.\n';
 await write('llms.txt',llms);
+// Agent discovery runs at the edge; no third-party agent service or remote execution.
+
 // Keep the same approved studio interface at / in both environments.
 // The preview environment remains noindex via _headers and uses its own D1 binding.
 // Do not send visitors or reviewers to a stale legacy homepage.
