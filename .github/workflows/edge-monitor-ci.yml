@@ -1,0 +1,18 @@
+name: Independent edge watchdog tests
+on:
+  pull_request:
+    paths:
+      - 'ops/monitor/**'
+      - 'tests/edge-independent-monitor.test.mjs'
+      - '.github/workflows/edge-monitor-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  monitor-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test read-only 15-minute watchdog, security regressions, KV history
+        run: node --test tests/edge-independent-monitor.test.mjs
