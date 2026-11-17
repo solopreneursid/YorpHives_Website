@@ -7,7 +7,7 @@ A separate, intentionally non-production Worker named `yorphives-edge-static-pil
 From the repository root, after installing dependencies:
 
 ```bash
-npm ci
+npm install --progress=false
 node scripts/build-site.mjs --target=preview
 node --test tests/*.test.mjs
 node scripts/release-check.mjs dist
