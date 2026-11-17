@@ -29,7 +29,7 @@ fi
 RECIPIENT="$(age-keygen -y "$IDENTITY")"
 [[ "$RECIPIENT" == age1* ]] || { echo "Invalid encryption key" >&2;exit 3; }
 TEMP="$(mktemp -d)"
-trap 'rm -rf -- "$TEMP"; if [[ -n "\${OUT:-}" ]]; then rm -f -- "$OUT.pending"; fi' EXIT
+trap 'rm -rf -- "$TEMP"; if [[ -n "${OUT:-}" ]]; then rm -f -- "$OUT.pending"; fi' EXIT
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 OUT="$DEST/yorphives-production-$STAMP.sql.gz.age"
 if [[ -e "$OUT" ]]; then echo "Backup already exists; refusing overwrite" >&2;exit 3;fi
