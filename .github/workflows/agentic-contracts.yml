@@ -17,8 +17,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Install pinned build dependencies
-        run: npm ci --no-audit --no-fund
+      - name: Verify Node.js runtime (stdlib-only build and agent tests)
+        run: node --version
       - name: Test provider-neutral deterministic tools and security gates
         run: node --test scripts/agent-callable.test.mjs
       - name: Build actual production agent-facing assets
