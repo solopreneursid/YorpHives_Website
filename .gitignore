@@ -1,0 +1,7 @@
+# No production data, exports, encrypted backups or restore keys in Git.
+yorphives-backups/
+*.sql.gz.age
+*.sql.gz.age.sha256
+*.agekey
+*.sqlite3
+*.sqlite3-journal
