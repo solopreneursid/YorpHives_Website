@@ -55,7 +55,7 @@ await cp(resolve(root,'insights-client.mjs'),resolve(dest,'insights-client.mjs')
 // Only the analytics API invokes Pages Functions. All static pages and tool
 // assets bypass function compute and retain free static asset delivery.
 await write('_routes.json',JSON.stringify({
- version:1,include:['/api/insights/*'],exclude:[]
+ version:1,include:['/api/insights/*','/api/agent/v1/*'],exclude:[]
 },null,2)+'\n');
 
 
@@ -360,6 +360,7 @@ async function publishReimaginedRoot(prefix=''){
     !homepage.includes('id="yh-pulse"')||
     !homepage.includes('type="button" disabled'))
   throw Error('Reimagined release candidate failed initial public safety gates');
+ homepage=homepage.replace('</body>','<script type="module" src="/agentic-browser.mjs"></script></body>');
  await write(prefix+'index.html',homepage);
  // Only actually reviewed Builders updates: no invented announcement records.
  const notes=[...publicNotes,...publicPageChanges].filter(x=>
@@ -385,7 +386,21 @@ llms+='\n## Direct discovery for search engines and autonomous agents\n\n'+
  'Use that URL rather than the homepage. Structured data and canonical URLs are embedded in the HTML, '+
  'and /sitemap.xml lists published pages. Catalog items with execution=browser-local provide client-side processing; '+
  'do not assume a server-executable API exists.\n';
+llms+='\n## Agent-friendly discovery (read-only)\n\n'+
+ 'Public capabilities: /api/agent/v1/capabilities\n'+
+ 'OpenAPI 3.1: /api/agent/v1/openapi.json\n'+
+ 'Machine discovery: /.well-known/agentic.json (site-specific, not a universal standard).\n'+
+ 'WebMCP browser discovery is progressive and experimental; no hosted remote tool execution, purchasing, or agent approvals.\n';
 await write('llms.txt',llms);
+await write('.well-known/agentic.json',JSON.stringify({
+ version:1,site:'YorpHives',origin:'https://yorphives.com',
+ status:'read-only',capabilities:'/api/agent/v1/capabilities',
+ openapi:'/api/agent/v1/openapi.json',catalog:'/catalog.json',
+ docs:'/llms.txt',remoteExecution:false,requiresFounderApproval:true
+},null,2)+'\n');
+await cp(resolve(root,'agentic/browser-webmcp.mjs'),resolve(dest,'agentic-browser.mjs'));
+// Agent discovery runs at the edge; no third-party agent service or remote execution.
+
 // Keep the same approved studio interface at / in both environments.
 // The preview environment remains noindex via _headers and uses its own D1 binding.
 // Do not send visitors or reviewers to a stale legacy homepage.
