@@ -39,6 +39,17 @@ test('legacy redirects are same-site, target published tools or directory, and n
   assert.equal(rules.has(target),false,'Redirect chain: '+source+' to '+target);
  }
 });
+test('six retired image-format aliases redirect to actual conversion tool',async()=>{
+ const map=parse(await file('_redirects'));
+ for(const slug of ['png-to-jpg','jpg-to-png','png-to-webp','jpg-to-webp','webp-to-png','webp-to-jpg']){
+  for(const suffix of ['','/']){
+   assert.deepEqual(map.get('/free-tools/'+slug+suffix),{
+    target:'/tools/batch-image-converter/',status:'302'
+   });
+  }
+ }
+});
+
 test('built static-asset manifest includes every legacy URL variant',async()=>{
  const built=new URL('../dist/_redirects',import.meta.url);
  const exists=await stat(built).then(x=>x.isFile()).catch(()=>false);
