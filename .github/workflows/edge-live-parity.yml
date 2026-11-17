@@ -1,0 +1,19 @@
+name: Workers versus live Pages parity
+on:
+  pull_request:
+    paths:
+      - 'scripts/edge-pilot-live-parity.mjs'
+      - '.github/workflows/edge-live-parity.yml'
+      - 'edge/**'
+      - 'scripts/build-site.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare public site and isolated Workers pilot
+        run: node scripts/edge-pilot-live-parity.mjs
