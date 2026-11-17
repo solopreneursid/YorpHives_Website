@@ -41,12 +41,33 @@ keys or customer data to public stateless utility endpoints. Supported
 browser-native WebMCP performs the same five operations **locally** without
 uploading tool inputs.
 
-The pure `agentic/tools-core.mjs` module can be run under open-source Node.js
-or a standards-based Fetch server, enabling migration away from Cloudflare.
+The pure `agentic/tools-core.mjs` module runs on open-source Node.js,
+while `agentic/portable-server.mjs` is a **working zero-dependency localhost HTTP
+adapter** for the same published operations and machine-readable discovery.
+It requires no Cloudflare credential, D1 database, KV store, AI service, or
+subscription. Its in-memory admission control is suitable for an isolated
+single-node portability proof, **not** a multi-node distributed public service.
+
+For a private local test on your own computer, from the repository root:
+
+```bash
+node agentic/portable-server.mjs
+# In a second Terminal:
+curl -fsS http://127.0.0.1:8788/api/agent/v1/tools
+curl -fsS http://127.0.0.1:8788/api/agent/v1/tools/discount/invoke \\
+  -H 'content-type: application/json' --data '{"price":100,"percent":15}'
+```
+
+Port 8788 listens only on 127.0.0.1; no public internet access and no extra
+system service are installed. The adapter never writes usage records or logs
+request contents. A public self-hosted deployment would additionally require
+TLS/reverse proxy, security monitoring, shared rate limiting, suitable network
+firewall rules and separately approved release controls. Do **not** simply bind
+this proof to a public network interface.
+
 `agentic/invoke.mjs` performs request validation, rate-limit checks and
-stateless invocation. Any self-hosted adapter must provide equivalent
-admission control; without rate-limit bindings the Cloudflare version
-returns 503 instead of serving unlimited anonymous compute.
+stateless invocation. Cloudflare production fails closed without its rate-limit
+bindings; the portable adapter supplies its own bounded local admission logic.
 
 ## Security and cost
 
