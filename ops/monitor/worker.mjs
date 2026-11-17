@@ -9,6 +9,8 @@ export const CHECKS=Object.freeze([
  {id:'home',path:'/',method:'GET',kind:'html'},
  {id:'agent-api',path:'/api/agent/v1/openapi.json',method:'GET',kind:'openapi'},
  {id:'capabilities',path:'/api/agent/v1/capabilities',method:'GET',kind:'capabilities'},
+ {id:'agent-tools',path:'/api/agent/v1/tools',method:'GET',kind:'tools'},
+ {id:'agent-markdown',path:'/tools/word-counter/index.md',method:'GET',kind:'markdown'},
  {id:'analytics',path:'/api/insights/public',method:'GET',kind:'analytics'},
  {id:'growth',path:'/api/insights/growth',method:'GET',kind:'growth'},
  {id:'model',path:'/tools/models/u2netp-309c8469.onnx',method:'HEAD',kind:'model'},
@@ -34,7 +36,7 @@ export async function probeOne(check,fetcher=fetch){
   if(check.kind==='model'){const mime=(response.headers.get('content-type')||'').toLowerCase();const ok=!mime.includes('text/html');return {id:check.id,ok,reason:ok?undefined:'model-replaced-by-html',latencyMs};}
   if(response.headers.get('x-robots-tag')?.toLowerCase().includes('noindex'))
    return {id:check.id,ok:false,reason:'production-noindex',latencyMs};
-  if(check.kind!=='html'&&response.headers.get('x-yorphives-edge-runtime')!=='workers-static')
+  if(!['html','markdown'].includes(check.kind)&&response.headers.get('x-yorphives-edge-runtime')!=='workers-static')
    return {id:check.id,ok:false,reason:'not-workers-runtime',latencyMs};
   if(Number(response.headers.get('content-length')||0)>120000)
    return {id:check.id,ok:false,reason:'payload-too-large',latencyMs};
@@ -52,10 +54,19 @@ export async function probeOne(check,fetcher=fetch){
    if(!nosniff)return {id:check.id,ok:false,reason:'nosniff-missing',latencyMs};
    return {id:check.id,ok:true,latencyMs};
   }
+  if(check.kind==='markdown'){
+   const ok=raw.includes('Canonical page: https://yorphives.com/tools/word-counter/')&&
+    !/^\s*<!doctype html/i.test(raw);
+   return {id:check.id,ok,reason:ok?undefined:'agent-markdown-invalid',latencyMs};
+  }
   const data=JSON.parse(raw);
   let good=false;
   if(check.kind==='openapi')good=data.openapi==='3.1.0'&&!!data.paths?.['/api/agent/v1/capabilities']?.get;
   if(check.kind==='capabilities')good=data.actions?.executeRemote===false&&Array.isArray(data.items)&&data.items.length>=100;
+  if(check.kind==='tools')good=data.interface==='stateless-json-over-https'&&
+   data.limits?.perClientPerMinute===30&&Array.isArray(data.tools)&&data.tools.length===5&&
+   data.tools.every(t=>t.noStorage===true&&t.charged===false&&t.method==='POST'&&
+    /^\/api\/agent\/v1\/tools\/[a-z0-9_-]+\/invoke$/.test(t.invoke));
   if(check.kind==='analytics')good=data.available===true&&data.schemaVersion===1&&data.privacy?.rawIpStored===false;
   if(check.kind==='growth')good=data.available===true&&data.schemaVersion===1&&data.periodDays===30&&data.revenue?.available===false;
   return {id:check.id,ok:good,reason:good?undefined:'contract-invalid',latencyMs};
@@ -90,7 +101,7 @@ export async function scheduledRun(env,fetcher=fetch,now=()=>new Date()){
 }
 /**
  * Bounded, read-only historical status. KV stores no visitors or personal data.
- * Returned records contain only the seven named probe IDs, status and timing.
+ * Returned records contain only the nine named probe IDs, status and timing.
  */
 export async function historyReport(env){
  if(!env?.STATUS_KV)return {available:false,reason:'status-storage-unconfigured',records:[]};
