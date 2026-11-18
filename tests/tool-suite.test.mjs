@@ -5,7 +5,7 @@ import {resolve} from 'node:path';
 const root=process.cwd(),dist=resolve(root,'dist'),read=(base,path)=>readFile(resolve(base,path),'utf8');
 const items=JSON.parse(await read(root,'catalog.json')).items.filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
 test('the shared UI is applied to every non-compressor tool, not just sample pages',async()=>{
- assert.equal(items.length,143);
+ assert.equal(items.length,144);
  let count=0;
  for(const item of items){
   const html=await read(dist,item.url+'index.html');
