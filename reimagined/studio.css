@@ -807,3 +807,59 @@ section[id],.view[id],#home-progress,#featured-tools{scroll-margin-top:clamp(72p
 @media(prefers-reduced-motion:reduce){
  .mobile-dock a,.mobile-dock button{transition:none!important}
 }
+
+/* Compact mobile footer: all existing links and privacy actions remain visible.
+   This is the page footer, not the fixed five-button navigation tray. */
+@media(max-width:760px){
+ .footer{
+  padding:17px 0 calc(17px + env(safe-area-inset-bottom,0px));
+ }
+ .footer .container{width:calc(100% - 32px)}
+ .footer-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  column-gap:clamp(14px,4vw,26px);
+  row-gap:13px;
+ }
+ .footer-identity{grid-column:1/-1;display:flex;align-items:center;gap:10px}
+ .footer-identity .logo{gap:8px;flex:none}
+ .footer-identity .logo img{height:29px;width:29px}
+ .footer-identity .logo>span{font-size:17px;line-height:1}
+ .footer-identity .logo small{font-size:7px;margin-top:3px}
+ .footer-identity>p{
+  font-size:10px;line-height:1.35;
+  margin:0 0 0 auto;max-width:27ch;
+  text-align:right;
+ }
+ .footer-grid>div:not(.footer-identity):not(.footer-statement){gap:6px}
+ .footer-grid>div>strong{font-size:9px;letter-spacing:.08em;margin-bottom:1px}
+ .footer-grid>div>a:not(.logo){
+  display:inline-flex;align-items:center;min-height:28px;
+  font-size:11px;line-height:1.2;
+ }
+ .footer-bottom{
+  display:grid;grid-template-columns:1fr auto;
+  gap:9px 10px;align-items:center;
+  margin-top:12px;padding-top:10px;
+  font-size:9px;letter-spacing:.035em;
+ }
+ .footer-bottom #anonymous-analytics-toggle{
+  grid-column:1/-1;grid-row:1;
+  width:100%;justify-self:stretch;
+  min-height:34px;padding:7px 10px;
+  font-size:10px;line-height:1.2;
+  text-align:center;
+ }
+ .footer-bottom>span:first-child{grid-column:1;grid-row:2}
+ .footer-bottom>a[href="#home"]{grid-column:2;grid-row:2;text-align:right}
+}
+@media(max-width:390px){
+ .footer{padding-top:14px}
+ .footer-grid{row-gap:10px}
+ .footer-identity>p{font-size:9px;max-width:21ch}
+ .footer-grid>div>a:not(.logo){font-size:10.5px;min-height:26px}
+ .footer-bottom{margin-top:10px;padding-top:9px}
+}
+@media(max-width:340px){
+ .footer-identity>p{display:none}
+}
