@@ -31,7 +31,7 @@ assert.match(content,/id="yh-pulse"/);
 assert.ok(!content.includes('/browser-smoke.mjs'),'QA script published on live');
 const items=await fetchBound('/catalog.json');assert.equal(items.status,200);
 const list=(await items.json()).items.filter(x=>x?.published!==false&&x?.visibility!=='private');
-assert.equal(list.length,143);
+assert.equal(list.length,144);
 const errors=[];
 let count=0;
 for(let i=0;i<list.length;i+=9){
