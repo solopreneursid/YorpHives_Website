@@ -7,11 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {createEntity} from './discovery-schema.mjs';
 import {PUBLIC_TOOL_PAGES} from '../agentic/tools-core.mjs';
 import {isQualifiedProduct} from '../product-policy.mjs';
-import {checkCatalogTranslation,makeCatalogLocaleCopy,catalogTranslationReport} from '../catalog-localization.mjs';
-import {newMarketingCopy} from '../marketing-localization.mjs';
-import {PAGE_COPY} from '../site-language-copy.mjs';
-import {SECTION_COPY} from '../site-section-copy.mjs';
-import {TOOL_COPY} from '../site-tool-copy.mjs';
+import {makeCatalogLocaleCopy,catalogTranslationReport} from '../catalog-localization.mjs';
 import {injectNextToolUI} from './next-tool-shell.mjs';
 import {collectPublicActivity,discoverPublicPageUpdates,discoverToolEditTimes,loadActivityNotes,renderHomePulse} from './activity-feed.mjs';
 
@@ -40,36 +36,10 @@ for(const item of catalog.items){
 const published=catalog.items.filter(item=>item?.type==='tool'
  ? item.published!==false&&item.visibility!=='private'
  : isQualifiedProduct(item));
-// Existing tools remain available in English during incremental localization.
-// Every newly published catalog entry must be reviewed in all advertised
-// languages before public release, so future launches never silently regress.
-// All new static homepage and main-section language needs are checked at
-// build time. Unknown source copy requires seven explicit translations.
-const marketingBaseline=JSON.parse(await src('marketing-copy-baseline.json'));
-if(marketingBaseline.schemaVersion!==1||!Array.isArray(marketingBaseline.strings))
- throw Error('Invalid marketing translation baseline');
-const newUntranslatedCopy=newMarketingCopy({
- html:await src('reimagined/index.html'),
- baseline:marketingBaseline.strings,
- translations:[PAGE_COPY,SECTION_COPY,TOOL_COPY]
-});
-if(newUntranslatedCopy.length)
- throw Error('New website UI copy requires localized strings before publication: '+newUntranslatedCopy.slice(0,8).join(' | '));
+// Browser-native translation is the zero-cost default for all future content.
+// Reviewed first-party catalog translations remain optional; new products and
+// UI features are NOT blocked on translations or a local inference server.
 const localizationBaseline=JSON.parse(await src('catalog-localization-baseline.json'));
-if(localizationBaseline.schemaVersion!==1||!Array.isArray(localizationBaseline.legacyUrls))
- throw Error('Invalid catalog localization baseline');
-const oldRoutes=new Set(localizationBaseline.legacyUrls);
-if(!localizationBaseline.legacyContent||typeof localizationBaseline.legacyContent!=='object')
- throw Error('Localization baseline must identify original published catalog copy');
-for(const item of published){
- const prior=localizationBaseline.legacyContent[item.url];
- // Grandfather ONLY unchanged existing tool copy. New products, renamed tools
- // and revised descriptions must have completed translations.
- if(item.type==='tool'&&oldRoutes.has(item.url)&&
-    prior?.name===item.name&&prior?.description===item.description)continue;
- const errors=checkCatalogTranslation(item);
- if(errors.length)throw Error('New public catalog entry lacks reviewed localization: '+item.url+' — '+errors.join('; '));
-}
 const catalogLocaleMap=makeCatalogLocaleCopy(published);
 const localeReport=catalogTranslationReport(published,{legacyUrls:localizationBaseline.legacyUrls});
 const seen=new Set();
