@@ -51,12 +51,14 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
      const art=document.querySelector('#home .hero-art');
      const dock=document.querySelector('.mobile-dock');
      const heroBox=hero.getBoundingClientRect();
-     return {heroHeight:heroBox.height,artHidden:getComputedStyle(art).display==='none',artHeight:art.getBoundingClientRect().height,dockHeight:dock.getBoundingClientRect().height};
+     return {heroHeight:heroBox.height,artHidden:getComputedStyle(art).display==='none',artHeight:art.getBoundingClientRect().height,dockHeight:dock.getBoundingClientRect().height,dockInset:dock.getBoundingClientRect().left,dockButtonHeight:dock.querySelector('a').getBoundingClientRect().height};
     });
     if(mobile.artHidden)problems.push(label+' mobile brand orbit missing');
     if(mobile.artHeight>160)problems.push(label+' oversized mobile brand orbit '+mobile.artHeight.toFixed(0));
     if(mobile.heroHeight>height-55)problems.push(label+' oversized hero '+mobile.heroHeight.toFixed(0)+'/'+height);
-    if(mobile.dockHeight>72)problems.push(label+' oversized mobile dock '+mobile.dockHeight.toFixed(0));
+    if(mobile.dockHeight>60)problems.push(label+' oversized mobile dock '+mobile.dockHeight.toFixed(0));
+    if(mobile.dockInset<4)problems.push(label+' dock not floating inside its 3D tray');
+    if(mobile.dockButtonHeight<44)problems.push(label+' dock touch target below 44px');
     const menu=page.locator('#menu-toggle');
     await menu.click();
     const menuBounds=await page.locator('#mobile-menu').boundingBox();
