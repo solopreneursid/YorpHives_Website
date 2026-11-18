@@ -19,7 +19,7 @@ test('built tool directory remains crawlable and fully linked without JavaScript
  const page=await readFile(resolve(root,'dist/tools/index.html'),'utf8');
  const catalog=JSON.parse(await readFile(resolve(root,'dist/catalog.json'),'utf8'));
  const tools=catalog.items.filter(x=>x.type==='tool');
- assert.equal(tools.length,143);
+ assert.equal(tools.length,144);
  assert.match(page,/id="directory-search"/);
  assert.match(page,/id="directory-search-status" role="status"/);
  assert.match(page,/src="directory-search\.mjs"/);
@@ -27,7 +27,7 @@ test('built tool directory remains crawlable and fully linked without JavaScript
   assert.ok(page.includes('href="../'+tool.url+'"'),tool.url);
  }
  const cards=page.match(/class="directory-card"/g)||[];
- assert.equal(cards.length,143);
+ assert.equal(cards.length,144);
  const script=await readFile(resolve(root,'dist/tools/directory-search.mjs'),'utf8');
  assert.match(script,/history\.replaceState/);
  assert.doesNotMatch(script,/(?:fetch\(|sendBeacon|XMLHttpRequest|sessionStorage)/);
