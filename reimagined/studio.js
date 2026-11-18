@@ -13,8 +13,8 @@ const isValidDay=d=>{if(typeof d!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(d))retu
 const niceDate=d=>new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
 const number=n=>n.toLocaleString('en-US');
 const views=[...document.querySelectorAll('.view')];
-const names={home:'Home',ventures:'HQventures',builders:'Builders',impact:'Impact',tools:'Free tools',partners:'Partnerships',contact:'Contact'};
-const special={ecosystem:'home','venture-collection':'ventures',explore:'ventures',connect:'contact',opportunities:'builders',membership:'builders'};
+const names={home:'Home',ventures:'HQventures',builders:'Builders',tools:'Free tools',partners:'Partnerships',contact:'Contact'};
+const special={ecosystem:'home','venture-collection':'ventures',explore:'ventures',connect:'contact',opportunities:'builders',membership:'builders',impact:'home','home-progress':'home'};
 let current='home';
 
 function menuClose(){
@@ -150,8 +150,8 @@ function applyCatalog(newItems){
  verifiedPublic=new Set([...tools,...ventures].map(x=>x.url));
  // Category may have disappeared or been renamed in a new catalogue release.
  if(activeCategory!=='All'&&!tools.some(t=>(t.category||'Other')===activeCategory))activeCategory='All';
- for(const id of ['home-tool-count','impact-tools','tools-count-big'])$(id).textContent=number(tools.length);
- for(const id of ['home-venture-count','impact-ventures'])$(id).textContent=number(ventures.length);
+ for(const id of ['home-tool-count','tools-count-big'])$(id).textContent=number(tools.length);
+ for(const id of ['home-venture-count'])$(id).textContent=number(ventures.length);
  categoryChips();updateSavedCount();renderTools();renderVentures();
 }
 subscribeCatalog(applyCatalog);
@@ -159,7 +159,7 @@ startCatalogMonitoring();
 async function loadCatalog(){
  try{await getCatalog()}
  catch{
-  for(const id of ['home-tool-count','impact-tools','tools-count-big','home-venture-count','impact-ventures'])$(id).textContent='—';
+  for(const id of ['home-tool-count','tools-count-big','home-venture-count'])$(id).textContent='—';
   $('tool-results-description').textContent='The catalogue is temporarily unavailable. Please use the A–Z directory.';
   $('tool-empty').hidden=false;$('tool-pagination').hidden=true;
   $('venture-total').textContent='Approval records unavailable';
@@ -181,49 +181,31 @@ function renderActivity(items){
 }
 async function loadActivity(){try{const r=await fetch('../activity.json',{cache:'no-cache'});if(r.ok){const d=await r.json();renderActivity(d.items)}}catch{}}
 
-/* Founder-approved public aggregates: exact revenue values are NEVER part of the contract. */
-const approved=p=>p?.schemaVersion===1&&p.publication?.status==='approved'&&p.publication.approvedByFounder===true&&isValidDay(p.publication.approvedAt)&&p.publication.approvedAt<=new Date().toISOString().slice(0,10);
-const validCount=v=>Number.isSafeInteger(v)&&v>=0&&v<=1000000000;
-function renderPublicImpact(snapshot){
- const metrics=snapshot.metrics||{};
- if(validCount(metrics.estimatedVisitors30d)){
-  $('impact-visitors').textContent=number(metrics.estimatedVisitors30d);
-  $('impact-visitors-note').textContent='Estimated visitors · rolling 30 days';
- }
- if(validCount(metrics.verifiedPartners)){
-  $('impact-partners').textContent=number(metrics.verifiedPartners);
-  $('impact-partners-note').textContent='Confirmed active partnerships';
- }
- $('impact-last-reviewed').textContent='Founder-reviewed · '+niceDate(snapshot.publication.approvedAt);
- const points=snapshot.revenueDirection;
- if(Array.isArray(points)&&points.length>=3&&points.length<=12&&points.every(x=>/^\d{4}-(0[1-9]|1[0-2])$/.test(x?.month||'')&&[-1,0,1].includes(x.direction))&&points.every((x,i)=>i===0||x.month>points[i-1].month)){
-  let trend=2.2;const coords=points.map((p,i)=>{trend=Math.min(4,Math.max(.5,trend-p.direction*.62));return [20+i*580/(points.length-1),17+trend*33]});
-  const path=coords.map((c,i)=>(i?'L':'M')+c[0].toFixed(1)+','+c[1].toFixed(1)).join(' ');
-  $('trend-line').setAttribute('d',path);$('trend-area').setAttribute('d',path+' L'+coords[coords.length-1][0].toFixed(1)+',185 L20,185 Z');
-  $('trend-labels').replaceChildren(...points.map(p=>el('span',new Date(p.month+'-01T00:00:00Z').toLocaleDateString('en-GB',{month:'short',timeZone:'UTC'}))));
-  $('revenue-empty').hidden=true;$('revenue-chart').hidden=false;
- }
- if(Array.isArray(snapshot.trendingApps)){
-  const seen=new Set();const approvedMap=new Map(ventures.map(x=>[x.url,x]));const rows=[];
-  for(const item of snapshot.trendingApps){
-   if(!approvedMap.has(item?.url)||seen.has(item.url))continue;seen.add(item.url);const x=approvedMap.get(item.url);
-   const a=el('div','','popular-item');a.append(el('span',String(rows.length+1).padStart(2,'0')));const link=el('a');link.href='../'+x.url;link.append(el('strong',x.name),el('small','Verified use · founder-approved venture'));a.append(link,icon('arrow'));rows.push(a);if(rows.length>=3)break;
+// Homepage progress uses public catalog totals and the existing anonymous,
+// read-only 30-day growth report. This is not a public HQ dashboard.
+const validCount=value=>Number.isSafeInteger(value)&&value>=0&&value<=1_000_000_000;
+async function loadHomeMetrics(){
+ try{
+  const response=await fetch('/api/insights/growth',{cache:'no-store'});
+  if(!response.ok)return;
+  const data=await response.json();
+  if(data?.schemaVersion!==1||data.available!==true||data.periodDays!==30||
+   !Array.isArray(data.daily)||data.daily.length!==30)return;
+  const dates=new Set();
+  let pageViews=0,completedActions=0;
+  for(const row of data.daily){
+   if(!isValidDay(row?.day)||dates.has(row.day)||
+    !validCount(row.pageViews)||!validCount(row.completedActions))return;
+   dates.add(row.day);
+   pageViews+=row.pageViews;completedActions+=row.completedActions;
   }
-  if(rows.length)$('popular-apps').replaceChildren(...rows);
- }
- if(Array.isArray(snapshot.milestones)){
-  const rows=[],seen=new Set();
-  for(const item of snapshot.milestones){
-   if(!isValidDay(item?.date)||item.date>new Date().toISOString().slice(0,10)||typeof item.title!=='string'||item.title.length<5||item.title.length>90||typeof item.summary!=='string'||item.summary.length<8||item.summary.length>160||!verifiedPublic.has(item.proofUrl)||seen.has(item.proofUrl+'|'+item.date))continue;
-   seen.add(item.proofUrl+'|'+item.date);
-   const row=el('div','','milestone-item'),time=el('time',niceDate(item.date));time.dateTime=item.date;
-   const wrap=el('div'),link=el('a',item.title);link.href='../'+item.proofUrl;wrap.append(link,el('small',item.summary));row.append(time,wrap);rows.push(row);if(rows.length>=4)break;
-  }
-  if(rows.length)$('milestone-list').replaceChildren(...rows);
- }
-}
-async function loadImpact(){
- try{const r=await fetch('impact-public.json',{cache:'no-store'});if(!r.ok)return;const data=await r.json();if(approved(data))renderPublicImpact(data);}catch{}
+  if(!validCount(pageViews)||!validCount(completedActions))return;
+  $('home-page-views').textContent=number(pageViews);
+  $('home-completions').textContent=number(completedActions);
+  if(typeof data.generatedAt==='string'&&Number.isFinite(Date.parse(data.generatedAt)))
+   $('home-metrics-updated').textContent='Recorded activity · updated '+
+    new Date(data.generatedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'});
+ }catch{/* The website remains usable when analytics is unavailable. */}
 }
 
 for(const link of document.querySelectorAll('[data-interest]'))link.addEventListener('click',()=>{
@@ -237,29 +219,9 @@ $('contact-form').addEventListener('submit',e=>{
 });
 
 await loadCatalog();
-await Promise.all([loadImpact(),loadActivity()]);
+await loadActivity();
 
-/* First-party aggregate reporting; browser-tab sessions are not unique people.
- * Never infer revenue, partner counts, or historical traffic from session counts.
- */
-async function loadRealInsights(){
- try{
-  const response=await fetch('/api/insights/public',{cache:'no-store'});
-  if(!response.ok)return;
-  const data=await response.json();
-  if(data?.schemaVersion!==1||data.available!==true||data.periodDays!==30)return;
-  const count=data.traffic?.estimatedSessions30d;
-  const views=data.traffic?.pageViews30d;
-  if(validCount(count)){
-   $('impact-visitors').textContent=number(count);
-   $('impact-visitors-note').textContent='Anonymous browser-tab sessions · 30 days'+
-    (validCount(views)?' · '+number(views)+' page views':'');
-  }
-  if(typeof data.generatedAt==='string'&&Number.isFinite(Date.parse(data.generatedAt)))
-   $('impact-last-reviewed').textContent='First-party activity · updated '+
-    new Date(data.generatedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'});
- }catch{/* Analytics failure must not affect the main website. */}
-}
-await loadRealInsights();
-window.setInterval(()=>{if(!document.hidden)void loadRealInsights()},300_000);
-window.addEventListener('focus',()=>{if(!document.hidden)void loadRealInsights()});
+// Non-personal aggregate report only. Keep the rest of the site independent.
+await loadHomeMetrics();
+window.setInterval(()=>{if(!document.hidden)void loadHomeMetrics()},300_000);
+window.addEventListener('focus',()=>{if(!document.hidden)void loadHomeMetrics()});
