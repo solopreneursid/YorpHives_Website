@@ -114,6 +114,30 @@ try{
   await page.waitForFunction(()=>!document.querySelector('#utility-result')?.hidden,null,{timeout:15000});
   assert.match(await page.locator('#utility-output').inputValue(),/3/);
  });
+ await check('measurement: successful word count emits only an approved completion signal',async page=>{
+  const events=[];
+  await page.route('**/api/insights/collect',async route=>{
+   const body=JSON.parse(route.request().postData()||'{}');
+   events.push(body);
+   await route.fulfill({status:200,contentType:'application/json',body:'{"ok":true}'});
+  });
+  await open(page,'/tools/word-counter/');
+  await page.locator('textarea[name="text"]').fill('PRIVATE-SYNTHETIC-INPUT one two');
+  await page.waitForFunction(()=>!document.querySelector('#utility-run')?.disabled,null,{timeout:15000});
+  await page.locator('#utility-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#utility-result')?.hidden,null,{timeout:15000});
+  for(let i=0;i<30&&!events.some(x=>x.event==='complete');i++)await page.waitForTimeout(100);
+  const completed=events.find(x=>x.event==='complete');
+  assert.ok(completed,'No completion event after a successful tool action');
+  assert.equal(completed.url,'tools/word-counter/');
+  for(const event of events){
+   assert.ok(['view','complete'].includes(event.event));
+   assert.deepEqual(Object.keys(event).sort(),
+    (event.event==='view'?['event','route','sessionId']:['event','sessionId','url']));
+   assert.match(event.sessionId,/^[a-f0-9-]{36}$/i);
+   assert.ok(!JSON.stringify(event).includes('PRIVATE-SYNTHETIC-INPUT'));
+  }
+ });
  await check('mobile: directory layout has no horizontal overflow',async page=>{
   await open(page,'/tools/?q=pdf');
   await waitReady(page).catch(()=>{});
