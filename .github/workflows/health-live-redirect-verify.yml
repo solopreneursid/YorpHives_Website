@@ -20,6 +20,17 @@ jobs:
         run: node scripts/health-release-verify.mjs --source
       - name: Check all 46 live redirects and their first-party HTML destinations
         run: node scripts/health-release-verify.mjs --live
+      - name: Verify live Worker runtime, public APIs, and all 143 tool pages
+        env:
+          YH_HOST: yorphives.com
+          EXPECT_RUNTIME: workers
+        run: node scripts/live-cutover-check.mjs
+      - name: Install isolated open-source Chromium browser runner
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Run representative production browser-local tool and mobile checks
+        run: node scripts/health-browser-smoke.mjs
       - name: Record verification boundary
         if: always()
         run: |
