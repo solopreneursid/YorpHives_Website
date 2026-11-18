@@ -53,3 +53,17 @@ details.directory-section .directory-card span{font-size:12px;line-height:1.45}
 #pdf-compressor-status{margin-top:0}
 @media(max-width:720px){.compression-choices-grid{grid-template-columns:1fr;gap:9px}.compression-option-content{min-height:79px;padding:12px 14px;gap:5px}.compression-option-badge{position:absolute;right:43px;top:12px;margin:0}.compression-option-content strong{font-size:14px}.compression-option-content small{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.compression-option-content{transition:none}}
+
+/* Site-wide local bookmarks and related tools; no new processor dependencies. */
+.yh-tool-shortcuts{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:24px 0 12px}
+.yh-tool-shortcuts button{border:1px solid #9ccab1;background:#f0faf3;color:#205842;font:inherit;font-size:13px;font-weight:800;padding:11px 16px;border-radius:11px;min-height:45px;cursor:pointer}
+.yh-tool-shortcuts button[aria-pressed=true]{background:#174935;color:#f6fff9}
+.yh-tool-shortcuts a{font-size:13px;font-weight:700;color:#276b50;text-underline-offset:4px}
+.yh-tool-discover{border-top:1px solid #d2e3d7;margin:24px 0 4px;padding:24px 0 0}
+.yh-tool-discover-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.yh-tool-discover h2{margin:0;font-size:20px;color:#1f5039}
+.yh-tool-discover-head a{font-weight:700;font-size:13px;color:#2b7555}
+.yh-tool-discover ul{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.yh-tool-discover li a{display:block;height:100%;padding:14px;border-radius:11px;border:1px solid #cde3d3;background:#fff;color:#245842;font-size:14px;font-weight:750}
+.yh-tool-discover a:focus-visible,.yh-tool-shortcuts :focus-visible{outline:3px solid #20764e;outline-offset:2px}
+@media(max-width:700px){.yh-tool-discover ul{grid-template-columns:1fr}.yh-tool-shortcuts{gap:14px}}

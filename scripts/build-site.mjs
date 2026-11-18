@@ -173,6 +173,22 @@ for(const item of published){
   };
  html=injectToolSuite(html,item);
  html=injectNextToolUI(html,item);
+ // Static related links help visitors discover adjacent tools without a recommendation API.
+ if(item.type==='tool'&&item.url.startsWith('tools/')&&item.url.endsWith('/')){
+  const near=published.filter(x=>x.type==='tool'&&x.url!==item.url&&
+   (x.category||'Other')===(item.category||'Other')).slice(0,3);
+  const suggestions='<section class="yh-tool-discover" aria-label="More useful tools">'+
+   '<div class="yh-tool-discover-head"><h2>Keep exploring</h2>'+
+   '<a href="/tools/">Browse all tools →</a></div>'+
+   (near.length?'<ul>'+near.map(x=>'<li><a href="/'+esc(x.url)+'">'+esc(x.name)+'</a></li>').join('')+'</ul>':'')+
+   '</section>';
+  const save='<div class="yh-tool-shortcuts"><button type="button" data-save-tool="'+esc(item.url)+
+   '" data-tool-name="'+esc(item.name)+'" aria-pressed="false">♡ Save this tool</button>'+
+   '<a href="/tools/?saved=1">View saved tools →</a></div>';
+  if(!html.includes('</main>'))throw Error('Missing tool main: '+item.url);
+  html=html.replace('</main>',save+suggestions+'</main>');
+  html=html.replace('</body>','<script type="module" src="/tools/save-tool.mjs"></script></body>');
+ }
  // Progressive local browser agents can discover utilities from any public page.
  if(!html.includes('agentic-browser.mjs'))
   html=html.replace('</body>','<script type="module" src="/agentic-browser.mjs"></script></body>');
@@ -246,9 +262,12 @@ for(const directory of directories){
  html=injectSiteSupport(html,path);
  await write(path,html);
 }
-const canonicalPaths=[...new Set(['',...directories,...published.map(x=>x.url)])];
+// Index three honest, crawlable entrances to the existing studio sections.
+const {publishSectionLandings,sectionLandingPaths}=await import('./section-landings.mjs');
+await publishSectionLandings(write);
+const canonicalPaths=[...new Set(['',...sectionLandingPaths,...directories,...published.map(x=>x.url)])];
 // Fail if any future public HTML route is forgotten in catalog.json.
-const publicPages=new Set(['index.html',...directories.map(x=>x+'index.html'),...published.map(x=>fileFor(x.url))]);
+const publicPages=new Set(['index.html',...sectionLandingPaths.map(x=>x+'index.html'),...directories.map(x=>x+'index.html'),...published.map(x=>fileFor(x.url))]);
 async function auditHtml(dir=''){
  for(const entry of await readdir(resolve(dest,dir),{withFileTypes:true})){
   const path=join(dir,entry.name).replaceAll('\\','/');
