@@ -95,11 +95,11 @@ test('every direct-entry page keeps Ko-fi disabled in its own navigation',async(
  assert.match(directory,/<button class="header-kofi tool-kofi" type="button" disabled/);
 });
 
-test('all 23 older public URLs stay on first-party tools after prototype retirement',async()=>{
+test('all 23 legacy URLs retain both slash and slashless first-party redirects',async()=>{
  const redirects=await read('_redirects',dest);
  const rules=redirects.split('\n').filter(x=>x.trim()&&!x.trim().startsWith('#')).map(x=>x.trim().split(/\s+/));
- assert.equal(rules.length,23);
- assert.equal(new Set(rules.map(x=>x[0])).size,23);
+ assert.equal(rules.length,46);
+ assert.equal(new Set(rules.map(x=>x[0])).size,46);
  const oldPaths=['/free-tools/','/free-tools/file-studio/',
   '/free-tools/png-to-jpg/','/free-tools/jpg-to-png/','/free-tools/png-to-webp/',
   '/free-tools/jpg-to-webp/','/free-tools/webp-to-png/','/free-tools/webp-to-jpg/',
@@ -109,10 +109,17 @@ test('all 23 older public URLs stay on first-party tools after prototype retirem
   '/free-tools/json-formatter/','/free-tools/json-minifier/',
   '/free-tools/base64-encoder/','/free-tools/base64-decoder/',
   '/free-tools/url-encoder/','/free-tools/url-decoder/','/free-tools/sha256-generator/'];
- assert.deepEqual(rules.map(x=>x[0]),oldPaths);
+ const slashRules=rules.filter(x=>x[0].endsWith('/'));
+ assert.deepEqual(slashRules.map(x=>x[0]),oldPaths);
+ const entries=new Map(rules.map(([source,target,code])=>[source,{target,code}]));
+ for(const oldPath of oldPaths){
+  const canonical=entries.get(oldPath),withoutSlash=entries.get(oldPath.slice(0,-1));
+  assert.ok(canonical,'Original legacy alias: '+oldPath);
+  assert.deepEqual(withoutSlash,canonical,'Slashless alias: '+oldPath);
+ }
  for(const [src,target,code] of rules){
   assert.equal(code,'302',src);
-  assert.match(src,/^\/free-tools\/(?:[a-z0-9-]+\/)?$/);
+  assert.match(src,/^\/free-tools(?:\/[a-z0-9-]+)?\/?$/);
   assert.ok(target.startsWith('/tools/'),src);
   assert.doesNotMatch(target,/^https?:\/\//i,'No redirect may depend on retired prototype hosting.');
   const page=target.slice(1)+'index.html';

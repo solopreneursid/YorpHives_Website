@@ -2,26 +2,50 @@
 # 302 preserves legacy links while allowing corrections. No new /tools/ pages are redirected.
 # Retired prototype-only utilities go to the current directory (no false equivalence).
 # All redirects stay first-party. No prototype hosting or API required.
+# Keep both slash and slashless legacy paths; Cloudflare treats these as distinct URL rules.
 /free-tools/ /tools/ 302
+/free-tools /tools/ 302
 /free-tools/file-studio/ /tools/ 302
-/free-tools/png-to-jpg/ /tools/image-resizer/ 302
-/free-tools/jpg-to-png/ /tools/image-resizer/ 302
-/free-tools/png-to-webp/ /tools/image-resizer/ 302
-/free-tools/jpg-to-webp/ /tools/image-resizer/ 302
-/free-tools/webp-to-png/ /tools/image-resizer/ 302
-/free-tools/webp-to-jpg/ /tools/image-resizer/ 302
+/free-tools/file-studio /tools/ 302
+/free-tools/png-to-jpg/ /tools/batch-image-converter/ 302
+/free-tools/png-to-jpg /tools/batch-image-converter/ 302
+/free-tools/jpg-to-png/ /tools/batch-image-converter/ 302
+/free-tools/jpg-to-png /tools/batch-image-converter/ 302
+/free-tools/png-to-webp/ /tools/batch-image-converter/ 302
+/free-tools/png-to-webp /tools/batch-image-converter/ 302
+/free-tools/jpg-to-webp/ /tools/batch-image-converter/ 302
+/free-tools/jpg-to-webp /tools/batch-image-converter/ 302
+/free-tools/webp-to-png/ /tools/batch-image-converter/ 302
+/free-tools/webp-to-png /tools/batch-image-converter/ 302
+/free-tools/webp-to-jpg/ /tools/batch-image-converter/ 302
+/free-tools/webp-to-jpg /tools/batch-image-converter/ 302
 /free-tools/image-resizer/ /tools/image-resizer/ 302
+/free-tools/image-resizer /tools/image-resizer/ 302
 /free-tools/image-rotator/ /tools/image-rotate-flip/ 302
+/free-tools/image-rotator /tools/image-rotate-flip/ 302
 /free-tools/grayscale-image/ /tools/ 302
+/free-tools/grayscale-image /tools/ 302
 /free-tools/jpg-to-pdf/ /tools/images-to-pdf/ 302
+/free-tools/jpg-to-pdf /tools/images-to-pdf/ 302
 /free-tools/png-to-pdf/ /tools/images-to-pdf/ 302
+/free-tools/png-to-pdf /tools/images-to-pdf/ 302
 /free-tools/merge-pdf/ /tools/pdf-merge/ 302
+/free-tools/merge-pdf /tools/pdf-merge/ 302
 /free-tools/split-pdf/ /tools/ 302
+/free-tools/split-pdf /tools/ 302
 /free-tools/extract-pdf-pages/ /tools/pdf-extract-pages/ 302
+/free-tools/extract-pdf-pages /tools/pdf-extract-pages/ 302
 /free-tools/json-formatter/ /tools/json-formatter/ 302
+/free-tools/json-formatter /tools/json-formatter/ 302
 /free-tools/json-minifier/ /tools/json-formatter/ 302
+/free-tools/json-minifier /tools/json-formatter/ 302
 /free-tools/base64-encoder/ /tools/base64-tool/ 302
+/free-tools/base64-encoder /tools/base64-tool/ 302
 /free-tools/base64-decoder/ /tools/base64-tool/ 302
+/free-tools/base64-decoder /tools/base64-tool/ 302
 /free-tools/url-encoder/ /tools/url-encoder/ 302
+/free-tools/url-encoder /tools/url-encoder/ 302
 /free-tools/url-decoder/ /tools/url-encoder/ 302
+/free-tools/url-decoder /tools/url-encoder/ 302
 /free-tools/sha256-generator/ /tools/hash-generator/ 302
+/free-tools/sha256-generator /tools/hash-generator/ 302
