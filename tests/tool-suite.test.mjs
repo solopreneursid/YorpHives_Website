@@ -29,7 +29,7 @@ test('the shared UI is applied to every non-compressor tool, not just sample pag
   assert.equal((html.match(/tool-suite-v1\.mjs/g)||[]).length,1,item.url);
   assert.match(html,/class="tool-panel"/,item.url);
  }
- assert.equal(count,106);
+ assert.equal(count,107);
 });
 test('modern responsive interface remains first-party and accessible',async()=>{
  const css=await read(dist,'tools/tool-suite-v1.css'),js=await read(dist,'tools/tool-suite-v1.mjs');
