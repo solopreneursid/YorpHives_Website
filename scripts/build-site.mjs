@@ -481,7 +481,11 @@ const languageUI='<div id="yh-language-picker" translate="no" aria-label="Websit
  '<option value="de">Deutsch</option><option value="pt">Português</option>'+
  '<option value="ar">العربية</option><option value="ja">日本語</option>'+
  '</select><button type="button" data-language-translate hidden>Translate remaining page on device</button>'+
- '<p role="status" aria-live="polite"></p></div></div>';
+ '<p role="status" aria-live="polite"></p>'+
+ '<div class="yh-language-browser-help"><strong>Translate the full page for free</strong>'+
+ '<p>Chrome: use the Translate icon in the address bar, or right-click and choose Translate.</p>'+
+ '<p>Firefox: right-click the page and choose Translate page. Browser availability varies.</p>'+
+ '<p>Browsers control page translation; this site cannot switch it on automatically.</p></div></div></div>';
 const builtPages=[...publicPages];
 if(target==='preview')builtPages.push('release-candidate/index.html');
 for(const path of builtPages){
