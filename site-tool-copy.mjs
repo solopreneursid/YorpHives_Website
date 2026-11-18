@@ -418,6 +418,154 @@ export const TOOL_COPY={
     "ja": "すべてのツール"
   }
 };
+
+/* Shared public catalog categories are localized independently of product names. */
+Object.assign(TOOL_COPY,{
+  "Writing": {
+    "hi": "लेखन",
+    "es": "Escritura",
+    "fr": "Rédaction",
+    "de": "Schreiben",
+    "pt": "Escrita",
+    "ar": "الكتابة",
+    "ja": "文章作成"
+  },
+  "Developer": {
+    "hi": "डेवलपर",
+    "es": "Desarrollo",
+    "fr": "Développement",
+    "de": "Entwicklung",
+    "pt": "Desenvolvimento",
+    "ar": "البرمجة",
+    "ja": "開発"
+  },
+  "Calculators": {
+    "hi": "कैलकुलेटर",
+    "es": "Calculadoras",
+    "fr": "Calculatrices",
+    "de": "Rechner",
+    "pt": "Calculadoras",
+    "ar": "الحاسبات",
+    "ja": "計算"
+  },
+  "Design": {
+    "hi": "डिज़ाइन",
+    "es": "Diseño",
+    "fr": "Design",
+    "de": "Design",
+    "pt": "Design",
+    "ar": "التصميم",
+    "ja": "デザイン"
+  },
+  "Security": {
+    "hi": "सुरक्षा",
+    "es": "Seguridad",
+    "fr": "Sécurité",
+    "de": "Sicherheit",
+    "pt": "Segurança",
+    "ar": "الأمان",
+    "ja": "セキュリティ"
+  },
+  "Marketing": {
+    "hi": "मार्केटिंग",
+    "es": "Marketing",
+    "fr": "Marketing",
+    "de": "Marketing",
+    "pt": "Marketing",
+    "ar": "التسويق",
+    "ja": "マーケティング"
+  },
+  "Creator": {
+    "hi": "क्रिएटर",
+    "es": "Creación",
+    "fr": "Création",
+    "de": "Kreativität",
+    "pt": "Criação",
+    "ar": "صُنّاع المحتوى",
+    "ja": "クリエイター"
+  },
+  "PDF": {
+    "hi": "PDF",
+    "es": "PDF",
+    "fr": "PDF",
+    "de": "PDF",
+    "pt": "PDF",
+    "ar": "PDF",
+    "ja": "PDF"
+  },
+  "Images": {
+    "hi": "छवियाँ",
+    "es": "Imágenes",
+    "fr": "Images",
+    "de": "Bilder",
+    "pt": "Imagens",
+    "ar": "الصور",
+    "ja": "画像"
+  },
+  "Spreadsheets": {
+    "hi": "स्प्रेडशीट",
+    "es": "Hojas de cálculo",
+    "fr": "Tableurs",
+    "de": "Tabellenkalkulation",
+    "pt": "Planilhas",
+    "ar": "جداول البيانات",
+    "ja": "スプレッドシート"
+  },
+  "Presentations": {
+    "hi": "प्रेज़ेंटेशन",
+    "es": "Presentaciones",
+    "fr": "Présentations",
+    "de": "Präsentationen",
+    "pt": "Apresentações",
+    "ar": "العروض التقديمية",
+    "ja": "プレゼンテーション"
+  },
+  "Files": {
+    "hi": "फ़ाइलें",
+    "es": "Archivos",
+    "fr": "Fichiers",
+    "de": "Dateien",
+    "pt": "Arquivos",
+    "ar": "الملفات",
+    "ja": "ファイル"
+  },
+  "Business": {
+    "hi": "व्यवसाय",
+    "es": "Negocios",
+    "fr": "Entreprise",
+    "de": "Unternehmen",
+    "pt": "Negócios",
+    "ar": "الأعمال",
+    "ja": "ビジネス"
+  },
+  "Audio": {
+    "hi": "ऑडियो",
+    "es": "Audio",
+    "fr": "Audio",
+    "de": "Audio",
+    "pt": "Áudio",
+    "ar": "الصوت",
+    "ja": "音声"
+  },
+  "Video": {
+    "hi": "वीडियो",
+    "es": "Vídeo",
+    "fr": "Vidéo",
+    "de": "Video",
+    "pt": "Vídeo",
+    "ar": "الفيديو",
+    "ja": "動画"
+  },
+  "Workflows": {
+    "hi": "कार्यप्रवाह",
+    "es": "Flujos de trabajo",
+    "fr": "Flux de travail",
+    "de": "Arbeitsabläufe",
+    "pt": "Fluxos de trabalho",
+    "ar": "سير العمل",
+    "ja": "ワークフロー"
+  }
+});
 export function getToolCopy(english,language){
  return TOOL_COPY[english]?.[language]||null;
 }
