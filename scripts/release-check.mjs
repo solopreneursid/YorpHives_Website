@@ -22,7 +22,7 @@ const isReimagined=homepage.includes('id="home-title"')&&homepage.includes('id="
 if(!isReimagined)problems.push('Preview/live parity failure: outdated homepage at root.');
 if(isReimagined){
  const ids=['home','ventures','builders','tools','partners','contact'];
-  if(html.includes('id="impact"')||html.includes('href="#impact"')||!html.includes('id="home-progress"'))
+  if(homepage.includes('id="impact"')||homepage.includes('href="#impact"')||!homepage.includes('id="home-progress"'))
    problems.push('Retired Impact route remains or homepage progress is missing.');
  for(const id of ids)if(!homepage.includes('<section class="view" id="'+id+'"'))
   problems.push('Reimagined public route missing: '+id);
