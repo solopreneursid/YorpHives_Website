@@ -4,7 +4,6 @@
 export const PUBLIC_LOCALES=Object.freeze(['hi','es','fr','de','pt','ar','ja']);
 const safeString=(value,max)=>typeof value==='string'&&value.trim().length>=2&&
  value.length<=max&&!/[<>\u0000-\u001f]/.test(value)&&!value.includes('\uFFFD');
-const sameMeaning=(a,b)=>a===b||a.toLowerCase()===b.toLowerCase();
 export function checkCatalogTranslation(item){
  if(!item||typeof item!=='object')return ['Invalid catalog item'];
  const errors=[];
@@ -14,7 +13,10 @@ export function checkCatalogTranslation(item){
    errors.push(lang+': name and description must have reviewed translations');
    continue;
   }
-  if(!t.reviewed||!/^\d{4}-\d{2}-\d{2}$/.test(t.reviewedOn||'')){
+  if(t.reviewed!==true||!/^\\d{4}-\\d{2}-\\d{2}$/.test(t.reviewedOn||'')||
+     !Number.isFinite(Date.parse(t.reviewedOn+'T00:00:00Z'))||
+     new Date(t.reviewedOn+'T00:00:00Z').toISOString().slice(0,10)!==t.reviewedOn||
+     t.reviewedOn>new Date().toISOString().slice(0,10)){
    errors.push(lang+': translation needs explicit review and review date');
   }
  }
