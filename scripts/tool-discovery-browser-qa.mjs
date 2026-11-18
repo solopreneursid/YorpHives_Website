@@ -148,20 +148,45 @@ try{
   }
   assert.equal(await page.locator('textarea[name="text"]').inputValue(),'');
  },{mobile:true});
- await check('homepage: retired Impact route is absent and public progress contains only four cards',async page=>{
+ await check('mobile: compact public benefits replace dashboard counters',async page=>{
   await open(page,'/');
   const info=page.locator('#home-progress');
   assert.ok(await info.isVisible());
-  assert.equal(await info.locator('.proof-metric').count(),4);
-  assert.equal(await page.locator('#impact').count(),0);
-  assert.equal(await page.locator('a[href="#impact"]').count(),0);
-  assert.equal(await page.locator('#yh-pulse').count(),0,'Duplicate YHpulse ticker must be removed');
+  assert.equal(await info.locator('.hive-benefit').count(),3);
+  await page.waitForFunction(()=>document.querySelector('#home-tool-count')?.textContent==='143',null,{timeout:12000});
+  assert.equal(await page.locator('#home-tool-count').textContent(),'143');
+  assert.match(await info.innerText(),/Browser-Based/);
+  assert.match(await info.innerText(),/No Account Needed/);
+  for(const id of ['home-page-views','home-completions','home-venture-count'])
+   assert.equal(await page.locator('#'+id).count(),0,id+' should be HQ-only');
+  assert.equal(await page.locator('#yh-pulse').count(),0);
   await page.locator('a[href="#home-progress"]').first().click();
   assert.equal(new URL(page.url()).hash,'#home-progress');
-  assert.ok(await info.isVisible());
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-  assert.ok(overflow<=8,'Homepage metrics cause mobile overflow: '+overflow);
+  assert.ok(overflow<=8,'Compact homepage causes mobile overflow: '+overflow);
  },{mobile:true});
+ await check('homepage: featured verified updates use tool catalog titles and direct routes',async page=>{
+  await page.route('**/activity.json',async route=>route.fulfill({
+   status:200,contentType:'application/json',
+   body:JSON.stringify({version:1,items:[
+    {kind:'tools',title:'Updated: Word & Character Counter',url:'tools/word-counter/',date:'2026-11-16'},
+    {kind:'tools',title:'Updated: Text Case Converter',url:'tools/case-converter/',date:'2026-11-16'},
+    {kind:'tools',title:'Updated: Random Password Generator',url:'tools/password-generator/',date:'2026-11-16'},
+    {kind:'tools',title:'Unpublished tool',url:'tools/not-published/',date:'2026-11-16'},
+    {kind:'builders',title:'Internal review',url:'#builders',date:'2026-11-16'}
+   ]})
+  }));
+  await open(page,'/');
+  await page.waitForFunction(()=>document.querySelectorAll('#activity-list .hive-update').length>=2,null,{timeout:12000});
+  const cards=page.locator('#activity-list .hive-update');
+  assert.equal(await cards.count(),3);
+  assert.equal(await cards.first().getAttribute('href'),'../tools/word-counter/');
+  assert.match(await cards.first().innerText(),/Word & Character Counter/);
+  assert.match(await cards.first().innerText(),/Updated: Word & Character Counter/);
+  assert.equal(await page.locator('#activity-list .hive-update-featured').count(),1);
+  assert.equal((await page.locator('#activity-list').innerText()).includes('Unpublished tool'),false);
+  assert.equal((await page.locator('#activity-list').innerText()).includes('Internal review'),false);
+ });
  await check('homepage: visual process and partnership/contact invitation work on mobile',async page=>{
   await open(page,'/');
   const flow=page.locator('#how-it-works .process-stage');
@@ -250,21 +275,14 @@ try{
   assert.equal(await page.locator('#home-featured-empty').count(),0);
   assert.equal((await page.locator('#home-featured-list').innerText()).includes('Private unapproved venture'),false);
  });
- await check('homepage: metrics use only validated anonymous 30-day reports',async page=>{
-  const daily=Array.from({length:30},(_,i)=>({
-   day:new Date(Date.UTC(2026,9,20+i)).toISOString().slice(0,10),
-   pageViews:i===29?29:0,completedActions:i===29?3:0
-  }));
-  await page.route('**/api/insights/growth',async route=>{
-   await route.fulfill({status:200,contentType:'application/json',
-    body:JSON.stringify({schemaVersion:1,available:true,periodDays:30,
-     generatedAt:'2026-11-18T09:00:00Z',daily})});
-  });
+ await check('homepage: no public traffic analytics request is emitted',async page=>{
+  let analyticsRequests=0;
+  page.on('request',req=>{if(req.url().includes('/api/insights/growth'))analyticsRequests++});
   await open(page,'/');
-  await page.waitForFunction(()=>document.getElementById('home-completions').textContent==='3',null,{timeout:15000});
-  assert.equal(await page.locator('#home-page-views').textContent(),'29');
-  assert.equal(await page.locator('#home-completions').textContent(),'3');
-  assert.match(await page.locator('#home-analytics-disclaimer').innerText(),/undercount/i);
+  await page.locator('#home-tool-count').waitFor();
+  assert.equal(analyticsRequests,0);
+  assert.equal(await page.locator('#home-page-views').count(),0);
+  assert.equal(await page.locator('#home-completions').count(),0);
  });
  await check('mobile: directory layout has no horizontal overflow',async page=>{
   await open(page,'/tools/?q=pdf');
