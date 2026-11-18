@@ -138,21 +138,46 @@ try{
    assert.ok(!JSON.stringify(event).includes('PRIVATE-SYNTHETIC-INPUT'));
   }
  });
- await check('language switch: Hindi navigation labels work without browser Translator API',async page=>{
+ await check('language: header globe is compact and Hindi homepage copy translates without Chrome API',async page=>{
   await page.addInitScript(()=>{
    Object.defineProperty(window,'Translator',{configurable:true,value:undefined});
   });
-  await open(page,'/tools/');
+  await open(page,'/');
   const picker=page.locator('#yh-language-picker');
   assert.ok(await picker.isVisible());
+  assert.equal(await picker.locator('[data-language-panel]').isVisible(),false);
+  assert.equal(await page.locator('#home .hero-intro').innerText(),
+   'We discover emerging opportunities, build useful digital products, and create technology that evolves with the world.');
+  await picker.locator('[data-language-toggle]').click();
+  assert.ok(await picker.locator('[data-language-panel]').isVisible());
   await picker.locator('select').selectOption('hi');
-  assert.match(await picker.locator('[role="status"]').innerText(),/browser/i);
-  assert.ok((await page.locator('body').innerText()).includes('मुफ़्त टूल'),'Hindi essential UI not visible');
-  assert.equal(await page.locator('a.directory-card').count(),143);
+  assert.equal(await picker.locator('[data-language-panel]').isVisible(),false);
+  assert.ok((await page.locator('#home .hero-intro').innerText()).includes('नए अवसरों'),
+   'Hindi hero paragraph not translated from first-party copy');
+  assert.match(await page.locator('#home-title').innerText(),/डिजिटल उद्यम/);
+  assert.equal(await page.locator('html').getAttribute('lang'),'hi');
+  assert.equal(await picker.locator('[data-language-short]').innerText(),'HI');
+  assert.equal(await picker.locator('[data-language-translate]').isVisible(),false);
+  await picker.locator('[data-language-toggle]').click();
   await picker.locator('select').selectOption('en');
-  assert.equal(await picker.locator('select').inputValue(),'en');
+  assert.equal(await page.locator('#home .hero-intro').innerText(),
+   'We discover emerging opportunities, build useful digital products, and create technology that evolves with the world.');
+  assert.equal(await page.locator('html').getAttribute('lang'),'en');
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  assert.ok(overflow<=8,'Header language control causes horizontal overflow: '+overflow);
  },{mobile:true});
- await check('language switch: mocked browser Translator translates public text, preserves tool inputs',async page=>{
+ await check('language: directory selection persists and tool data is left intact',async page=>{
+  await open(page,'/tools/');
+  const picker=page.locator('#yh-language-picker');
+  await picker.locator('[data-language-toggle]').click();
+  await picker.locator('select').selectOption('es');
+  assert.equal(await picker.locator('[data-language-short]').innerText(),'ES');
+  assert.equal(await page.locator('a.directory-card').count(),143);
+  await open(page,'/tools/word-counter/');
+  assert.equal(await page.locator('#yh-language-select').inputValue(),'es');
+  assert.equal(await page.locator('textarea[name="text"]').inputValue(),'');
+ });
+ await check('language: optional browser Translator translates remaining public copy without touching inputs',async page=>{
   await page.addInitScript(()=>{
    Object.defineProperty(window,'Translator',{configurable:true,value:{
     availability:async()=> 'available',
@@ -161,13 +186,15 @@ try{
   });
   await open(page,'/tools/word-counter/');
   const picker=page.locator('#yh-language-picker');
+  await picker.locator('[data-language-toggle]').click();
   await picker.locator('select').selectOption('es');
-  await picker.locator('button').click();
+  await picker.locator('[data-language-toggle]').click();
+  const native=picker.locator('[data-language-translate]');
+  assert.equal(await native.isVisible(),true);
+  await native.click();
   await page.waitForFunction(()=>document.querySelector('#yh-language-picker [role="status"]')?.textContent.includes('Translated'),null,{timeout:25000});
   assert.equal(await page.locator('html').getAttribute('lang'),'es');
   assert.equal(await page.locator('textarea[name="text"]').inputValue(),'');
-  const fields=await page.locator('textarea[name="text"]').count();
-  assert.equal(fields,1);
   await picker.locator('select').selectOption('en');
   assert.equal(await page.locator('html').getAttribute('lang'),'en');
  });
