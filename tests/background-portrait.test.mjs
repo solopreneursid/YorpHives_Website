@@ -42,7 +42,7 @@ test('Two free models do not introduce billed server execution, API keys or remo
  const staticallyHosted=await stat(resolve(root,'dist/tools/models',PORTRAIT_INFO.filename));
  assert.ok(staticallyHosted.size<8e6);
  const catalog=JSON.parse(await readFile(resolve(root,'catalog.json'),'utf8'));
- assert.equal(catalog.items.filter(x=>x.type==='tool').length,143);
+ assert.equal(catalog.items.filter(x=>x.type==='tool').length,144);
  assert.equal(catalog.items.filter(x=>x.url==='tools/ai-background-remover/').length,1);
 });
 test('The noindex portrait benchmark must be absent from public production builds',async()=>{
