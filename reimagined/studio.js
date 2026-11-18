@@ -131,6 +131,31 @@ $('reset-tool-filters').addEventListener('click',()=>{activeCategory='All';onlyS
 $('tool-prev').addEventListener('click',()=>{page=Math.max(1,page-1);renderTools();$('tool-results').scrollIntoView({block:'start'})});
 $('tool-next').addEventListener('click',()=>{page+=1;renderTools();$('tool-results').scrollIntoView({block:'start'})});
 
+const featuredEmpty=$('home-featured-empty')?.cloneNode(true);
+function renderFeaturedVentures(){
+ const container=$('home-featured-list');if(!container)return;
+ // Never show planned, private or unapproved entries. The shared product policy
+ // already enforces publication, verified HQ review and founder sign-off.
+ const featured=[...ventures].sort((a,b)=>String(b.date).localeCompare(String(a.date))||
+  a.name.localeCompare(b.name)).slice(0,3);
+ if(!featured.length){
+  if(featuredEmpty)container.replaceChildren(featuredEmpty.cloneNode(true));
+  return;
+ }
+ container.replaceChildren(...featured.map((item,index)=>{
+  const card=el('article','','home-featured-card');
+  const art=el('div','','home-featured-art');
+  art.append(el('span','0'+(index+1)+' / YORPHIVES VENTURE','home-featured-number'),
+   el('span','✳','home-featured-symbol'));
+  const body=el('div','','home-featured-body');
+  body.append(el('span','FOUNDER-APPROVED · LIVE','home-featured-label'),
+   el('h3',item.name),el('p',item.description));
+  const link=el('a','Explore venture','home-featured-open');
+  link.href='../'+item.url;
+  link.append(icon('external'));body.append(link);
+  card.append(art,body);return card;
+ }));
+}
 const ventureEmpty=$('venture-products').firstElementChild?.cloneNode(true);
 function renderVentures(){
  $('venture-total').textContent=ventures.length+' founder-approved launch'+(ventures.length===1?'':'es');
@@ -152,7 +177,7 @@ function applyCatalog(newItems){
  if(activeCategory!=='All'&&!tools.some(t=>(t.category||'Other')===activeCategory))activeCategory='All';
  for(const id of ['home-tool-count','tools-count-big'])$(id).textContent=number(tools.length);
  for(const id of ['home-venture-count'])$(id).textContent=number(ventures.length);
- categoryChips();updateSavedCount();renderTools();renderVentures();
+ categoryChips();updateSavedCount();renderTools();renderVentures();renderFeaturedVentures();
 }
 subscribeCatalog(applyCatalog);
 startCatalogMonitoring();
@@ -163,6 +188,7 @@ async function loadCatalog(){
   $('tool-results-description').textContent='The catalogue is temporarily unavailable. Please use the A–Z directory.';
   $('tool-empty').hidden=false;$('tool-pagination').hidden=true;
   $('venture-total').textContent='Approval records unavailable';
+  renderFeaturedVentures();
  }
 }
 
