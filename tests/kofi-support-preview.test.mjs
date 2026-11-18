@@ -6,22 +6,18 @@ import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>readFile(resolve(root,p),'utf8');
 
-test('all seven reimagined pages share a visible, genuinely disabled Ko-fi support control',async()=>{
+test('all seven reimagined routes retain contact access with no inactive Ko-fi header control',async()=>{
  const [html,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.css')]);
- const header=html.match(/<header class="topbar"[^>]*>([\s\S]*?)<\/header>/)?.[1];
+ const header=html.match(/<header class="topbar"[^>]*>([\\s\\S]*?)<\\/header>/)?.[1];
  assert.ok(header,'shared topbar must exist');
- const match=header.match(/<button class="kofi-support"[^>]*>[^]*?<\/button>/);
- assert.ok(match,'support CTA must be in shared topbar, not buried in footer');
- assert.match(match[0],/type="button" disabled/);
- assert.match(match[0],/Ko-fi/);
- assert.match(match[0],/Support us/);
- assert.match(match[0],/donations coming soon/);
- assert.doesNotMatch(match[0],/<a\b|onclick=|href="https?:\/\//);
+ assert.doesNotMatch(header,/id="kofi-support"|class="kofi-support"/);
+ assert.match(header,/href="#contact"/);
+ assert.match(html,/class="cta-card"/);
+ assert.match(html,/class="cta-actions"/);
+ assert.match(html,/id="anonymous-analytics-toggle"/);
  for(const id of ['home','ventures','builders','impact','tools','partners','contact'])
   assert.match(html,new RegExp('<section class="view" id="'+id+'"'),id);
- assert.match(css,/\.kofi-support:disabled\{opacity:1;cursor:not-allowed\}/);
- assert.match(css,/@media\(max-width:390px\)/);
- assert.match(css,/@media\(max-width:350px\)/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
 });
 
 test('every public tool and directory builds with a disabled, readable Ko-fi button',async()=>{
