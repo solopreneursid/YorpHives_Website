@@ -171,6 +171,36 @@ try{
   await picker.locator('select').selectOption('en');
   assert.equal(await page.locator('html').getAttribute('lang'),'en');
  });
+ await check('homepage: retired Impact route is absent and public progress contains only four cards',async page=>{
+  await open(page,'/');
+  const info=page.locator('#home-progress');
+  assert.ok(await info.isVisible());
+  assert.equal(await info.locator('.proof-metric').count(),4);
+  assert.equal(await page.locator('#impact').count(),0);
+  assert.equal(await page.locator('a[href="#impact"]').count(),0);
+  assert.ok(await page.locator('#home #yh-pulse').count()===1,'YHpulse must be homepage-only');
+  await page.locator('a[href="#home-progress"]').first().click();
+  assert.equal(new URL(page.url()).hash,'#home-progress');
+  assert.ok(await info.isVisible());
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  assert.ok(overflow<=8,'Homepage metrics cause mobile overflow: '+overflow);
+ },{mobile:true});
+ await check('homepage: metrics use only validated anonymous 30-day reports',async page=>{
+  const daily=Array.from({length:30},(_,i)=>({
+   day:new Date(Date.UTC(2026,9,20+i)).toISOString().slice(0,10),
+   pageViews:i===29?29:0,completedActions:i===29?3:0
+  }));
+  await page.route('**/api/insights/growth',async route=>{
+   await route.fulfill({status:200,contentType:'application/json',
+    body:JSON.stringify({schemaVersion:1,available:true,periodDays:30,
+     generatedAt:'2026-11-18T09:00:00Z',daily})});
+  });
+  await open(page,'/');
+  await page.waitForFunction(()=>document.getElementById('home-completions').textContent==='3',null,{timeout:15000});
+  assert.equal(await page.locator('#home-page-views').textContent(),'29');
+  assert.equal(await page.locator('#home-completions').textContent(),'3');
+  assert.match(await page.locator('#home-analytics-disclaimer').innerText(),/undercount/i);
+ });
  await check('mobile: directory layout has no horizontal overflow',async page=>{
   await open(page,'/tools/?q=pdf');
   await waitReady(page).catch(()=>{});
