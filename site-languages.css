@@ -13,3 +13,5 @@
 #yh-language-picker button[hidden]{display:none}
 @media(max-width:640px){#yh-language-picker{bottom:calc(78px + env(safe-area-inset-bottom));width:min(240px,calc(100vw - 24px));padding:8px 10px}}
 @media print{#yh-language-picker{display:none!important}}
+
+#yh-language-picker [role="status"]:empty{display:none}
