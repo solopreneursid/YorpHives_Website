@@ -30,17 +30,17 @@ async function open(page,path){
  const response=await page.goto(path,{waitUntil:'domcontentloaded',timeout:25000});
  assert.equal(response.status(),200,'Response for '+path);
 }
-async function waitReady(page){await page.waitForFunction(()=>document.querySelector('#directory-search-status')?.textContent?.includes('143'),null,{timeout:10000});}
+async function waitReady(page){await page.waitForFunction(()=>document.querySelector('#directory-search-status')?.textContent?.includes('144'),null,{timeout:10000});}
 try{
  await check('desktop: searchable directory, deep link and clear',async page=>{
   await open(page,'/tools/');
   await waitReady(page);
   await page.locator('#directory-search').fill('word count');
-  await page.waitForFunction(()=>document.querySelector('#directory-search-status').textContent.includes('of 143'));
+  await page.waitForFunction(()=>document.querySelector('#directory-search-status').textContent.includes('of 144'));
   assert.equal(await page.locator('a.directory-card:visible').count()>0,true);
   assert.ok(page.url().includes('q=word+count'));
   await page.locator('#directory-clear').click();
-  assert.equal(await page.locator('a.directory-card').count(),143);
+  assert.equal(await page.locator('a.directory-card').count(),144);
   assert.equal(new URL(page.url()).searchParams.has('q'),false);
  });
  await check('mobile: saved tool persists between tool page and directory',async page=>{
@@ -82,7 +82,7 @@ try{
   await open(page,'/tools/');
   await waitReady(page);
   assert.equal(await page.locator('#directory-return').isVisible(),false);
-  assert.equal(await page.locator('a.directory-card').count(),143);
+  assert.equal(await page.locator('a.directory-card').count(),144);
  },{blockedStorage:true});
  await check('mobile: related links open approved static tool pages',async page=>{
   await open(page,'/tools/word-counter/');
@@ -101,9 +101,9 @@ try{
   assert.match(await save.innerText(),/unavailable/i);
   assert.notEqual(await save.getAttribute('aria-pressed'),'true');
  },{blockedStorage:true});
- await check('progressive enhancement: 143 links exist without JavaScript',async page=>{
+ await check('progressive enhancement: 144 links exist without JavaScript',async page=>{
   await open(page,'/tools/');
-  assert.equal(await page.locator('a.directory-card').count(),143);
+  assert.equal(await page.locator('a.directory-card').count(),144);
   assert.ok(await page.locator('details.directory-section').count()>4);
  },{javaScriptEnabled:false});
  await check('tool execution: word counter still runs in browser',async page=>{
