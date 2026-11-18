@@ -20,7 +20,9 @@ test('production release promotes the new design to the actual domain root',asyn
  assert.match(home,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
  for(const view of ['home','ventures','builders','impact','tools','partners','contact'])
   assert.match(home,new RegExp('<section class="view" id="'+view+'"'),view);
- assert.match(home,/class="kofi-support" id="kofi-support" type="button" disabled/);
+ assert.doesNotMatch(home,/id="kofi-support"/);
+ assert.match(home,/class="cta-card"/);
+ assert.match(home,/id="anonymous-analytics-toggle"/);
  assert.match(home,/rel="canonical" href="https:\/\/yorphives\.com\/"/);
  assert.doesNotMatch(home,/DESIGN PREVIEW · NOT LIVE|name="robots" content="noindex/);
  assert.match(home,/id="yh-pulse"/);
@@ -46,7 +48,8 @@ test('old HQventures, contact and membership links remain valid after cutover',a
  const [reimagined,headers]=await Promise.all([
   file('reimagined/index.html'),file('_headers')
  ]);
- assert.match(reimagined,/id="kofi-support" type="button" disabled/);
+ assert.doesNotMatch(reimagined,/id="kofi-support"/);
+ assert.match(reimagined,/href="#contact"/);
  for(const asset of ['/catalog.json','/studio.js','/rotators.js','/catalog-sync.mjs',
   '/impact-public.json','/usage-public.json','/builders-updates.json'])
   assert.ok(headers.includes(asset+'\n  Cache-Control:'),'Missing cache rule '+asset);
