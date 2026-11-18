@@ -165,6 +165,28 @@ try{
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   assert.ok(overflow<=8,'Compact homepage causes mobile overflow: '+overflow);
  },{mobile:true});
+ await check('mobile: connected discovery links scroll and navigate without layout overflow',async page=>{
+  await open(page,'/');
+  const journey=page.locator('.hive-journey');
+  assert.ok(await journey.isVisible());
+  assert.equal(await journey.locator('a').count(),3);
+  const destinations=await journey.locator('a').evaluateAll(links=>links.map(a=>a.getAttribute('href')));
+  assert.deepEqual(destinations,['#featured-ventures','#tools','#builders']);
+  await journey.locator('a[href="#featured-ventures"]').click();
+  await page.waitForFunction(()=>location.hash==='#featured-ventures');
+  assert.ok(await page.locator('#home').isVisible());
+  assert.ok(await page.locator('#featured-ventures').isVisible());
+  const links=page.locator('#home-featured-empty .home-featured-empty-actions a');
+  assert.equal(await links.count(),2);
+  await links.first().click();
+  await page.waitForFunction(()=>!document.querySelector('#tools').hidden);
+  assert.equal(await page.locator('.mobile-dock a[href="#tools"]').getAttribute('aria-current'),'page');
+  await page.locator('.mobile-dock a[href="#home"]').click();
+  await journey.locator('a[href="#builders"]').click();
+  await page.waitForFunction(()=>!document.querySelector('#builders').hidden);
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  assert.ok(overflow<=8,'Connected homepage mobile overflow: '+overflow);
+ },{mobile:true});
  await check('homepage: featured verified updates use tool catalog titles and direct routes',async page=>{
   await page.route('**/activity.json',async route=>route.fulfill({
    status:200,contentType:'application/json',
