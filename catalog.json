@@ -4808,6 +4808,48 @@
           "Browser WebAssembly, secure context, and image decoding"
         ]
       }
+    },
+    {
+      "name": "On-device Text Translator (Experimental)",
+      "description": "Translate text privately with a compatible browser's built-in on-device Translator API. Supported languages and device models vary; no cloud fallback or text uploads.",
+      "type": "tool",
+      "category": "Writing",
+      "date": "2026-11-18",
+      "url": "tools/on-device-translator/",
+      "execution": "browser-local",
+      "module": {
+        "url": "tools/on-device-translator.mjs",
+        "export": "bindTranslator",
+        "toolId": "on-device-translator",
+        "arguments": [
+          "supported browser Translator API",
+          "source and target language",
+          "text entered in browser"
+        ],
+        "inputs": [
+          {
+            "name": "text",
+            "type": "textarea",
+            "description": "Short text, up to 5,000 characters"
+          },
+          {
+            "name": "sourceLanguage",
+            "type": "select",
+            "description": "BCP 47 source language"
+          },
+          {
+            "name": "targetLanguage",
+            "type": "select",
+            "description": "BCP 47 target language"
+          }
+        ],
+        "requirements": [
+          "Secure context and supported built-in Translator API",
+          "Supported browser-managed language pair and on-device model",
+          "User-initiated optional language pack download",
+          "No remote translation endpoint; otherwise show unavailable state"
+        ]
+      }
     }
   ]
 }
