@@ -14,7 +14,7 @@ const niceDate=d=>new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{day:'nume
 const number=n=>n.toLocaleString('en-US');
 const views=[...document.querySelectorAll('.view')];
 const names={home:'Home',ventures:'HQventures',builders:'Builders',tools:'Free tools',partners:'Partnerships',contact:'Contact'};
-const special={ecosystem:'home','home-progress':'home',impact:'home','venture-collection':'ventures',explore:'ventures',connect:'contact',opportunities:'builders',membership:'builders'};
+const special={ecosystem:'home','featured-tools':'home','home-progress':'home',impact:'home','venture-collection':'ventures',explore:'ventures',connect:'contact',opportunities:'builders',membership:'builders'};
 let current='home';
 
 function menuClose(){
@@ -145,12 +145,35 @@ function renderVentures(){
  $('venture-products').replaceChildren(...cards);
 }
 
+/* Founder-curated starting points: only catalog-confirmed public tools can render.
+ * Never infer popularity or expose unapproved products. */
+function renderFeaturedTools(){
+ const host=$('featured-tools-grid');if(!host)return;
+ const curated=['tools/word-counter/','tools/qr-code-generator/','tools/password-generator/','tools/json-formatter/'];
+ const selected=curated.map(url=>tools.find(t=>t.url===url)).filter(Boolean);
+ for(const tool of tools){if(selected.length>=4)break;if(!selected.some(t=>t.url===tool.url))selected.push(tool)}
+ if(!selected.length){const info=el('p','Featured tools are temporarily unavailable. Browse the full catalogue instead.','featured-tools-loading');host.replaceChildren(info);return}
+ const cards=selected.map((t,i)=>{
+  const a=el('a','','featured-tool-card');a.href='../'+t.url;
+  const heading=el('div','','featured-tool-heading');
+  const iconLabel=el('span',['Aa','▦','✳','{ }'][i]||'✦','featured-tool-icon');iconLabel.setAttribute('aria-hidden','true');
+  const arrow=icon('external');arrow.classList.add('featured-tool-arrow');heading.append(iconLabel,arrow);
+  const kind=el('span',t.category||'Free utility','featured-tool-category');
+  const title=el('h3',t.name);
+  const description=el('p',t.description);
+  const action=el('span','Open tool →','featured-tool-action');
+  a.append(heading,kind,title,description,action);return a;
+ });
+ host.replaceChildren(...cards);
+}
 function applyCatalog(newItems){
  allItems=newItems;tools=allItems.filter(isPublicTool);ventures=qualifiedProducts(allItems);
  verifiedPublic=new Set([...tools,...ventures].map(x=>x.url));
  // Category may have disappeared or been renamed in a new catalogue release.
  if(activeCategory!=='All'&&!tools.some(t=>(t.category||'Other')===activeCategory))activeCategory='All';
  for(const id of ['home-tool-count','home-tool-badge','tools-count-big'])$(id).textContent=number(tools.length);
+ $('hero-tool-count').textContent=tools.length?number(tools.length)+' Free':'Free';
+ renderFeaturedTools();
  for(const id of ['home-venture-count'])$(id).textContent=number(ventures.length);
  categoryChips();updateSavedCount();renderTools();renderVentures();
 }
@@ -160,6 +183,8 @@ async function loadCatalog(){
  try{await getCatalog()}
  catch{
   for(const id of ['home-tool-count','home-tool-badge','tools-count-big','home-venture-count'])$(id).textContent='—';
+  $('hero-tool-count').textContent='Free';
+  renderFeaturedTools();
   $('tool-results-description').textContent='The catalogue is temporarily unavailable. Please use the A–Z directory.';
   $('tool-empty').hidden=false;$('tool-pagination').hidden=true;
   $('venture-total').textContent='Approval records unavailable';

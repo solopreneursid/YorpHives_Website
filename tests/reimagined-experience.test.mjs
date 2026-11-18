@@ -21,6 +21,10 @@ test('full reimagined experience has six complete page routes and separate navig
  assert.doesNotMatch(html,/<a[^>]*href="#impact"/);
  assert.match(html,/id="home-progress"/);
  assert.match(html,/href="#home-progress">See our progress/);
+ assert.match(html,/id="hero-tool-count"/);
+ assert.match(html,/id="featured-tools-grid"/);
+ assert.match(html,/id="featured-tools-title"/);
+ assert.match(html,/href="#tools">Explore <span id="hero-tool-count"/);
  assert.match(html,/id="kofi-support"/);
  assert.match(html,/id="anonymous-analytics-toggle"/);
  assert.match(html,/DESIGN PREVIEW · NOT LIVE/);
