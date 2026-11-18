@@ -4,9 +4,9 @@
  */
 export const PAGE_COPY={
  'Building Tomorrow\'s':{
- hi:'कल की डिजिटल दुनिया के लिए',es:'Construimos los proyectos digitales del mañana',fr:'Construisons les projets numériques de demain',de:'Wir gestalten die digitalen Unternehmen von morgen',pt:'Construindo os negócios digitais de amanhã',ar:'نبني المشاريع الرقمية للمستقبل',ja:'未来のデジタル事業をつくる'},
+ hi:'कल के',es:'Construimos los',fr:'Construisons les',de:'Wir gestalten die',pt:'Construindo os',ar:'نبني',ja:'未来の'},
  'Digital Ventures.':{
- hi:'डिजिटल उद्यमों का निर्माण।',es:'',fr:'',de:'',pt:'',ar:'',ja:''},
+ hi:'डिजिटल उद्यम।',es:'negocios digitales del mañana.',fr:'projets numériques de demain.',de:'digitalen Unternehmen von morgen.',pt:'negócios digitais de amanhã.',ar:'المشاريع الرقمية للمستقبل.',ja:'デジタル事業をつくる。'},
  'We discover emerging opportunities, build useful digital products, and create technology that evolves with the world.':{
  hi:'हम नए अवसरों की पहचान करते हैं, उपयोगी डिजिटल उत्पाद बनाते हैं और ऐसी तकनीक विकसित करते हैं जो दुनिया के साथ आगे बढ़ती है।',
  es:'Descubrimos nuevas oportunidades, creamos productos digitales útiles y desarrollamos tecnología que evoluciona con el mundo.',
