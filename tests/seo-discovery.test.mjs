@@ -34,11 +34,14 @@ test('preview deployments are explicitly noindex but stay crawlable for the head
   assert.match(robots,/Sitemap: https:\/\/yorphives.com\/sitemap\.xml/);
  }
 });
-test('SEO publishing preserves homepage markup outside the generated YHpulse feed',async()=>{
+test('SEO publishing preserves homepage identity and static featured/process sections',async()=>{
  const source=await read('index.html');
  const built=await read('index.html',dest);
  if(built.includes('id="home-title"')){
-  assert.match(built,/id="yh-pulse"/);
+  assert.match(built,/id="home-progress"/);
+  assert.match(built,/id="featured-ventures"/);
+  assert.match(built,/id="how-it-works"/);
+  assert.doesNotMatch(built,/id="yh-pulse"/);
   assert.match(built,/rel="canonical" href="https:\/\/yorphives\.com\/"/);
   assert.doesNotMatch(built,/DESIGN PREVIEW · NOT LIVE|name="robots" content="noindex/);
   return;
