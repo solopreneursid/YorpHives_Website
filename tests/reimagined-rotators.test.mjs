@@ -33,7 +33,9 @@ test('rotating data uses genuine published categories, qualified products and ve
  assert.match(js,/useCard\('builders',builderEntries/);
  assert.match(js,/builderRows.filter\(event=>event\?\.kind==='builders'/);
  assert.match(js,/\.slice\(0,10\)/);
- assert.match(js,/if\(card\.entries\.length<2\|\|!canMove/);
+ assert.match(js,/const displayEntries=entries\.length\?entries:fallback\[key\]/);
+ assert.match(js,/renderTicker\(card\)/);
+ assert.match(js,/ecoPaused/);
  assert.match(js,/document.hidden/);
  assert.match(js,/mql.matches/);
  assert.match(js,/ecoPaused/);

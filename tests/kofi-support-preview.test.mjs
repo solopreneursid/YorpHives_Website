@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>readFile(resolve(root,p),'utf8');
 
-test('all seven reimagined pages share a visible, genuinely disabled Ko-fi support control',async()=>{
+test('all six reimagined pages share a visible, genuinely disabled Ko-fi support control',async()=>{
  const [html,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.css')]);
  const header=html.match(/<header class="topbar"[^>]*>([\s\S]*?)<\/header>/)?.[1];
  assert.ok(header,'shared topbar must exist');
@@ -17,7 +17,7 @@ test('all seven reimagined pages share a visible, genuinely disabled Ko-fi suppo
  assert.match(match[0],/Support us/);
  assert.match(match[0],/donations coming soon/);
  assert.doesNotMatch(match[0],/<a\b|onclick=|href="https?:\/\//);
- for(const id of ['home','ventures','builders','impact','tools','partners','contact'])
+ for(const id of ['home','ventures','builders','tools','partners','contact'])
   assert.match(html,new RegExp('<section class="view" id="'+id+'"'),id);
  assert.match(css,/\.kofi-support:disabled\{opacity:1;cursor:not-allowed\}/);
  assert.match(css,/@media\(max-width:390px\)/);

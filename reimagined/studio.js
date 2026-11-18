@@ -12,10 +12,34 @@ const isPublicTool=x=>x?.type==='tool'&&x.published!==false&&x.visibility!=='pri
 const isValidDay=d=>{if(typeof d!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(d))return false;const n=new Date(d+'T00:00:00Z');return Number.isFinite(n.valueOf())&&n.toISOString().slice(0,10)===d;};
 const niceDate=d=>new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
 const number=n=>n.toLocaleString('en-US');
+/* Founder-controlled homepage prioritization. Only founder-approved catalogue entries
+ * can override the default free-tools destination; nothing is auto-promoted. */
+const homepagePriority={
+ primary:'tools', // 'tools' or 'venture'
+ featuredVentureUrl:'', // qualified, founder-approved public venture URL
+ featuredToolUrls:['tools/word-counter/','tools/qr-code-generator/','tools/password-generator/','tools/json-formatter/']
+};
+function updateHeroPriority(){
+ const link=$('hero-primary-link'),label=$('hero-tool-count');if(!link||!label)return;
+ const venture=homepagePriority.primary==='venture'
+  ?ventures.find(v=>v.url===homepagePriority.featuredVentureUrl):null;
+ if(venture){
+  link.href='../'+venture.url;
+  link.firstChild.textContent='Explore ';
+  label.textContent=venture.name;
+  return;
+ }
+ link.href='#tools';link.firstChild.textContent='Explore ';
+ label.textContent=tools.length?number(tools.length)+' Free Tools':'Free Tools';
+}
+
 const views=[...document.querySelectorAll('.view')];
-const names={home:'Home',ventures:'HQventures',builders:'Builders',impact:'Impact',tools:'Free tools',partners:'Partnerships',contact:'Contact'};
-const special={ecosystem:'home','venture-collection':'ventures',explore:'ventures',connect:'contact',opportunities:'builders',membership:'builders'};
+const names={home:'Home',ventures:'HQventures',builders:'Builders',tools:'Free tools',partners:'Partnerships',contact:'Contact'};
+const special={ecosystem:'home','featured-tools':'home','home-progress':'home',impact:'home','venture-collection':'ventures',explore:'ventures',connect:'contact',opportunities:'builders',membership:'builders'};
 let current='home';
+let routeReady=false;
+let routeMotionTimer=0;
+const allowsMotion=()=>!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function menuClose(){
  $('mobile-menu').hidden=true;$('menu-toggle').setAttribute('aria-expanded','false');
@@ -35,11 +59,21 @@ function route(){
    if(a.dataset.nav===active)a.setAttribute('aria-current','page');
    else a.removeAttribute('aria-current');
  });
- document.title=active==='home'?'YorpHives — Ideas into impact':names[active]+' · YorpHives';
+ document.title=active==='home'?'YorpHives — Ideas in motion':names[active]+' · YorpHives';
  menuClose();moreClose();
  if(special[hash]&&$(hash))requestAnimationFrame(()=>$(hash)?.scrollIntoView({block:'start',behavior:'instant'}));
  else if(changed || hash===active || special[hash])window.scrollTo({top:0,behavior:'instant'});
  current=active;
+ // Use native hash navigation immediately. Only the incoming view is gently
+ // revealed (55ms lead-in); no delayed clicks, blocked controls, or stale routes.
+ clearTimeout(routeMotionTimer);
+ document.body.classList.remove('yorp-page-switch');
+ if(routeReady&&changed&&allowsMotion()){
+  void document.body.offsetWidth;
+  document.body.classList.add('yorp-page-switch');
+  routeMotionTimer=setTimeout(()=>document.body.classList.remove('yorp-page-switch'),310);
+ }
+ routeReady=true;
 }
 $('menu-toggle').addEventListener('click',()=>{
  const opening=$('mobile-menu').hidden;
@@ -58,7 +92,7 @@ $('more-toggle').addEventListener('click',()=>{
 $('more-close').addEventListener('click',moreClose);
 $('more-shade').addEventListener('click',moreClose);
 $('more-panel').addEventListener('click',e=>{if(e.target.closest('a'))moreClose()});
-window.addEventListener('resize',()=>{if(innerWidth>940)menuClose();if(innerWidth>760)moreClose()});
+window.addEventListener('resize',()=>{if(innerWidth>1100)menuClose();if(innerWidth>760)moreClose()});
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){menuClose();moreClose()}
  if(e.key==='/'&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)&&!e.metaKey&&!e.ctrlKey){e.preventDefault();location.hash='#tools';setTimeout(()=>$('tool-search').focus(),70)}
@@ -145,13 +179,36 @@ function renderVentures(){
  $('venture-products').replaceChildren(...cards);
 }
 
+/* Founder-curated starting points: only catalog-confirmed public tools can render.
+ * Never infer popularity or expose unapproved products. */
+function renderFeaturedTools(){
+ const host=$('featured-tools-grid');if(!host)return;
+ const curated=homepagePriority.featuredToolUrls;
+ const selected=curated.map(url=>tools.find(t=>t.url===url)).filter(Boolean);
+ for(const tool of tools){if(selected.length>=4)break;if(!selected.some(t=>t.url===tool.url))selected.push(tool)}
+ if(!selected.length){const info=el('p','Featured tools are temporarily unavailable. Browse the full catalogue instead.','featured-tools-loading');host.replaceChildren(info);return}
+ const cards=selected.map((t,i)=>{
+  const a=el('a','','featured-tool-card');a.href='../'+t.url;
+  const heading=el('div','','featured-tool-heading');
+  const iconLabel=el('span',['Aa','▦','✳','{ }'][i]||'✦','featured-tool-icon');iconLabel.setAttribute('aria-hidden','true');
+  const arrow=icon('external');arrow.classList.add('featured-tool-arrow');heading.append(iconLabel,arrow);
+  const kind=el('span',t.category||'Free utility','featured-tool-category');
+  const title=el('h3',t.name);
+  const description=el('p',t.description);description.title=t.description;
+  const action=el('span','Open tool →','featured-tool-action');
+  a.append(heading,kind,title,description,action);return a;
+ });
+ host.replaceChildren(...cards);
+}
 function applyCatalog(newItems){
  allItems=newItems;tools=allItems.filter(isPublicTool);ventures=qualifiedProducts(allItems);
  verifiedPublic=new Set([...tools,...ventures].map(x=>x.url));
  // Category may have disappeared or been renamed in a new catalogue release.
  if(activeCategory!=='All'&&!tools.some(t=>(t.category||'Other')===activeCategory))activeCategory='All';
- for(const id of ['home-tool-count','impact-tools','tools-count-big'])$(id).textContent=number(tools.length);
- for(const id of ['home-venture-count','impact-ventures'])$(id).textContent=number(ventures.length);
+ for(const id of ['home-tool-count','home-tool-badge','tools-count-big'])$(id).textContent=number(tools.length);
+ updateHeroPriority();
+ renderFeaturedTools();
+ for(const id of ['home-venture-count'])$(id).textContent=number(ventures.length);
  categoryChips();updateSavedCount();renderTools();renderVentures();
 }
 subscribeCatalog(applyCatalog);
@@ -159,7 +216,9 @@ startCatalogMonitoring();
 async function loadCatalog(){
  try{await getCatalog()}
  catch{
-  for(const id of ['home-tool-count','impact-tools','tools-count-big','home-venture-count','impact-ventures'])$(id).textContent='—';
+  for(const id of ['home-tool-count','home-tool-badge','tools-count-big','home-venture-count'])$(id).textContent='—';
+  updateHeroPriority();
+  renderFeaturedTools();
   $('tool-results-description').textContent='The catalogue is temporarily unavailable. Please use the A–Z directory.';
   $('tool-empty').hidden=false;$('tool-pagination').hidden=true;
   $('venture-total').textContent='Approval records unavailable';
@@ -174,57 +233,14 @@ function renderActivity(items){
  $('activity-list').replaceChildren(...entries.map((x,i)=>{
    const a=el('a','','activity-card');a.href=x.kind==='tools'?'../'+x.url:x.kind==='builders'?'#builders':'#ventures';
    a.append(el('span','0'+(i+1)+' / VERIFIED UPDATE','activity-number'),el('h3',x.title));
-   if(isValidDay(x.date))a.append(el('p',niceDate(x.date)));
-   else a.append(el('p','Published update'));
+   const summary=typeof x.summary==='string'&&x.summary.trim().length>=12&&x.summary.trim().length<=160?x.summary.trim():'';
+   if(summary)a.append(el('p',summary,'activity-summary'));
+   if(isValidDay(x.date))a.append(el('small',niceDate(x.date),'activity-date'));
+   else if(!summary)a.append(el('small','Published update','activity-date'));
    const arrow=el('span','','activity-arrow');arrow.append(icon('external'));a.append(arrow);return a;
  }));
 }
 async function loadActivity(){try{const r=await fetch('../activity.json',{cache:'no-cache'});if(r.ok){const d=await r.json();renderActivity(d.items)}}catch{}}
-
-/* Founder-approved public aggregates: exact revenue values are NEVER part of the contract. */
-const approved=p=>p?.schemaVersion===1&&p.publication?.status==='approved'&&p.publication.approvedByFounder===true&&isValidDay(p.publication.approvedAt)&&p.publication.approvedAt<=new Date().toISOString().slice(0,10);
-const validCount=v=>Number.isSafeInteger(v)&&v>=0&&v<=1000000000;
-function renderPublicImpact(snapshot){
- const metrics=snapshot.metrics||{};
- if(validCount(metrics.estimatedVisitors30d)){
-  $('impact-visitors').textContent=number(metrics.estimatedVisitors30d);
-  $('impact-visitors-note').textContent='Estimated visitors · rolling 30 days';
- }
- if(validCount(metrics.verifiedPartners)){
-  $('impact-partners').textContent=number(metrics.verifiedPartners);
-  $('impact-partners-note').textContent='Confirmed active partnerships';
- }
- $('impact-last-reviewed').textContent='Founder-reviewed · '+niceDate(snapshot.publication.approvedAt);
- const points=snapshot.revenueDirection;
- if(Array.isArray(points)&&points.length>=3&&points.length<=12&&points.every(x=>/^\d{4}-(0[1-9]|1[0-2])$/.test(x?.month||'')&&[-1,0,1].includes(x.direction))&&points.every((x,i)=>i===0||x.month>points[i-1].month)){
-  let trend=2.2;const coords=points.map((p,i)=>{trend=Math.min(4,Math.max(.5,trend-p.direction*.62));return [20+i*580/(points.length-1),17+trend*33]});
-  const path=coords.map((c,i)=>(i?'L':'M')+c[0].toFixed(1)+','+c[1].toFixed(1)).join(' ');
-  $('trend-line').setAttribute('d',path);$('trend-area').setAttribute('d',path+' L'+coords[coords.length-1][0].toFixed(1)+',185 L20,185 Z');
-  $('trend-labels').replaceChildren(...points.map(p=>el('span',new Date(p.month+'-01T00:00:00Z').toLocaleDateString('en-GB',{month:'short',timeZone:'UTC'}))));
-  $('revenue-empty').hidden=true;$('revenue-chart').hidden=false;
- }
- if(Array.isArray(snapshot.trendingApps)){
-  const seen=new Set();const approvedMap=new Map(ventures.map(x=>[x.url,x]));const rows=[];
-  for(const item of snapshot.trendingApps){
-   if(!approvedMap.has(item?.url)||seen.has(item.url))continue;seen.add(item.url);const x=approvedMap.get(item.url);
-   const a=el('div','','popular-item');a.append(el('span',String(rows.length+1).padStart(2,'0')));const link=el('a');link.href='../'+x.url;link.append(el('strong',x.name),el('small','Verified use · founder-approved venture'));a.append(link,icon('arrow'));rows.push(a);if(rows.length>=3)break;
-  }
-  if(rows.length)$('popular-apps').replaceChildren(...rows);
- }
- if(Array.isArray(snapshot.milestones)){
-  const rows=[],seen=new Set();
-  for(const item of snapshot.milestones){
-   if(!isValidDay(item?.date)||item.date>new Date().toISOString().slice(0,10)||typeof item.title!=='string'||item.title.length<5||item.title.length>90||typeof item.summary!=='string'||item.summary.length<8||item.summary.length>160||!verifiedPublic.has(item.proofUrl)||seen.has(item.proofUrl+'|'+item.date))continue;
-   seen.add(item.proofUrl+'|'+item.date);
-   const row=el('div','','milestone-item'),time=el('time',niceDate(item.date));time.dateTime=item.date;
-   const wrap=el('div'),link=el('a',item.title);link.href='../'+item.proofUrl;wrap.append(link,el('small',item.summary));row.append(time,wrap);rows.push(row);if(rows.length>=4)break;
-  }
-  if(rows.length)$('milestone-list').replaceChildren(...rows);
- }
-}
-async function loadImpact(){
- try{const r=await fetch('impact-public.json',{cache:'no-store'});if(!r.ok)return;const data=await r.json();if(approved(data))renderPublicImpact(data);}catch{}
-}
 
 for(const link of document.querySelectorAll('[data-interest]'))link.addEventListener('click',()=>{
  const v=link.dataset.interest;const select=$('interest');if([...select.options].some(x=>x.value===v))select.value=v;
@@ -237,29 +253,5 @@ $('contact-form').addEventListener('submit',e=>{
 });
 
 await loadCatalog();
-await Promise.all([loadImpact(),loadActivity()]);
+await loadActivity();
 
-/* First-party aggregate reporting; browser-tab sessions are not unique people.
- * Never infer revenue, partner counts, or historical traffic from session counts.
- */
-async function loadRealInsights(){
- try{
-  const response=await fetch('/api/insights/public',{cache:'no-store'});
-  if(!response.ok)return;
-  const data=await response.json();
-  if(data?.schemaVersion!==1||data.available!==true||data.periodDays!==30)return;
-  const count=data.traffic?.estimatedSessions30d;
-  const views=data.traffic?.pageViews30d;
-  if(validCount(count)){
-   $('impact-visitors').textContent=number(count);
-   $('impact-visitors-note').textContent='Anonymous browser-tab sessions · 30 days'+
-    (validCount(views)?' · '+number(views)+' page views':'');
-  }
-  if(typeof data.generatedAt==='string'&&Number.isFinite(Date.parse(data.generatedAt)))
-   $('impact-last-reviewed').textContent='First-party activity · updated '+
-    new Date(data.generatedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'});
- }catch{/* Analytics failure must not affect the main website. */}
-}
-await loadRealInsights();
-window.setInterval(()=>{if(!document.hidden)void loadRealInsights()},300_000);
-window.addEventListener('focus',()=>{if(!document.hidden)void loadRealInsights()});
