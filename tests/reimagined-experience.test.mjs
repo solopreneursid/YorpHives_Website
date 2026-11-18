@@ -16,7 +16,7 @@ test('full reimagined experience has six complete page routes and separate navig
  assert.match(html,/class="topnav"/);assert.match(html,/class="mobile-dock"/);
  assert.match(html,/id="more-panel"/);assert.match(html,/id="mobile-menu"/);
  assert.match(html,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
- assert.match(html,/Discover useful tools, explore emerging ventures/);
+ assert.match(html,/Free tools\. New ventures\. People building what/);
  assert.doesNotMatch(html,/<section class="view" id="impact"/);
  assert.doesNotMatch(html,/<a[^>]*href="#impact"/);
  assert.match(html,/id="home-progress"/);
@@ -24,7 +24,9 @@ test('full reimagined experience has six complete page routes and separate navig
  assert.match(html,/id="hero-tool-count"/);
  assert.match(html,/id="featured-tools-grid"/);
  assert.match(html,/id="featured-tools-title"/);
- assert.match(html,/href="#tools">Explore <span id="hero-tool-count"/);
+ assert.match(html,/Start with something <em>useful\.<\/em>/);
+ assert.match(html,/Explore <em>YorpHives\.<\/em>/);
+ assert.match(html,/id="hero-primary-link" href="#tools">Explore <span id="hero-tool-count"/);
  assert.match(html,/id="kofi-support"/);
  assert.match(html,/id="anonymous-analytics-toggle"/);
  assert.match(html,/DESIGN PREVIEW · NOT LIVE/);
@@ -53,7 +55,7 @@ test('new frontend is independent, local-first, and protects original tool engin
 
 test('homepage retains truthful progress without a separate Impact page',async()=>{
  const [html,js,data]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js'),read('reimagined/impact-public.json')]);
- assert.match(html,/Progress <em>you can see\.<\/em>/);
+ assert.match(html,/Built\. Published\. <em>Improving\.<\/em>/);
  assert.match(html,/id="home-tool-count"/);
  assert.match(html,/class="building-public-grid"/);
  assert.match(html,/id="home-tool-badge"/);
