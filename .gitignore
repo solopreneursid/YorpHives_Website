@@ -5,6 +5,3 @@ yorphives-backups/
 *.agekey
 *.sqlite3
 *.sqlite3-journal
-
-# Unreviewed local translation model drafts (never publish or commit)
-ops/i18n/translation-review.json
