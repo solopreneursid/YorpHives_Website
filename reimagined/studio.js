@@ -14,7 +14,7 @@ const niceDate=d=>new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{day:'nume
 const number=n=>n.toLocaleString('en-US');
 const views=[...document.querySelectorAll('.view')];
 const names={home:'Home',ventures:'HQventures',builders:'Builders',tools:'Free tools',partners:'Partnerships',contact:'Contact'};
-const special={ecosystem:'home','venture-collection':'ventures',explore:'ventures',connect:'contact',opportunities:'builders',membership:'builders',impact:'home','home-progress':'home'};
+const special={ecosystem:'home','featured-ventures':'home','how-it-works':'home','venture-collection':'ventures',explore:'ventures',connect:'contact',opportunities:'builders',membership:'builders',impact:'home','home-progress':'home'};
 let current='home';
 
 function menuClose(){
