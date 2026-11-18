@@ -51,9 +51,10 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
      const art=document.querySelector('#home .hero-art');
      const dock=document.querySelector('.mobile-dock');
      const heroBox=hero.getBoundingClientRect();
-     return {heroHeight:heroBox.height,artHidden:getComputedStyle(art).display==='none',dockHeight:dock.getBoundingClientRect().height};
+     return {heroHeight:heroBox.height,artHidden:getComputedStyle(art).display==='none',artHeight:art.getBoundingClientRect().height,dockHeight:dock.getBoundingClientRect().height};
     });
-    if(!mobile.artHidden)problems.push(label+' phone hero art still taking screen space');
+    if(mobile.artHidden)problems.push(label+' mobile brand orbit missing');
+    if(mobile.artHeight>160)problems.push(label+' oversized mobile brand orbit '+mobile.artHeight.toFixed(0));
     if(mobile.heroHeight>height-55)problems.push(label+' oversized hero '+mobile.heroHeight.toFixed(0)+'/'+height);
     if(mobile.dockHeight>72)problems.push(label+' oversized mobile dock '+mobile.dockHeight.toFixed(0));
     const menu=page.locator('#menu-toggle');
