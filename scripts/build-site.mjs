@@ -450,5 +450,28 @@ await publishReimaginedRoot();
 // Preserve the historic path for existing preview bookmarks, without a second UI.
 // This is an alias to the exact same source, not a separate release candidate.
 if(target==='preview')await publishReimaginedRoot('release-candidate/');
+// Public language access is a site shell, not a new product/tool.
+// Include on every built canonical static page, including direct-entry tools.
+await cp(resolve(root,'site-languages.mjs'),resolve(dest,'site-languages.mjs'));
+await cp(resolve(root,'site-languages.css'),resolve(dest,'site-languages.css'));
+const languageUI='<div id="yh-language-picker" translate="no" aria-label="Website language">'+
+ '<label for="yh-language-select">🌐 Language<select id="yh-language-select">'+
+ '<option value="en">English</option><option value="hi">हिन्दी</option>'+
+ '<option value="es">Español</option><option value="fr">Français</option>'+
+ '<option value="de">Deutsch</option><option value="pt">Português</option>'+
+ '<option value="ar">العربية</option><option value="ja">日本語</option>'+
+ '</select></label><button type="button" hidden>Translate page</button>'+
+ '<p role="status" aria-live="polite">Choose your language.</p></div>';
+const builtPages=[...publicPages];
+if(target==='preview')builtPages.push('release-candidate/index.html');
+for(const path of builtPages){
+ const document=await output(path);
+ if(!document.includes('</head>')||!document.includes('</body>')||
+  document.includes('id="yh-language-picker"'))throw Error('Language shell cannot attach: '+path);
+ await write(path,document.replace('</head>',
+  '<link rel="stylesheet" href="/site-languages.css"></head>')
+  .replace('</body>',languageUI+
+   '<script type="module" src="/site-languages.mjs"></script></body>'));
+}
 console.log('DISCOVERY BUILD PASSED: '+published.length+' directly linked public pages; '+canonicalPaths.length+
  ' canonical sitemap URLs; mode='+target+'. Homepage markup preserved.');
