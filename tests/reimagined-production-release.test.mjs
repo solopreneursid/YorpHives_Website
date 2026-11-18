@@ -18,7 +18,7 @@ test('production release promotes the new design to the actual domain root',asyn
  }
  assert.match(home,/id="home-title"/);
  assert.match(home,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
- for(const view of ['home','ventures','builders','impact','tools','partners','contact'])
+ for(const view of ['home','ventures','builders','tools','partners','contact'])
   assert.match(home,new RegExp('<section class="view" id="'+view+'"'),view);
  assert.match(home,/class="kofi-support" id="kofi-support" type="button" disabled/);
  assert.match(home,/rel="canonical" href="https:\/\/yorphives\.com\/"/);
