@@ -88,3 +88,25 @@
 .impact-privacy-note a{color:#126d48;text-decoration:underline;text-underline-offset:3px}
 @media(max-width:460px){.analytics-choice{font-size:10px;padding:6px 8px}
  .impact-privacy-note{font-size:11px}}
+
+/* Homepage-only public progress: four concise, evidence-based indicators.
+ * The retired Impact view and its charts are no longer rendered. */
+.home-proof{padding:65px 0 70px}
+.proof-heading{display:flex;align-items:end;justify-content:space-between;gap:28px;margin-bottom:26px}
+.proof-heading h2{font-size:clamp(34px,4.3vw,57px);letter-spacing:-.045em;margin:11px 0}
+.proof-heading h2 em{color:#b8ffd0}
+.proof-heading p:not(.overline){max-width:620px;color:#b7d6c5;font-size:13px;line-height:1.7}
+.proof-period{flex-shrink:0;color:#b4dcc5;font-size:11px;line-height:1.5;text-align:right}
+.proof-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.proof-metric{display:flex;flex-direction:column;gap:13px;min-width:0;min-height:191px;
+ padding:21px;border:1px solid #b7ebc83c;border-radius:17px;background:linear-gradient(140deg,#ffffff14,#ffffff07)}
+.proof-metric>span{font-size:10px;font-weight:800;line-height:1.4;letter-spacing:.08em;color:#b6e1c7}
+.proof-metric strong{font-size:clamp(42px,5vw,68px);line-height:1.08;letter-spacing:-.06em;color:#beffd5}
+.proof-metric p{font-size:11px;line-height:1.6;color:#afcfbd;margin-top:auto}
+.proof-disclaimer{max-width:930px;margin:18px 0 0;font-size:11px;line-height:1.7;color:#b5d0bf}
+@media(max-width:940px){.proof-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.home-proof{padding:49px 0 54px}.proof-heading{display:block}
+ .proof-period{display:block;text-align:left;margin-top:12px}
+ .proof-metric{min-height:174px;padding:16px}.proof-metric strong{font-size:clamp(39px,9vw,62px)}}
+@media(max-width:390px){.proof-metrics{gap:8px}.proof-metric{padding:12px;min-height:166px}
+ .proof-metric>span{font-size:9px}.proof-metric p{font-size:10px}.proof-metric strong{font-size:42px}}
