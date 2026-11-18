@@ -456,14 +456,19 @@ if(target==='preview')await publishReimaginedRoot('release-candidate/');
 // Include on every built canonical static page, including direct-entry tools.
 await cp(resolve(root,'site-languages.mjs'),resolve(dest,'site-languages.mjs'));
 await cp(resolve(root,'site-languages.css'),resolve(dest,'site-languages.css'));
+await cp(resolve(root,'site-language-copy.mjs'),resolve(dest,'site-language-copy.mjs'));
 const languageUI='<div id="yh-language-picker" translate="no" aria-label="Website language">'+
- '<label for="yh-language-select">🌐 Language<select id="yh-language-select">'+
+ '<button type="button" data-language-toggle aria-expanded="false" aria-controls="yh-language-panel" aria-label="Change website language">'+
+ '<span class="yh-language-globe" aria-hidden="true">🌐</span><span data-language-short>EN</span></button>'+
+ '<div id="yh-language-panel" data-language-panel hidden>'+
+ '<div class="yh-language-head"><strong>Website language</strong><button type="button" data-language-close aria-label="Close language menu">×</button></div>'+
+ '<label for="yh-language-select">Choose language</label><select id="yh-language-select">'+
  '<option value="en">English</option><option value="hi">हिन्दी</option>'+
  '<option value="es">Español</option><option value="fr">Français</option>'+
  '<option value="de">Deutsch</option><option value="pt">Português</option>'+
  '<option value="ar">العربية</option><option value="ja">日本語</option>'+
- '</select></label><button type="button" hidden>Translate page</button>'+
- '<p role="status" aria-live="polite">Choose your language.</p></div>';
+ '</select><button type="button" data-language-translate hidden>Translate remaining page on device</button>'+
+ '<p role="status" aria-live="polite"></p></div></div>';
 const builtPages=[...publicPages];
 if(target==='preview')builtPages.push('release-candidate/index.html');
 for(const path of builtPages){
