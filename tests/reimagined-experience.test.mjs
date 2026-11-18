@@ -16,7 +16,7 @@ test('full reimagined experience has six complete page routes and separate navig
  assert.match(html,/class="topnav"/);assert.match(html,/class="mobile-dock"/);
  assert.match(html,/id="more-panel"/);assert.match(html,/id="mobile-menu"/);
  assert.match(html,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
- assert.match(html,/YorpHivesHQ finds the signal/);
+ assert.match(html,/Discover useful tools, explore emerging ventures/);
  assert.doesNotMatch(html,/<section class="view" id="impact"/);
  assert.doesNotMatch(html,/<a[^>]*href="#impact"/);
  assert.match(html,/id="home-progress"/);
@@ -49,8 +49,13 @@ test('new frontend is independent, local-first, and protects original tool engin
 
 test('homepage retains truthful progress without a separate Impact page',async()=>{
  const [html,js,data]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js'),read('reimagined/impact-public.json')]);
- assert.match(html,/Progress<br><em>you can see\.<\/em>/);
+ assert.match(html,/Progress <em>you can see\.<\/em>/);
  assert.match(html,/id="home-tool-count"/);
+ assert.match(html,/class="building-public-grid"/);
+ assert.match(html,/id="home-tool-badge"/);
+ assert.match(html,/id="activity-list"/);
+ assert.match(html,/class="hero-quicklinks"/);
+ assert.doesNotMatch(html,/class="footer-statement"/);
  assert.match(html,/id="home-venture-count"/);
  assert.match(html,/href="#tools">Explore our free tools/);
  assert.doesNotMatch(html,/id="impact-title"|data-nav="impact"/);
