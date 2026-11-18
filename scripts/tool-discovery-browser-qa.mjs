@@ -138,6 +138,45 @@ try{
    assert.ok(!JSON.stringify(event).includes('PRIVATE-SYNTHETIC-INPUT'));
   }
  });
+ await check('translation: unsupported browser never uploads text',async page=>{
+  await page.addInitScript(()=>{
+   try{delete globalThis.Translator}catch{}
+   Object.defineProperty(globalThis,'Translator',{configurable:true,value:undefined});
+  });
+  await open(page,'/tools/on-device-translator/');
+  await page.waitForFunction(()=>document.getElementById('translator-availability').textContent.includes('not available'));
+  await page.locator('#translator-input').fill('SENSITIVE LOCAL TRANSLATION TEXT');
+  assert.equal(await page.locator('#translator-run').isDisabled(),true);
+  assert.equal(await page.locator('#translator-result').isVisible(),false);
+ });
+ await check('translation: mocked native API translates on user click, with no remote calls',async page=>{
+  await page.addInitScript(()=>{
+   globalThis.__translationCreated=[];
+   Object.defineProperty(globalThis,'Translator',{configurable:true,value:{
+    availability:async pair=>pair.sourceLanguage==='en'&&pair.targetLanguage==='hi'?'downloadable':'unavailable',
+    create(options){
+     globalThis.__translationCreated.push({
+      sourceLanguage:options.sourceLanguage,targetLanguage:options.targetLanguage,
+      userGesture:navigator.userActivation.isActive
+     });
+     const monitor={addEventListener(){}};
+     options.monitor?.(monitor);
+     return Promise.resolve({translate:async text=>'LOCAL: '+text,destroy(){}});
+    }
+   }});
+  });
+  await open(page,'/tools/on-device-translator/');
+  await page.waitForFunction(()=>document.getElementById('translator-availability').textContent.includes('language pack'));
+  await page.locator('#translator-input').fill('PRIVATE TEST CONTENT');
+  await page.locator('#translator-run').click();
+  await page.waitForFunction(()=>!document.getElementById('translator-result').hidden);
+  assert.equal(await page.locator('#translator-output').inputValue(),'LOCAL: PRIVATE TEST CONTENT');
+  const calls=await page.evaluate(()=>globalThis.__translationCreated);
+  assert.equal(calls.length,1);
+  assert.deepEqual({sourceLanguage:calls[0].sourceLanguage,targetLanguage:calls[0].targetLanguage},
+   {sourceLanguage:'en',targetLanguage:'hi'});
+  assert.equal(calls[0].userGesture,true,'Translator.create must start inside a user gesture');
+ },{mobile:true});
  await check('mobile: directory layout has no horizontal overflow',async page=>{
   await open(page,'/tools/?q=pdf');
   await waitReady(page).catch(()=>{});
