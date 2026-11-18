@@ -46,6 +46,32 @@ export function buildGrowthReport({days,views,completions,eligible,generatedAt=n
  const totals=(a,b,key)=>daily.slice(a,b).reduce((sum,row)=>sum+row[key],0);
  const recent=totals(23,30,'completedActions'),previous=totals(16,23,'completedActions');
  const ranked=[...byUrl.values()].sort((a,b)=>b.completedActions30d-a.completedActions30d||a.url.localeCompare(b.url));
+ // Aggregate existing completion counts into categories. No new visitor data,
+ // tool inputs, raw sessions or extra database tables are collected.
+ const categoriesByName=new Map();
+ for(const item of eligible.values()){
+  if(!item.url.startsWith('tools/'))continue;
+  const category=String(item.category||'Other').slice(0,60);
+  if(!categoriesByName.has(category))categoriesByName.set(category,{
+   category,availableTools:0,completedActions30d:0,completedActions7d:0,previous7d:0,
+   toolsWithSignals:0
+  });
+  categoriesByName.get(category).availableTools++;
+ }
+ for(const item of ranked){
+  if(!item.url.startsWith('tools/'))continue;
+  const category=String(item.category||'Other').slice(0,60);
+  const row=categoriesByName.get(category);
+  if(!row)continue;
+  row.completedActions30d+=item.completedActions30d;
+  row.completedActions7d+=item.completedActions7d;
+  row.previous7d+=item.previous7d;
+  row.toolsWithSignals++;
+ }
+ const categories=[...categoriesByName.values()]
+  .sort((a,b)=>b.completedActions30d-a.completedActions30d||
+   a.category.localeCompare(b.category))
+  .map(x=>({...x,activityDetected:x.completedActions30d>0}));
  // Signals are not automated approval or verified demand; all require founder review.
  const opportunities=ranked.filter(x=>x.completedActions7d>=3&&x.completedActions7d>x.previous7d)
   .sort((a,b)=>(b.completedActions7d-b.previous7d)-(a.completedActions7d-a.previous7d)).slice(0,5)
@@ -54,7 +80,9 @@ export function buildGrowthReport({days,views,completions,eligible,generatedAt=n
   methodology:'Anonymous browser-reported completions; indicative, not independently verified. Dates are UTC.',
   daily,comparison:{recent7dCompletedActions:recent,previous7dCompletedActions:previous,
    recent7dPageViews:totals(23,30,'pageViews'),previous7dPageViews:totals(16,23,'pageViews')},
-  ranked:ranked.slice(0,10),opportunities,signalsAvailable:ranked.length>0,
+  ranked:ranked.slice(0,10),categories,categoryMethodology:
+   'Grouped counts of existing anonymous browser-reported tool completions for approved catalog categories. Not unique visitors, retention, conversion, or proven market demand.',
+  opportunities,signalsAvailable:ranked.length>0,
   revenue:{available:false,amount:null,reason:'No verified revenue source connected'},
   access:'Public aggregates only. HQ may observe and recommend; never change site, deployments, or approvals.'};
 }

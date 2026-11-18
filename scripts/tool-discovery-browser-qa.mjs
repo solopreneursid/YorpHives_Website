@@ -58,6 +58,32 @@ try{
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   assert.ok(overflow<=8,'Mobile horizontal overflow: '+overflow);
  },{mobile:true});
+ await check('mobile: saved shortcuts appear only after saving a tool',async page=>{
+  await open(page,'/tools/');
+  assert.equal(await page.locator('#directory-return').isVisible(),false);
+  await open(page,'/tools/word-counter/');
+  const save=page.locator('[data-save-tool]');
+  await save.click();
+  assert.equal(await save.getAttribute('aria-pressed'),'true');
+  await open(page,'/tools/');
+  const shelf=page.locator('#directory-return');
+  await shelf.waitFor({state:'visible'});
+  const links=page.locator('#directory-return-links a');
+  assert.equal(await links.count(),1);
+  assert.equal(await links.first().getAttribute('href'),'/tools/word-counter/');
+  assert.equal(await shelf.locator('p').innerText().then(t=>t.includes('Nothing is uploaded')),true);
+  await links.first().click();
+  await page.locator('[data-save-tool]').click();
+  await open(page,'/tools/');
+  await page.waitForFunction(()=>document.getElementById('directory-return').hidden);
+  assert.equal(await page.locator('#directory-return-links a').count(),0);
+ },{mobile:true});
+ await check('privacy: saved shelf does not require browser storage',async page=>{
+  await open(page,'/tools/');
+  await waitReady(page);
+  assert.equal(await page.locator('#directory-return').isVisible(),false);
+  assert.equal(await page.locator('a.directory-card').count(),143);
+ },{blockedStorage:true});
  await check('mobile: related links open approved static tool pages',async page=>{
   await open(page,'/tools/word-counter/');
   const related=page.locator('.yh-tool-discover li a');
@@ -87,6 +113,30 @@ try{
   await page.locator('#utility-run').click();
   await page.waitForFunction(()=>!document.querySelector('#utility-result')?.hidden,null,{timeout:15000});
   assert.match(await page.locator('#utility-output').inputValue(),/3/);
+ });
+ await check('measurement: successful word count emits only an approved completion signal',async page=>{
+  const events=[];
+  await page.route('**/api/insights/collect',async route=>{
+   const body=JSON.parse(route.request().postData()||'{}');
+   events.push(body);
+   await route.fulfill({status:200,contentType:'application/json',body:'{"ok":true}'});
+  });
+  await open(page,'/tools/word-counter/');
+  await page.locator('textarea[name="text"]').fill('PRIVATE-SYNTHETIC-INPUT one two');
+  await page.waitForFunction(()=>!document.querySelector('#utility-run')?.disabled,null,{timeout:15000});
+  await page.locator('#utility-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#utility-result')?.hidden,null,{timeout:15000});
+  for(let i=0;i<30&&!events.some(x=>x.event==='complete');i++)await page.waitForTimeout(100);
+  const completed=events.find(x=>x.event==='complete');
+  assert.ok(completed,'No completion event after a successful tool action');
+  assert.equal(completed.url,'tools/word-counter/');
+  for(const event of events){
+   assert.ok(['view','complete'].includes(event.event));
+   assert.deepEqual(Object.keys(event).sort(),
+    (event.event==='view'?['event','route','sessionId']:['event','sessionId','url']));
+   assert.match(event.sessionId,/^[a-f0-9-]{36}$/i);
+   assert.ok(!JSON.stringify(event).includes('PRIVATE-SYNTHETIC-INPUT'));
+  }
  });
  await check('mobile: directory layout has no horizontal overflow',async page=>{
   await open(page,'/tools/?q=pdf');

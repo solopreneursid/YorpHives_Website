@@ -28,6 +28,29 @@ export function setupDirectorySearch(doc=globalThis.document,win=globalThis.wind
    description:card.querySelector('span')?.textContent||''
   }))
  }));
+ // A saved shortcut shelf is purely local UI state. No analytics event,
+ // visitor identifier, tool input, or server request is associated with it.
+ const shelf=doc.getElementById('directory-return');
+ const shelfLinks=doc.getElementById('directory-return-links');
+ const savedCards=new Map(entries.flatMap(group=>group.cards.map(card=>{
+  const route=new URL(card.element.getAttribute('href'),win.location.href).pathname.slice(1);
+  return [route,{route,name:card.name,category:group.category}];
+ })));
+ function renderSavedShelf(){
+  if(!shelf||!shelfLinks)return;
+  let routes=[];
+  try{routes=readSaved(win.localStorage)}catch{}
+  const selection=routes.map(route=>savedCards.get(route)).filter(Boolean).slice(0,6);
+  if(!selection.length){shelf.hidden=true;shelfLinks.replaceChildren();return;}
+  const links=selection.map(item=>{
+   const li=doc.createElement('li'),a=doc.createElement('a');
+   a.href='/'+item.route;
+   const name=doc.createElement('strong'),category=doc.createElement('span');
+   name.textContent=item.name;category.textContent=item.category;
+   a.append(name,category);li.append(a);return li;
+  });
+  shelfLinks.replaceChildren(...links);shelf.hidden=false;
+ }
  const initialOpen=new Map(entries.map(x=>[x.section,x.section.open]));
  let savedMode=new URL(win.location.href).searchParams.get('saved')==='1';
  function savedRoutes(){try{return new Set(readSaved(win.localStorage));}catch{return new Set();}}
@@ -77,7 +100,11 @@ export function setupDirectorySearch(doc=globalThis.document,win=globalThis.wind
  if(initial)input.value=initial.slice(0,120);
  input.addEventListener('input',()=>{apply();syncUrl()});
  savedOnly?.addEventListener('click',()=>{savedMode=!savedMode;apply();syncUrl()});
- win.addEventListener('storage',event=>{if(event.key===SAVED_KEY)apply()});
+ win.addEventListener('storage',event=>{
+  if(event.key===SAVED_KEY){renderSavedShelf();apply();}
+ });
+ doc.addEventListener('visibilitychange',()=>{if(!doc.hidden){renderSavedShelf();apply();}});
+
  clear.addEventListener('click',()=>{input.value='';apply();syncUrl();input.focus()});
  input.addEventListener('keydown',event=>{
   if(event.key==='Escape'&&input.value){event.preventDefault();input.value='';apply();syncUrl()}
@@ -88,6 +115,7 @@ export function setupDirectorySearch(doc=globalThis.document,win=globalThis.wind
   savedMode=params.get('saved')==='1';
   apply();
  });
+ renderSavedShelf();
  apply();
 }
 if(typeof document!=='undefined')setupDirectorySearch();
