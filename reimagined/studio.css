@@ -332,3 +332,86 @@
  #home .building-public-stats .proof-big>span,#home .building-public-stats .proof-secondary>span{font-size:8px}
  #home .building-public-stats .proof-big p,#home .building-public-stats .proof-secondary p{font-size:9px}
 }
+
+/* Subtle tactile navigation: CSS-only depth, no images, 3D libraries or network calls.
+   The 3px button travel gives feedback without causing layout shifts. */
+@media(min-width:941px){
+ .topbar{gap:17px}
+ .topnav{gap:6px}
+ .topbar .topnav a{
+  display:inline-flex;align-items:center;justify-content:center;min-height:39px;
+  padding:8px 13px;opacity:.92;border:1px solid #b4ffce24;
+  border-radius:11px;background:linear-gradient(155deg,#2144378c,#0e2b2299);
+  box-shadow:inset 0 1px #f0fff015,0 3px 0 #03110cd1,0 7px 13px #020e083b;
+  transform:translateY(0);
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease,color .18s ease;
+ }
+ .topbar .topnav a:hover{
+  opacity:1;background:linear-gradient(160deg,#275c43,#153a2d);
+  border-color:#afffd16b;transform:translateY(-2px);
+  box-shadow:inset 0 1px #e9fff02b,0 5px 0 #03110ccc,0 10px 16px #020e0847;
+ }
+ .topbar .topnav a:active{
+  transform:translateY(2px);
+  box-shadow:inset 0 1px #e9fff010,0 1px 0 #03110cce,0 3px 6px #020e0840;
+ }
+ .topbar .topnav a[aria-current=page]{
+  opacity:1;background:linear-gradient(155deg,#2b644a,#173f30);
+  border-color:#aaffc46b;color:#d2ffdc;
+ }
+ .topbar .topnav a[aria-current=page]:after{
+  height:2px;left:12px;right:12px;bottom:4px;background:#b7fac9;
+ }
+ .topbar .header-partner{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:39px;padding:8px 12px;border:1px solid #b4ffce24;border-radius:11px;
+  background:linear-gradient(155deg,#2144378c,#0e2b2299);
+  box-shadow:inset 0 1px #f0fff015,0 3px 0 #03110cd1,0 7px 13px #020e083b;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease;
+ }
+ .topbar .header-partner:hover{transform:translateY(-2px);border-color:#afffd16b;background:#24513d;box-shadow:inset 0 1px #f0fff020,0 5px 0 #03110ccc,0 10px 16px #020e0847}
+ .topbar .header-partner:active{transform:translateY(2px);box-shadow:0 1px 0 #03110cce}
+}
+.topbar .header-contact{
+ box-shadow:inset 0 1px #fff9,0 3px 0 #65c68b,0 8px 19px #56dd8b26;
+}
+.topbar .header-contact:hover{
+ box-shadow:inset 0 1px #fff9,0 5px 0 #65c68b,0 12px 24px #56dd8b3a;
+}
+.topbar .header-contact:active{
+ transform:translateY(2px);
+ box-shadow:inset 0 1px #fff7,0 1px 0 #65c68b,0 3px 10px #56dd8b28;
+}
+.topbar .kofi-support:disabled{transform:none;box-shadow:inset 0 1px #ffffff0c;cursor:not-allowed}
+.mobile-dock a,.mobile-dock button,.mobile-menu a,.button,
+.eco-card,.featured-tool-card,.text-link{
+ -webkit-tap-highlight-color:transparent;
+}
+.mobile-dock a,.mobile-dock button{transition:transform .16s ease,background .16s ease,box-shadow .16s ease}
+.mobile-dock a:active,.mobile-dock button:active{transform:translateY(2px);box-shadow:inset 0 2px 6px #00190d33}
+.mobile-menu a:active,.button:active,.featured-tool-card:active,.eco-card:active{transform:translateY(2px)}
+/* A barely perceptible pause followed by a gentle reveal on internal page switches.
+   No interaction is blocked and browser history remains native. */
+@keyframes yorp-view-appear{
+ from{opacity:.75;transform:translateY(5px)}
+ to{opacity:1;transform:translateY(0)}
+}
+body.yorp-page-switch .view:not([hidden]){
+ animation:yorp-view-appear 210ms cubic-bezier(.2,.8,.2,1) 55ms both;
+}
+.topbar a:focus-visible,.mobile-dock a:focus-visible,.mobile-dock button:focus-visible,
+.mobile-menu a:focus-visible,.topbar button:focus-visible{
+ outline:2px solid #baffc8;outline-offset:3px;
+}
+@media(max-width:1160px) and (min-width:941px){
+ .topbar .topnav a{padding-inline:10px}
+ .topbar .header-partner{padding-inline:9px}
+ .topbar{gap:10px}
+ .topnav{gap:4px}
+ .topbar .header-actions{gap:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.yorp-page-switch .view:not([hidden]){animation:none!important}
+ .topbar .topnav a,.topbar .header-partner,.topbar .header-contact,
+ .mobile-dock a,.mobile-dock button{transition:none!important;transform:none!important}
+}
