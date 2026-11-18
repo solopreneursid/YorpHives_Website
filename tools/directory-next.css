@@ -87,3 +87,19 @@ details.directory-section>summary{min-height:60px;padding:13px 16px;font-size:16
  .directory-page .site-header .brand-word{font-size:17px}
  .directory-page .site-header .header-kofi{min-width:88px}
 }
+
+
+/* Progressive, first-party discovery: all 143 anchor links remain in HTML. */
+.directory-finder{margin:26px 0 14px;padding:24px;border-radius:18px;border:1px solid #d4e3d8;background:#fff}
+.directory-finder label{display:block;color:#1c4533;font-weight:800;font-size:18px;line-height:1.35;margin-bottom:12px}
+.directory-finder-row{display:flex;gap:10px;align-items:center}
+.directory-finder input{width:100%;min-width:0;min-height:52px;padding:13px 16px;border:1px solid #9db9a8;border-radius:12px;background:#f9fcf9;color:#173827;font:inherit;font-size:16px}
+.directory-finder input:focus-visible,.directory-finder button:focus-visible{outline:3px solid #287853;outline-offset:2px}
+.directory-finder button{min-height:48px;padding:10px 17px;border-radius:11px;background:#173d2c;color:#fff;border:0;font-weight:750;cursor:pointer}
+.directory-finder button[hidden],.directory-section[hidden],.directory-card[hidden]{display:none!important}
+.directory-finder p{margin:10px 0 0;color:#4f6657;font-size:13px;line-height:1.5}
+.directory-finder #directory-search-status{font-weight:700;color:#285c3e}
+.directory-finder #directory-search-status:empty{display:none}
+.directory-search-empty{padding:24px;border:1px dashed #a1c2ac;border-radius:14px;margin:20px 0;color:#244a36;background:#f5faf5}
+.directory-search-empty[hidden]{display:none}
+@media(max-width:760px){.directory-finder{padding:17px;margin-top:16px}.directory-finder label{font-size:16px}.directory-finder-row{gap:8px}.directory-finder input{min-height:48px}.directory-finder button{padding-inline:13px}}
