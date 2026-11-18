@@ -13,8 +13,8 @@ const ids=['svg-optimizer','video-to-gif','document-scanner','meme-maker','image
 test('Eight new Wave 6 pages and modules are registered without duplicates',async()=>{
  const cat=JSON.parse(await readFile(resolve(root,'catalog.json'),'utf8'));
  const tools=cat.items.filter(x=>x.type==='tool');
- assert.equal(tools.length,143);
- assert.equal(new Set(tools.map(x=>x.url)).size,143);
+ assert.equal(tools.length,144);
+ assert.equal(new Set(tools.map(x=>x.url)).size,144);
  const directory=await readFile(resolve(root,'tools/index.html'),'utf8');
  for(const id of ids){
   const item=tools.find(x=>x.url==='tools/'+id+'/');assert.ok(item,id);
