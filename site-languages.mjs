@@ -6,6 +6,7 @@
 import {getLocalCopy} from './site-language-copy.mjs';
 import {getToolCopy} from './site-tool-copy.mjs';
 import {getSectionCopy} from './site-section-copy.mjs';
+import {getCatalogCopy} from './site-catalog-copy.mjs';
 export const LANGUAGES=Object.freeze([
  ['en','English'],['hi','हिन्दी'],['es','Español'],['fr','Français'],
  ['de','Deutsch'],['pt','Português'],['ar','العربية'],['ja','日本語']
@@ -80,7 +81,7 @@ export function bindPageLanguages(doc=globalThis.document,win=globalThis.window)
   epoch++;restore();instance.value?.destroy?.();instance.value=null;processing=false;
   translateButton.disabled=false;translateButton.hidden=true;
  }
- function localized(english,language){return getLocalCopy(english,language)||getToolCopy(english,language)||getSectionCopy(english,language)||localizedLabel(english,language);}
+ function localized(english,language){return getLocalCopy(english,language)||getToolCopy(english,language)||getSectionCopy(english,language)||getCatalogCopy(english,language)||localizedLabel(english,language);}
  function essential(language=current){
   if(language==='en')return 0;
   const walker=doc.createTreeWalker(doc.body,NodeFilter.SHOW_TEXT);
