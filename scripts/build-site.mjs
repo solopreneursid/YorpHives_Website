@@ -7,6 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {createEntity} from './discovery-schema.mjs';
 import {PUBLIC_TOOL_PAGES} from '../agentic/tools-core.mjs';
 import {isQualifiedProduct} from '../product-policy.mjs';
+import {checkCatalogTranslation,makeCatalogLocaleCopy,catalogTranslationReport} from '../catalog-localization.mjs';
 import {injectNextToolUI} from './next-tool-shell.mjs';
 import {collectPublicActivity,discoverPublicPageUpdates,discoverToolEditTimes,loadActivityNotes,renderHomePulse} from './activity-feed.mjs';
 
@@ -35,6 +36,20 @@ for(const item of catalog.items){
 const published=catalog.items.filter(item=>item?.type==='tool'
  ? item.published!==false&&item.visibility!=='private'
  : isQualifiedProduct(item));
+// Existing tools remain available in English during incremental localization.
+// Every newly published catalog entry must be reviewed in all advertised
+// languages before public release, so future launches never silently regress.
+const localizationBaseline=JSON.parse(await src('catalog-localization-baseline.json'));
+if(localizationBaseline.schemaVersion!==1||!Array.isArray(localizationBaseline.legacyUrls))
+ throw Error('Invalid catalog localization baseline');
+const oldRoutes=new Set(localizationBaseline.legacyUrls);
+for(const item of published){
+ if(oldRoutes.has(item.url))continue;
+ const errors=checkCatalogTranslation(item);
+ if(errors.length)throw Error('New public catalog entry lacks reviewed localization: '+item.url+' — '+errors.join('; '));
+}
+const catalogLocaleMap=makeCatalogLocaleCopy(published);
+const localeReport=catalogTranslationReport(published,{legacyUrls:localizationBaseline.legacyUrls});
 const seen=new Set();
 for(const item of published){
  if(!item||typeof item.name!=='string'||!item.name.trim()||typeof item.description!=='string'||!item.description.trim())
@@ -459,6 +474,10 @@ await cp(resolve(root,'site-languages.css'),resolve(dest,'site-languages.css'));
 await cp(resolve(root,'site-language-copy.mjs'),resolve(dest,'site-language-copy.mjs'));
 await cp(resolve(root,'site-tool-copy.mjs'),resolve(dest,'site-tool-copy.mjs'));
 await cp(resolve(root,'site-section-copy.mjs'),resolve(dest,'site-section-copy.mjs'));
+await write('site-catalog-copy.mjs','// Generated from founder-approved, public catalog translations at build time.\\n'+
+ 'export const CATALOG_COPY='+JSON.stringify(catalogLocaleMap)+';\\n'+
+ 'export const getCatalogCopy=(english,lang)=>CATALOG_COPY[english]?.[lang]||null;\\n');
+await write('i18n-coverage.json',JSON.stringify(localeReport,null,2)+'\\n');
 const languageUI='<div id="yh-language-picker" translate="no" aria-label="Website language">'+
  '<button type="button" data-language-toggle aria-expanded="false" aria-controls="yh-language-panel" aria-label="Change website language">'+
  '<span class="yh-language-globe" aria-hidden="true">🌐</span><span data-language-short>EN</span></button>'+
