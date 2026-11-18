@@ -275,3 +275,37 @@
  .topnav-tools,.hero-ctas .button,.eco-card,.mobile-dock a,.mobile-dock button,
  .mobile-dock :is(a,button) svg{transition:none!important}
 }
+
+
+/* Compact navigation: 20% less vertical space than the previous 78px dock.
+ * CSS-only transitions avoid runtime, subscription and GPU dependencies. */
+@keyframes yh-view-enter{from{opacity:.25;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+.view:not([hidden]){animation:yh-view-enter .24s cubic-bezier(.22,1,.36,1) both}
+.topnav a,.mobile-menu a,.more-panel a,.eco-card,.button,.header-actions button,
+.mobile-dock :is(a,button){transition-property:transform,background-color,color,box-shadow,opacity,border-color;
+ transition-duration:.22s;transition-timing-function:cubic-bezier(.22,1,.36,1)}
+:is(.button,.eco-card,.mobile-menu a,.more-panel a,.topnav a):active{transform:translateY(2px) scale(.985)}
+@media(max-width:760px){
+ body{padding-bottom:calc(74px + env(safe-area-inset-bottom))}
+ .mobile-dock{min-height:60px;padding:4px 6px;gap:3px;border-radius:19px;
+  box-shadow:inset 0 1px #f0fff83b,inset 0 -2px #050f0d55,
+   0 9px 24px #00160c48,0 2px 6px #021b1259}
+ .mobile-dock a,.mobile-dock button{min-height:50px;gap:2px;padding:3px 1px;
+  border-radius:14px;font-size:9px}
+ .mobile-dock :is(a,button) svg{width:27px;height:27px;padding:5px;border-radius:9px;
+  box-shadow:inset 0 1px #ffffff42,inset 0 -1px #071e165a,
+   0 3px 0 #071c17,0 4px 8px #010e0847}
+ .mobile-dock a[aria-current=page] svg,.mobile-dock button[aria-expanded=true] svg{
+  box-shadow:inset 0 1px #fff,0 2px 0 #66a87a,0 4px 8px #123f2a3a}
+ .more-panel{bottom:calc(76px + env(safe-area-inset-bottom))}
+}
+@media(max-width:380px){
+ .mobile-dock{padding:4px;gap:2px;border-radius:17px}
+ .mobile-dock a,.mobile-dock button{min-height:50px;font-size:9px}
+ .mobile-dock :is(a,button) svg{width:26px;height:26px;padding:5px}
+}
+@media(prefers-reduced-motion:reduce){
+ .view:not([hidden]){animation:none!important}
+ .topnav a,.mobile-menu a,.more-panel a,.eco-card,.button,.header-actions button,
+ .mobile-dock :is(a,button),.mobile-dock :is(a,button) svg{transition:none!important}
+}
