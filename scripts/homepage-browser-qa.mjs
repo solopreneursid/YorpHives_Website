@@ -65,6 +65,17 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
     if(!menuBounds||menuBounds.width>310||menuBounds.height>390)problems.push(label+' oversized menu '+JSON.stringify(menuBounds));
     await menu.click();
    }
+   if(width<=430){
+    const footer=await page.locator('footer.footer').evaluate(node=>{
+     const bounds=node.getBoundingClientRect();
+     return {height:bounds.height,links:node.querySelectorAll('a[href]').length,
+      analyticsVisible:!!node.querySelector('#anonymous-analytics-toggle') &&
+       getComputedStyle(node.querySelector('#anonymous-analytics-toggle')).display!=='none'};
+    });
+    if(footer.height>310)problems.push(label+' mobile footer too tall '+footer.height.toFixed(0));
+    if(footer.links<8)problems.push(label+' footer links missing '+footer.links);
+    if(!footer.analyticsVisible)problems.push(label+' footer privacy toggle hidden');
+   }
    if(!result.tools)problems.push(label+' featured tools missing');
    if(result.tickerGroups!==2)problems.push(label+' continuous tool ticker not hydrated');
    if(!result.hasKofi||!result.hasContact||!result.hasAnalytics)problems.push(label+' missing button/control');
