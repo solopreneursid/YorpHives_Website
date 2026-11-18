@@ -34,7 +34,7 @@ test('site-wide shell is included in all built tool pages, directory and homepag
 test('translation source never reads tool inputs, outputs or sends page contents off site',async()=>{
  const source=await read('site-languages.mjs');
  assert.doesNotMatch(source,/(?:fetch\(|sendBeacon|XMLHttpRequest|navigator\.clipboard|\.value\s*\)\s*\}|innerHTML\s*=)/);
- assert.match(source,/textarea,select,option,button/);
+ assert.match(source,/textarea,input,select,option,button/);
  assert.match(source,/\[id\$="-output"\]/);
  assert.match(source,/\.create\(\{sourceLanguage:'en'/);
  assert.match(source,/translate\(original\)/);
