@@ -898,8 +898,8 @@ section[id],.view[id],#home-progress,#featured-tools{scroll-margin-top:clamp(72p
  from{rotate:0deg}to{rotate:360deg}
 }
 @keyframes yorp-mini-float{
- 0%,100%{transform:translate(-50%,-50%) translateY(0)}
- 50%{transform:translate(-50%,-50%) translateY(-5px)}
+ 0%,100%{transform:translate(-50%,-50%) translateY(0) rotate(-9deg)}
+ 50%{transform:translate(-50%,-50%) translateY(-5px) rotate(-9deg)}
 }
 @media(max-width:370px){
  #home .hero-title-lockup{grid-template-columns:minmax(0,1fr) 76px;gap:3px}
@@ -925,4 +925,9 @@ section[id],.view[id],#home-progress,#featured-tools{scroll-margin-top:clamp(72p
  .footer-grid>div>a:not(.logo){min-height:26px}
  .footer-bottom{margin-top:7px;padding-top:7px;row-gap:6px}
  .footer-bottom #anonymous-analytics-toggle{min-height:30px;padding-block:5px}
+}
+
+/* Desktop/mobile hero mark consistency: the static reduced-motion pose also tilts. */
+@media(max-width:760px){
+ #home .mini-brand-core{transform:translate(-50%,-50%) rotate(-9deg)}
 }
