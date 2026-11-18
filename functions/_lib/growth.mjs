@@ -50,6 +50,7 @@ export function buildGrowthReport({days,views,completions,eligible,generatedAt=n
  // tool inputs, raw sessions or extra database tables are collected.
  const categoriesByName=new Map();
  for(const item of eligible.values()){
+  if(!item.url.startsWith('tools/'))continue;
   const category=String(item.category||'Other').slice(0,60);
   if(!categoriesByName.has(category))categoriesByName.set(category,{
    category,availableTools:0,completedActions30d:0,completedActions7d:0,previous7d:0,
@@ -58,6 +59,7 @@ export function buildGrowthReport({days,views,completions,eligible,generatedAt=n
   categoriesByName.get(category).availableTools++;
  }
  for(const item of ranked){
+  if(!item.url.startsWith('tools/'))continue;
   const category=String(item.category||'Other').slice(0,60);
   const row=categoriesByName.get(category);
   if(!row)continue;
