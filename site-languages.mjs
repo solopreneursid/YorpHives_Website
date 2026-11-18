@@ -68,7 +68,10 @@ export function bindPageLanguages(doc=globalThis.document,win=globalThis.window)
   saved.clear();
   for(const [element,attrs] of savedAttributes){
    if(!element.isConnected)continue;
-   for(const [name,original] of attrs)element.setAttribute(name,original);
+   for(const [name,original] of attrs){
+    if(original===null)element.removeAttribute(name);
+    else element.setAttribute(name,original);
+   }
   }
   savedAttributes.clear();
   doc.documentElement.lang='en';doc.documentElement.removeAttribute('dir');
@@ -114,6 +117,20 @@ export function bindPageLanguages(doc=globalThis.document,win=globalThis.window)
     if(!originals.has(name))originals.set(name,before);
     element.setAttribute(name,translation);changed++;
    }
+  }
+  // Native select option labels are visible UI, but their values are
+  // application data. Set only label attributes and preserve original text
+  // so select.value and form submission semantics never change.
+  for(const option of doc.querySelectorAll('select option')){
+   if(option.closest('#yh-language-picker,[translate="no"],[contenteditable]'))continue;
+   const original=option.textContent.trim();
+   const translation=localized(original,language);
+   if(!translation||translation===original)continue;
+   if(!savedAttributes.has(option))savedAttributes.set(option,new Map());
+   const attrs=savedAttributes.get(option);
+   if(!attrs.has('label'))attrs.set('label',option.getAttribute('label'));
+   option.setAttribute('label',translation);
+   changed++;
   }
   return changed;
  }
