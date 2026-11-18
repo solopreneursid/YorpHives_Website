@@ -13,7 +13,7 @@ const names=['subtitle-converter','social-preview-builder','quotation-generator'
 test('eight new browser tools have independent pages and catalog registrations',async()=>{
  const catalog=JSON.parse(await readFile(resolve(root,'catalog.json'),'utf8'));
  const tools=catalog.items.filter(x=>x.type==='tool');
- assert.equal(tools.length,143);assert.equal(new Set(tools.map(x=>x.url)).size,143);
+ assert.equal(tools.length,144);assert.equal(new Set(tools.map(x=>x.url)).size,144);
  for(const id of names){
   const url='tools/'+id+'/',item=tools.find(x=>x.url===url);
   assert.ok(item,'missing '+id);assert.equal(item.execution,'browser-local');
