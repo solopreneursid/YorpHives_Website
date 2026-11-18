@@ -1,79 +1,46 @@
-# YorpHives future-proof localization (public website)
+# Browser-first translation policy — YorpHives
 
-This workflow is **local-first**, not a paid external translation subscription. It
-protects English originals, tool inputs, user documents and generated results.
+## Cost and ownership
 
-## Already wired to every website build
+No translation server, model, cloud GPU, Google Cloud Translation API, external
+translation API, paid plugin, or subscription is needed or deployed.
 
-- The original 143 published tools remain accessible while their historical
-  descriptions receive human review. Their existing English copy is frozen in
-  `catalog-localization-baseline.json`.
-- **Any new tool or founder-approved venture, and any modification to an old
-  tool's name or description, fails the public build** unless it has approved
-  `localizations` for all seven website languages.
-- The build generates `site-catalog-copy.mjs` from eligible, reviewed catalog
-  fields. This is automatically imported by the existing browser language
-  switcher, including in new product cards and newly created catalog pages.
-- The build generates `i18n-coverage.json`, a machine-readable report of
-  the unlocalized existing catalog entries. It does **not** expose private HQ
-  data or user content.
-- Newly added *static marketing copy* in `reimagined/index.html` is checked
-  against `marketing-copy-baseline.json`; new phrases must have translations
-  in the page/section/tool language packs. This guards future section changes.
-- Existing site sections, shared tool controls and the 16 catalog categories
-  already have first-party translation packs.
+The canonical public site remains English. Browser-native **Translate page**
+handles new products, revised descriptions and new page content without requiring
+the website to generate seven versions or delay a founder-approved launch.
 
-## Format for every future catalog product
+- Google Chrome: visitors may use the Translate icon in the address bar or the
+  browser's Translate page menu. This is a feature of the visitor's browser;
+  the website cannot force Chrome's native Translate interface to open.
+- Firefox: visitors may use the browser's built-in Translate page command;
+  its coverage and availability vary by browser version and language.
+- Browsers with a supported `Translator` JavaScript API may additionally
+  translate public text on device when the visitor explicitly clicks the
+  optional website translation button. API availability is checked at runtime.
 
-Add a `localizations` object to the catalog entry using the same keys as
-`PUBLIC_LOCALES` in `catalog-localization.mjs`, for example:
+Existing curated labels and page translations may remain as a progressive
+enhancement, but **do not represent complete localization**. We make no claim
+that a website can automatically access Google's page translator through a
+JavaScript API, and we never use unofficial Google Translate endpoints.
 
-```json
-"localizations": {
-  "hi": {
-    "name": "स्थानीयकृत उत्पाद नाम",
-    "description": "उत्पाद का उपयोगी स्थानीयकृत विवरण।",
-    "reviewed": true,
-    "reviewedOn": "2026-11-18"
-  }
-}
-```
+## Future products and features
 
-Repeat for `es`, `fr`, `de`, `pt`, `ar`, and `ja`.
-Use `reviewed:true` **only after human/founder-authorized review**, never
-as a default. The founder still approves launches separately through the
-existing product policy.
+The browser can translate newly added public product descriptions and static
+page copy as long as the page remains accessible with ordinary HTML text.
+The site keeps standard `lang=en` source content for browser detection, and
+the existing shared language control explains how to use free browser features.
 
-## Optional private model for translation drafts
+New products still require the existing founder/evidence approval, security
+and product publication checks. They **do not need seven hand-translated names
+and descriptions** just to become visible.
 
-Without a model installed, you can always generate a worklist:
+A machine-readable `i18n-coverage.json` report and optional curated
+`localizations` fields remain available for future quality work, but neither
+blocks new catalog entries. No recurring AI translation process is configured.
 
-```bash
-node scripts/i18n-drafts.mjs
-```
+## Privacy
 
-When a self-hosted **LibreTranslate-compatible** service (e.g. LibreTranslate
-backed by open-source Argos Translate models) is running on your own machine,
-you can request suggested translations **locally**:
-
-```bash
-YORPHIVES_LOCAL_TRANSLATOR_URL=http://127.0.0.1:5000/translate node scripts/i18n-drafts.mjs --translate
-```
-
-Both modes write `ops/i18n/translation-review.json`. Machine-generated
-suggestions stay **unapproved**; they are not inserted into `catalog.json` or
-published automatically. Only loopback HTTP is permitted. There is no
-automatic external upload, API subscription, or cloud translation vendor.
-
-## New feature checklist
-
-For new homepage and section phrases, add all seven versions to the
-first-party packs and keep the existing build guard enabled. New product
-names/descriptions use the catalog `localizations` fields. Existing tools
-with changed names/descriptions follow the same rule.
-
-Brand-new **dynamic JavaScript-only** copy and individual specialized tool
-instructions are not guaranteed to be translated by the static HTML guard.
-They must be added to the shared language packs, tested, and reviewed.
-Never claim automatic full-page translation without a running and verified
-self-hosted model. Keep English as the safe fallback.
+The website itself sends no tool inputs, files or results to a translation API.
+Browser-provided page translation has provider-specific privacy behavior:
+Chrome's translation may involve Google's infrastructure; Firefox advertises
+on-device translation. Users decide whether to invoke their browser's feature.
