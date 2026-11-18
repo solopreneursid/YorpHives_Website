@@ -127,6 +127,33 @@ img{display:block;max-width:100%}h1,h2,h3,p{margin:0}h1,h2,h3{letter-spacing:-.0
 /* Builders: visible, independent partnership discovery with founder review. */
 .builders-hero-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .builders-hero-actions .btn{min-width:155px}
+
+/* Builders: public introduction only; all future jobs remain in a separate private service. */
+.builders-launch-label{display:flex;align-items:center;gap:9px;margin:18px 0 0;color:#baf4ce;font-size:11px;font-weight:750;letter-spacing:.015em}
+.builders-launch-label .status-dot{flex:none}
+.builders-section-intro{max-width:65ch;margin:11px 0 21px;color:#607968;font-size:13px;line-height:1.65}
+.member-grid .builder-path{min-height:325px;padding:27px;gap:11px;box-shadow:0 12px 30px #1b5a3210}
+.builder-path-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.builder-path-number{font-size:10px;font-weight:850;letter-spacing:.09em;color:#5b8b6c}
+.builder-path-points{display:grid;gap:8px;list-style:none;margin:6px 0 8px;padding:0}
+.builder-path-points li{position:relative;padding-left:21px;color:#486c55;font-size:12px;line-height:1.5}
+.builder-path-points li::before{content:'✓';position:absolute;left:0;color:#28885a;font-weight:900}
+.member-action{display:inline-flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:11px 13px;margin-top:auto;border:1px solid #b8dbc4;border-radius:10px;background:#eaf7ee;color:#23633f;font-size:12px;font-weight:850;text-decoration:none}
+.member-action:hover,.member-action:focus-visible{background:#d5efdf;border-color:#6ebc8a}
+.member-grid .builder-path .member-tag{margin-top:0}
+.access-note strong{color:#285f3e}
+.builders-journey{margin-top:44px;padding-top:36px;border-top:1px solid #d1e4d7}
+.builders-journey-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:24px 0 0;padding:0;list-style:none}
+.builders-journey-grid li{min-width:0;padding:21px 18px;background:#f0f8f2;border:1px solid #d2e6d7;border-radius:14px}
+.builders-journey-grid li>span{display:block;color:#3a9061;font-size:12px;font-weight:900;letter-spacing:.06em;margin-bottom:14px}
+.builders-journey-grid strong{display:block;color:#234b33;font-size:15px;line-height:1.3}
+.builders-journey-grid p{margin-top:8px;color:#657d6c;font-size:11px;line-height:1.6}
+.membership-intro{max-width:67ch;margin:13px 0 24px;color:#c1e0c9;font-size:13px;line-height:1.65}
+.membership-launch-note{display:flex;align-items:flex-start;gap:15px;justify-content:space-between;flex-wrap:wrap;margin-top:17px;padding:18px 20px;border:1px solid #83c9a05c;border-radius:13px;background:#1b4735;line-height:1.6}
+.membership-launch-note strong{color:#d4ffe1;font-size:12px}
+.membership-launch-note span{color:#bee3ca;font-size:11px}
+.membership-launch-note a{color:#e2ffee;text-underline-offset:3px;font-weight:800}
+
 .partnership-section{padding-block:76px 74px;background:linear-gradient(125deg,#e0f2e7,#f1f8ee);scroll-margin-top:75px}
 .partnership-layout{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);align-items:center;gap:40px 7%}
 .partnership-copy h2{margin:15px 0;font-size:clamp(35px,3.9vw,54px);line-height:1.09}
