@@ -40,7 +40,7 @@ test('published translator is an optional browser-local tool without remote exec
  assert.match(html,/no remote translation service/i);
  assert.match(html,/on-device-translator.mjs/);
  const source=await readFile(resolve(root,'tools/on-device-translator.mjs'),'utf8');
- assert.match(source,/API\.create\(/);
- assert.match(source,/api\.availability\(/);
+ assert.match(source,/api\.create\(/);
+ assert.match(source,/API\.availability\(/);
  assert.doesNotMatch(source,/(?:fetch\(|sendBeacon\(|XMLHttpRequest|localStorage|sessionStorage|eval\()/);
 });
