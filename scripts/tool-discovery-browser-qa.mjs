@@ -57,7 +57,7 @@ try{
   assert.match(await page.locator('a.directory-card:visible').first().innerText(),/word/i);
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   assert.ok(overflow<=8,'Mobile horizontal overflow: '+overflow);
- });
+ },{mobile:true});
  await check('mobile: related links open approved static tool pages',async page=>{
   await open(page,'/tools/word-counter/');
   const related=page.locator('.yh-tool-discover li a');
@@ -67,7 +67,7 @@ try{
   await related.first().click();
   assert.equal(new URL(page.url()).pathname,href);
   assert.ok(await page.locator('h1').first().isVisible());
- });
+ },{mobile:true});
  await check('privacy: blocked storage cannot display false save success',async page=>{
   await open(page,'/tools/word-counter/');
   const save=page.locator('[data-save-tool]');
@@ -93,6 +93,17 @@ try{
   await waitReady(page).catch(()=>{});
   const layout=await page.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
   assert.ok(layout.scroll<=layout.client+8,JSON.stringify(layout));
+ },{mobile:true});
+ await check('mobile: marketing landing pages are reachable and readable',async page=>{
+  for(const path of ['/hqventures/','/builders/','/partnerships/']){
+   await open(page,path);
+   assert.equal(await page.locator('h1').count(),1);
+   assert.ok(await page.locator('h1').isVisible());
+   const canonical=await page.locator('link[rel="canonical"]').getAttribute('href');
+   assert.equal(canonical,'https://yorphives.com'+path);
+   const layout=await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
+   assert.ok(layout.scroll<=layout.width+8,path+' overflow: '+JSON.stringify(layout));
+  }
  },{mobile:true});
  assert.deepEqual(writes,[],'Unexpected network writes');
 }finally{await browser.close();}
