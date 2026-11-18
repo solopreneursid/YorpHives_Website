@@ -94,6 +94,19 @@ try{
   const layout=await page.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
   assert.ok(layout.scroll<=layout.client+8,JSON.stringify(layout));
  },{mobile:true});
+ await check('mobile: Builders role-specific enquiry routes without accepting members',async page=>{
+  await open(page,'/');
+  await page.locator('a[data-nav="builders"]').first().click();
+  assert.equal(await page.locator('#builders').isVisible(),true);
+  const options=page.locator('#builders .builder-path .member-action');
+  assert.equal(await options.count(),2);
+  assert.match(await page.locator('#builders .access-note').innerText(),/enquiry is not enrollment/i);
+  await options.last().click();
+  assert.equal(new URL(page.url()).hash,'#connect');
+  assert.equal(await page.locator('#project-type').inputValue(),'Builders — post a project');
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  assert.ok(overflow<=8,'Mobile overflow after Builders contact: '+overflow);
+ },{mobile:true});
  await check('mobile: marketing landing pages are reachable and readable',async page=>{
   for(const path of ['/hqventures/','/builders/','/partnerships/']){
    await open(page,path);
