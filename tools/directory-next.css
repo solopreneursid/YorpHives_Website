@@ -107,3 +107,22 @@ details.directory-section>summary{min-height:60px;padding:13px 16px;font-size:16
 .directory-page .directory-saved-filter{margin-top:15px;min-height:44px;border:1px solid #a5c5ad;border-radius:12px;background:#f1f9f2;color:#205a3d;padding:10px 15px;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
 .directory-page .directory-saved-filter[aria-pressed=true]{background:#164831;color:#fff}
 .directory-page .directory-saved-filter:focus-visible{outline:3px solid #20764e;outline-offset:2px}
+
+/* Optional, privacy-preserving shortcuts to tools saved on this device. */
+.directory-return{margin:20px 0 42px;padding:24px;border-radius:19px;
+ background:linear-gradient(115deg,#eaf7ed,#f6fbf7);
+ border:1px solid #c2dfc9}
+.directory-return[hidden]{display:none!important}
+.directory-return-head{display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.directory-return h2{font-size:clamp(24px,3vw,33px);line-height:1.15;margin:7px 0}
+.directory-return-head>a{font-size:13px;font-weight:800;color:#226e4c;text-underline-offset:3px}
+.directory-return>p{font-size:12px;color:#54725c;line-height:1.7;margin:9px 0 17px}
+.directory-return-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;
+ list-style:none;margin:0;padding:0}
+.directory-return-links a{display:flex;flex-direction:column;gap:7px;min-height:78px;
+ padding:15px 16px;border:1px solid #c9e3d1;background:#fff;border-radius:12px}
+.directory-return-links strong{font-size:14px;color:#174e34;line-height:1.4}
+.directory-return-links span{font-size:12px;color:#607d69}
+.directory-return-links a:focus-visible{outline:3px solid #20764e;outline-offset:2px}
+@media(max-width:760px){.directory-return{padding:18px}.directory-return-links{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:440px){.directory-return-links{grid-template-columns:1fr}}
