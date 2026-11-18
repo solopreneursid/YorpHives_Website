@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {LANGUAGES,localizedLabel,nativeTranslator} from '../site-languages.mjs';
+import {PAGE_COPY,getLocalCopy} from '../site-language-copy.mjs';
 const read=p=>readFile(resolve(process.cwd(),p),'utf8');
 test('language selector supports eight readable languages without remote dependencies',()=>{
  assert.equal(LANGUAGES.length,8);
@@ -10,6 +11,12 @@ test('language selector supports eight readable languages without remote depende
  assert.equal(localizedLabel('Home','hi'),'होम');
  assert.equal(localizedLabel('Free tools','es'),'Herramientas gratis');
  assert.equal(localizedLabel('Unknown site content','es'),null);
+ assert.ok(Object.keys(PAGE_COPY).length>=45);
+ for(const language of ['hi','es','fr','de','pt','ar','ja']){
+  assert.ok(getLocalCopy('We discover emerging opportunities, build useful digital products, and create technology that evolves with the world.',language));
+  assert.ok(getLocalCopy('Have an idea, an opportunity, or a reason to collaborate? Connect with YorpHives.',language));
+  assert.ok(getLocalCopy('Digital Ventures.',language));
+ }
  assert.equal(nativeTranslator({}),null);
  assert.equal(nativeTranslator({Translator:{availability() {}}}),null);
 });
