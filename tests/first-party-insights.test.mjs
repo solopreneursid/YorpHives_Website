@@ -44,13 +44,13 @@ test('Cloudflare Functions stay confined to analytics and read-only agent discov
  assert.ok(s.includes("include:['/api/insights/*','/api/agent/v1/*']"));
  assert.ok(s.includes("insights-client.mjs"));
 });
-test('Homepage progress and YHpulse show measured, not invented, business results',async()=>{
+test('Homepage progress uses measured first-party signals without a duplicate ticker',async()=>{
  const [html,studio,rotators,client]=await Promise.all(['reimagined/index.html','reimagined/studio.js','reimagined/rotators.js','insights-client.mjs'].map(read));
  assert.ok(html.includes('RECORDED PAGE VIEWS · 30 DAYS'));
  assert.ok(html.includes('anonymous-analytics-toggle'));
  assert.ok(studio.includes("fetch('/api/insights/growth'"));
- assert.ok(rotators.includes("getJson('/api/insights/public')"));
- assert.ok(rotators.includes('browser_reported_completed_actions'));
+ assert.doesNotMatch(html,/id="yh-pulse"/);
+ assert.ok(studio.includes("fetch('/api/insights/growth'"));
  assert.ok(client.includes('globalPrivacyControl'));
  assert.ok(client.includes('yorphives:tool-completed'));
  assert.ok(!client.includes('String(node.value).slice'));
