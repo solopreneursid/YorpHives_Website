@@ -1,0 +1,15 @@
+/* Small persistent control; independent of homepage/tool layout. */
+#yh-language-picker{position:fixed;top:auto;bottom:76px;right:max(12px,env(safe-area-inset-right));z-index:900;
+ width:min(275px,calc(100vw - 24px));border:1px solid #bcd9cd;border-radius:15px;
+ background:#fff;color:#123a2d;box-shadow:0 6px 28px #0e37222e;padding:10px 12px;
+ font:13px/1.4 system-ui,-apple-system,sans-serif}
+#yh-language-picker label{display:flex;align-items:center;gap:9px;font-weight:750}
+#yh-language-picker select{flex:1;min-width:0;padding:7px 9px;border:1px solid #b3d1c1;border-radius:8px;
+ font:inherit;background:#fff;color:#123a2d}
+#yh-language-picker button{margin-top:8px;padding:7px 10px;border:0;border-radius:7px;background:#176b50;
+ color:#fff;font:inherit;cursor:pointer}
+#yh-language-picker button:focus-visible,#yh-language-picker select:focus-visible{outline:3px solid #44b991;outline-offset:2px}
+#yh-language-picker [role="status"]{margin:6px 0 0;font-size:11px;line-height:1.45;color:#4a6458}
+#yh-language-picker button[hidden]{display:none}
+@media(max-width:640px){#yh-language-picker{bottom:calc(78px + env(safe-area-inset-bottom));width:min(240px,calc(100vw - 24px));padding:8px 10px}}
+@media print{#yh-language-picker{display:none!important}}
