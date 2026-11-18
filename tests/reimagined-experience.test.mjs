@@ -15,8 +15,8 @@ test('reimagined experience has six page routes and homepage-only progress',asyn
  }
  assert.match(html,/class="topnav"/);assert.match(html,/class="mobile-dock"/);
  assert.match(html,/id="more-panel"/);assert.match(html,/id="mobile-menu"/);
- assert.match(html,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
- assert.match(html,/YorpHivesHQ finds the signal/);
+ assert.match(html,/CLOUD-BASED • AI-POWERED VENTURE STUDIO/);
+ assert.match(html,/We discover emerging opportunities/);
  assert.match(html,/id="home-progress"/);
  assert.match(html,/id="home-page-views"/);
  assert.match(html,/id="home-completions"/);
@@ -68,7 +68,7 @@ test('new site is copied to preview after public-page audit and never to product
  assert.ok((await read('reimagined/index.html')).includes('name="robots" content="noindex,nofollow"'));
  if(await present('dist/reimagined/index.html')){
    const rendered=await read('dist/reimagined/index.html');
-   assert.match(rendered,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
+   assert.match(rendered,/CLOUD-BASED • AI-POWERED VENTURE STUDIO/);
    assert.ok(await present('dist/reimagined/studio.css'));
    assert.ok(await present('dist/reimagined/studio.js'));
  } else {
