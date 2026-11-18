@@ -95,3 +95,21 @@
  #home .eco-strip-kicker{font-size:7px}
  #home .eco-strip-copy{font-size:9px}
 }
+
+/* Seamless, continuous right-to-left ecosystem information strips.
+   Duplicated track groups have identical widths, so -50% closes the loop.
+   Nothing here creates a scroll container or adds a network dependency. */
+.eco-strip-viewport{display:block;flex:1 1 0;min-width:0;overflow:hidden;white-space:nowrap;mask-image:linear-gradient(to right,transparent,#000 5%,#000 95%,transparent)}
+.eco-strip-viewport .eco-strip-copy{display:block;max-width:100%;text-overflow:ellipsis}
+.eco-strip-viewport .eco-strip-copy.is-ticker{display:flex;align-items:center;flex:0 0 auto;max-width:none;width:max-content;min-width:0;overflow:visible;text-overflow:clip;white-space:nowrap;animation:eco-ticker-move var(--eco-scroll-duration,22s) linear infinite;will-change:transform}
+.eco-ticker-group{display:flex;align-items:center;flex:0 0 auto;min-width:max-content}
+.eco-ticker-item{display:inline-flex;align-items:center;flex:0 0 auto;padding:0 16px 0 3px;white-space:nowrap}
+.eco-ticker-item:after{content:'✦';display:inline-block;margin-left:16px;font-size:7px;opacity:.6}
+@keyframes eco-ticker-move{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.eco-strip.is-paused .eco-strip-copy.is-ticker,.eco-strip.is-offscreen .eco-strip-copy.is-ticker,
+.eco-card:hover .eco-strip-copy.is-ticker,.eco-card:focus-within .eco-strip-copy.is-ticker{animation-play-state:paused}
+@media(hover:none){.eco-card:hover .eco-strip-copy.is-ticker{animation-play-state:running}.eco-card:focus-within .eco-strip-copy.is-ticker{animation-play-state:paused}.eco-strip.is-paused .eco-strip-copy.is-ticker,.eco-strip.is-offscreen .eco-strip-copy.is-ticker{animation-play-state:paused}}
+@media(prefers-reduced-motion:reduce){
+ .eco-strip-viewport .eco-strip-copy.is-ticker{animation:none!important;will-change:auto}
+ .eco-ticker-group[aria-hidden=true]{display:none}
+}

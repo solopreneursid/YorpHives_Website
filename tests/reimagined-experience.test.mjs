@@ -90,6 +90,22 @@ test('homepage visual QA retains navigation and reduced-motion tactile polish',a
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 });
 
+test('ecosystem strips continuously scroll verified content right-to-left',async()=>{
+ const [html,js,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/rotators.js'),read('reimagined/rotators.css')]);
+ for(const key of ['ventures','builders','tools']){
+  assert.match(html,new RegExp('class="eco-strip-viewport"><span class="eco-strip-copy" id="eco-strip-'+key+'"'));
+ }
+ assert.match(js,/const makeGroup=\(clone=false\)/);
+ assert.match(js,/group\.setAttribute\('aria-hidden','true'\)/);
+ assert.match(js,/dataset\.tickerIndex/);
+ assert.match(js,/document\.querySelector\('\[data-strip="/);
+ assert.match(js,/\.classList\.toggle\('is-paused',ecoPaused\)/);
+ assert.match(js,/is-offscreen/);
+ assert.match(css,/@keyframes eco-ticker-move/);
+ assert.match(css,/translateX\(-50%\)/);
+ assert.match(css,/animation-play-state:paused/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+});
 test('new frontend is independent, local-first, and protects original tool engines',async()=>{
  const [html,js,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js'),read('reimagined/studio.css')]);
  assert.match(html,/href="studio\.css"/);

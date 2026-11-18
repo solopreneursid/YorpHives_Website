@@ -35,7 +35,7 @@ test('site uses the shared catalogue for both the tool directory and all home hi
  assert.match(studio,/categoryChips\(\);updateSavedCount\(\);renderTools\(\);renderVentures\(\)/);
  assert.match(rotators,/subscribeCatalog\(onCatalogUpdate\)/);
  assert.match(rotators,/const categoryCounts=new Map\(\)/);
- assert.match(rotators,/prior\.entries=safe/);
+ assert.match(rotators,/card\.entries=safe/);
  assert.match(rotators,/applyUsageSnapshot\(publishedUsage\)/);
  assert.match(headers,new RegExp("/catalog\.json\n  Cache-Control: no-store"));
  assert.match(readme,/stable preview alias/);
