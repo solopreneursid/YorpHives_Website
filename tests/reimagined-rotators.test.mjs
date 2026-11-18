@@ -40,11 +40,11 @@ test('rotating data uses genuine published categories, qualified products and ve
  assert.match(await read('reimagined/studio.js'),/document.addEventListener\('yorphives:select-tool-category'/);
 });
 
-test('retired usage ticker has no runtime jobs while four homepage metrics remain',async()=>{
+test('retired usage ticker stays absent while the homepage shows visitor benefits',async()=>{
  const [html,js]=await Promise.all([read('reimagined/index.html'),read('reimagined/rotators.js')]);
- for(const id of ['home-tool-count','home-venture-count','home-page-views','home-completions'])
+ for(const id of ['home-tool-count','hive-fresh-title','activity-list'])
   assert.match(html,new RegExp('id="'+id+'"'));
- assert.doesNotMatch(html,/id="yh-pulse"|id="yh-pulse-toggle"/);
+ assert.doesNotMatch(html,/id="yh-pulse"|id="yh-pulse-toggle"|id="home-page-views"|id="home-completions"/);
  assert.doesNotMatch(js,/initPulse\(|refreshUsage\(|pulsePaused|fakeVisits|Math\.random/);
  const usage=JSON.parse(await read('reimagined/usage-public.json'));
  assert.equal(usage.publication.approvedByFounder,false);
