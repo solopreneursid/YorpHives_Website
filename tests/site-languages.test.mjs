@@ -39,7 +39,7 @@ test('translation source never reads tool inputs, outputs or sends page contents
  const source=await read('site-languages.mjs');
  assert.doesNotMatch(source,/(?:fetch\(|sendBeacon|XMLHttpRequest|navigator\.clipboard|\.value\s*\)\s*\}|innerHTML\s*=)/);
  assert.match(source,/textarea,input,select,option/);
- assert.match(source,/parent\\.closest\\('button'\\)\&\&!controls/);
+ assert.ok(source.includes("parent.closest('button')&&!controls"));
  assert.match(source,/savedAttributes/);
  assert.match(source,/getToolCopy/);
  assert.match(source,/\[id\$="-output"\]/);
@@ -52,9 +52,9 @@ test('public tool strings translate without changing values or generated results
  for(const key of ['Runs in your browser','Your input stays on this device','Run tool','Reset','Paste or type text here','How to use this tool'])
   assert.ok(original.includes(key),key);
  const [script,build]=await Promise.all([read('site-languages.mjs'),read('scripts/build-site.mjs')]);
- assert.match(build,/site-tool-copy\\.mjs/);
- assert.match(script,/for\\(const name of \\['placeholder','aria-label','title'\\]\\)/);
- assert.match(script,/\\[id\\$="-output"\\]/);
- assert.match(script,/if\\(parent\\.closest\\('button'\\)\\&\\&!controls\\)/);
+ assert.ok(build.includes('site-tool-copy.mjs'));
+ assert.ok(script.includes("for(const name of ['placeholder','aria-label','title'])"));
+ assert.ok(script.includes('[id$="-output"]'));
+ assert.ok(script.includes("if(parent.closest('button')&&!controls)"));
  assert.doesNotMatch(script,/(?:\.value\\s*=|\.files|FormData|XMLHttpRequest|sendBeacon)/);
 });
