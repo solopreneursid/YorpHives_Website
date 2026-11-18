@@ -41,6 +41,12 @@ test('3D navigation is tactile, accessible, and does not delay routing',async()=
  assert.match(css,/\.topbar a:focus-visible/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.match(css,/yorp-view-appear/);
+ assert.match(css,/Equal-size 3D primary navigation/);
+ assert.match(css,/\.topbar \.topnav a,\.topbar \.header-actions \.header-partner/);
+ assert.match(css,/width:112px/);
+ assert.match(css,/height:43px/);
+ assert.match(css,/width:91px/);
+
  assert.match(js,/routeReady&&changed&&allowsMotion\(\)/);
  assert.match(js,/routeMotionTimer=setTimeout/);
  assert.match(js,/views\.forEach\(v=>v\.hidden=v\.id!==active\)/);
