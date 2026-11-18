@@ -141,7 +141,7 @@ function showPulse(){
 }
 function resetPulse(){
  pulseEntries=[];pulseIndex=0;
- const a=byId('yh-pulse-item');a.href='#impact';a.classList.add('is-placeholder');
+ const a=byId('yh-pulse-item');a.href='#home-progress';a.classList.add('is-placeholder');
  byId('yh-pulse-number').textContent='—';
  byId('yh-pulse-name').textContent='Live usage collection is starting. Rankings appear after completed tool actions.';
  byId('yh-pulse-kind').textContent='EVIDENCE FIRST';

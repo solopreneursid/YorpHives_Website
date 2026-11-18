@@ -21,7 +21,7 @@ const isReimagined=homepage.includes('id="home-title"')&&homepage.includes('id="
 // staging and live. This prevents successful builds of an obsolete preview.
 if(!isReimagined)problems.push('Preview/live parity failure: outdated homepage at root.');
 if(isReimagined){
- const ids=['home','ventures','builders','impact','tools','partners','contact'];
+ const ids=['home','ventures','builders','tools','partners','contact'];
  for(const id of ids)if(!homepage.includes('<section class="view" id="'+id+'"'))
   problems.push('Reimagined public route missing: '+id);
  const css=await read('studio.css');
