@@ -272,7 +272,7 @@ export const SECTION_COPY={
     "ar": "لنتحدث.",
     "ja": "お話ししましょう。"
   },
-  "Great opportunities begin with a conversation. Tell us what you’re building or looking for.": {
+  "Great opportunities begin with a conversation. Tell us what you're building or looking for.": {
     "hi": "बड़े अवसर बातचीत से शुरू होते हैं। हमें बताएँ आप क्या बना रहे हैं या खोज रहे हैं।",
     "es": "Las grandes oportunidades comienzan con una conversación. Cuéntanos qué estás creando o buscando.",
     "fr": "Les grandes opportunités commencent par un échange. Parlez-nous de votre projet.",
