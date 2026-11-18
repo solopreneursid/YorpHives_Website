@@ -15,12 +15,7 @@ const getJson=async url=>{
  catch{return null;}
 };
 const mql=window.matchMedia('(prefers-reduced-motion: reduce)');
-let ecoPaused=false,pulsePaused=false;
-let pulseEntries=[];
-let pulseIndex=0;
-let latestCatalogItems=[];
-let publishedUsage=null;
-let usageMode='approved';
+let ecoPaused=false;
 const cards={};
 const zones=new Map();
 const observer='IntersectionObserver'in window?new IntersectionObserver(entries=>{
@@ -77,7 +72,6 @@ function initEcoControl(){
  update();
 }
 function onCatalogUpdate(items){
- latestCatalogItems=items;
  const qualified=qualifiedProducts(items).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
  const tools=items.filter(publicTool);
  const categoryCounts=new Map();
@@ -90,9 +84,7 @@ function onCatalogUpdate(items){
   .map(([category,count])=>({text:category+' · '+count+' tool'+(count===1?'':'s'),category}));
  useCard('ventures',qualified.map(p=>({text:p.name,url:p.url})),5400);
  useCard('tools',categories,4300);
- // When an existing tool is changed or a new tool is launched, eligibility
- // is rechecked for YHpulse; ranking still requires *actual* approved usage.
- if(publishedUsage)applyUsageSnapshot(publishedUsage);
+
 }
 async function initEco(){
  initEcoControl();
@@ -122,106 +114,4 @@ async function initEco(){
   event.preventDefault();window.location.assign('../'+current.url);
  });
 }
-function approvedUsage(data){
- const p=data?.publication;
- return data?.schemaVersion===1&&p?.status==='approved'&&p.approvedByFounder===true&&
-  validDate(p.approvedAt)&&p.approvedAt<=new Date().toISOString().slice(0,10)&&
-  p.periodDays===30&&p.metric==='completed_uses'&&Array.isArray(data.ranked)&&
-  data.ranked.length>0&&data.ranked.length<=10;
-}
-function showPulse(){
- const item=pulseEntries[pulseIndex];if(!item)return;
- const a=byId('yh-pulse-item');
- a.href='../'+item.url;a.classList.remove('is-placeholder');
- byId('yh-pulse-number').textContent=String(pulseIndex+1).padStart(2,'0')+' / '+pulseEntries.length;
- byId('yh-pulse-name').textContent=item.name;
- byId('yh-pulse-kind').textContent=item.type==='tool'?'FREE TOOL':'HQVENTURES';
- byId('yh-pulse-label').textContent=usageMode==='observed'?'COMPLETED ACTIONS / 30 DAYS':'MOST USED / LAST 30 DAYS';
- a.title=(usageMode==='observed'?'Observed browser-reported completed actions — not independently verified. Open ':'Open ')+item.name;
-}
-function resetPulse(){
- pulseEntries=[];pulseIndex=0;
- const a=byId('yh-pulse-item');a.href='#home-progress';a.classList.add('is-placeholder');
- byId('yh-pulse-number').textContent='—';
- byId('yh-pulse-name').textContent='Live usage collection is starting. Rankings appear after completed tool actions.';
- byId('yh-pulse-kind').textContent='EVIDENCE FIRST';
- byId('yh-pulse-label').textContent='MOST USED / 30 DAYS';
- byId('yh-pulse-toggle').disabled=true;
-}
-function applyUsageSnapshot(data){
- if(!approvedUsage(data))return;
- const eligible=latestCatalogItems.filter(x=>publicTool(x)||qualifiedProducts([x]).length);
- const valid=new Map(eligible.map(x=>[x.url,x]));
- const seen=new Set(),list=[];
- for(const row of data.ranked){
-  if(!row||typeof row.url!=='string'||seen.has(row.url)||!valid.has(row.url))continue;
-  seen.add(row.url);list.push(valid.get(row.url));
- }
- if(!list.length){resetPulse();return;}
- const current=pulseEntries[pulseIndex]?.url;
- pulseEntries=list.slice(0,10);
- pulseIndex=Math.max(0,pulseEntries.findIndex(x=>x.url===current));
- showPulse();
- const toggle=byId('yh-pulse-toggle');toggle.disabled=pulseEntries.length<2;
-}
-
-function applyObservedUsage(rows){
- const eligible=latestCatalogItems.filter(x=>publicTool(x)||qualifiedProducts([x]).length);
- const valid=new Map(eligible.map(x=>[x.url,x]));
- const seen=new Set(),list=[];
- for(const row of rows){
-  if(!row||typeof row.url!=='string'||seen.has(row.url)||!valid.has(row.url)||
-   !Number.isSafeInteger(row.completedActions)||row.completedActions<1)continue;
-  seen.add(row.url);list.push(valid.get(row.url));
-  if(list.length>=10)break;
- }
- if(!list.length){resetPulse();return;}
- usageMode='observed';
- pulseEntries=list;pulseIndex=0;showPulse();
- byId('yh-pulse-toggle').disabled=list.length<2;
-}
-async function refreshUsage(){
- const observed=await getJson('/api/insights/public');
- if(observed?.available===true&&observed.schemaVersion===1&&observed.periodDays===30&&
-  observed.usage?.metric==='browser_reported_completed_actions'&&
-  Array.isArray(observed.usage.ranked)){
-  publishedUsage=null;
-  if(observed.usage.ranked.length)applyObservedUsage(observed.usage.ranked);
-  else resetPulse();
-  return;
- }
- const snapshot=await getJson('usage-public.json');
- if(!approvedUsage(snapshot)){
-  publishedUsage=null;
-  resetPulse();
-  return;
- }
- publishedUsage=snapshot;
- applyUsageSnapshot(snapshot);
-}
-async function initPulse(){
- const a=byId('yh-pulse-item');if(!a)return;
- watch(a);
- await refreshUsage();
- const toggle=byId('yh-pulse-toggle');
- const label=toggle.querySelector('span');
- toggle.addEventListener('click',()=>{
-  pulsePaused=!pulsePaused;
-  toggle.setAttribute('aria-pressed',String(pulsePaused));
-  toggle.setAttribute('aria-label',pulsePaused?'Resume YHpulse rotation':'Pause YHpulse rotation');
-  toggle.firstChild.textContent=pulsePaused?'▶ ':'Ⅱ ';
-  label.textContent=pulsePaused?'Resume':'Pause';
- });
- window.setInterval(()=>{
-  if(pulseEntries.length<2||!canMove(a,pulsePaused))return;
-  a.classList.add('is-changing');
-  window.setTimeout(()=>{pulseIndex=(pulseIndex+1)%pulseEntries.length;showPulse();a.classList.remove('is-changing');},210);
- },4900);
- // Aggregate rankings can change independently of catalogue content.
- // Refresh infrequently while open; no per-visitor event tracking.
- window.setInterval(()=>{if(!document.hidden)void refreshUsage()},300_000);
- window.addEventListener('focus',()=>{if(!document.hidden)void refreshUsage()});
-}
-
 await initEco();
-await initPulse();
