@@ -20,14 +20,15 @@ export function bindSavedTool(doc=globalThis.document,win=globalThis.window){
  const route=button.getAttribute('data-save-tool');
  if(!ROUTE.test(route))return;
  const label=button.getAttribute('data-tool-name')||'this tool';
+ function storage(){try{return win.localStorage}catch{return null}}
  function render(){
-  const on=readSaved(win.localStorage).includes(route);
+  const on=readSaved(storage()).includes(route);
   button.setAttribute('aria-pressed',String(on));
   button.textContent=on?'♥ Saved tool':'♡ Save this tool';
   button.setAttribute('aria-label',(on?'Remove from saved tools: ':'Save tool: ')+label);
  }
  button.addEventListener('click',()=>{
-  const result=toggleSaved(win.localStorage,route);
+  const result=toggleSaved(storage(),route);
   if(result===null){button.textContent='Saving is unavailable in this browser';return;}
   render();
  });
