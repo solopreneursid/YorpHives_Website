@@ -4,6 +4,7 @@
  * No text, tool inputs, files or outputs are transmitted by YorpHives.
  */
 import {getLocalCopy} from './site-language-copy.mjs';
+import {getToolCopy} from './site-tool-copy.mjs';
 export const LANGUAGES=Object.freeze([
  ['en','English'],['hi','हिन्दी'],['es','Español'],['fr','Français'],
  ['de','Deutsch'],['pt','Português'],['ar','العربية'],['ja','日本語']
@@ -31,11 +32,12 @@ export function nativeTranslator(win=globalThis){
  const t=win?.Translator;
  return t&&typeof t.availability==='function'&&typeof t.create==='function'?t:null;
 }
-function translatable(node){
+function translatable(node,{controls=false}={}){
  if(!node||node.nodeType!==3||!node.nodeValue?.trim()||node.nodeValue.trim().length>650)return false;
  const parent=node.parentElement;
- if(!parent||parent.closest('#yh-language-picker,[translate="no"],.notranslate,[contenteditable],textarea,input,select,option,button,pre,code,script,style,svg,canvas,video,audio,.tui-upload-zone,.file-box,.utility-preview,#utility-result,#file-result,[id$="-result"],[id$="-output"],[class*="result-panel"],.tool-status,[aria-live]'))return false;
- if(parent.closest('form')&&!parent.closest('label'))return false;
+ if(!parent||parent.closest('#yh-language-picker,[translate="no"],.notranslate,[contenteditable],textarea,input,select,option,pre,code,script,style,svg,canvas,video,audio,.tui-upload-zone,.file-box,.utility-preview,#utility-result,#file-result,[id$="-result"],[id$="-output"],[class*="result-panel"],.tool-status,[aria-live]'))return false;
+ if(parent.closest('button')&&!controls)return false;
+ if(parent.closest('form')&&!parent.closest('label')&&!parent.closest('button'))return false;
  if(parent.closest('[hidden]'))return false;
  return true;
 }
@@ -51,7 +53,7 @@ export function bindPageLanguages(doc=globalThis.document,win=globalThis.window)
  const translateButton=root.querySelector('[data-language-translate]');
  const note=root.querySelector('[role="status"]');
  const native=nativeTranslator(win);
- const saved=new Map(),instance={value:null};
+ const saved=new Map(),savedAttributes=new Map(),instance={value:null};
  let current='en',epoch=0,processing=false,observer=null,refreshTimer=null;
  function setStatus(text){note.textContent=text;}
  function readPreference(){
@@ -62,19 +64,25 @@ export function bindPageLanguages(doc=globalThis.document,win=globalThis.window)
  function open(){panel.hidden=false;toggle.setAttribute('aria-expanded','true');select.focus();}
  function restore(){
   for(const [node,text] of saved)if(node.isConnected)node.nodeValue=text;
-  saved.clear();doc.documentElement.lang='en';doc.documentElement.removeAttribute('dir');
+  saved.clear();
+  for(const [element,attrs] of savedAttributes){
+   if(!element.isConnected)continue;
+   for(const [name,original] of attrs)element.setAttribute(name,original);
+  }
+  savedAttributes.clear();
+  doc.documentElement.lang='en';doc.documentElement.removeAttribute('dir');
  }
  function reset(){
   epoch++;restore();instance.value?.destroy?.();instance.value=null;processing=false;
   translateButton.disabled=false;translateButton.hidden=true;
  }
- function localized(english,language){return getLocalCopy(english,language)||localizedLabel(english,language);}
+ function localized(english,language){return getLocalCopy(english,language)||getToolCopy(english,language)||localizedLabel(english,language);}
  function essential(language=current){
   if(language==='en')return 0;
   const walker=doc.createTreeWalker(doc.body,NodeFilter.SHOW_TEXT);
   let changed=0;
   for(let node=walker.nextNode();node;node=walker.nextNode()){
-   if(!translatable(node))continue;
+   if(!translatable(node,{controls:true}))continue;
    const before=node.nodeValue;
    const original=saved.get(node)||before;
    // If a reactive component has replaced this node's text, treat it as new
@@ -90,6 +98,21 @@ export function bindPageLanguages(doc=globalThis.document,win=globalThis.window)
    saved.set(node,fresh);
    node.nodeValue=fresh.replace(fresh.trim(),translation);
    changed++;
+  }
+  // Translate only curated, fixed-value attributes. Never inspect input
+  // values, file contents, editable fields, tool results or user documents.
+  for(const element of doc.querySelectorAll('[placeholder],[aria-label],[title]')){
+   if(element.closest('#yh-language-picker,[translate="no"],.notranslate,[contenteditable],[id$="-result"],[id$="-output"],.utility-preview,[class*="result-panel"]'))continue;
+   for(const name of ['placeholder','aria-label','title']){
+    if(!element.hasAttribute(name))continue;
+    const before=element.getAttribute(name);
+    const translation=localized(before,language);
+    if(!translation||translation===before)continue;
+    if(!savedAttributes.has(element))savedAttributes.set(element,new Map());
+    const originals=savedAttributes.get(element);
+    if(!originals.has(name))originals.set(name,before);
+    element.setAttribute(name,translation);changed++;
+   }
   }
   return changed;
  }
