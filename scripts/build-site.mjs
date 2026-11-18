@@ -8,6 +8,10 @@ import {createEntity} from './discovery-schema.mjs';
 import {PUBLIC_TOOL_PAGES} from '../agentic/tools-core.mjs';
 import {isQualifiedProduct} from '../product-policy.mjs';
 import {checkCatalogTranslation,makeCatalogLocaleCopy,catalogTranslationReport} from '../catalog-localization.mjs';
+import {newMarketingCopy} from '../marketing-localization.mjs';
+import {PAGE_COPY} from '../site-language-copy.mjs';
+import {SECTION_COPY} from '../site-section-copy.mjs';
+import {TOOL_COPY} from '../site-tool-copy.mjs';
 import {injectNextToolUI} from './next-tool-shell.mjs';
 import {collectPublicActivity,discoverPublicPageUpdates,discoverToolEditTimes,loadActivityNotes,renderHomePulse} from './activity-feed.mjs';
 
@@ -39,6 +43,18 @@ const published=catalog.items.filter(item=>item?.type==='tool'
 // Existing tools remain available in English during incremental localization.
 // Every newly published catalog entry must be reviewed in all advertised
 // languages before public release, so future launches never silently regress.
+// All new static homepage and main-section language needs are checked at
+// build time. Unknown source copy requires seven explicit translations.
+const marketingBaseline=JSON.parse(await src('marketing-copy-baseline.json'));
+if(marketingBaseline.schemaVersion!==1||!Array.isArray(marketingBaseline.strings))
+ throw Error('Invalid marketing translation baseline');
+const newUntranslatedCopy=newMarketingCopy({
+ html:await src('reimagined/index.html'),
+ baseline:marketingBaseline.strings,
+ translations:[PAGE_COPY,SECTION_COPY,TOOL_COPY]
+});
+if(newUntranslatedCopy.length)
+ throw Error('New website UI copy requires localized strings before publication: '+newUntranslatedCopy.slice(0,8).join(' | '));
 const localizationBaseline=JSON.parse(await src('catalog-localization-baseline.json'));
 if(localizationBaseline.schemaVersion!==1||!Array.isArray(localizationBaseline.legacyUrls))
  throw Error('Invalid catalog localization baseline');
