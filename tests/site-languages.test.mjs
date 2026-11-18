@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {LANGUAGES,localizedLabel,nativeTranslator} from '../site-languages.mjs';
 import {PAGE_COPY,getLocalCopy} from '../site-language-copy.mjs';
+import {TOOL_COPY,getToolCopy} from '../site-tool-copy.mjs';
 const read=p=>readFile(resolve(process.cwd(),p),'utf8');
 test('language selector supports eight readable languages without remote dependencies',()=>{
  assert.equal(LANGUAGES.length,8);
@@ -12,10 +13,13 @@ test('language selector supports eight readable languages without remote depende
  assert.equal(localizedLabel('Free tools','es'),'Herramientas gratis');
  assert.equal(localizedLabel('Unknown site content','es'),null);
  assert.ok(Object.keys(PAGE_COPY).length>=45);
+ assert.ok(Object.keys(TOOL_COPY).length>=45);
  for(const language of ['hi','es','fr','de','pt','ar','ja']){
   assert.ok(getLocalCopy('We discover emerging opportunities, build useful digital products, and create technology that evolves with the world.',language));
   assert.ok(getLocalCopy('Have an idea, an opportunity, or a reason to collaborate? Connect with YorpHives.',language));
   assert.ok(getLocalCopy('Digital Ventures.',language));
+  for(const label of ['Run tool','Reset','Copy result','Your input stays on this device','How to use this tool','Paste or type text here','Search by name, description, or category. Every tool runs from its own direct page.'])
+   assert.ok(getToolCopy(label,language),label+' '+language);
  }
  assert.equal(nativeTranslator({}),null);
  assert.equal(nativeTranslator({Translator:{availability() {}}}),null);
@@ -34,8 +38,23 @@ test('site-wide shell is included in all built tool pages, directory and homepag
 test('translation source never reads tool inputs, outputs or sends page contents off site',async()=>{
  const source=await read('site-languages.mjs');
  assert.doesNotMatch(source,/(?:fetch\(|sendBeacon|XMLHttpRequest|navigator\.clipboard|\.value\s*\)\s*\}|innerHTML\s*=)/);
- assert.match(source,/textarea,input,select,option,button/);
+ assert.match(source,/textarea,input,select,option/);
+ assert.match(source,/parent\\.closest\\('button'\\)\&\&!controls/);
+ assert.match(source,/savedAttributes/);
+ assert.match(source,/getToolCopy/);
  assert.match(source,/\[id\$="-output"\]/);
  assert.match(source,/\.create\(\{sourceLanguage:'en'/);
  assert.match(source,/translate\(original\)/);
+});
+
+test('public tool strings translate without changing values or generated results',async()=>{
+ const original=await read('tools/word-counter/index.html');
+ for(const key of ['Runs in your browser','Your input stays on this device','Run tool','Reset','Paste or type text here','How to use this tool'])
+  assert.ok(original.includes(key),key);
+ const [script,build]=await Promise.all([read('site-languages.mjs'),read('scripts/build-site.mjs')]);
+ assert.match(build,/site-tool-copy\\.mjs/);
+ assert.match(script,/for\\(const name of \\['placeholder','aria-label','title'\\]\\)/);
+ assert.match(script,/\\[id\\$="-output"\\]/);
+ assert.match(script,/if\\(parent\\.closest\\('button'\\)\\&\\&!controls\\)/);
+ assert.doesNotMatch(script,/(?:\.value\\s*=|\.files|FormData|XMLHttpRequest|sendBeacon)/);
 });
