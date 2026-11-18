@@ -138,6 +138,39 @@ try{
    assert.ok(!JSON.stringify(event).includes('PRIVATE-SYNTHETIC-INPUT'));
   }
  });
+ await check('language switch: Hindi navigation labels work without browser Translator API',async page=>{
+  await page.addInitScript(()=>{
+   Object.defineProperty(window,'Translator',{configurable:true,value:undefined});
+  });
+  await open(page,'/tools/');
+  const picker=page.locator('#yh-language-picker');
+  assert.ok(await picker.isVisible());
+  await picker.locator('select').selectOption('hi');
+  assert.match(await picker.locator('[role="status"]').innerText(),/browser/i);
+  assert.ok((await page.locator('body').innerText()).includes('मुफ़्त टूल'),'Hindi essential UI not visible');
+  assert.equal(await page.locator('a.directory-card').count(),143);
+  await picker.locator('select').selectOption('en');
+  assert.equal(await picker.locator('select').inputValue(),'en');
+ },{mobile:true});
+ await check('language switch: mocked browser Translator translates public text, preserves tool inputs',async page=>{
+  await page.addInitScript(()=>{
+   Object.defineProperty(window,'Translator',{configurable:true,value:{
+    availability:async()=> 'available',
+    create(){return Promise.resolve({translate:async text=>'ES '+text,destroy(){}});}
+   }});
+  });
+  await open(page,'/tools/word-counter/');
+  const picker=page.locator('#yh-language-picker');
+  await picker.locator('select').selectOption('es');
+  await picker.locator('button').click();
+  await page.waitForFunction(()=>document.querySelector('#yh-language-picker [role="status"]')?.textContent.includes('Translated'),null,{timeout:25000});
+  assert.equal(await page.locator('html').getAttribute('lang'),'es');
+  assert.equal(await page.locator('textarea[name="text"]').inputValue(),'');
+  const fields=await page.locator('textarea[name="text"]').count();
+  assert.equal(fields,1);
+  await picker.locator('select').selectOption('en');
+  assert.equal(await page.locator('html').getAttribute('lang'),'en');
+ });
  await check('mobile: directory layout has no horizontal overflow',async page=>{
   await open(page,'/tools/?q=pdf');
   await waitReady(page).catch(()=>{});
