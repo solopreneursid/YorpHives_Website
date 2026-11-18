@@ -1,0 +1,38 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>On-device Text Translator (Experimental) | YorpHives</title>
+<meta name="description" content="Translate text with supported browsers' built-in on-device Translator API. No external translation API or uploads.">
+<link rel="alternate" type="application/json" title="YorpHives tool catalog" href="../../catalog.json">
+<link rel="stylesheet" href="../../style.css"><link rel="stylesheet" href="../tool.css">
+<link rel="stylesheet" href="../on-device-translator.css">
+</head><body class="tool-page">
+<a class="skip-link" href="#tool-main">Skip to content</a>
+<header class="site-header"><a class="brand" href="../../#home" aria-label="YorpHives home"><img src="../brand-icon.webp" alt=""><span class="brand-name">yorp<span>Hives</span><small>IDEAS IN MOTION</small></span></a><nav class="tool-nav" aria-label="Main navigation"><a href="../../#tools">All free tools</a><a class="tool-home" href="../../#home">Visit YorpHives</a></nav></header>
+<main id="tool-main" class="tool-wrap" tabindex="-1">
+<div class="breadcrumb"><a href="../../#tools">Free tools</a><span aria-hidden="true">/</span><span>On-device translator</span></div>
+<div class="tool-intro"><div><p class="tool-kicker">FREE TOOL / EXPERIMENTAL TRANSLATION</p><h1>On-device Text Translator</h1>
+<p>Translate short text in your browser when its built-in Translator API supports the selected languages. No remote translation service.</p></div><span class="privacy-badge">Browser-managed, on-device</span></div>
+<section class="tool-panel" aria-label="Text translation workspace"><div class="panel-head"><strong>Translate privately</strong><span>Supported browser and language pair required</span></div><div class="panel-content">
+<div class="translator-notice" role="note">Experimental: Works only in compatible browsers and on supported devices. The browser may download a language pack on first use. Translation text is not submitted to YorpHives. Do not rely on machine translation for medical, legal or safety-critical decisions.</div>
+<form id="translator-form">
+<div class="translator-languages">
+<label class="tool-field" for="translator-source">From language<select id="translator-source" name="sourceLanguage">
+<option value="en">English</option><option value="hi">Hindi</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="pt">Portuguese</option><option value="zh">Chinese</option><option value="ar">Arabic</option><option value="it">Italian</option></select></label>
+<button type="button" id="translator-swap" class="tool-btn translator-swap" aria-label="Swap source and target languages">⇄ Swap</button>
+<label class="tool-field" for="translator-target">To language<select id="translator-target" name="targetLanguage">
+<option value="hi" selected>Hindi</option><option value="en">English</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="pt">Portuguese</option><option value="zh">Chinese</option><option value="ar">Arabic</option><option value="it">Italian</option></select></label>
+</div>
+<label class="tool-field" for="translator-input">Text to translate (up to 5,000 characters)<textarea id="translator-input" maxlength="5000" placeholder="Type or paste text to translate…" spellcheck="true" required></textarea></label>
+<p class="translator-count" id="translator-count">0 / 5,000 characters</p>
+<p class="tool-status" id="translator-availability" role="status" aria-live="polite">Checking browser support…</p>
+<div class="tool-buttons"><button class="tool-btn primary" id="translator-run" type="submit" disabled>Translate on this device</button><button class="tool-btn" id="translator-reset" type="reset">Clear</button></div>
+<p class="tool-status" id="translator-status" role="status" aria-live="polite"></p>
+<div id="translator-result" hidden><label class="tool-field" for="translator-output">Translated text<textarea id="translator-output" readonly spellcheck="false" placeholder="Translation appears here"></textarea></label>
+<div class="tool-buttons"><button class="tool-btn" type="button" id="translator-copy">Copy translation</button></div></div>
+</form>
+</div></section>
+<div class="tool-help"><section class="tool-help-card"><h2>How this works</h2><ol><li>Choose the source and target language.</li><li>Paste your text and select “Translate on this device”.</li><li>If necessary, allow your browser to download its language pack, then copy the result.</li></ol></section>
+<section class="tool-help-card"><h2>What if translation is unavailable?</h2><p>This browser or language pair may not support the API. Your text stays editable; you can copy it and use your browser's built-in page translation tools where available. YorpHives does not silently send it to a cloud translation service.</p><p>Translation quality and supported languages depend on the browser. A locally cached model may work offline, but an initial download may require internet access.</p></section></div>
+<section class="tool-related"><h2>EXPLORE MORE</h2><div class="related-links"><a href="../">Browse all free tools</a><a href="../word-counter/">Word counter</a></div><a class="tool-catalog-link" href="../../catalog.json">Machine-readable tool catalog</a></section>
+</main><footer class="tool-footer">Made for curious minds by <a href="../../#home">YorpHives</a></footer>
+<script type="module" src="../on-device-translator.mjs"></script></body></html>
