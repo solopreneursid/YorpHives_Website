@@ -7,19 +7,87 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>readFile(resolve(root,p),'utf8');
 const present=async p=>stat(resolve(root,p)).then(s=>s.isFile()).catch(()=>false);
 
-test('full reimagined experience has seven complete page routes and separate navigation',async()=>{
+test('full reimagined experience has six complete page routes and separate navigation',async()=>{
  const html=await read('reimagined/index.html');
- for(const route of ['home','ventures','builders','impact','tools','partners','contact']){
+ for(const route of ['home','ventures','builders','tools','partners','contact']){
   assert.match(html,new RegExp('id="'+route+'"[^>]*aria-labelledby='),route);
   assert.ok(html.includes('href="#'+route+'"'),route+' route is linked');
  }
  assert.match(html,/class="topnav"/);assert.match(html,/class="mobile-dock"/);
  assert.match(html,/id="more-panel"/);assert.match(html,/id="mobile-menu"/);
  assert.match(html,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
- assert.match(html,/YorpHivesHQ finds the signal/);
- assert.match(html,/results speak|Results speak/i);
+ assert.match(html,/Free tools\. New ventures\. People building what/);
+ assert.doesNotMatch(html,/<section class="view" id="impact"/);
+ assert.doesNotMatch(html,/<a[^>]*href="#impact"/);
+ assert.match(html,/id="home-progress"/);
+ assert.match(html,/href="#home-progress">See our progress/);
+ assert.match(html,/id="hero-tool-count"/);
+ assert.match(html,/id="featured-tools-grid"/);
+ assert.match(html,/id="featured-tools-title"/);
+ assert.match(html,/Start with something <em>useful\.<\/em>/);
+ assert.match(html,/Explore <em>YorpHives\.<\/em>/);
+ assert.match(html,/id="hero-primary-link" href="#tools">Explore <span id="hero-tool-count"/);
+ assert.match(html,/id="kofi-support"/);
+ assert.match(html,/id="anonymous-analytics-toggle"/);
  assert.match(html,/DESIGN PREVIEW · NOT LIVE/);
  assert.match(html,/noindex,nofollow/);
+});
+
+test('3D navigation is tactile, accessible, and does not delay routing',async()=>{
+ const [css,js]=await Promise.all([read('reimagined/studio.css'),read('reimagined/studio.js')]);
+ assert.match(css,/\.topbar \.topnav a:active/);
+ assert.match(css,/\.topbar \.topnav a\[aria-current=page\]/);
+ assert.match(css,/\.mobile-dock a:active/);
+ assert.match(css,/\.topbar a:focus-visible/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.match(css,/yorp-view-appear/);
+ assert.match(css,/Equal-size 3D primary navigation/);
+ assert.match(css,/\.topbar \.topnav a,\.topbar \.header-actions \.header-partner/);
+ assert.match(css,/width:112px/);
+ assert.match(css,/height:43px/);
+ assert.match(css,/width:91px/);
+ assert.match(css,/@media\(min-width:941px\) and \(max-width:1100px\)/);
+ assert.match(css,/\.topbar \.topnav,\.topbar \.header-contact\{display:none\}/);
+ assert.match(css,/\.topbar \.menu-toggle\{display:flex/);
+ assert.match(js,/innerWidth>1100\)menuClose\(\)/);
+
+
+ assert.match(js,/routeReady&&changed&&allowsMotion\(\)/);
+ assert.match(js,/routeMotionTimer=setTimeout/);
+ assert.match(js,/views\.forEach\(v=>v\.hidden=v\.id!==active\)/);
+});
+
+test('responsive layout supports small phones, tablets, landscape, touch and safe areas',async()=>{
+ const [html,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.css')]);
+ assert.match(html,/name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/);
+ assert.match(css,/@media\(min-width:1600px\)/);
+ assert.match(css,/@media\(min-width:761px\) and \(max-width:1100px\)/);
+ assert.match(css,/@media\(max-width:520px\)/);
+ assert.match(css,/@media\(max-width:370px\)/);
+ assert.match(css,/@media\(max-width:760px\) and \(orientation:landscape\) and \(max-height:480px\)/);
+ assert.match(css,/@media\(hover:none\),\(pointer:coarse\)/);
+ assert.match(css,/env\(safe-area-inset-bottom/);
+ assert.match(css,/overflow-x:hidden/);
+ assert.match(css,/\.contact-form input,\.contact-form select,\.contact-form textarea\{font-size:16px\}/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.match(html,/class="mobile-menu"/);
+ assert.match(html,/id="kofi-support"/);
+ assert.match(html,/id="anonymous-analytics-toggle"/);
+});
+
+test('homepage visual QA retains navigation and reduced-motion tactile polish',async()=>{
+ const [html,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.css')]);
+ assert.match(html,/id="eco-motion-toggle"/);
+ assert.match(html,/id="activity-list"/);
+ assert.match(html,/id="home-tool-count"/);
+ assert.match(html,/id="featured-tools-grid"/);
+ assert.match(html,/id="kofi-support"/);
+ assert.doesNotMatch(html,/<div class="eco-controls"><span>IN THE ECOSYSTEM/);
+ assert.match(css,/Screenshot-led visual QA/);
+ assert.match(css,/\.home-foundation \.eco-card:active/);
+ assert.match(css,/\.featured-tool-card:active/);
+ assert.match(css,/@media\(hover:none\),\(pointer:coarse\)/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 });
 
 test('new frontend is independent, local-first, and protects original tool engines',async()=>{
@@ -42,23 +110,20 @@ test('new frontend is independent, local-first, and protects original tool engin
  assert.match(css, /prefers-reduced-motion:reduce/);
 });
 
-test('public Impact never fabricates visitors, partners, revenue, or achievements',async()=>{
- const data=JSON.parse(await read('reimagined/impact-public.json'));
- assert.equal(data.schemaVersion,1);
- assert.equal(data.publication.status,'unpublished');
- assert.equal(data.publication.approvedByFounder,false);
- assert.equal(data.metrics.estimatedVisitors30d,null);
- assert.equal(data.metrics.verifiedPartners,null);
- assert.deepEqual(data.revenueDirection,[]);
- assert.deepEqual(data.trendingApps,[]);
- assert.deepEqual(data.milestones,[]);
- const [html,js]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js')]);
- for(const claim of ['First-party anonymous sessions · new collection','No revenue has been published','Rankings appear once real application usage is verified','Verified milestones will appear'])
-  assert.ok(html.includes(claim),claim);
- assert.match(js,/p\.publication\.approvedByFounder===true/);
- assert.match(js,/\[-1,0,1\]\.includes\(x\.direction\)/);
- assert.match(js,/verifiedPublic\.has\(item\.proofUrl\)/);
- assert.doesNotMatch(js,/revenueAmount|grossRevenue|profitAmount|privateApiKey/);
+test('homepage retains truthful progress without a separate Impact page',async()=>{
+ const [html,js,data]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js'),read('reimagined/impact-public.json')]);
+ assert.match(html,/Built\. Published\. <em>Improving\.<\/em>/);
+ assert.match(html,/id="home-tool-count"/);
+ assert.match(html,/class="building-public-grid"/);
+ assert.match(html,/id="home-tool-badge"/);
+ assert.match(html,/id="activity-list"/);
+ assert.match(html,/class="hero-quicklinks"/);
+ assert.doesNotMatch(html,/class="footer-statement"/);
+ assert.match(html,/id="home-venture-count"/);
+ assert.match(html,/href="#tools">Explore our free tools/);
+ assert.doesNotMatch(html,/id="impact-title"|data-nav="impact"/);
+ assert.doesNotMatch(js,/renderPublicImpact|loadImpact/);
+ assert.equal(JSON.parse(data).publication.approvedByFounder,false);
 });
 
 test('new site is copied to preview after public-page audit and never to production',async()=>{

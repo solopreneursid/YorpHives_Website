@@ -21,7 +21,7 @@ const isReimagined=homepage.includes('id="home-title"')&&homepage.includes('id="
 // staging and live. This prevents successful builds of an obsolete preview.
 if(!isReimagined)problems.push('Preview/live parity failure: outdated homepage at root.');
 if(isReimagined){
- const ids=['home','ventures','builders','impact','tools','partners','contact'];
+ const ids=['home','ventures','builders','tools','partners','contact'];
  for(const id of ids)if(!homepage.includes('<section class="view" id="'+id+'"'))
   problems.push('Reimagined public route missing: '+id);
  const css=await read('studio.css');
@@ -31,7 +31,7 @@ if(isReimagined){
  for(const filename of ['rotators.css','impact-public.json','usage-public.json','builders-updates.json'])
   try{await stat(resolve(root,filename));}catch{problems.push('New homepage asset missing: '+filename);}
  if(!homepage.includes('CLOUD-BASED · AI-POWERED VENTURE STUDIO')||
-    !homepage.includes('YorpHivesHQ finds the signal')||
+    !homepage.includes("Free tools. New ventures. People building what's next.")||
     !homepage.includes('class="kofi-support" id="kofi-support" type="button" disabled')||
     !homepage.includes('id="yh-pulse-item"'))
   problems.push('Venture studio identity, disabled support action, or transparent YHpulse missing.');
