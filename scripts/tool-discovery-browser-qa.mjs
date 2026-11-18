@@ -177,6 +177,37 @@ try{
   assert.equal(await page.locator('#yh-language-select').inputValue(),'es');
   assert.equal(await page.locator('textarea[name="text"]').inputValue(),'');
  });
+ await check('language: Hindi tool buttons and placeholders translate but input content remains exact',async page=>{
+  await page.addInitScript(()=>Object.defineProperty(window,'Translator',{configurable:true,value:undefined}));
+  await open(page,'/tools/word-counter/');
+  const picker=page.locator('#yh-language-picker');
+  const field=page.locator('textarea[name="text"]');
+  await field.fill('Private English input: αβγ 😃');
+  await picker.locator('[data-language-toggle]').click();
+  await picker.locator('select').selectOption('hi');
+  assert.equal(await page.locator('html').getAttribute('lang'),'hi');
+  assert.equal(await field.inputValue(),'Private English input: αβγ 😃');
+  assert.equal(await field.getAttribute('placeholder'),'यहाँ टेक्स्ट लिखें या पेस्ट करें');
+  assert.equal(await page.locator('#utility-form button[type="reset"]').innerText(),'रीसेट करें');
+  assert.ok((await page.locator('.privacy-badge').innerText()).includes('ब्राउज़र'));
+  assert.ok((await page.locator('.tool-help-card h2').first().innerText()).includes('उपयोग'));
+  await picker.locator('[data-language-toggle]').click();
+  await picker.locator('select').selectOption('en');
+  assert.equal(await field.getAttribute('placeholder'),'Paste or type text here');
+  assert.equal(await page.locator('#utility-form button[type="reset"]').innerText(),'Reset');
+  assert.equal(await field.inputValue(),'Private English input: αβγ 😃');
+ },{mobile:true});
+ await check('language: Spanish directory interface translates search hint and placeholder',async page=>{
+  await open(page,'/tools/');
+  const picker=page.locator('#yh-language-picker');
+  await picker.locator('[data-language-toggle]').click();
+  await picker.locator('select').selectOption('es');
+  assert.match(await page.locator('#directory-search-hint').innerText(),/Busca por nombre/);
+  assert.match(await page.locator('#directory-search').getAttribute('placeholder'),/Prueba PDF/);
+  assert.equal(await page.locator('a.directory-card').count(),143);
+  await page.locator('#directory-search').fill('word');
+  assert.equal(await page.locator('#directory-search').inputValue(),'word');
+ },{mobile:true});
  await check('language: optional browser Translator translates remaining public copy without touching inputs',async page=>{
   await page.addInitScript(()=>{
    Object.defineProperty(window,'Translator',{configurable:true,value:{
