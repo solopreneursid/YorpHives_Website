@@ -16,7 +16,7 @@ test('full reimagined experience has six complete page routes and separate navig
  assert.match(html,/class="topnav"/);assert.match(html,/class="mobile-dock"/);
  assert.match(html,/id="more-panel"/);assert.match(html,/id="mobile-menu"/);
  assert.match(html,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
- assert.match(html,/YorpHivesHQ finds the signal/);
+ assert.match(html,/Discover useful tools, explore emerging ventures/);
  assert.doesNotMatch(html,/<section class="view" id="impact"/);
  assert.doesNotMatch(html,/<a[^>]*href="#impact"/);
  assert.match(html,/id="home-progress"/);
