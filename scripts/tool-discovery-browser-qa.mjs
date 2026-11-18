@@ -94,21 +94,20 @@ try{
   const layout=await page.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
   assert.ok(layout.scroll<=layout.client+8,JSON.stringify(layout));
  },{mobile:true});
- await check('mobile: Builders role-specific enquiry routes without accepting members',async page=>{
+ await check('mobile: canonical Builders page routes both audiences to distinct enquiries',async page=>{
   await open(page,'/');
   const entry=page.locator('.mobile-dock a[data-nav="builders"]');
   for(const [i,expected] of [[0,'Builders — find work'],[1,'Builders — post a project']]){
    await entry.click();
    assert.equal(await page.locator('#builders').isVisible(),true);
-   const options=page.locator('#builders .builder-path .member-action');
-   assert.equal(await options.count(),2);
-   assert.match(await page.locator('#builders .access-note').innerText(),/enquiry is not enrollment/i);
-   await options.nth(i).click();
-   assert.equal(new URL(page.url()).hash,'#connect');
-   assert.equal(await page.locator('#project-type').inputValue(),expected);
+   assert.equal(await page.locator('#builders .builder-role-link').count(),2);
+   assert.match(await page.locator('#builders .builder-transparency').innerText(),/does not register you/i);
+   await page.locator('#builders .builder-role-link').nth(i).click();
+   assert.equal(new URL(page.url()).hash,'#contact');
+   assert.equal(await page.locator('#interest').inputValue(),expected);
   }
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-  assert.ok(overflow<=8,'Mobile overflow after Builders contact: '+overflow);
+  assert.ok(overflow<=8,'Canonical Builders mobile overflow: '+overflow);
  },{mobile:true});
  await check('mobile: marketing landing pages are reachable and readable',async page=>{
   for(const path of ['/hqventures/','/builders/','/partnerships/']){
