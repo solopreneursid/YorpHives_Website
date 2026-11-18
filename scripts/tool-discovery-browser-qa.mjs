@@ -58,6 +58,32 @@ try{
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   assert.ok(overflow<=8,'Mobile horizontal overflow: '+overflow);
  },{mobile:true});
+ await check('mobile: saved shortcuts appear only after saving a tool',async page=>{
+  await open(page,'/tools/');
+  assert.equal(await page.locator('#directory-return').isVisible(),false);
+  await open(page,'/tools/word-counter/');
+  const save=page.locator('[data-save-tool]');
+  await save.click();
+  assert.equal(await save.getAttribute('aria-pressed'),'true');
+  await open(page,'/tools/');
+  const shelf=page.locator('#directory-return');
+  await shelf.waitFor({state:'visible'});
+  const links=page.locator('#directory-return-links a');
+  assert.equal(await links.count(),1);
+  assert.equal(await links.first().getAttribute('href'),'/tools/word-counter/');
+  assert.equal(await shelf.locator('p').innerText().then(t=>t.includes('Nothing is uploaded')),true);
+  await links.first().click();
+  await page.locator('[data-save-tool]').click();
+  await open(page,'/tools/');
+  await page.waitForFunction(()=>document.getElementById('directory-return').hidden);
+  assert.equal(await page.locator('#directory-return-links a').count(),0);
+ },{mobile:true});
+ await check('privacy: saved shelf does not require browser storage',async page=>{
+  await open(page,'/tools/');
+  await waitReady(page);
+  assert.equal(await page.locator('#directory-return').isVisible(),false);
+  assert.equal(await page.locator('a.directory-card').count(),143);
+ },{blockedStorage:true});
  await check('mobile: related links open approved static tool pages',async page=>{
   await open(page,'/tools/word-counter/');
   const related=page.locator('.yh-tool-discover li a');
