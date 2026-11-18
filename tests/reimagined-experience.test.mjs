@@ -17,7 +17,11 @@ test('reimagined experience has six page routes and homepage-only progress',asyn
  assert.match(html,/id="more-panel"/);assert.match(html,/id="mobile-menu"/);
  assert.match(html,/CLOUD-BASED • AI-POWERED VENTURE STUDIO/);
  assert.match(html,/Discover useful tools, explore emerging products/);
- assert.match(html,/id="home-progress"/);
+ assert.match(html,/class="hive-journey"/);
+ assert.match(html,/href="#featured-ventures"/);
+ assert.match(html,/class="home-featured-empty-actions"/);
+ assert.match(html,/Explore Free Tools/);
+  assert.match(html,/id="home-progress"/);
  assert.match(html,/id="home-tool-count"/);
  assert.match(html,/id="hive-fresh-title"/);
  assert.match(html,/id="activity-list"/);
