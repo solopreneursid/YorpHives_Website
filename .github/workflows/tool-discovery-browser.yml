@@ -1,0 +1,38 @@
+name: Website tool discovery real-browser acceptance
+on:
+  pull_request:
+    paths:
+      - 'scripts/tool-discovery-browser-qa.mjs'
+      - '.github/workflows/tool-discovery-browser.yml'
+      - 'tools/**'
+      - 'scripts/build-site.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned local build dependencies and Playwright test runner
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Build independent production static candidate
+        run: node scripts/build-site.mjs --target=production
+      - name: Real Chromium acceptance with local-only test web server
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory dist >/tmp/yorphives-qa-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sleep 2
+          node scripts/tool-discovery-browser-qa.mjs
+      - name: Scope and release safety
+        if: always()
+        run: |
+          echo 'Tests local candidate with synthetic inputs only. No production deploy or HQ changes.' >> "$GITHUB_STEP_SUMMARY"
