@@ -43,8 +43,14 @@ const localizationBaseline=JSON.parse(await src('catalog-localization-baseline.j
 if(localizationBaseline.schemaVersion!==1||!Array.isArray(localizationBaseline.legacyUrls))
  throw Error('Invalid catalog localization baseline');
 const oldRoutes=new Set(localizationBaseline.legacyUrls);
+if(!localizationBaseline.legacyContent||typeof localizationBaseline.legacyContent!=='object')
+ throw Error('Localization baseline must identify original published catalog copy');
 for(const item of published){
- if(oldRoutes.has(item.url))continue;
+ const prior=localizationBaseline.legacyContent[item.url];
+ // Grandfather ONLY unchanged existing tool copy. New products, renamed tools
+ // and revised descriptions must have completed translations.
+ if(item.type==='tool'&&oldRoutes.has(item.url)&&
+    prior?.name===item.name&&prior?.description===item.description)continue;
  const errors=checkCatalogTranslation(item);
  if(errors.length)throw Error('New public catalog entry lacks reviewed localization: '+item.url+' — '+errors.join('; '));
 }
