@@ -395,7 +395,9 @@ async function publishReimaginedRoot(prefix=''){
  if(homepage.includes('DESIGN PREVIEW · NOT LIVE')||
     homepage.includes('name="robots" content="noindex')||
     !homepage.includes('id="home"')||
-    !homepage.includes('id="yh-pulse"')||
+    !homepage.includes('id="home-progress"')||
+    !homepage.includes('id="home-featured-list"')||
+    !homepage.includes('id="how-it-works"')||
     !homepage.includes('type="button" disabled'))
   throw Error('Reimagined release candidate failed initial public safety gates');
  homepage=homepage.replace('</body>','<script type="module" src="/agentic-browser.mjs"></script></body>');
