@@ -75,6 +75,21 @@ test('responsive layout supports small phones, tablets, landscape, touch and saf
  assert.match(html,/id="anonymous-analytics-toggle"/);
 });
 
+test('homepage visual QA retains navigation and reduced-motion tactile polish',async()=>{
+ const [html,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.css')]);
+ assert.match(html,/id="eco-motion-toggle"/);
+ assert.match(html,/id="activity-list"/);
+ assert.match(html,/id="home-tool-count"/);
+ assert.match(html,/id="featured-tools-grid"/);
+ assert.match(html,/id="kofi-support"/);
+ assert.doesNotMatch(html,/<div class="eco-controls"><span>IN THE ECOSYSTEM/);
+ assert.match(css,/Screenshot-led visual QA/);
+ assert.match(css,/\.home-foundation \.eco-card:active/);
+ assert.match(css,/\.featured-tool-card:active/);
+ assert.match(css,/@media\(hover:none\),\(pointer:coarse\)/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+});
+
 test('new frontend is independent, local-first, and protects original tool engines',async()=>{
  const [html,js,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js'),read('reimagined/studio.css')]);
  assert.match(html,/href="studio\.css"/);
