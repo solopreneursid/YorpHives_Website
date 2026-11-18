@@ -8,7 +8,7 @@ const read=p=>readFile(resolve(root,p),'utf8');
 
 test('all seven reimagined routes retain contact access with no inactive Ko-fi header control',async()=>{
  const [html,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.css')]);
- const header=html.match(/<header class="topbar"[^>]*>([\\s\\S]*?)<\\/header>/)?.[1];
+ const header=html.match(/<header class="topbar"[^>]*>([\s\S]*?)<\/header>/)?.[1];
  assert.ok(header,'shared topbar must exist');
  assert.doesNotMatch(header,/id="kofi-support"|class="kofi-support"/);
  assert.match(header,/href="#contact"/);
