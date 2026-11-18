@@ -7,9 +7,9 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>readFile(resolve(root,p),'utf8');
 const present=async p=>stat(resolve(root,p)).then(s=>s.isFile()).catch(()=>false);
 
-test('full reimagined experience has seven complete page routes and separate navigation',async()=>{
+test('reimagined experience has six page routes and homepage-only progress',async()=>{
  const html=await read('reimagined/index.html');
- for(const route of ['home','ventures','builders','impact','tools','partners','contact']){
+ for(const route of ['home','ventures','builders','tools','partners','contact']){
   assert.match(html,new RegExp('id="'+route+'"[^>]*aria-labelledby='),route);
   assert.ok(html.includes('href="#'+route+'"'),route+' route is linked');
  }
@@ -17,7 +17,10 @@ test('full reimagined experience has seven complete page routes and separate nav
  assert.match(html,/id="more-panel"/);assert.match(html,/id="mobile-menu"/);
  assert.match(html,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
  assert.match(html,/YorpHivesHQ finds the signal/);
- assert.match(html,/results speak|Results speak/i);
+ assert.match(html,/id="home-progress"/);
+ assert.match(html,/id="home-page-views"/);
+ assert.match(html,/id="home-completions"/);
+ assert.doesNotMatch(html,/id="impact"|data-nav="impact"|href="#impact"/);
  assert.match(html,/DESIGN PREVIEW · NOT LIVE/);
  assert.match(html,/noindex,nofollow/);
 });
@@ -42,23 +45,17 @@ test('new frontend is independent, local-first, and protects original tool engin
  assert.match(css, /prefers-reduced-motion:reduce/);
 });
 
-test('public Impact never fabricates visitors, partners, revenue, or achievements',async()=>{
- const data=JSON.parse(await read('reimagined/impact-public.json'));
- assert.equal(data.schemaVersion,1);
- assert.equal(data.publication.status,'unpublished');
- assert.equal(data.publication.approvedByFounder,false);
- assert.equal(data.metrics.estimatedVisitors30d,null);
- assert.equal(data.metrics.verifiedPartners,null);
- assert.deepEqual(data.revenueDirection,[]);
- assert.deepEqual(data.trendingApps,[]);
- assert.deepEqual(data.milestones,[]);
+test('homepage-only analytics avoid fabricated visitors, partnerships and earnings',async()=>{
  const [html,js]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js')]);
- for(const claim of ['First-party anonymous sessions · new collection','No revenue has been published','Rankings appear once real application usage is verified','Verified milestones will appear'])
-  assert.ok(html.includes(claim),claim);
- assert.match(js,/p\.publication\.approvedByFounder===true/);
- assert.match(js,/\[-1,0,1\]\.includes\(x\.direction\)/);
- assert.match(js,/verifiedPublic\.has\(item\.proofUrl\)/);
- assert.doesNotMatch(js,/revenueAmount|grossRevenue|profitAmount|privateApiKey/);
+ for(const key of ['home-tool-count','home-venture-count','home-page-views','home-completions','home-metrics-updated'])
+  assert.ok(html.includes('id="'+key+'"'),key);
+ assert.doesNotMatch(html,/id="impact"\b|href="#impact"|estimated visitors|estimated revenue/i);
+ assert.match(html,/browser-reported successes/i);
+ assert.match(js,/fetch\('\/api\/insights\/growth'/);
+ assert.match(js,/data\.daily\.length!==30/);
+ assert.match(js,/validCount\(row\.pageViews\)/);
+ assert.match(js,/validCount\(row\.completedActions\)/);
+ assert.doesNotMatch(js,/impact-visitors|impact-tools|loadImpact\(|revenueAmount|grossRevenue|profitAmount|privateApiKey/);
 });
 
 test('new site is copied to preview after public-page audit and never to production',async()=>{
