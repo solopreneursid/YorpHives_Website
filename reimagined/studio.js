@@ -150,7 +150,7 @@ function applyCatalog(newItems){
  verifiedPublic=new Set([...tools,...ventures].map(x=>x.url));
  // Category may have disappeared or been renamed in a new catalogue release.
  if(activeCategory!=='All'&&!tools.some(t=>(t.category||'Other')===activeCategory))activeCategory='All';
- for(const id of ['home-tool-count','tools-count-big'])$(id).textContent=number(tools.length);
+ for(const id of ['home-tool-count','home-tool-badge','tools-count-big'])$(id).textContent=number(tools.length);
  for(const id of ['home-venture-count'])$(id).textContent=number(ventures.length);
  categoryChips();updateSavedCount();renderTools();renderVentures();
 }
@@ -159,7 +159,7 @@ startCatalogMonitoring();
 async function loadCatalog(){
  try{await getCatalog()}
  catch{
-  for(const id of ['home-tool-count','tools-count-big','home-venture-count'])$(id).textContent='—';
+  for(const id of ['home-tool-count','home-tool-badge','tools-count-big','home-venture-count'])$(id).textContent='—';
   $('tool-results-description').textContent='The catalogue is temporarily unavailable. Please use the A–Z directory.';
   $('tool-empty').hidden=false;$('tool-pagination').hidden=true;
   $('venture-total').textContent='Approval records unavailable';
@@ -174,8 +174,10 @@ function renderActivity(items){
  $('activity-list').replaceChildren(...entries.map((x,i)=>{
    const a=el('a','','activity-card');a.href=x.kind==='tools'?'../'+x.url:x.kind==='builders'?'#builders':'#ventures';
    a.append(el('span','0'+(i+1)+' / VERIFIED UPDATE','activity-number'),el('h3',x.title));
-   if(isValidDay(x.date))a.append(el('p',niceDate(x.date)));
-   else a.append(el('p','Published update'));
+   const summary=typeof x.summary==='string'&&x.summary.trim().length>=12&&x.summary.trim().length<=160?x.summary.trim():'';
+   if(summary)a.append(el('p',summary,'activity-summary'));
+   if(isValidDay(x.date))a.append(el('small',niceDate(x.date),'activity-date'));
+   else if(!summary)a.append(el('small','Published update','activity-date'));
    const arrow=el('span','','activity-arrow');arrow.append(icon('external'));a.append(arrow);return a;
  }));
 }
