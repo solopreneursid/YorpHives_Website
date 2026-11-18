@@ -23,7 +23,7 @@ jobs:
       - name: Install open-source browser test dependency
         run: npm install --no-save --ignore-scripts playwright@1.58.2
       - name: Install Chromium Firefox and WebKit runtimes
-        run: npx playwright install --with-deps chromium firefox webkit
+        run: npx playwright install chromium firefox webkit
       - name: Build isolated static preview
         run: node scripts/build-site.mjs --target=preview
       - name: Exercise responsive layouts in 3 browser engines
