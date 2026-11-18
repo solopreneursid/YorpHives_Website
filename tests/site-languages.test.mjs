@@ -15,6 +15,10 @@ test('language selector supports eight readable languages without remote depende
  assert.equal(localizedLabel('Unknown site content','es'),null);
  assert.ok(Object.keys(PAGE_COPY).length>=45);
  assert.ok(Object.keys(TOOL_COPY).length>=45);
+ for(const category of ['Writing','Developer','Calculators','Design','Security','Marketing','Creator','PDF','Images','Spreadsheets','Presentations','Files','Business','Audio','Video','Workflows']){
+  for(const language of ['hi','es','fr','de','pt','ar','ja'])
+   assert.ok(getToolCopy(category,language),category+' '+language);
+ }
  assert.ok(Object.keys(SECTION_COPY).length>=35);
  for(const language of ['hi','es','fr','de','pt','ar','ja']){
   assert.ok(getLocalCopy('We discover emerging opportunities, build useful digital products, and create technology that evolves with the world.',language));
