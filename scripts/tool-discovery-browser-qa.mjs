@@ -196,6 +196,22 @@ try{
     shadow:c.boxShadow,tileShadow:tile.boxShadow,bottom:parseFloat(c.bottom)};
   });
   assert.equal(style.position,'fixed');
+  const measurements=await dock.evaluate(el=>{
+    const nav=getComputedStyle(el);
+    const button=el.querySelector('a');
+    return {height:el.getBoundingClientRect().height,
+      buttonHeight:button.getBoundingClientRect().height,
+      transition:getComputedStyle(button).transitionDuration,
+      viewAnimation:getComputedStyle(document.querySelector('#home')).animationDuration,
+      panelBottom:parseFloat(getComputedStyle(document.querySelector('.more-panel')).bottom)};
+  });
+  assert.ok(measurements.height<=64,'Mobile dock exceeds compact height: '+measurements.height);
+  assert.ok(measurements.height>=56,'Mobile dock buttons are too cramped: '+measurements.height);
+  assert.ok(measurements.buttonHeight>=44,'Mobile tap targets below accessible size');
+  assert.notEqual(measurements.transition,'0s','Navigation buttons do not transition');
+  assert.notEqual(measurements.viewAnimation,'0s','Page changes have no entrance transition');
+  assert.ok(measurements.panelBottom>=74&&measurements.panelBottom<=84,
+    'More panel offset does not match the compact navigation: '+measurements.panelBottom);
   assert.ok(style.radius>=16,'Floating dock has no rounded container');
   assert.notEqual(style.shadow,'none');
   assert.notEqual(style.tileShadow,'none');
