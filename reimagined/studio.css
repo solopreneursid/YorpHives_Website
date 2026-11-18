@@ -759,3 +759,51 @@ section[id],.view[id],#home-progress,#featured-tools{scroll-margin-top:clamp(72p
 @media(prefers-reduced-motion:reduce){
  #home .hero-art-orbit,#home .art-core{animation:none!important}
 }
+
+/* Compact floating 3D dock: a shallow elevated tray containing five tactile
+   buttons. Keeps >=44px tap targets and avoids a full-width bulky footer. */
+@media(max-width:760px){
+ body{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
+ .mobile-dock{
+  left:max(8px,env(safe-area-inset-left,0px));
+  right:max(8px,env(safe-area-inset-right,0px));
+  bottom:calc(7px + env(safe-area-inset-bottom,0px));
+  min-height:0;height:52px;
+  padding:3px 4px 4px;
+  gap:4px;
+  border:1px solid #b3ffd158;
+  border-radius:17px;
+  background:linear-gradient(165deg,#1a4232f7,#0b241cf9);
+  box-shadow:inset 0 1px #dcffe31d,0 4px 0 #04170fbf,0 9px 23px #020d09a6;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+ }
+ .mobile-dock a,.mobile-dock button{
+  box-sizing:border-box;
+  height:44px;min-height:44px;
+  padding:2px 1px;gap:1px;
+  border-radius:12px;
+  font-size:9px;line-height:1.06;
+  background:linear-gradient(158deg,#265441,#12362a);
+  border:1px solid #c5ffe22b;
+  box-shadow:inset 0 1px #e3fff31b,0 2px 0 #041710c9,0 3px 5px #0004;
+ }
+ .mobile-dock svg{height:17px;width:17px}
+ .mobile-dock a[aria-current=page],.mobile-dock button[aria-expanded=true]{
+  background:linear-gradient(155deg,#c7ffdc,#9cf0b5);
+  box-shadow:inset 0 1px #ffffffc2,0 2px 0 #57a982,0 3px 7px #030f0a4a;
+ }
+ .mobile-dock a:active,.mobile-dock button:active{
+  transform:translateY(1px);
+  box-shadow:inset 0 2px 4px #00150d30,0 1px 0 #05170f;
+ }
+ .more-panel{bottom:calc(67px + env(safe-area-inset-bottom,0px))}
+}
+@media(max-width:370px){
+ .mobile-dock{left:5px;right:5px;gap:2px;padding-inline:3px}
+ .mobile-dock a,.mobile-dock button{font-size:8.5px;min-height:44px}
+ .mobile-dock svg{height:16px;width:16px}
+}
+@media(prefers-reduced-motion:reduce){
+ .mobile-dock a,.mobile-dock button{transition:none!important}
+}
