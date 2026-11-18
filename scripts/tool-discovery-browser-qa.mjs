@@ -92,7 +92,7 @@ try{
   assert.match(href,/^\/tools\/[a-z0-9-]+\/$/);
   await related.first().click();
   assert.equal(new URL(page.url()).pathname,href);
-  assert.ok(await page.locator('h1').first().isVisible());
+  await page.locator('h1').first().waitFor({state:'visible',timeout:10000});
  },{mobile:true});
  await check('privacy: blocked storage cannot display false save success',async page=>{
   await open(page,'/tools/word-counter/');
@@ -137,6 +137,175 @@ try{
    assert.match(event.sessionId,/^[a-f0-9-]{36}$/i);
    assert.ok(!JSON.stringify(event).includes('PRIVATE-SYNTHETIC-INPUT'));
   }
+ });
+ await check('English-only website has no language overlay or translation code',async page=>{
+  for(const url of ['/','/tools/','/tools/word-counter/']){
+   await open(page,url);
+   assert.equal(await page.locator('#yh-language-picker').count(),0,url);
+   assert.equal(await page.locator('script[src*="site-languages"]').count(),0,url);
+   assert.equal(await page.locator('link[href*="site-languages"]').count(),0,url);
+   assert.equal(await page.locator('html').getAttribute('lang'),'en',url);
+  }
+  assert.equal(await page.locator('textarea[name="text"]').inputValue(),'');
+ },{mobile:true});
+ await check('mobile: compact public benefits replace dashboard counters',async page=>{
+  await open(page,'/');
+  const info=page.locator('#home-progress');
+  assert.ok(await info.isVisible());
+  assert.equal(await info.locator('.hive-benefit').count(),3);
+  await page.waitForFunction(()=>document.querySelector('#home-tool-count')?.textContent==='143',null,{timeout:12000});
+  assert.equal(await page.locator('#home-tool-count').textContent(),'143');
+  assert.match(await info.innerText(),/Browser-Based/);
+  assert.match(await info.innerText(),/No Account Needed/);
+  for(const id of ['home-page-views','home-completions','home-venture-count'])
+   assert.equal(await page.locator('#'+id).count(),0,id+' should be HQ-only');
+  assert.equal(await page.locator('#yh-pulse').count(),0);
+  await page.locator('a[href="#home-progress"]').first().click();
+  assert.equal(new URL(page.url()).hash,'#home-progress');
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  assert.ok(overflow<=8,'Compact homepage causes mobile overflow: '+overflow);
+ },{mobile:true});
+ await check('mobile: connected discovery links scroll and navigate without layout overflow',async page=>{
+  await open(page,'/');
+  const journey=page.locator('.hive-journey');
+  assert.ok(await journey.isVisible());
+  assert.equal(await journey.locator('a').count(),3);
+  const destinations=await journey.locator('a').evaluateAll(links=>links.map(a=>a.getAttribute('href')));
+  assert.deepEqual(destinations,['#featured-ventures','#tools','#builders']);
+  await journey.locator('a[href="#featured-ventures"]').click();
+  await page.waitForFunction(()=>location.hash==='#featured-ventures');
+  assert.ok(await page.locator('#home').isVisible());
+  assert.ok(await page.locator('#featured-ventures').isVisible());
+  const links=page.locator('#home-featured-empty .home-featured-empty-actions a');
+  assert.equal(await links.count(),2);
+  await links.first().click();
+  await page.waitForFunction(()=>!document.querySelector('#tools').hidden);
+  assert.equal(await page.locator('.mobile-dock a[href="#tools"]').getAttribute('aria-current'),'page');
+  await page.locator('.mobile-dock a[href="#home"]').click();
+  await journey.locator('a[href="#builders"]').click();
+  await page.waitForFunction(()=>!document.querySelector('#builders').hidden);
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  assert.ok(overflow<=8,'Connected homepage mobile overflow: '+overflow);
+ },{mobile:true});
+ await check('homepage: featured verified updates use tool catalog titles and direct routes',async page=>{
+  await page.route('**/activity.json',async route=>route.fulfill({
+   status:200,contentType:'application/json',
+   body:JSON.stringify({version:1,items:[
+    {kind:'tools',title:'Updated: Word & Character Counter',url:'tools/word-counter/',date:'2026-11-16'},
+    {kind:'tools',title:'Updated: Text Case Converter',url:'tools/case-converter/',date:'2026-11-16'},
+    {kind:'tools',title:'Updated: Random Password Generator',url:'tools/password-generator/',date:'2026-11-16'},
+    {kind:'tools',title:'Unpublished tool',url:'tools/not-published/',date:'2026-11-16'},
+    {kind:'builders',title:'Internal review',url:'#builders',date:'2026-11-16'}
+   ]})
+  }));
+  await open(page,'/');
+  await page.waitForFunction(()=>document.querySelectorAll('#activity-list .hive-update').length>=2,null,{timeout:12000});
+  const cards=page.locator('#activity-list .hive-update');
+  assert.equal(await cards.count(),3);
+  assert.equal(await cards.first().getAttribute('href'),'../tools/word-counter/');
+  assert.match(await cards.first().innerText(),/Word & Character Counter/);
+  assert.match(await cards.first().innerText(),/Count words, characters/);
+  assert.doesNotMatch(await cards.first().innerText(),/Updated: Word & Character Counter/);
+  assert.equal(await page.locator('#activity-list .hive-update-featured').count(),1);
+  assert.equal((await page.locator('#activity-list').innerText()).includes('Unpublished tool'),false);
+  assert.equal((await page.locator('#activity-list').innerText()).includes('Internal review'),false);
+ });
+ await check('homepage: visual process and partnership/contact invitation work on mobile',async page=>{
+  await open(page,'/');
+  const flow=page.locator('#how-it-works .process-stage');
+  assert.equal(await flow.count(),4);
+  assert.deepEqual(await flow.locator('h3').allTextContents(),[
+   'Find the signal.','Test the potential.','Make it useful.','Keep getting better.'
+  ]);
+  assert.ok(await page.locator('#featured-ventures').isVisible());
+  assert.ok(await page.locator('#home-featured-empty').isVisible());
+  assert.equal(await page.locator('#home-featured-list .home-featured-card').count(),0);
+  const cta=page.locator('#home .home-cta');
+  assert.match(await cta.innerText(),/Let's Build What's Next/);
+  assert.match(await cta.innerText(),/Have an idea, an opportunity, or a reason to collaborate/);
+  assert.equal(await cta.locator('a[href="#partners"]').count(),1);
+  assert.equal(await cta.locator('a[href="#contact"]').count(),1);
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  assert.ok(overflow<=8,'Visual process or CTA caused horizontal overflow: '+overflow);
+ },{mobile:true});
+ await check('mobile homepage: tactile dock and redesigned hero remain usable and accessible',async page=>{
+  await open(page,'/');
+  assert.match(await page.locator('#home-title').innerText(),/Building Tomorrow/);
+  const primary=page.locator('.hero-ctas a').first();
+  assert.equal(await primary.getAttribute('href'),'#tools');
+  assert.match(await primary.innerText(),/Explore Free Tools/);
+  assert.deepEqual(await page.locator('.ecosystem-grid>a').evaluateAll(cards=>cards.map(c=>c.getAttribute('href'))),
+   ['#ventures','#tools','#builders']);
+  const dock=page.locator('.mobile-dock');
+  await dock.waitFor({state:'visible'});
+  const style=await dock.evaluate(el=>{
+   const c=getComputedStyle(el),tile=getComputedStyle(el.querySelector('a svg'));
+   return {position:c.position,radius:parseFloat(c.borderTopLeftRadius),backdrop:c.backdropFilter,
+    shadow:c.boxShadow,tileShadow:tile.boxShadow,bottom:parseFloat(c.bottom)};
+  });
+  assert.equal(style.position,'fixed');
+  const measurements=await dock.evaluate(el=>{
+    const nav=getComputedStyle(el);
+    const button=el.querySelector('a');
+    return {height:el.getBoundingClientRect().height,
+      buttonHeight:button.getBoundingClientRect().height,
+      transition:getComputedStyle(button).transitionDuration,
+      viewAnimation:getComputedStyle(document.querySelector('#home')).animationDuration,
+      panelBottom:parseFloat(getComputedStyle(document.querySelector('.more-panel')).bottom)};
+  });
+  assert.ok(measurements.height<=64,'Mobile dock exceeds compact height: '+measurements.height);
+  assert.ok(measurements.height>=56,'Mobile dock buttons are too cramped: '+measurements.height);
+  assert.ok(measurements.buttonHeight>=44,'Mobile tap targets below accessible size');
+  assert.notEqual(measurements.transition,'0s','Navigation buttons do not transition');
+  assert.notEqual(measurements.viewAnimation,'0s','Page changes have no entrance transition');
+  assert.ok(measurements.panelBottom>=74&&measurements.panelBottom<=84,
+    'More panel offset does not match the compact navigation: '+measurements.panelBottom);
+  assert.ok(style.radius>=16,'Floating dock has no rounded container');
+  assert.notEqual(style.shadow,'none');
+  assert.notEqual(style.tileShadow,'none');
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  assert.ok(overflow<=8,'Mobile homepage overflow: '+overflow);
+  await page.locator('.mobile-dock a[href="#tools"]').click();
+  await page.waitForFunction(()=>document.querySelector('#tools')?.hidden===false);
+  assert.equal(await page.locator('.mobile-dock a[href="#tools"]').getAttribute('aria-current'),'page');
+  await page.locator('#more-toggle').click();
+  assert.equal(await page.locator('#more-panel').isVisible(),true);
+  await page.locator('#more-close').click();
+  assert.equal(await page.locator('#more-panel').isVisible(),false);
+ },{mobile:true});
+ await check('homepage: only founder-approved launched catalog entries are featured automatically',async page=>{
+  const evidence='a'.repeat(64);
+  const eligible={
+   name:'Sample Approved Venture',description:'A fictional verified product used only in local synthetic browser QA.',
+   type:'app',url:'apps/sample-approved-venture/',published:true,visibility:'public',
+   launchStatus:'launched',date:'2026-11-12',
+   headquartersReview:{status:'qualified',marketResearch:'passed',businessAnalysis:'passed',evidenceSha256:evidence},
+   founderApproval:{status:'approved',approvedOn:'2026-11-12'}
+  };
+  await page.route('**/catalog.json',async route=>{
+   const response=await route.fetch();
+   const data=await response.json();
+   data.items.push(eligible,{
+    ...eligible,name:'Private unapproved venture',url:'apps/sample-unapproved/',founderApproval:{status:'pending'}
+   });
+   await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)});
+  });
+  await open(page,'/');
+  await page.waitForFunction(()=>document.querySelectorAll('#home-featured-list .home-featured-card').length===1);
+  assert.equal(await page.locator('#home-featured-list .home-featured-card').count(),1);
+  assert.match(await page.locator('#home-featured-list .home-featured-card').innerText(),/Sample Approved Venture/);
+  assert.equal(await page.locator('#home-featured-list a.home-featured-open').getAttribute('href'),'../apps/sample-approved-venture/');
+  assert.equal(await page.locator('#home-featured-empty').count(),0);
+  assert.equal((await page.locator('#home-featured-list').innerText()).includes('Private unapproved venture'),false);
+ });
+ await check('homepage: no public traffic analytics request is emitted',async page=>{
+  let analyticsRequests=0;
+  page.on('request',req=>{if(req.url().includes('/api/insights/growth'))analyticsRequests++});
+  await open(page,'/');
+  await page.locator('#home-tool-count').waitFor();
+  assert.equal(analyticsRequests,0);
+  assert.equal(await page.locator('#home-page-views').count(),0);
+  assert.equal(await page.locator('#home-completions').count(),0);
  });
  await check('mobile: directory layout has no horizontal overflow',async page=>{
   await open(page,'/tools/?q=pdf');

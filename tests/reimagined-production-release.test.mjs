@@ -17,14 +17,18 @@ test('production release promotes the new design to the actual domain root',asyn
   return;
  }
  assert.match(home,/id="home-title"/);
- assert.match(home,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
- for(const view of ['home','ventures','builders','impact','tools','partners','contact'])
+ assert.match(home,/CLOUD-BASED • AI-POWERED VENTURE STUDIO/);
+ for(const view of ['home','ventures','builders','tools','partners','contact'])
   assert.match(home,new RegExp('<section class="view" id="'+view+'"'),view);
  assert.match(home,/class="kofi-support" id="kofi-support" type="button" disabled/);
  assert.match(home,/rel="canonical" href="https:\/\/yorphives\.com\/"/);
  assert.doesNotMatch(home,/DESIGN PREVIEW · NOT LIVE|name="robots" content="noindex/);
- assert.match(home,/id="yh-pulse"/);
- assert.ok(home.indexOf('id="yh-pulse"')<home.indexOf('<footer class="footer">'));
+ assert.match(home,/id="featured-ventures"/);
+ assert.match(home,/id="how-it-works"/);
+ assert.doesNotMatch(home,/id="yh-pulse"/);
+ assert.match(home,/id="home-progress"/);
+ assert.doesNotMatch(home,/id="impact"|href="#impact"|data-nav="impact"/);
+ assert.ok(home.indexOf('id="how-it-works"')<home.indexOf('id="home-progress"'));
  for(const asset of ['studio.css','studio.js','rotators.css','rotators.js',
   'catalog-sync.mjs','impact-public.json','usage-public.json','builders-updates.json'])
   assert.ok(await exists(path+asset),'missing '+path+asset);

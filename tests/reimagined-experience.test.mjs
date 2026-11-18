@@ -7,17 +7,26 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>readFile(resolve(root,p),'utf8');
 const present=async p=>stat(resolve(root,p)).then(s=>s.isFile()).catch(()=>false);
 
-test('full reimagined experience has seven complete page routes and separate navigation',async()=>{
+test('reimagined experience has six page routes and homepage-only progress',async()=>{
  const html=await read('reimagined/index.html');
- for(const route of ['home','ventures','builders','impact','tools','partners','contact']){
+ for(const route of ['home','ventures','builders','tools','partners','contact']){
   assert.match(html,new RegExp('id="'+route+'"[^>]*aria-labelledby='),route);
   assert.ok(html.includes('href="#'+route+'"'),route+' route is linked');
  }
  assert.match(html,/class="topnav"/);assert.match(html,/class="mobile-dock"/);
  assert.match(html,/id="more-panel"/);assert.match(html,/id="mobile-menu"/);
- assert.match(html,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
- assert.match(html,/YorpHivesHQ finds the signal/);
- assert.match(html,/results speak|Results speak/i);
+ assert.match(html,/CLOUD-BASED • AI-POWERED VENTURE STUDIO/);
+ assert.match(html,/Discover useful tools, explore emerging products/);
+ assert.match(html,/class="hive-journey"/);
+ assert.match(html,/href="#featured-ventures"/);
+ assert.match(html,/class="home-featured-empty-actions"/);
+ assert.match(html,/Explore Free Tools/);
+  assert.match(html,/id="home-progress"/);
+ assert.match(html,/id="home-tool-count"/);
+ assert.match(html,/id="hive-fresh-title"/);
+ assert.match(html,/id="activity-list"/);
+ assert.doesNotMatch(html,/id="home-page-views"|id="home-completions"|id="home-venture-count"/);
+ assert.doesNotMatch(html,/id="impact"|data-nav="impact"|href="#impact"/);
  assert.match(html,/DESIGN PREVIEW · NOT LIVE/);
  assert.match(html,/noindex,nofollow/);
 });
@@ -42,23 +51,24 @@ test('new frontend is independent, local-first, and protects original tool engin
  assert.match(css, /prefers-reduced-motion:reduce/);
 });
 
-test('public Impact never fabricates visitors, partners, revenue, or achievements',async()=>{
- const data=JSON.parse(await read('reimagined/impact-public.json'));
- assert.equal(data.schemaVersion,1);
- assert.equal(data.publication.status,'unpublished');
- assert.equal(data.publication.approvedByFounder,false);
- assert.equal(data.metrics.estimatedVisitors30d,null);
- assert.equal(data.metrics.verifiedPartners,null);
- assert.deepEqual(data.revenueDirection,[]);
- assert.deepEqual(data.trendingApps,[]);
- assert.deepEqual(data.milestones,[]);
- const [html,js]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js')]);
- for(const claim of ['First-party anonymous sessions · new collection','No revenue has been published','Rankings appear once real application usage is verified','Verified milestones will appear'])
-  assert.ok(html.includes(claim),claim);
- assert.match(js,/p\.publication\.approvedByFounder===true/);
- assert.match(js,/\[-1,0,1\]\.includes\(x\.direction\)/);
- assert.match(js,/verifiedPublic\.has\(item\.proofUrl\)/);
- assert.doesNotMatch(js,/revenueAmount|grossRevenue|profitAmount|privateApiKey/);
+test('homepage shows visitor benefits and verified tool updates, not internal analytics',async()=>{
+ const [html,js,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js'),read('reimagined/studio.css')]);
+ assert.match(html,/The Hive <em>at a Glance/);
+ assert.match(html,/Fresh from <em>the Hive/);
+ for(const key of ['home-tool-count','hive-fresh-title','activity-list'])
+  assert.ok(html.includes('id="'+key+'"'),key);
+ assert.match(html,/Browser-Based/);
+ assert.match(html,/No Account Needed/);
+ assert.match(html,/Explore All Free Tools/);
+ assert.doesNotMatch(html,/home-page-views|home-completions|home-venture-count|RECORDED PAGE VIEWS|REPORTED TOOL COMPLETIONS|YorpHives BY THE NUMBERS/i);
+ assert.doesNotMatch(js,/fetch\('\/api\/insights\/growth'|loadHomeMetrics|home-page-views|home-completions/);
+ assert.match(js,/x\.kind==='tools'/);
+ assert.match(js,/verifiedPublic\.has\(x\.url\)/);
+ assert.match(js,/tools\.find\(t=>t\.url===x\.url\)/);
+ assert.match(js,/tool\.name/);
+ assert.match(css,/\.hive-benefits/);
+ assert.match(css,/\.hive-fresh-grid/);
+ assert.doesNotMatch(js,/impact-visitors|impact-tools|loadImpact\(|revenueAmount|grossRevenue|profitAmount|privateApiKey/);
 });
 
 test('new site is copied to preview after public-page audit and never to production',async()=>{
@@ -71,7 +81,7 @@ test('new site is copied to preview after public-page audit and never to product
  assert.ok((await read('reimagined/index.html')).includes('name="robots" content="noindex,nofollow"'));
  if(await present('dist/reimagined/index.html')){
    const rendered=await read('dist/reimagined/index.html');
-   assert.match(rendered,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
+   assert.match(rendered,/CLOUD-BASED • AI-POWERED VENTURE STUDIO/);
    assert.ok(await present('dist/reimagined/studio.css'));
    assert.ok(await present('dist/reimagined/studio.js'));
  } else {

@@ -395,7 +395,9 @@ async function publishReimaginedRoot(prefix=''){
  if(homepage.includes('DESIGN PREVIEW · NOT LIVE')||
     homepage.includes('name="robots" content="noindex')||
     !homepage.includes('id="home"')||
-    !homepage.includes('id="yh-pulse"')||
+    !homepage.includes('id="home-progress"')||
+    !homepage.includes('id="home-featured-list"')||
+    !homepage.includes('id="how-it-works"')||
     !homepage.includes('type="button" disabled'))
   throw Error('Reimagined release candidate failed initial public safety gates');
  homepage=homepage.replace('</body>','<script type="module" src="/agentic-browser.mjs"></script></body>');
@@ -450,5 +452,7 @@ await publishReimaginedRoot();
 // Preserve the historic path for existing preview bookmarks, without a second UI.
 // This is an alias to the exact same source, not a separate release candidate.
 if(target==='preview')await publishReimaginedRoot('release-candidate/');
+// English is the only website language; no translation dependencies, UI or
+// translation APIs are injected into public pages.
 console.log('DISCOVERY BUILD PASSED: '+published.length+' directly linked public pages; '+canonicalPaths.length+
  ' canonical sitemap URLs; mode='+target+'. Homepage markup preserved.');

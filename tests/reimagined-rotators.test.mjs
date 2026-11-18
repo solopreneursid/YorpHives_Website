@@ -17,10 +17,8 @@ test('three lightweight, separately sourced rotating strips live inside their ow
  assert.match(html,/id="eco-motion-toggle"/);
  assert.match(html,/href="rotators.css"/);
  assert.match(html,/src="rotators.js"/);
- assert.ok(html.indexOf('class="yh-pulse"')<html.indexOf('<footer class="footer">'));
- assert.match(html,/id="yh-pulse-item"/);
- assert.match(html,/id="yh-pulse-toggle"/);
- assert.equal((html.match(/id="yh-pulse"/g)||[]).length,1);
+ assert.doesNotMatch(html,/id="yh-pulse"|id="yh-pulse-item"/);
+ assert.match(html,/id="home-progress"/);
 });
 
 test('rotating data uses genuine published categories, qualified products and verified builders',async()=>{
@@ -37,27 +35,20 @@ test('rotating data uses genuine published categories, qualified products and ve
  assert.match(js,/document.hidden/);
  assert.match(js,/mql.matches/);
  assert.match(js,/ecoPaused/);
- assert.match(js,/pulsePaused/);
+ assert.doesNotMatch(js,/pulsePaused|initPulse\(/);
  assert.match(js,/yorphives:select-tool-category/);
  assert.match(await read('reimagined/studio.js'),/document.addEventListener\('yorphives:select-tool-category'/);
 });
 
-test('YHpulse publishes no fake most-used list without founder-approved verified usage',async()=>{
- const data=JSON.parse(await read('reimagined/usage-public.json'));
- assert.equal(data.schemaVersion,1);
- assert.equal(data.publication.status,'unpublished');
- assert.equal(data.publication.approvedByFounder,false);
- assert.equal(data.publication.metric,'completed_uses');
- assert.equal(data.publication.periodDays,30);
- assert.deepEqual(data.ranked,[]);
+test('retired usage ticker stays absent while the homepage shows visitor benefits',async()=>{
  const [html,js]=await Promise.all([read('reimagined/index.html'),read('reimagined/rotators.js')]);
- assert.match(html,/Rankings appear after completed tool actions are recorded./);
- assert.match(html,/id="yh-pulse-toggle"[^>]+disabled/);
- assert.match(js,/data\.ranked\.length<=10/);
- assert.match(js,/p\.approvedByFounder===true/);
- assert.match(js,/p\.metric==='completed_uses'/);
- assert.match(js,/qualifiedProducts\(\[x\]\)/);
- assert.doesNotMatch(js,/fakeVisits|mockData|dummyAnalytics|Math\.random/);
+ for(const id of ['home-tool-count','hive-fresh-title','activity-list'])
+  assert.match(html,new RegExp('id="'+id+'"'));
+ assert.doesNotMatch(html,/id="yh-pulse"|id="yh-pulse-toggle"|id="home-page-views"|id="home-completions"/);
+ assert.doesNotMatch(js,/initPulse\(|refreshUsage\(|pulsePaused|fakeVisits|Math\.random/);
+ const usage=JSON.parse(await read('reimagined/usage-public.json'));
+ assert.equal(usage.publication.approvedByFounder,false);
+ assert.deepEqual(usage.ranked,[]);
 });
 
 test('Builders update generator independently collects newest ten verified public updates',async()=>{
