@@ -32,37 +32,46 @@ const canMove=(element,paused)=>!!element&& !mql.matches && !paused&& !document.
  !element.closest('.eco-card')?.matches(':focus');
 const safeText=value=>typeof value==='string'&&value.length>0&&value.length<=140&&!/[<>]/.test(value);
 const abbreviate=value=>String(value).trim();
-const animateText=(wrap,id,content)=>{
- const target=byId(id);if(!target)return;
- if(mql.matches){target.textContent=content;return;}
- wrap.classList.add('is-changing');
- window.setTimeout(()=>{target.textContent=content;target.title=content;wrap.classList.remove('is-changing');},210);
-};
-function useCard(key,entries,interval){
+// A pair of identical sequences loops seamlessly, like a small horizontal news ticker.
+// Rebuild only when verified catalogue/feed data changes; no per-frame JavaScript.
+function renderTicker(card){
+ const {wrap,key,entries}=card;
+ const target=byId('eco-strip-'+key);
+ if(!target)return;
+ target.replaceChildren();
+ const fallback={ventures:'Founder-approved launches will appear here',tools:'No published categories yet',builders:'Verified updates will appear here'};
+ if(!entries.length){
+  target.textContent=fallback[key];target.title=fallback[key];target.classList.remove('is-ticker');
+  wrap.classList.remove('has-ticker');return;
+ }
+ if(entries.length===1){
+  target.textContent=entries[0].text;target.title=entries[0].text;
+  target.classList.remove('is-ticker');wrap.classList.remove('has-ticker');return;
+ }
+ const makeGroup=(clone=false)=>{
+  const group=document.createElement('span');group.className='eco-ticker-group';
+  if(clone)group.setAttribute('aria-hidden','true');
+  entries.forEach((entry,index)=>{
+   const item=document.createElement('span');item.className='eco-ticker-item';
+   item.dataset.tickerIndex=String(index);
+   item.textContent=entry.text;item.title=entry.text;
+   group.append(item);
+  });
+  return group;
+ };
+ target.append(makeGroup(),makeGroup(true));
+ target.classList.add('is-ticker');wrap.classList.add('has-ticker');
+ wrap.style.setProperty('--eco-scroll-duration',Math.max(14,Math.min(48,entries.length*5.5))+'s');
+ wrap.setAttribute('aria-label',(key==='tools'?'Free tool categories':key==='ventures'?'Approved ventures':'Builders updates')+': '+entries.map(x=>x.text).join('; '));
+ wrap.classList.toggle('is-paused',ecoPaused);
+}
+function useCard(key,entries){
  const wrap=document.querySelector('[data-strip="'+key+'"]');
  if(!wrap)return;
- const safe=Array.isArray(entries)?entries.filter(x=>safeText(x?.text)):[];
- const prior=cards[key];
- if(prior){
-  const current=prior.entries[prior.index];
-  const retained=safe.findIndex(x=>x.category?x.category===current?.category:x.url?x.url===current?.url:x.text===current?.text);
-  prior.entries=safe;prior.index=retained>=0?retained:0;
-  const value=safe[prior.index]?.text;
-  if(value){byId('eco-strip-'+key).textContent=value;byId('eco-strip-'+key).title=value;}
-  else{
-   const fallback={ventures:'Founder-approved launches will appear here',tools:'No published categories yet',builders:'Verified updates will appear here'};
-   byId('eco-strip-'+key).textContent=fallback[key]||'No verified updates yet';
-  }
-  return;
- }
- const card={wrap,entries:safe,index:0,key};cards[key]=card;
- watch(wrap);
- if(safe.length){byId('eco-strip-'+key).textContent=safe[0].text;byId('eco-strip-'+key).title=safe[0].text}
- window.setInterval(()=>{
-  if(card.entries.length<2||!canMove(wrap,ecoPaused))return;
-  card.index=(card.index+1)%card.entries.length;
-  animateText(wrap,'eco-strip-'+key,card.entries[card.index].text);
- },interval);
+ const safe=Array.isArray(entries)?entries.filter(x=>safeText(x?.text)):[],
+  card=cards[key]||{wrap,entries:[],index:0,key};
+ cards[key]=card;card.entries=safe;card.index=0;
+ watch(wrap);renderTicker(card);
 }
 function initEcoControl(){
  const btn=byId('eco-motion-toggle');if(!btn)return;
@@ -73,7 +82,7 @@ function initEcoControl(){
   btn.firstChild.textContent=ecoPaused?'▶ ':'Ⅱ ';
   label.textContent=ecoPaused?'Resume highlights':'Pause highlights';
  };
- btn.addEventListener('click',()=>{ecoPaused=!ecoPaused;update()});
+ btn.addEventListener('click',()=>{ecoPaused=!ecoPaused;Object.values(cards).forEach(card=>card.wrap.classList.toggle('is-paused',ecoPaused));update()});
  update();
 }
 function onCatalogUpdate(items){
@@ -88,8 +97,8 @@ function onCatalogUpdate(items){
  }
  const categories=[...categoryCounts].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))
   .map(([category,count])=>({text:category+' · '+count+' tool'+(count===1?'':'s'),category}));
- useCard('ventures',qualified.map(p=>({text:p.name,url:p.url})),5400);
- useCard('tools',categories,4300);
+ useCard('ventures',qualified.map(p=>({text:p.name,url:p.url})));
+ useCard('tools',categories);
  // When an existing tool is changed or a new tool is launched, eligibility
  // is rechecked for YHpulse; ranking still requires *actual* approved usage.
  if(publishedUsage)applyUsageSnapshot(publishedUsage);
@@ -106,18 +115,20 @@ async function initEco(){
    Date.parse(event.timestamp)<=Date.now()&&safeText(event.title)&&!unique.has(event.id)&&unique.add(event.id))
   .sort((a,b)=>Date.parse(b.timestamp)-Date.parse(a.timestamp)).slice(0,10)
   .map(e=>({text:e.title}));
- useCard('builders',builderEntries,6200);
+ useCard('builders',builderEntries);
  const toolsCard=document.querySelector('.eco-tools');
  toolsCard?.addEventListener('click',event=>{
   if(!event.target.closest('[data-strip="tools"]'))return;
-  const current=cards.tools?.entries[cards.tools.index];
+  const index=Number(event.target.closest('.eco-ticker-item')?.dataset.tickerIndex ?? 0);
+  const current=cards.tools?.entries[index];
   if(!current?.category)return;
   event.preventDefault();
   document.dispatchEvent(new CustomEvent('yorphives:select-tool-category',{detail:{category:current.category}}));
  });
  document.querySelector('.eco-ventures')?.addEventListener('click',event=>{
   if(!event.target.closest('[data-strip="ventures"]'))return;
-  const current=cards.ventures?.entries[cards.ventures.index];
+  const index=Number(event.target.closest('.eco-ticker-item')?.dataset.tickerIndex ?? 0);
+  const current=cards.ventures?.entries[index];
   if(!current?.url)return;
   event.preventDefault();window.location.assign('../'+current.url);
  });
