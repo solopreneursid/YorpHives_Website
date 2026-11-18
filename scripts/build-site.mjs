@@ -7,7 +7,6 @@ import {fileURLToPath} from 'node:url';
 import {createEntity} from './discovery-schema.mjs';
 import {PUBLIC_TOOL_PAGES} from '../agentic/tools-core.mjs';
 import {isQualifiedProduct} from '../product-policy.mjs';
-import {makeCatalogLocaleCopy,catalogTranslationReport} from '../catalog-localization.mjs';
 import {injectNextToolUI} from './next-tool-shell.mjs';
 import {collectPublicActivity,discoverPublicPageUpdates,discoverToolEditTimes,loadActivityNotes,renderHomePulse} from './activity-feed.mjs';
 
@@ -36,12 +35,6 @@ for(const item of catalog.items){
 const published=catalog.items.filter(item=>item?.type==='tool'
  ? item.published!==false&&item.visibility!=='private'
  : isQualifiedProduct(item));
-// Browser-native translation is the zero-cost default for all future content.
-// Reviewed first-party catalog translations remain optional; new products and
-// UI features are NOT blocked on translations or a local inference server.
-const localizationBaseline=JSON.parse(await src('catalog-localization-baseline.json'));
-const catalogLocaleMap=makeCatalogLocaleCopy(published);
-const localeReport=catalogTranslationReport(published,{legacyUrls:localizationBaseline.legacyUrls});
 const seen=new Set();
 for(const item of published){
  if(!item||typeof item.name!=='string'||!item.name.trim()||typeof item.description!=='string'||!item.description.trim())
@@ -459,43 +452,7 @@ await publishReimaginedRoot();
 // Preserve the historic path for existing preview bookmarks, without a second UI.
 // This is an alias to the exact same source, not a separate release candidate.
 if(target==='preview')await publishReimaginedRoot('release-candidate/');
-// Public language access is a site shell, not a new product/tool.
-// Include on every built canonical static page, including direct-entry tools.
-await cp(resolve(root,'site-languages.mjs'),resolve(dest,'site-languages.mjs'));
-await cp(resolve(root,'site-languages.css'),resolve(dest,'site-languages.css'));
-await cp(resolve(root,'site-language-copy.mjs'),resolve(dest,'site-language-copy.mjs'));
-await cp(resolve(root,'site-tool-copy.mjs'),resolve(dest,'site-tool-copy.mjs'));
-await cp(resolve(root,'site-section-copy.mjs'),resolve(dest,'site-section-copy.mjs'));
-await write('site-catalog-copy.mjs','// Generated from founder-approved, public catalog translations at build time.\n'+
- 'export const CATALOG_COPY='+JSON.stringify(catalogLocaleMap)+';\n'+
- 'export const getCatalogCopy=(english,lang)=>CATALOG_COPY[english]?.[lang]||null;\n');
-await write('i18n-coverage.json',JSON.stringify(localeReport,null,2)+'\n');
-const languageUI='<div id="yh-language-picker" translate="no" aria-label="Website language">'+
- '<button type="button" data-language-toggle aria-expanded="false" aria-controls="yh-language-panel" aria-label="Change website language">'+
- '<span class="yh-language-globe" aria-hidden="true">🌐</span><span data-language-short>EN</span></button>'+
- '<div id="yh-language-panel" data-language-panel hidden>'+
- '<div class="yh-language-head"><strong>Website language</strong><button type="button" data-language-close aria-label="Close language menu">×</button></div>'+
- '<label for="yh-language-select">Choose language</label><select id="yh-language-select">'+
- '<option value="en">English</option><option value="hi">हिन्दी</option>'+
- '<option value="es">Español</option><option value="fr">Français</option>'+
- '<option value="de">Deutsch</option><option value="pt">Português</option>'+
- '<option value="ar">العربية</option><option value="ja">日本語</option>'+
- '</select><button type="button" data-language-translate hidden>Translate remaining page on device</button>'+
- '<p role="status" aria-live="polite"></p>'+
- '<div class="yh-language-browser-help"><strong>Translate the full page for free</strong>'+
- '<p>Chrome: use the Translate icon in the address bar, or right-click and choose Translate.</p>'+
- '<p>Firefox: right-click the page and choose Translate page. Browser availability varies.</p>'+
- '<p>Browsers control page translation; this site cannot switch it on automatically.</p></div></div></div>';
-const builtPages=[...publicPages];
-if(target==='preview')builtPages.push('release-candidate/index.html');
-for(const path of builtPages){
- const document=await output(path);
- if(!document.includes('</head>')||!document.includes('</body>')||
-  document.includes('id="yh-language-picker"'))throw Error('Language shell cannot attach: '+path);
- await write(path,document.replace('</head>',
-  '<link rel="stylesheet" href="/site-languages.css"></head>')
-  .replace('</body>',languageUI+
-   '<script type="module" src="/site-languages.mjs"></script></body>'));
-}
+// English is the only website language; no translation dependencies, UI or
+// translation APIs are injected into public pages.
 console.log('DISCOVERY BUILD PASSED: '+published.length+' directly linked public pages; '+canonicalPaths.length+
  ' canonical sitemap URLs; mode='+target+'. Homepage markup preserved.');
