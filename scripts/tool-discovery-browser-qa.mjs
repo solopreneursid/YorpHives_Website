@@ -138,116 +138,16 @@ try{
    assert.ok(!JSON.stringify(event).includes('PRIVATE-SYNTHETIC-INPUT'));
   }
  });
- await check('language: header globe is compact and Hindi homepage copy translates without Chrome API',async page=>{
-  await page.addInitScript(()=>{
-   Object.defineProperty(window,'Translator',{configurable:true,value:undefined});
-  });
-  await open(page,'/');
-  const picker=page.locator('#yh-language-picker');
-  assert.ok(await picker.isVisible());
-  assert.equal(await picker.locator('[data-language-panel]').isVisible(),false);
-  assert.equal(await page.locator('#home .hero-intro').innerText(),
-   'We discover emerging opportunities, build useful digital products, and create technology that evolves with the world.');
-  await picker.locator('[data-language-toggle]').click();
-  assert.ok(await picker.locator('[data-language-panel]').isVisible());
-  await picker.locator('select').selectOption('hi');
-  assert.equal(await picker.locator('[data-language-panel]').isVisible(),false);
-  assert.ok((await page.locator('#home .hero-intro').innerText()).includes('नए अवसरों'),
-   'Hindi hero paragraph not translated from first-party copy');
-  assert.match(await page.locator('#home-title').innerText(),/डिजिटल उद्यम/);
-  assert.equal(await page.locator('html').getAttribute('lang'),'hi');
-  assert.equal(await picker.locator('[data-language-short]').innerText(),'HI');
-  assert.equal(await picker.locator('[data-language-translate]').isVisible(),false);
-  await picker.locator('[data-language-toggle]').click();
-  await picker.locator('select').selectOption('en');
-  assert.equal(await page.locator('#home .hero-intro').innerText(),
-   'We discover emerging opportunities, build useful digital products, and create technology that evolves with the world.');
-  assert.equal(await page.locator('html').getAttribute('lang'),'en');
-  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-  assert.ok(overflow<=8,'Header language control causes horizontal overflow: '+overflow);
- },{mobile:true});
- await check('language: directory selection persists and tool data is left intact',async page=>{
-  await open(page,'/tools/');
-  const picker=page.locator('#yh-language-picker');
-  await picker.locator('[data-language-toggle]').click();
-  await picker.locator('select').selectOption('es');
-  assert.equal(await picker.locator('[data-language-short]').innerText(),'ES');
-  assert.equal(await page.locator('a.directory-card').count(),143);
-  await open(page,'/tools/word-counter/');
-  assert.equal(await page.locator('#yh-language-select').inputValue(),'es');
+ await check('English-only website has no language overlay or translation code',async page=>{
+  for(const url of ['/','/tools/','/tools/word-counter/']){
+   await open(page,url);
+   assert.equal(await page.locator('#yh-language-picker').count(),0,url);
+   assert.equal(await page.locator('script[src*="site-languages"]').count(),0,url);
+   assert.equal(await page.locator('link[href*="site-languages"]').count(),0,url);
+   assert.equal(await page.locator('html').getAttribute('lang'),'en',url);
+  }
   assert.equal(await page.locator('textarea[name="text"]').inputValue(),'');
- });
- await check('language: Hindi tool buttons and placeholders translate but input content remains exact',async page=>{
-  await page.addInitScript(()=>Object.defineProperty(window,'Translator',{configurable:true,value:undefined}));
-  await open(page,'/tools/word-counter/');
-  const picker=page.locator('#yh-language-picker');
-  const field=page.locator('textarea[name="text"]');
-  await field.fill('Private English input: αβγ 😃');
-  await picker.locator('[data-language-toggle]').click();
-  await picker.locator('select').selectOption('hi');
-  assert.equal(await page.locator('html').getAttribute('lang'),'hi');
-  assert.equal(await field.inputValue(),'Private English input: αβγ 😃');
-  assert.equal(await field.getAttribute('placeholder'),'यहाँ टेक्स्ट लिखें या पेस्ट करें');
-  assert.equal(await page.locator('#utility-form button[type="reset"]').innerText(),'रीसेट करें');
-  assert.ok((await page.locator('.privacy-badge').innerText()).includes('ब्राउज़र'));
-  assert.ok((await page.locator('.tool-help-card h2').first().innerText()).includes('उपयोग'));
-  await picker.locator('[data-language-toggle]').click();
-  await picker.locator('select').selectOption('en');
-  assert.equal(await field.getAttribute('placeholder'),'Paste or type text here');
-  assert.equal(await page.locator('#utility-form button[type="reset"]').innerText(),'Reset');
-  assert.equal(await field.inputValue(),'Private English input: αβγ 😃');
  },{mobile:true});
- await check('language: Spanish directory interface translates search hint and placeholder',async page=>{
-  await open(page,'/tools/');
-  const picker=page.locator('#yh-language-picker');
-  await picker.locator('[data-language-toggle]').click();
-  await picker.locator('select').selectOption('es');
-  assert.match(await page.locator('#directory-search-hint').innerText(),/Busca por nombre/);
-  assert.match(await page.locator('#directory-search').getAttribute('placeholder'),/Prueba PDF/);
-  assert.equal(await page.locator('a.directory-card').count(),143);
-  await page.locator('#directory-search').fill('word');
-  assert.equal(await page.locator('#directory-search').inputValue(),'word');
- },{mobile:true});
- await check('language: contact and venture views translate while form values stay English',async page=>{
-  await open(page,'/#contact');
-  const picker=page.locator('#yh-language-picker');
-  await picker.locator('[data-language-toggle]').click();
-  await picker.locator('select').selectOption('hi');
-  await page.waitForFunction(()=>document.querySelector('#contact label')?.textContent?.includes('नाम'));
-  assert.match(await page.locator('#contact').innerText(),/आइए बात करें/);
-  const option=page.locator('#interest option').first();
-  assert.equal(await option.getAttribute('label'),'उत्पाद का विचार');
-  assert.equal(await option.getAttribute('value'),null);
-  assert.equal(await option.evaluate(el=>el.value),'Product idea');
-  await page.locator('#contact input[name="Name"]').fill('My original name');
-  assert.equal(await page.locator('#contact input[name="Name"]').inputValue(),'My original name');
-  await picker.locator('[data-language-toggle]').click();
-  await picker.locator('select').selectOption('en');
-  assert.equal(await option.getAttribute('label'),null);
-  assert.equal(await option.evaluate(el=>el.value),'Product idea');
-  assert.equal(await page.locator('#contact input[name="Name"]').inputValue(),'My original name');
- },{mobile:true});
- await check('language: optional browser Translator translates remaining public copy without touching inputs',async page=>{
-  await page.addInitScript(()=>{
-   Object.defineProperty(window,'Translator',{configurable:true,value:{
-    availability:async()=> 'available',
-    create(){return Promise.resolve({translate:async text=>'ES '+text,destroy(){}});}
-   }});
-  });
-  await open(page,'/tools/word-counter/');
-  const picker=page.locator('#yh-language-picker');
-  await picker.locator('[data-language-toggle]').click();
-  await picker.locator('select').selectOption('es');
-  await picker.locator('[data-language-toggle]').click();
-  const native=picker.locator('[data-language-translate]');
-  assert.equal(await native.isVisible(),true);
-  await native.click();
-  await page.waitForFunction(()=>document.querySelector('#yh-language-picker [role="status"]')?.textContent.includes('Translated'),null,{timeout:25000});
-  assert.equal(await page.locator('html').getAttribute('lang'),'es');
-  assert.equal(await page.locator('textarea[name="text"]').inputValue(),'');
-  await picker.locator('select').selectOption('en');
-  assert.equal(await page.locator('html').getAttribute('lang'),'en');
- });
  await check('homepage: retired Impact route is absent and public progress contains only four cards',async page=>{
   await open(page,'/');
   const info=page.locator('#home-progress');
