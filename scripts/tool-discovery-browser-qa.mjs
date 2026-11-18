@@ -180,6 +180,35 @@ try{
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   assert.ok(overflow<=8,'Visual process or CTA caused horizontal overflow: '+overflow);
  },{mobile:true});
+ await check('mobile homepage: tactile dock and redesigned hero remain usable and accessible',async page=>{
+  await open(page,'/');
+  assert.match(await page.locator('#home-title').innerText(),/Building Tomorrow/);
+  const primary=page.locator('.hero-ctas a').first();
+  assert.equal(await primary.getAttribute('href'),'#tools');
+  assert.match(await primary.innerText(),/Explore Free Tools/);
+  assert.deepEqual(await page.locator('.ecosystem-grid>a').evaluateAll(cards=>cards.map(c=>c.getAttribute('href'))),
+   ['#ventures','#tools','#builders']);
+  const dock=page.locator('.mobile-dock');
+  await dock.waitFor({state:'visible'});
+  const style=await dock.evaluate(el=>{
+   const c=getComputedStyle(el),tile=getComputedStyle(el.querySelector('a svg'));
+   return {position:c.position,radius:parseFloat(c.borderTopLeftRadius),backdrop:c.backdropFilter,
+    shadow:c.boxShadow,tileShadow:tile.boxShadow,bottom:parseFloat(c.bottom)};
+  });
+  assert.equal(style.position,'fixed');
+  assert.ok(style.radius>=16,'Floating dock has no rounded container');
+  assert.notEqual(style.shadow,'none');
+  assert.notEqual(style.tileShadow,'none');
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  assert.ok(overflow<=8,'Mobile homepage overflow: '+overflow);
+  await page.locator('.mobile-dock a[href="#tools"]').click();
+  await page.waitForFunction(()=>document.querySelector('#tools')?.hidden===false);
+  assert.equal(await page.locator('.mobile-dock a[href="#tools"]').getAttribute('aria-current'),'page');
+  await page.locator('#more-toggle').click();
+  assert.equal(await page.locator('#more-panel').isVisible(),true);
+  await page.locator('#more-close').click();
+  assert.equal(await page.locator('#more-panel').isVisible(),false);
+ },{mobile:true});
  await check('homepage: only founder-approved launched catalog entries are featured automatically',async page=>{
   const evidence='a'.repeat(64);
   const eligible={
