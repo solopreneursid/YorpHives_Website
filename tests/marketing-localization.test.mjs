@@ -24,5 +24,6 @@ test('published existing homepage baseline has no unreviewed new text',async()=>
  assert.ok(baseline.strings.length>=190);
  assert.deepEqual(newMarketingCopy({html,baseline:baseline.strings,translations:[PAGE_COPY,SECTION_COPY,TOOL_COPY]}),[]);
  const source=await read('scripts/build-site.mjs');
- assert.match(source,/New website UI copy requires localized strings/);
+ assert.doesNotMatch(source,/throw Error\('New website UI copy requires localized strings/);
+ assert.match(source,/Browser-native translation is the zero-cost default/);
 });
