@@ -100,6 +100,28 @@
  .mobile-dock a{font-size:9px}
 }
 /* Partnership page reflows to an intentional single-column mobile journey. */
+/* Builders: keep all journeys usable on phones and small tablets. */
+@media(max-width:900px){
+ .builders-journey-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .member-grid .builder-path{min-height:0}
+}
+@media(max-width:760px){
+ .builders-launch-label{font-size:10px}
+ .builders-section-intro{font-size:12px}
+ .member-grid .builder-path{padding:19px;gap:9px}
+ .builder-path-points{gap:7px}
+ .builders-journey{margin-top:32px;padding-top:28px}
+ .builders-journey-grid{gap:8px;margin-top:17px}
+ .builders-journey-grid li{padding:15px}
+ .membership-intro{font-size:12px;margin-bottom:20px}
+ .membership-launch-note{padding:15px;gap:8px}
+}
+@media(max-width:520px){
+ .builders-journey-grid{grid-template-columns:1fr}
+ .builders-journey-grid li{padding:15px 17px}
+ .builders-journey-grid li>span{margin-bottom:8px}
+}
+
 @media(max-width:900px){
  .partnership-layout{grid-template-columns:1fr;gap:25px}
  .partnership-panel{max-width:780px;width:100%}

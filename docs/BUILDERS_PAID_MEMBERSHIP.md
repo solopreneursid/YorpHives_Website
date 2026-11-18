@@ -11,6 +11,7 @@ Trusted long-term members can separately qualify for **Builder Partner** status 
 ## Current launch state (frontend preview only)
 
 - Public Home Builders section and public Builders information page are complete as visual previews. The Home section uses dark **forest teal** (deep blue-green) rather than black, with accessible mint-on-dark cards.
+- Builders public-page clarity pass (2026-11-19): distinct Find Work / Hire Builders routes, a four-step future member journey, accessible mobile layouts, and an explicit no-payment/no-application launch notice. All links remain informational; they do **not** grant access.
 - The previous unauthenticated job-posting email form was **removed**. No job listings, job details, applications, candidate data, paid-member records, or posting endpoints exist on the public static website.
 - Public navigation to `#builders` is informational. An old `#post` link is redirected to the membership explanation rather than a form.
 - **Paid enrollment is not live.** The preview must not claim that memberships are active, payments can be taken, or members can currently see jobs.
