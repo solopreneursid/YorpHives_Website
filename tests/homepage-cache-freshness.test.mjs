@@ -29,7 +29,8 @@ test('built website preserves actual copy, scripts and freshness',async()=>{
  const [html,js,headers]=await Promise.all([read('dist/index.html'),read('dist/next.js'),read('dist/_headers')]);
  if(html.includes('id="home-title"')){
   assert.match(html,/id="ventures"/);
-  assert.match(html,/id="kofi-support"/);
+  assert.doesNotMatch(html,/id="kofi-support"/);
+  assert.match(html,/class="cta-card"/);
   assert.match(await read('dist/studio.js'),/qualifiedProducts\(allItems\)/);
  }else{
   assert.match(html,/id="explore-qualification-note"/);
