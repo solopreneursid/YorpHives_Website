@@ -44,11 +44,13 @@ test('Cloudflare Functions stay confined to analytics and read-only agent discov
  assert.ok(s.includes("include:['/api/insights/*','/api/agent/v1/*']"));
  assert.ok(s.includes("insights-client.mjs"));
 });
-test('Impact and YHpulse show measured, not invented, business results',async()=>{
+test('homepage progress and YHpulse show measured, not invented, results',async()=>{
  const [html,studio,rotators,client]=await Promise.all(['reimagined/index.html','reimagined/studio.js','reimagined/rotators.js','insights-client.mjs'].map(read));
- assert.ok(html.includes('VISITING SESSIONS / 30 DAYS'));
+ assert.ok(html.includes('id="home-progress"'));
+ assert.ok(html.includes('id="home-tool-count"'));
+ assert.ok(html.includes('id="home-venture-count"'));
  assert.ok(html.includes('anonymous-analytics-toggle'));
- assert.ok(studio.includes("fetch('/api/insights/public'"));
+ assert.ok(!studio.includes("fetch('/api/insights/public'"));
  assert.ok(rotators.includes("getJson('/api/insights/public')"));
  assert.ok(rotators.includes('browser_reported_completed_actions'));
  assert.ok(client.includes('globalPrivacyControl'));
