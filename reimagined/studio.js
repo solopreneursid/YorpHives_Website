@@ -37,6 +37,9 @@ const views=[...document.querySelectorAll('.view')];
 const names={home:'Home',ventures:'HQventures',builders:'Builders',tools:'Free tools',partners:'Partnerships',contact:'Contact'};
 const special={ecosystem:'home','featured-tools':'home','home-progress':'home',impact:'home','venture-collection':'ventures',explore:'ventures',connect:'contact',opportunities:'builders',membership:'builders'};
 let current='home';
+let routeReady=false;
+let routeMotionTimer=0;
+const allowsMotion=()=>!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function menuClose(){
  $('mobile-menu').hidden=true;$('menu-toggle').setAttribute('aria-expanded','false');
@@ -61,6 +64,16 @@ function route(){
  if(special[hash]&&$(hash))requestAnimationFrame(()=>$(hash)?.scrollIntoView({block:'start',behavior:'instant'}));
  else if(changed || hash===active || special[hash])window.scrollTo({top:0,behavior:'instant'});
  current=active;
+ // Use native hash navigation immediately. Only the incoming view is gently
+ // revealed (55ms lead-in); no delayed clicks, blocked controls, or stale routes.
+ clearTimeout(routeMotionTimer);
+ document.body.classList.remove('yorp-page-switch');
+ if(routeReady&&changed&&allowsMotion()){
+  void document.body.offsetWidth;
+  document.body.classList.add('yorp-page-switch');
+  routeMotionTimer=setTimeout(()=>document.body.classList.remove('yorp-page-switch'),310);
+ }
+ routeReady=true;
 }
 $('menu-toggle').addEventListener('click',()=>{
  const opening=$('mobile-menu').hidden;

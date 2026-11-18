@@ -33,6 +33,19 @@ test('full reimagined experience has six complete page routes and separate navig
  assert.match(html,/noindex,nofollow/);
 });
 
+test('3D navigation is tactile, accessible, and does not delay routing',async()=>{
+ const [css,js]=await Promise.all([read('reimagined/studio.css'),read('reimagined/studio.js')]);
+ assert.match(css,/\.topbar \.topnav a:active/);
+ assert.match(css,/\.topbar \.topnav a\[aria-current=page\]/);
+ assert.match(css,/\.mobile-dock a:active/);
+ assert.match(css,/\.topbar a:focus-visible/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.match(css,/yorp-view-appear/);
+ assert.match(js,/routeReady&&changed&&allowsMotion\(\)/);
+ assert.match(js,/routeMotionTimer=setTimeout/);
+ assert.match(js,/views\.forEach\(v=>v\.hidden=v\.id!==active\)/);
+});
+
 test('new frontend is independent, local-first, and protects original tool engines',async()=>{
  const [html,js,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js'),read('reimagined/studio.css')]);
  assert.match(html,/href="studio\.css"/);
