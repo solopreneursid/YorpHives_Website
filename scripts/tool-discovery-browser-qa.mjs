@@ -203,6 +203,31 @@ try{
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   assert.ok(overflow<=8,'Visual process or CTA caused horizontal overflow: '+overflow);
  },{mobile:true});
+ await check('homepage: only founder-approved launched catalog entries are featured automatically',async page=>{
+  const evidence='a'.repeat(64);
+  const eligible={
+   name:'Sample Approved Venture',description:'A fictional verified product used only in local synthetic browser QA.',
+   type:'app',url:'apps/sample-approved-venture/',published:true,visibility:'public',
+   launchStatus:'launched',date:'2026-11-12',
+   headquartersReview:{status:'qualified',marketResearch:'passed',businessAnalysis:'passed',evidenceSha256:evidence},
+   founderApproval:{status:'approved',approvedOn:'2026-11-12'}
+  };
+  await page.route('**/catalog.json',async route=>{
+   const response=await route.fetch();
+   const data=await response.json();
+   data.items.push(eligible,{
+    ...eligible,name:'Private unapproved venture',url:'apps/sample-unapproved/',founderApproval:{status:'pending'}
+   });
+   await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)});
+  });
+  await open(page,'/');
+  await page.waitForFunction(()=>document.querySelectorAll('#home-featured-list .home-featured-card').length===1);
+  assert.equal(await page.locator('#home-featured-list .home-featured-card').count(),1);
+  assert.match(await page.locator('#home-featured-list .home-featured-card').innerText(),/Sample Approved Venture/);
+  assert.equal(await page.locator('#home-featured-list a.home-featured-open').getAttribute('href'),'../apps/sample-approved-venture/');
+  assert.equal(await page.locator('#home-featured-empty').count(),0);
+  assert.equal((await page.locator('#home-featured-list').innerText()).includes('Private unapproved venture'),false);
+ });
  await check('homepage: metrics use only validated anonymous 30-day reports',async page=>{
   const daily=Array.from({length:30},(_,i)=>({
    day:new Date(Date.UTC(2026,9,20+i)).toISOString().slice(0,10),
