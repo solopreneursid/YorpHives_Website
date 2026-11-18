@@ -16,7 +16,7 @@ const directory=await read('tools/index.html');
 const homepage=await read('index.html');
 // A release may use either the approved legacy homepage or the completely
 // reimagined site. Keep every common SEO/security/tool gate after this block.
-const isReimagined=homepage.includes('id="home-title"')&&homepage.includes('id="yh-pulse"');
+const isReimagined=homepage.includes('id="home-title"')&&homepage.includes('id="home-progress"');
 // Enforce UI parity: the same redesigned homepage must be served at / for
 // staging and live. This prevents successful builds of an obsolete preview.
 if(!isReimagined)problems.push('Preview/live parity failure: outdated homepage at root.');
@@ -35,8 +35,9 @@ if(isReimagined){
  if(!homepage.includes('CLOUD-BASED • AI-POWERED VENTURE STUDIO')||
     !homepage.includes('We discover emerging opportunities')||
     !homepage.includes('class="kofi-support" id="kofi-support" type="button" disabled')||
-    !homepage.includes('id="yh-pulse-item"'))
-  problems.push('Venture studio identity, disabled support action, or transparent YHpulse missing.');
+    !homepage.includes('id="home-featured-list"')||
+    !homepage.includes('id="how-it-works"'))
+  problems.push('Venture studio identity, approved-featured showcase, process, or disabled support action missing.');
  if(homepage.includes('DESIGN PREVIEW · NOT LIVE')||
     homepage.includes('name="robots" content="noindex')||
     !homepage.includes('rel="canonical" href="https://yorphives.com/"'))
