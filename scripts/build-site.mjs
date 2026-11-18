@@ -396,7 +396,8 @@ async function publishReimaginedRoot(prefix=''){
     homepage.includes('name="robots" content="noindex')||
     !homepage.includes('id="home"')||
     !homepage.includes('id="yh-pulse"')||
-    !homepage.includes('type="button" disabled'))
+    !homepage.includes('id="contact"')||
+    !homepage.includes('id="anonymous-analytics-toggle"'))
   throw Error('Reimagined release candidate failed initial public safety gates');
  homepage=homepage.replace('</body>','<script type="module" src="/agentic-browser.mjs"></script></body>');
  await write(prefix+'index.html',homepage);
