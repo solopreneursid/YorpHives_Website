@@ -13,7 +13,7 @@ export function checkCatalogTranslation(item){
    errors.push(lang+': name and description must have reviewed translations');
    continue;
   }
-  if(t.reviewed!==true||!/^\\d{4}-\\d{2}-\\d{2}$/.test(t.reviewedOn||'')||
+  if(t.reviewed!==true||!/^\d{4}-\d{2}-\d{2}$/.test(t.reviewedOn||'')||
      !Number.isFinite(Date.parse(t.reviewedOn+'T00:00:00Z'))||
      new Date(t.reviewedOn+'T00:00:00Z').toISOString().slice(0,10)!==t.reviewedOn||
      t.reviewedOn>new Date().toISOString().slice(0,10)){
