@@ -182,7 +182,8 @@ try{
   assert.equal(await cards.count(),3);
   assert.equal(await cards.first().getAttribute('href'),'../tools/word-counter/');
   assert.match(await cards.first().innerText(),/Word & Character Counter/);
-  assert.match(await cards.first().innerText(),/Updated: Word & Character Counter/);
+  assert.match(await cards.first().innerText(),/Count words, characters/);
+  assert.doesNotMatch(await cards.first().innerText(),/Updated: Word & Character Counter/);
   assert.equal(await page.locator('#activity-list .hive-update-featured').count(),1);
   assert.equal((await page.locator('#activity-list').innerText()).includes('Unpublished tool'),false);
   assert.equal((await page.locator('#activity-list').innerText()).includes('Internal review'),false);
