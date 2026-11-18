@@ -15,7 +15,7 @@ const published=x=>(x.items||[]).filter(x=>x.published!==false&&x.visibility!=='
  .map(x=>x.url).sort();
 const urls=published(l);
 assert.deepEqual(urls,published(p),'Public product sets differ between live and pilot');
-assert.equal(urls.length,143,'Published route count changed');
+assert.equal(urls.length,144,'Published route count changed');
 const attr=(html,rx)=>html.match(rx)?.[1]||'';
 const differences=[];
 let count=0;
