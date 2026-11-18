@@ -103,3 +103,7 @@ details.directory-section>summary{min-height:60px;padding:13px 16px;font-size:16
 .directory-search-empty{padding:24px;border:1px dashed #a1c2ac;border-radius:14px;margin:20px 0;color:#244a36;background:#f5faf5}
 .directory-search-empty[hidden]{display:none}
 @media(max-width:760px){.directory-finder{padding:17px;margin-top:16px}.directory-finder label{font-size:16px}.directory-finder-row{gap:8px}.directory-finder input{min-height:48px}.directory-finder button{padding-inline:13px}}
+
+.directory-page .directory-saved-filter{margin-top:15px;min-height:44px;border:1px solid #a5c5ad;border-radius:12px;background:#f1f9f2;color:#205a3d;padding:10px 15px;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.directory-page .directory-saved-filter[aria-pressed=true]{background:#164831;color:#fff}
+.directory-page .directory-saved-filter:focus-visible{outline:3px solid #20764e;outline-offset:2px}
