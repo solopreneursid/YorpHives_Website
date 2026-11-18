@@ -24,7 +24,7 @@ let usageMode='approved';
 const cards={};
 const zones=new Map();
 const observer='IntersectionObserver'in window?new IntersectionObserver(entries=>{
- for(const item of entries)zones.set(item.target,item.isIntersecting);
+ for(const item of entries){zones.set(item.target,item.isIntersecting);if(item.target.classList.contains('eco-strip'))item.target.classList.toggle('is-offscreen',!item.isIntersecting)}
 },{threshold:.08,rootMargin:'90px'}):null;
 const watch=element=>{if(observer&&element){zones.set(element,true);observer.observe(element)}};
 const canMove=(element,paused)=>!!element&& !mql.matches && !paused&& !document.hidden&&
@@ -39,19 +39,16 @@ function renderTicker(card){
  const target=byId('eco-strip-'+key);
  if(!target)return;
  target.replaceChildren();
- const fallback={ventures:'Founder-approved launches will appear here',tools:'No published categories yet',builders:'Verified updates will appear here'};
- if(!entries.length){
-  target.textContent=fallback[key];target.title=fallback[key];target.classList.remove('is-ticker');
-  wrap.classList.remove('has-ticker');return;
- }
- if(entries.length===1){
-  target.textContent=entries[0].text;target.title=entries[0].text;
-  target.classList.remove('is-ticker');wrap.classList.remove('has-ticker');return;
- }
+ const fallback={
+  ventures:[{text:'Founder-approved launches will appear here'},{text:'Explore HQventures'}],
+  tools:[{text:'Free tools catalogue updating'},{text:'Explore all free tools'}],
+  builders:[{text:'Verified Builders updates will appear here'},{text:'Explore Builders'}]
+ };
+ const displayEntries=entries.length?entries:fallback[key];
  const makeGroup=(clone=false)=>{
   const group=document.createElement('span');group.className='eco-ticker-group';
   if(clone)group.setAttribute('aria-hidden','true');
-  entries.forEach((entry,index)=>{
+  displayEntries.forEach((entry,index)=>{
    const item=document.createElement('span');item.className='eco-ticker-item';
    item.dataset.tickerIndex=String(index);
    item.textContent=entry.text;item.title=entry.text;
@@ -61,8 +58,8 @@ function renderTicker(card){
  };
  target.append(makeGroup(),makeGroup(true));
  target.classList.add('is-ticker');wrap.classList.add('has-ticker');
- wrap.style.setProperty('--eco-scroll-duration',Math.max(14,Math.min(48,entries.length*5.5))+'s');
- wrap.setAttribute('aria-label',(key==='tools'?'Free tool categories':key==='ventures'?'Approved ventures':'Builders updates')+': '+entries.map(x=>x.text).join('; '));
+ wrap.style.setProperty('--eco-scroll-duration',Math.max(14,Math.min(48,displayEntries.length*5.5))+'s');
+ wrap.setAttribute('aria-label',(key==='tools'?'Free tool categories':key==='ventures'?'Approved ventures':'Builders updates')+': '+displayEntries.map(x=>x.text).join('; '));
  wrap.classList.toggle('is-paused',ecoPaused);
 }
 function useCard(key,entries){
