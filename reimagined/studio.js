@@ -220,8 +220,8 @@ function renderActivity(items){
   a.append(el('h3',tool.name));
   // Use only the verified update headline and catalog description; never
   // infer an unverified feature, launch claim or improvement.
-  const generic= /^(?:Updated|Added):\\s*/i.test(x.title)&&
-   x.title.replace(/^(?:Updated|Added):\\s*/i,'').trim()===tool.name;
+  const generic= /^(?:Updated|Added):\s*/i.test(x.title)&&
+   x.title.replace(/^(?:Updated|Added):\s*/i,'').trim()===tool.name;
   a.append(el('p',generic?tool.description:x.title,'hive-update-summary'));
   a.append(el('span','Try this tool →','hive-update-action'));
   return a;
