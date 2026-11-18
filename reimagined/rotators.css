@@ -65,3 +65,33 @@
  .yh-pulse-identity strong{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){.eco-strip-copy,.yh-pulse-item{transition:none!important}}
+/* Homepage ecosystem: balanced, content-first cards. Live strips remain visible. */
+@media(min-width:941px){
+ #home .eco-card{min-height:335px;padding:20px}
+ #home .eco-graphic{height:125px}
+ #home .eco-v-circle{height:115px;width:115px}
+ #home .eco-v-circle.small{height:89px;width:89px}
+ #home .eco-v-mark{font-size:65px}
+ #home .eco-b-graphic span{width:49px;height:49px;font-size:23px}
+ #home .mini-tool{transform:scale(.8)}
+ #home .eco-strip{margin-top:10px}
+}
+@media(min-width:761px) and (max-width:940px){
+ #home .eco-card{min-height:330px;padding:17px}
+ #home .eco-graphic{height:122px}
+}
+@media(max-width:760px){
+ #home .eco-card{min-height:246px;grid-template-rows:auto minmax(105px,1fr) 37px;padding:17px;gap:3px 9px}
+ #home .eco-graphic{height:115px;align-self:center}
+ #home .eco-v-circle{width:105px;height:105px}
+ #home .eco-v-circle.small{width:77px;height:77px}
+ #home .eco-v-mark{font-size:57px}
+ #home .eco-bottom h3{font-size:clamp(23px,6.3vw,29px)}
+ #home .eco-bottom p{font-size:11px}
+}
+@media(max-width:410px){
+ #home .eco-card{min-height:233px;grid-template-columns:minmax(0,1fr) 100px;grid-template-rows:auto minmax(100px,1fr) 37px}
+ #home .eco-graphic{height:108px}
+ #home .eco-strip-kicker{font-size:7px}
+ #home .eco-strip-copy{font-size:9px}
+}
