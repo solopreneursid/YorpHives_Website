@@ -496,10 +496,10 @@ await cp(resolve(root,'site-languages.css'),resolve(dest,'site-languages.css'));
 await cp(resolve(root,'site-language-copy.mjs'),resolve(dest,'site-language-copy.mjs'));
 await cp(resolve(root,'site-tool-copy.mjs'),resolve(dest,'site-tool-copy.mjs'));
 await cp(resolve(root,'site-section-copy.mjs'),resolve(dest,'site-section-copy.mjs'));
-await write('site-catalog-copy.mjs','// Generated from founder-approved, public catalog translations at build time.\\n'+
- 'export const CATALOG_COPY='+JSON.stringify(catalogLocaleMap)+';\\n'+
- 'export const getCatalogCopy=(english,lang)=>CATALOG_COPY[english]?.[lang]||null;\\n');
-await write('i18n-coverage.json',JSON.stringify(localeReport,null,2)+'\\n');
+await write('site-catalog-copy.mjs','// Generated from founder-approved, public catalog translations at build time.\n'+
+ 'export const CATALOG_COPY='+JSON.stringify(catalogLocaleMap)+';\n'+
+ 'export const getCatalogCopy=(english,lang)=>CATALOG_COPY[english]?.[lang]||null;\n');
+await write('i18n-coverage.json',JSON.stringify(localeReport,null,2)+'\n');
 const languageUI='<div id="yh-language-picker" translate="no" aria-label="Website language">'+
  '<button type="button" data-language-toggle aria-expanded="false" aria-controls="yh-language-panel" aria-label="Change website language">'+
  '<span class="yh-language-globe" aria-hidden="true">🌐</span><span data-language-short>EN</span></button>'+
