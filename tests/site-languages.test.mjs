@@ -5,6 +5,7 @@ import {resolve} from 'node:path';
 import {LANGUAGES,localizedLabel,nativeTranslator} from '../site-languages.mjs';
 import {PAGE_COPY,getLocalCopy} from '../site-language-copy.mjs';
 import {TOOL_COPY,getToolCopy} from '../site-tool-copy.mjs';
+import {SECTION_COPY,getSectionCopy} from '../site-section-copy.mjs';
 const read=p=>readFile(resolve(process.cwd(),p),'utf8');
 test('language selector supports eight readable languages without remote dependencies',()=>{
  assert.equal(LANGUAGES.length,8);
@@ -14,10 +15,13 @@ test('language selector supports eight readable languages without remote depende
  assert.equal(localizedLabel('Unknown site content','es'),null);
  assert.ok(Object.keys(PAGE_COPY).length>=45);
  assert.ok(Object.keys(TOOL_COPY).length>=45);
+ assert.ok(Object.keys(SECTION_COPY).length>=35);
  for(const language of ['hi','es','fr','de','pt','ar','ja']){
   assert.ok(getLocalCopy('We discover emerging opportunities, build useful digital products, and create technology that evolves with the world.',language));
   assert.ok(getLocalCopy('Have an idea, an opportunity, or a reason to collaborate? Connect with YorpHives.',language));
   assert.ok(getLocalCopy('Digital Ventures.',language));
+  for(const sentence of ['Ideas are easy.','Building matters.','Less searching.','More doing.','Better together.','Your name','Prepare my email'])
+   assert.ok(getSectionCopy(sentence,language),sentence+' '+language);
   for(const label of ['Run tool','Reset','Copy result','Your input stays on this device','How to use this tool','Paste or type text here','Search by name, description, or category. Every tool runs from its own direct page.'])
    assert.ok(getToolCopy(label,language),label+' '+language);
  }
@@ -42,6 +46,7 @@ test('translation source never reads tool inputs, outputs or sends page contents
  assert.ok(source.includes("parent.closest('button')&&!controls"));
  assert.match(source,/savedAttributes/);
  assert.match(source,/getToolCopy/);
+ assert.match(source,/getSectionCopy/);
  assert.match(source,/\[id\$="-output"\]/);
  assert.match(source,/\.create\(\{sourceLanguage:'en'/);
  assert.match(source,/translate\(original\)/);
@@ -53,6 +58,10 @@ test('public tool strings translate without changing values or generated results
   assert.ok(original.includes(key),key);
  const [script,build]=await Promise.all([read('site-languages.mjs'),read('scripts/build-site.mjs')]);
  assert.ok(build.includes('site-tool-copy.mjs'));
+ assert.ok(build.includes('site-section-copy.mjs'));
+ assert.ok(script.includes("option.setAttribute('label',translation)"));
+ assert.ok(script.includes("option.textContent.trim()"));
+ assert.ok(script.includes("element.removeAttribute(name)"));
  assert.ok(script.includes("for(const name of ['placeholder','aria-label','title'])"));
  assert.ok(script.includes('[id$="-output"]'));
  assert.ok(script.includes("if(parent.closest('button')&&!controls)"));
