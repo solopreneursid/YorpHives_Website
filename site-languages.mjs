@@ -152,9 +152,9 @@ export function bindPageLanguages(doc=globalThis.document,win=globalThis.window)
   if(code==='ar'&&changed)doc.documentElement.dir='rtl';
   translateButton.hidden=!native;
   setStatus(changed?
-   'Website text translated where a first-party translation is available. Some tool instructions remain in English.':
-   'No reviewed translation for this page yet. Use your browser’s built-in Translate page command.');
-  if(native)setStatus(note.textContent+' You can optionally translate remaining public text using your browser’s on-device model.');
+   'Some interface labels translated. To translate the entire page and new products for free, use your browser’s Translate page command (Chrome or Firefox).':
+   'For free full-page translation, use your browser’s Translate page command (Chrome or Firefox).');
+  if(native)setStatus(note.textContent+' Optional on-device translation is available on compatible browsers; the browser’s Translate page feature is the most complete option.');
  }
  toggle.addEventListener('click',()=>panel.hidden?open():close());
  root.querySelector('[data-language-close]').addEventListener('click',()=>{close();toggle.focus()});
