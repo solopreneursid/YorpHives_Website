@@ -51,9 +51,10 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
      const art=document.querySelector('#home .hero-art');
      const dock=document.querySelector('.mobile-dock');
      const heroBox=hero.getBoundingClientRect();
-     return {heroHeight:heroBox.height,artHidden:getComputedStyle(art).display==='none',artHeight:art.getBoundingClientRect().height,dockHeight:dock.getBoundingClientRect().height,dockInset:dock.getBoundingClientRect().left,dockButtonHeight:dock.querySelector('a').getBoundingClientRect().height};
+     return {heroHeight:heroBox.height,artHidden:getComputedStyle(art).display==='none',artHeight:art.getBoundingClientRect().height,miniVisible:getComputedStyle(document.querySelector('#home .hero-mini-brand')).display!=='none',miniSideBySide:Math.abs(document.querySelector('#home .hero-mini-brand').getBoundingClientRect().top-document.querySelector('#home-title').getBoundingClientRect().top)<90,dockHeight:dock.getBoundingClientRect().height,dockInset:dock.getBoundingClientRect().left,dockButtonHeight:dock.querySelector('a').getBoundingClientRect().height};
     });
-    if(mobile.artHidden)problems.push(label+' mobile brand orbit missing');
+    if(!mobile.artHidden)problems.push(label+' full illustration should be desktop-only');
+    if(!mobile.miniVisible||!mobile.miniSideBySide)problems.push(label+' animated brand is not alongside headline');
     if(mobile.artHeight>160)problems.push(label+' oversized mobile brand orbit '+mobile.artHeight.toFixed(0));
     if(mobile.heroHeight>height-55)problems.push(label+' oversized hero '+mobile.heroHeight.toFixed(0)+'/'+height);
     if(mobile.dockHeight>60)problems.push(label+' oversized mobile dock '+mobile.dockHeight.toFixed(0));
