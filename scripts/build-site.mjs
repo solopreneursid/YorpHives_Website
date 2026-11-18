@@ -262,9 +262,12 @@ for(const directory of directories){
  html=injectSiteSupport(html,path);
  await write(path,html);
 }
-const canonicalPaths=[...new Set(['',...directories,...published.map(x=>x.url)])];
+// Index three honest, crawlable entrances to the existing studio sections.
+const {publishSectionLandings,sectionLandingPaths}=await import('./section-landings.mjs');
+await publishSectionLandings(write);
+const canonicalPaths=[...new Set(['',...sectionLandingPaths,...directories,...published.map(x=>x.url)])];
 // Fail if any future public HTML route is forgotten in catalog.json.
-const publicPages=new Set(['index.html',...directories.map(x=>x+'index.html'),...published.map(x=>fileFor(x.url))]);
+const publicPages=new Set(['index.html',...sectionLandingPaths.map(x=>x+'index.html'),...directories.map(x=>x+'index.html'),...published.map(x=>fileFor(x.url))]);
 async function auditHtml(dir=''){
  for(const entry of await readdir(resolve(dest,dir),{withFileTypes:true})){
   const path=join(dir,entry.name).replaceAll('\\','/');
