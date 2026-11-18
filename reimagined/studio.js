@@ -176,7 +176,6 @@ function applyCatalog(newItems){
  // Category may have disappeared or been renamed in a new catalogue release.
  if(activeCategory!=='All'&&!tools.some(t=>(t.category||'Other')===activeCategory))activeCategory='All';
  for(const id of ['home-tool-count','tools-count-big'])$(id).textContent=number(tools.length);
- for(const id of ['home-venture-count'])$(id).textContent=number(ventures.length);
  categoryChips();updateSavedCount();renderTools();renderVentures();renderFeaturedVentures();
 }
 subscribeCatalog(applyCatalog);
@@ -184,7 +183,7 @@ startCatalogMonitoring();
 async function loadCatalog(){
  try{await getCatalog()}
  catch{
-  for(const id of ['home-tool-count','tools-count-big','home-venture-count'])$(id).textContent='—';
+  for(const id of ['home-tool-count','tools-count-big'])$(id).textContent='—';
   $('tool-results-description').textContent='The catalogue is temporarily unavailable. Please use the A–Z directory.';
   $('tool-empty').hidden=false;$('tool-pagination').hidden=true;
   $('venture-total').textContent='Approval records unavailable';
@@ -192,46 +191,44 @@ async function loadCatalog(){
  }
 }
 
+// Homepage discovery rail: only actual published tool updates with safe
+// catalog-backed links. No private HQ intelligence or anonymous traffic metrics.
 function renderActivity(items){
  if(!Array.isArray(items))return;
- const entries=items.filter(x=>x&&typeof x.title==='string'&&x.title.length<180&&typeof x.kind==='string'&&
-   ((x.kind==='tools'&&verifiedPublic.has(x.url)) || (x.kind==='builders'&&x.url==='#builders') || (x.kind==='explore'&&x.url==='#explore'))).slice(0,3);
+ const eligible=items.filter(x=>x&&x.kind==='tools'&&typeof x.title==='string'&&
+  x.title.trim().length>2&&x.title.length<180&&typeof x.url==='string'&&
+  verifiedPublic.has(x.url)&&tools.some(t=>t.url===x.url));
+ const unique=new Set(),entries=[];
+ for(const x of eligible){
+  if(unique.has(x.url))continue;
+  unique.add(x.url);entries.push(x);
+  if(entries.length===3)break;
+ }
  if(!entries.length)return;
  $('activity-list').replaceChildren(...entries.map((x,i)=>{
-   const a=el('a','','activity-card');a.href=x.kind==='tools'?'../'+x.url:x.kind==='builders'?'#builders':'#ventures';
-   a.append(el('span','0'+(i+1)+' / VERIFIED UPDATE','activity-number'),el('h3',x.title));
-   if(isValidDay(x.date))a.append(el('p',niceDate(x.date)));
-   else a.append(el('p','Published update'));
-   const arrow=el('span','','activity-arrow');arrow.append(icon('external'));a.append(arrow);return a;
+  const tool=tools.find(t=>t.url===x.url);
+  const a=el('a','','activity-card hive-update'+(i===0?' hive-update-featured':''));
+  a.href='../'+tool.url;
+  const top=el('span','','hive-update-top');
+  top.append(el('span',i===0?'FEATURED UPDATE':'VERIFIED UPDATE','activity-number'));
+  if(isValidDay(x.date))top.append(el('time',niceDate(x.date),'hive-update-date'));
+  a.append(top);
+  const visual=el('span','','hive-update-icon');visual.append(icon(i===0?'spark':'grid'));
+  a.append(visual);
+  a.append(el('span',tool.category||'Free tool','hive-update-category'));
+  a.append(el('h3',tool.name));
+  // Use only the verified update headline and catalog description; never
+  // infer an unverified feature, launch claim or improvement.
+  a.append(el('p',x.title,'hive-update-summary'));
+  a.append(el('span','Try this tool →','hive-update-action'));
+  return a;
  }));
 }
-async function loadActivity(){try{const r=await fetch('../activity.json',{cache:'no-cache'});if(r.ok){const d=await r.json();renderActivity(d.items)}}catch{}}
-
-// Homepage progress uses public catalog totals and the existing anonymous,
-// read-only 30-day growth report. This is not a public HQ dashboard.
-const validCount=value=>Number.isSafeInteger(value)&&value>=0&&value<=1_000_000_000;
-async function loadHomeMetrics(){
+async function loadActivity(){
  try{
-  const response=await fetch('/api/insights/growth',{cache:'no-store'});
-  if(!response.ok)return;
-  const data=await response.json();
-  if(data?.schemaVersion!==1||data.available!==true||data.periodDays!==30||
-   !Array.isArray(data.daily)||data.daily.length!==30)return;
-  const dates=new Set();
-  let pageViews=0,completedActions=0;
-  for(const row of data.daily){
-   if(!isValidDay(row?.day)||dates.has(row.day)||
-    !validCount(row.pageViews)||!validCount(row.completedActions))return;
-   dates.add(row.day);
-   pageViews+=row.pageViews;completedActions+=row.completedActions;
-  }
-  if(!validCount(pageViews)||!validCount(completedActions))return;
-  $('home-page-views').textContent=number(pageViews);
-  $('home-completions').textContent=number(completedActions);
-  if(typeof data.generatedAt==='string'&&Number.isFinite(Date.parse(data.generatedAt)))
-   $('home-metrics-updated').textContent='Recorded activity · updated '+
-    new Date(data.generatedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'});
- }catch{/* The website remains usable when analytics is unavailable. */}
+  const r=await fetch('../activity.json',{cache:'no-cache'});
+  if(r.ok){const d=await r.json();renderActivity(d.items)}
+ }catch{/* Existing tool discovery remains available offline. */}
 }
 
 for(const link of document.querySelectorAll('[data-interest]'))link.addEventListener('click',()=>{
@@ -247,7 +244,3 @@ $('contact-form').addEventListener('submit',e=>{
 await loadCatalog();
 await loadActivity();
 
-// Non-personal aggregate report only. Keep the rest of the site independent.
-await loadHomeMetrics();
-window.setInterval(()=>{if(!document.hidden)void loadHomeMetrics()},300_000);
-window.addEventListener('focus',()=>{if(!document.hidden)void loadHomeMetrics()});
