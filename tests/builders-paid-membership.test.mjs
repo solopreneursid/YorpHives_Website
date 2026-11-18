@@ -77,3 +77,21 @@ test('release gate still prohibits public job posting forms',async()=>{
   assert.match(release,/Public job listing or job-posting form is forbidden/);
   assert.match(release,/data-form="opportunity"/);
 });
+
+test('Builders clearly separates two roles without pretending enrollment is live',async()=>{
+ const html=builderBody(await read('index.html'));
+ assert.match(html,/id="builders-paths-title"/);
+ assert.match(html,/01 \/ FIND WORK/);
+ assert.match(html,/02 \/ HIRE BUILDERS/);
+ assert.match(html,/How membership will work/);
+ assert.match(html,/Both sides need confirmed, active paid access/);
+ assert.match(html,/No payment or application is being accepted/);
+ assert.match(html,/Contact is not enrollment/);
+ assert.match(html,/id="builders-how-it-works"/);
+ assert.equal((html.match(/class="member-action"/g)||[]).length,2);
+ assert.doesNotMatch(html,/<form\b|<input\b|<textarea\b|<select\b/);
+ const [css,mobile]=await Promise.all([read('next.css'),read('next-responsive.css')]);
+ assert.match(css,/\.builders-journey-grid\{display:grid/);
+ assert.match(css,/\.member-action\{display:inline-flex/);
+ assert.match(mobile,/\.builders-journey-grid\{grid-template-columns:1fr/);
+});
