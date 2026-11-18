@@ -32,9 +32,10 @@ if(isReimagined){
   try{await stat(resolve(root,filename));}catch{problems.push('New homepage asset missing: '+filename);}
  if(!homepage.includes('CLOUD-BASED · AI-POWERED VENTURE STUDIO')||
     !homepage.includes('YorpHivesHQ finds the signal')||
-    !homepage.includes('class="kofi-support" id="kofi-support" type="button" disabled')||
+    !homepage.includes('class="cta-card"')||
+    !homepage.includes('id="anonymous-analytics-toggle"')||
     !homepage.includes('id="yh-pulse-item"'))
-  problems.push('Venture studio identity, disabled support action, or transparent YHpulse missing.');
+  problems.push('Venture studio identity, collaboration CTA, analytics preferences, or transparent YHpulse missing.');
  if(homepage.includes('DESIGN PREVIEW · NOT LIVE')||
     homepage.includes('name="robots" content="noindex')||
     !homepage.includes('rel="canonical" href="https://yorphives.com/"'))
