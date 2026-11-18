@@ -208,6 +208,25 @@ try{
   await page.locator('#directory-search').fill('word');
   assert.equal(await page.locator('#directory-search').inputValue(),'word');
  },{mobile:true});
+ await check('language: contact and venture views translate while form values stay English',async page=>{
+  await open(page,'/#contact');
+  const picker=page.locator('#yh-language-picker');
+  await picker.locator('[data-language-toggle]').click();
+  await picker.locator('select').selectOption('hi');
+  await page.waitForFunction(()=>document.querySelector('#contact label')?.textContent?.includes('नाम'));
+  assert.match(await page.locator('#contact').innerText(),/आइए बात करें/);
+  const option=page.locator('#interest option').first();
+  assert.equal(await option.getAttribute('label'),'उत्पाद का विचार');
+  assert.equal(await option.getAttribute('value'),null);
+  assert.equal(await option.evaluate(el=>el.value),'Product idea');
+  await page.locator('#contact input[name="Name"]').fill('My original name');
+  assert.equal(await page.locator('#contact input[name="Name"]').inputValue(),'My original name');
+  await picker.locator('[data-language-toggle]').click();
+  await picker.locator('select').selectOption('en');
+  assert.equal(await option.getAttribute('label'),null);
+  assert.equal(await option.evaluate(el=>el.value),'Product idea');
+  assert.equal(await page.locator('#contact input[name="Name"]').inputValue(),'My original name');
+ },{mobile:true});
  await check('language: optional browser Translator translates remaining public copy without touching inputs',async page=>{
   await page.addInitScript(()=>{
    Object.defineProperty(window,'Translator',{configurable:true,value:{
