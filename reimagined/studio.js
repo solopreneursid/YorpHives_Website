@@ -211,7 +211,8 @@ function renderActivity(items){
   a.href='../'+tool.url;
   const top=el('span','','hive-update-top');
   top.append(el('span',i===0?'FEATURED UPDATE':'VERIFIED UPDATE','activity-number'));
-  if(isValidDay(x.date))top.append(el('time',niceDate(x.date),'hive-update-date'));
+  const day=typeof x.timestamp==='string'?x.timestamp.slice(0,10):x.date;
+  if(isValidDay(day))top.append(el('time',niceDate(day),'hive-update-date'));
   a.append(top);
   const visual=el('span','','hive-update-icon');visual.append(icon(i===0?'spark':'grid'));
   a.append(visual);
@@ -219,7 +220,9 @@ function renderActivity(items){
   a.append(el('h3',tool.name));
   // Use only the verified update headline and catalog description; never
   // infer an unverified feature, launch claim or improvement.
-  a.append(el('p',x.title,'hive-update-summary'));
+  const generic= /^(?:Updated|Added):\\s*/i.test(x.title)&&
+   x.title.replace(/^(?:Updated|Added):\\s*/i,'').trim()===tool.name;
+  a.append(el('p',generic?tool.description:x.title,'hive-update-summary'));
   a.append(el('span','Try this tool →','hive-update-action'));
   return a;
  }));
