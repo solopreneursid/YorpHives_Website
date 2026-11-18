@@ -1,0 +1,26 @@
+name: Health production legacy redirect verification
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/health-live-redirect-verify.yml'
+      - 'scripts/health-release-verify.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-live-legacy-redirects:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm all 46 source redirect rules
+        run: node scripts/health-release-verify.mjs --source
+      - name: Check all 46 live redirects and their first-party HTML destinations
+        run: node scripts/health-release-verify.mjs --live
+      - name: Record verification boundary
+        if: always()
+        run: |
+          echo 'Public read-only GET checks. No secrets, visitor analytics writes, website mutations, HQ changes or production deployments. Destination HTML does not prove interactive tool functionality.' >> "$GITHUB_STEP_SUMMARY"
