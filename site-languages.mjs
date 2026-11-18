@@ -32,7 +32,7 @@ export function nativeTranslator(win=globalThis){
 function translatable(node){
  if(!node||node.nodeType!==3||!node.nodeValue?.trim()||node.nodeValue.trim().length>650)return false;
  const parent=node.parentElement;
- if(!parent||parent.closest('#yh-language-picker,[translate="no"],.notranslate,[contenteditable],textarea,select,option,button,pre,code,script,style,svg,canvas,video,audio,#utility-result,#file-result,[id$="-result"],[id$="-output"],.tool-status,[aria-live]'))return false;
+ if(!parent||parent.closest('#yh-language-picker,[translate="no"],.notranslate,[contenteditable],textarea,select,option,button,pre,code,script,style,svg,canvas,video,audio,.tui-upload-zone,.file-box,.utility-preview,#utility-result,#file-result,[id$="-result"],[id$="-output"],[class*="result-panel"],.tool-status,[aria-live]'))return false;
  if(parent.closest('form')&& !parent.closest('label'))return false;
  if(parent.closest('[hidden]'))return false;
  return true;
@@ -72,7 +72,7 @@ export function bindPageLanguages(doc=globalThis.document,win=globalThis.window)
   try{win.localStorage?.setItem(KEY,code)}catch{}
   reset();
   select.value=code;
-  if(code==='en'){setStatus('Showing the original English website.');return;}
+  if(code==='en'){button.hidden=true;setStatus('');return;}
   essential(code);
   button.textContent='Translate page';
   if(!native){
@@ -132,6 +132,7 @@ export function bindPageLanguages(doc=globalThis.document,win=globalThis.window)
   }
  });
  chosen(readPreference());
+ win.addEventListener('hashchange',()=>{if(current!=='en')essential(current);});
  return {choose:chosen,restore};
 }
 if(typeof document!=='undefined'){
