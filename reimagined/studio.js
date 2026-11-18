@@ -92,7 +92,7 @@ $('more-toggle').addEventListener('click',()=>{
 $('more-close').addEventListener('click',moreClose);
 $('more-shade').addEventListener('click',moreClose);
 $('more-panel').addEventListener('click',e=>{if(e.target.closest('a'))moreClose()});
-window.addEventListener('resize',()=>{if(innerWidth>940)menuClose();if(innerWidth>760)moreClose()});
+window.addEventListener('resize',()=>{if(innerWidth>1100)menuClose();if(innerWidth>760)moreClose()});
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){menuClose();moreClose()}
  if(e.key==='/'&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)&&!e.metaKey&&!e.ctrlKey){e.preventDefault();location.hash='#tools';setTimeout(()=>$('tool-search').focus(),70)}

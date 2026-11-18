@@ -46,6 +46,11 @@ test('3D navigation is tactile, accessible, and does not delay routing',async()=
  assert.match(css,/width:112px/);
  assert.match(css,/height:43px/);
  assert.match(css,/width:91px/);
+ assert.match(css,/@media\(min-width:941px\) and \(max-width:1100px\)/);
+ assert.match(css,/\.topbar \.topnav,\.topbar \.header-contact\{display:none\}/);
+ assert.match(css,/\.topbar \.menu-toggle\{display:flex/);
+ assert.match(js,/innerWidth>1100\)menuClose\(\)/);
+
 
  assert.match(js,/routeReady&&changed&&allowsMotion\(\)/);
  assert.match(js,/routeMotionTimer=setTimeout/);
