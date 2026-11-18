@@ -715,3 +715,47 @@ section[id],.view[id],#home-progress,#featured-tools{scroll-margin-top:clamp(72p
  .mobile-menu:not([hidden]){animation:none}
  .mobile-dock a,.mobile-dock button{transition:none;transform:none}
 }
+
+/* Restore YorpHives animated brand orbit on phones without the original 350px
+   illustration height. Mobile keeps the original CSS animation and logo asset. */
+@media(max-width:760px){
+ #home .hero-art{
+  display:block;
+  width:min(210px,56vw);
+  height:155px;
+  min-height:0;
+  flex:none;
+  align-self:flex-end;
+  margin:1px clamp(12px,8vw,48px) -3px auto;
+  pointer-events:none;
+ }
+ #home .hero-art-halo{inset:3% 1%;filter:blur(15px);opacity:.7}
+ #home .hero-art-orbit{inset:12% 11%}
+ #home .hero-art-orbit-b{inset:18% 6%}
+ #home .hero-art-path{opacity:.55}
+ #home .art-core{
+  width:89px;height:89px;
+  left:50%;top:50%;
+  border-radius:21px;
+  box-shadow:0 10px 29px #40e7ab45,inset 0 0 18px #84f7ad33;
+ }
+ #home .art-core:before{border-radius:16px}
+ #home .art-core img{width:59px;height:59px}
+ #home .art-node,#home .art-ring-caption{display:none}
+}
+@media(max-width:370px){
+ #home .hero-art{width:158px;height:123px;margin-right:9px}
+ #home .art-core{width:74px;height:74px;border-radius:18px}
+ #home .art-core img{width:49px;height:49px}
+}
+@media(max-width:760px) and (max-height:730px){
+ #home .hero-art{height:118px;width:165px;margin-top:0}
+ #home .art-core{width:75px;height:75px}
+ #home .art-core img{width:49px;height:49px}
+}
+@media(max-width:760px) and (orientation:landscape){
+ #home .hero-art{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ #home .hero-art-orbit,#home .art-core{animation:none!important}
+}
