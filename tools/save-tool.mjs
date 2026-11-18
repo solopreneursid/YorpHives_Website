@@ -8,7 +8,7 @@ export function readSaved(storage){
  }catch{return [];}
 }
 export function toggleSaved(storage,route){
- if(!ROUTE.test(route))return null;
+ if(!ROUTE.test(route)||!storage||typeof storage.setItem!=='function')return null;
  const items=new Set(readSaved(storage));
  if(items.has(route))items.delete(route);else items.add(route);
  try{storage?.setItem(SAVED_KEY,JSON.stringify([...items]));return items.has(route);}
