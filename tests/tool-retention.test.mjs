@@ -19,10 +19,10 @@ test('saved tools share homepage key, reject invalid routes, and do not store in
  db.setItem(SAVED_KEY,JSON.stringify(['tools/pdf-merge/','tools/pdf-merge/','../../secrets',77]));
  assert.deepEqual(readSaved(db),['tools/pdf-merge/']);
 });
-test('production build contains saved buttons, same-category recommendations, and 143 independent canonical tool pages',async()=>{
+test('production build contains saved buttons, same-category recommendations, and all independent canonical tool pages',async()=>{
  const dir=resolve('dist');
  const items=JSON.parse(await readFile(resolve(dir,'catalog.json'),'utf8')).items.filter(x=>x.type==='tool');
- assert.equal(items.length,143);
+ assert.equal(items.length,144);
  const routes=new Set(items.map(x=>x.url));
  for(const tool of items){
   const html=await readFile(resolve(dir,tool.url,'index.html'),'utf8');
