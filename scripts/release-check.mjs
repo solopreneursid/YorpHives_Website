@@ -33,7 +33,7 @@ if(isReimagined){
  for(const filename of ['rotators.css','impact-public.json','usage-public.json','builders-updates.json'])
   try{await stat(resolve(root,filename));}catch{problems.push('New homepage asset missing: '+filename);}
  if(!homepage.includes('CLOUD-BASED • AI-POWERED VENTURE STUDIO')||
-    !homepage.includes('We discover emerging opportunities')||
+    !homepage.includes('Discover useful tools, explore emerging products')||
     !homepage.includes('class="kofi-support" id="kofi-support" type="button" disabled')||
     !homepage.includes('id="home-featured-list"')||
     !homepage.includes('id="how-it-works"'))
