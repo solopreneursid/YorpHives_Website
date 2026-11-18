@@ -44,7 +44,8 @@ test('legacy tools remain usable and future products appear on localization work
  assert.equal(report.pending.find(x=>x.url===future.url).legacy,false);
  assert.match(report.pending.find(x=>x.url===future.url).missing.join(' '),/ja/);
  const build=await read('scripts/build-site.mjs');
- assert.match(build,/New public catalog entry lacks reviewed localization/);
+ assert.doesNotMatch(build,/throw Error\('New public catalog entry lacks reviewed localization/);
+ assert.match(build,/Browser-native translation is the zero-cost default/);
  assert.match(build,/makeCatalogLocaleCopy\(published\)/);
  assert.match(build,/site-catalog-copy\.mjs/);
  assert.match(build,/i18n-coverage\.json/);
