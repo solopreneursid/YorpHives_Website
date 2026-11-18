@@ -92,7 +92,7 @@ try{
   assert.match(href,/^\/tools\/[a-z0-9-]+\/$/);
   await related.first().click();
   assert.equal(new URL(page.url()).pathname,href);
-  assert.ok(await page.locator('h1').first().isVisible());
+  await page.locator('h1').first().waitFor({state:'visible',timeout:10000});
  },{mobile:true});
  await check('privacy: blocked storage cannot display false save success',async page=>{
   await open(page,'/tools/word-counter/');
