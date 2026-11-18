@@ -32,8 +32,8 @@ if(isReimagined){
  const catalogSync=await read('catalog-sync.mjs');
  for(const filename of ['rotators.css','impact-public.json','usage-public.json','builders-updates.json'])
   try{await stat(resolve(root,filename));}catch{problems.push('New homepage asset missing: '+filename);}
- if(!homepage.includes('CLOUD-BASED · AI-POWERED VENTURE STUDIO')||
-    !homepage.includes('YorpHivesHQ finds the signal')||
+ if(!homepage.includes('CLOUD-BASED • AI-POWERED VENTURE STUDIO')||
+    !homepage.includes('We discover emerging opportunities')||
     !homepage.includes('class="kofi-support" id="kofi-support" type="button" disabled')||
     !homepage.includes('id="yh-pulse-item"'))
   problems.push('Venture studio identity, disabled support action, or transparent YHpulse missing.');
