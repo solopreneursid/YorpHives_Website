@@ -9,7 +9,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 test('Three new public tools are registered with first-party local modules',async()=>{
  const catalog=JSON.parse(await readFile(resolve(root,'catalog.json'),'utf8'));
  const paths=['heic-to-jpg','audio-trimmer','pdf-redaction'];
- assert.equal(catalog.items.filter(x=>x.type==='tool').length,143);
+ assert.equal(catalog.items.filter(x=>x.type==='tool').length,144);
  assert.deepEqual(WAVE3_IDS,['heic-to-jpg','audio-trimmer']);
  for(const id of paths){
   const item=catalog.items.find(x=>x.url==='tools/'+id+'/');
