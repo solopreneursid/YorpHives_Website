@@ -30,5 +30,7 @@ test('built tool directory remains crawlable and fully linked without JavaScript
  assert.equal(cards.length,143);
  const script=await readFile(resolve(root,'dist/tools/directory-search.mjs'),'utf8');
  assert.match(script,/history\.replaceState/);
- assert.doesNotMatch(script,/(?:fetch\(|sendBeacon|XMLHttpRequest|localStorage|sessionStorage)/);
+ assert.doesNotMatch(script,/(?:fetch\(|sendBeacon|XMLHttpRequest|sessionStorage)/);
+ assert.match(script,/readSaved\(win\.localStorage\)/);
+ // Bookmarks persist locally using the existing homepage key; search terms are never uploaded.
 });
