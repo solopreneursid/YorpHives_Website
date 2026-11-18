@@ -178,12 +178,30 @@ try{
   assert.equal(await info.locator('.proof-metric').count(),4);
   assert.equal(await page.locator('#impact').count(),0);
   assert.equal(await page.locator('a[href="#impact"]').count(),0);
-  assert.ok(await page.locator('#home #yh-pulse').count()===1,'YHpulse must be homepage-only');
+  assert.equal(await page.locator('#yh-pulse').count(),0,'Duplicate YHpulse ticker must be removed');
   await page.locator('a[href="#home-progress"]').first().click();
   assert.equal(new URL(page.url()).hash,'#home-progress');
   assert.ok(await info.isVisible());
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   assert.ok(overflow<=8,'Homepage metrics cause mobile overflow: '+overflow);
+ },{mobile:true});
+ await check('homepage: visual process and partnership/contact invitation work on mobile',async page=>{
+  await open(page,'/');
+  const flow=page.locator('#how-it-works .process-stage');
+  assert.equal(await flow.count(),4);
+  assert.deepEqual(await flow.locator('h3').allTextContents(),[
+   'Find the signal.','Test the potential.','Make it useful.','Keep getting better.'
+  ]);
+  assert.ok(await page.locator('#featured-ventures').isVisible());
+  assert.ok(await page.locator('#home-featured-empty').isVisible());
+  assert.equal(await page.locator('#home-featured-list .home-featured-card').count(),0);
+  const cta=page.locator('#home .home-cta');
+  assert.match(await cta.innerText(),/Let's Build What's Next/);
+  assert.match(await cta.innerText(),/Have an idea, an opportunity, or a reason to collaborate/);
+  assert.equal(await cta.locator('a[href="#partners"]').count(),1);
+  assert.equal(await cta.locator('a[href="#contact"]').count(),1);
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  assert.ok(overflow<=8,'Visual process or CTA caused horizontal overflow: '+overflow);
  },{mobile:true});
  await check('homepage: metrics use only validated anonymous 30-day reports',async page=>{
   const daily=Array.from({length:30},(_,i)=>({
