@@ -57,6 +57,24 @@ test('3D navigation is tactile, accessible, and does not delay routing',async()=
  assert.match(js,/views\.forEach\(v=>v\.hidden=v\.id!==active\)/);
 });
 
+test('responsive layout supports small phones, tablets, landscape, touch and safe areas',async()=>{
+ const [html,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.css')]);
+ assert.match(html,/name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/);
+ assert.match(css,/@media\(min-width:1600px\)/);
+ assert.match(css,/@media\(min-width:761px\) and \(max-width:1100px\)/);
+ assert.match(css,/@media\(max-width:520px\)/);
+ assert.match(css,/@media\(max-width:370px\)/);
+ assert.match(css,/@media\(max-width:760px\) and \(orientation:landscape\) and \(max-height:480px\)/);
+ assert.match(css,/@media\(hover:none\),\(pointer:coarse\)/);
+ assert.match(css,/env\(safe-area-inset-bottom/);
+ assert.match(css,/overflow-x:hidden/);
+ assert.match(css,/\.contact-form input,\.contact-form select,\.contact-form textarea\{font-size:16px\}/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.match(html,/class="mobile-menu"/);
+ assert.match(html,/id="kofi-support"/);
+ assert.match(html,/id="anonymous-analytics-toggle"/);
+});
+
 test('new frontend is independent, local-first, and protects original tool engines',async()=>{
  const [html,js,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js'),read('reimagined/studio.css')]);
  assert.match(html,/href="studio\.css"/);
