@@ -37,9 +37,9 @@ async function event(kind,extra){
 const route=()=>{
  if(/^\/tools\/[a-z0-9-]+\/$/.test(location.pathname))return 'tool';
  const hash=location.hash.slice(1);
- const alias={explore:'ventures',connect:'contact',ecosystem:'home',opportunities:'builders',membership:'builders'};
+ const alias={explore:'ventures',connect:'contact',ecosystem:'home',opportunities:'builders',membership:'builders',impact:'home','home-progress':'home'};
  const target=alias[hash]||hash||'home';
- return ['home','ventures','builders','impact','tools','partners','contact'].includes(target)?target:'home';
+ return ['home','ventures','builders','tools','partners','contact'].includes(target)?target:'home';
 };
 let lastRoute='';
 function trackView(){
