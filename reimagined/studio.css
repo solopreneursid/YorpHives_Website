@@ -88,3 +88,18 @@
 .impact-privacy-note a{color:#126d48;text-decoration:underline;text-underline-offset:3px}
 @media(max-width:460px){.analytics-choice{font-size:10px;padding:6px 8px}
  .impact-privacy-note{font-size:11px}}
+
+/* Builders MVP discovery: visibly separate the two paid membership audiences. */
+.builder-role{border-top:3px solid #84d49f!important}
+.builder-role .coming-chip,.builder-paths article>.coming-chip{margin-top:auto}
+.builder-role .text-link{display:inline-flex;align-items:center;gap:7px;min-height:44px;margin-top:12px;color:#1b6842;font-weight:850;text-decoration:underline;text-underline-offset:4px}
+.builder-role .text-link svg{width:17px;height:17px}
+.builder-paths article>.text-link{min-height:44px}
+.builders-next-steps{margin-top:36px;padding:28px 29px;border:1px solid #d0e2d5;border-radius:18px;background:#f4faf5}
+.builders-next-steps>.overline{color:#387e56}
+.builders-next-steps h3{font-size:clamp(21px,2.4vw,28px);color:#194d34;margin:7px 0 21px}
+.builders-next-steps ol{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;list-style:none;margin:0;padding:0}
+.builders-next-steps li{display:flex;flex-direction:column;gap:8px;min-width:0}
+.builders-next-steps li strong{font-size:14px;color:#23613f}
+.builders-next-steps li span{font-size:12px;line-height:1.65;color:#60806b}
+@media(max-width:760px){.builders-next-steps{padding:21px 18px;margin-top:24px}.builders-next-steps ol{grid-template-columns:1fr;gap:18px}.builders-next-steps h3{margin-bottom:16px}.builder-role .text-link{width:100%;justify-content:space-between}}
