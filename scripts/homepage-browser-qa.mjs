@@ -45,6 +45,23 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
    }));
    const label=engineName+'/'+name;
    if(result.scrollWidth>result.width+2)problems.push(label+' overflow '+result.scrollWidth+'/'+result.width);
+   if(width<=430){
+    const mobile=await page.evaluate(()=>{
+     const hero=document.querySelector('#home .home-hero');
+     const art=document.querySelector('#home .hero-art');
+     const dock=document.querySelector('.mobile-dock');
+     const heroBox=hero.getBoundingClientRect();
+     return {heroHeight:heroBox.height,artHidden:getComputedStyle(art).display==='none',dockHeight:dock.getBoundingClientRect().height};
+    });
+    if(!mobile.artHidden)problems.push(label+' phone hero art still taking screen space');
+    if(mobile.heroHeight>height-55)problems.push(label+' oversized hero '+mobile.heroHeight.toFixed(0)+'/'+height);
+    if(mobile.dockHeight>72)problems.push(label+' oversized mobile dock '+mobile.dockHeight.toFixed(0));
+    const menu=page.locator('#menu-toggle');
+    await menu.click();
+    const menuBounds=await page.locator('#mobile-menu').boundingBox();
+    if(!menuBounds||menuBounds.width>310||menuBounds.height>390)problems.push(label+' oversized menu '+JSON.stringify(menuBounds));
+    await menu.click();
+   }
    if(!result.tools)problems.push(label+' featured tools missing');
    if(result.tickerGroups!==2)problems.push(label+' continuous tool ticker not hydrated');
    if(!result.hasKofi||!result.hasContact||!result.hasAnalytics)problems.push(label+' missing button/control');
