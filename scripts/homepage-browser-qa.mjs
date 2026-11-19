@@ -49,14 +49,38 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
     const mobile=await page.evaluate(()=>{
      const hero=document.querySelector('#home .home-hero');
      const art=document.querySelector('#home .hero-art');
+     const logo=document.querySelector('#home .hero-mini-brand');
      const dock=document.querySelector('.mobile-dock');
-     const heroBox=hero.getBoundingClientRect();
-     return {heroHeight:heroBox.height,artHidden:getComputedStyle(art).display==='none',artHeight:art.getBoundingClientRect().height,miniVisible:getComputedStyle(document.querySelector('#home .hero-mini-brand')).display!=='none',miniSideBySide:Math.abs(document.querySelector('#home .hero-mini-brand').getBoundingClientRect().top-document.querySelector('#home-title').getBoundingClientRect().top)<90,dockHeight:dock.getBoundingClientRect().height,dockInset:dock.getBoundingClientRect().left,dockButtonHeight:dock.querySelector('a').getBoundingClientRect().height};
+     const artBox=art.getBoundingClientRect();
+     const cards=[...art.querySelectorAll('.art-node')];
+     const labels=cards.map(n=>n.querySelector('strong')?.textContent.trim());
+     return {
+      heroHeight:hero.getBoundingClientRect().height,
+      artVisible:getComputedStyle(art).display!=='none',
+      artHeight:artBox.height,
+      cardsVisible:cards.length===3&&cards.every(n=>getComputedStyle(n).display!=='none'),
+      cardsWithinOrbit:cards.every(n=>{
+       const b=n.getBoundingClientRect();
+       return b.left>=artBox.left-1&&b.right<=artBox.right+1&&b.top>=artBox.top-1&&b.bottom<=artBox.bottom+1;
+      }),
+      labels,
+      miniHidden:getComputedStyle(logo).display==='none',
+      dockHeight:dock.getBoundingClientRect().height,
+      dockInset:dock.getBoundingClientRect().left,
+      dockButtonHeight:dock.querySelector('a').getBoundingClientRect().height
+     };
     });
-    if(!mobile.artHidden)problems.push(label+' full illustration should be desktop-only');
-    if(!mobile.miniVisible||!mobile.miniSideBySide)problems.push(label+' animated brand is not alongside headline');
-    if(mobile.artHeight>160)problems.push(label+' oversized mobile brand orbit '+mobile.artHeight.toFixed(0));
-    if(mobile.heroHeight>height-55)problems.push(label+' oversized hero '+mobile.heroHeight.toFixed(0)+'/'+height);
+    // Mobile now uses the same original floating-card orbit as desktop.
+    if(!mobile.artVisible)problems.push(label+' desktop-style orbit hidden on phone');
+    if(!mobile.cardsVisible||!mobile.cardsWithinOrbit)problems.push(label+' floating process boxes missing or clipped');
+    if(mobile.labels.join('|')!=='Spot the signal|Test the idea|Decide & create')
+     problems.push(label+' orbital process labels changed '+mobile.labels.join('|'));
+    if(!mobile.miniHidden)problems.push(label+' duplicate mini-brand beside original orbit');
+    if(mobile.artHeight<220||mobile.artHeight>365)
+     problems.push(label+' orbital proportions outside mobile range '+mobile.artHeight.toFixed(0));
+    // The fuller orbit legitimately extends the first screen; it must not grow without bounds.
+    if(mobile.heroHeight>height+120)
+     problems.push(label+' excessive mobile hero height '+mobile.heroHeight.toFixed(0)+'/'+height);
     if(mobile.dockHeight>60)problems.push(label+' oversized mobile dock '+mobile.dockHeight.toFixed(0));
     if(mobile.dockInset<4)problems.push(label+' dock not floating inside its 3D tray');
     if(mobile.dockButtonHeight<44)problems.push(label+' dock touch target below 44px');
