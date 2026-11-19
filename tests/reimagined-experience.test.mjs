@@ -68,7 +68,7 @@ test('public progress and portfolio never imply an unapproved launch',async()=>{
  assert.match(html,/Nothing launches without approval/);
  assert.match(js,/qualifiedProducts\(allItems\)/);
  assert.match(js,/fetch\('\/activity\.json'/);
- assert.match(policy,/approvedByFounder/);
+ assert.match(policy,/founderApproval/);
 });
 test('fresh root uses only local assets and first-party analytics controls',async()=>{
  const [html,js,client]=await Promise.all([
