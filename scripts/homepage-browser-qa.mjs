@@ -52,18 +52,28 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
      const logo=document.querySelector('#home .hero-mini-brand');
      const dock=document.querySelector('.mobile-dock');
      const artBox=art.getBoundingClientRect();
-     const headingBox=document.querySelector('#home-title').getBoundingClientRect();
+     const heading=document.querySelector('#home-title');
+     const headingBox=heading.getBoundingClientRect();
+     const headingLineHeight=parseFloat(getComputedStyle(heading).lineHeight);
+     const headingLineCount=Math.round(headingBox.height/headingLineHeight);
      const introBox=document.querySelector('#home .hero-intro').getBoundingClientRect();
      const cards=[...art.querySelectorAll('.art-node')];
+     const cardBoxes=cards.map(n=>n.getBoundingClientRect());
      const labels=cards.map(n=>n.querySelector('strong')?.textContent.trim());
      return {
       heroHeight:hero.getBoundingClientRect().height,
       artVisible:getComputedStyle(art).display!=='none',
       artHeight:artBox.height,
+      artAspect:artBox.width/artBox.height,
+      headingArtTopDelta:Math.abs(headingBox.top-artBox.top),
+      researchPosition:(cardBoxes[0].top-artBox.top)/artBox.height,
+      evaluatePosition:(cardBoxes[1].top-artBox.top)/artBox.height,
+      founderBottomGap:(artBox.bottom-cardBoxes[2].bottom)/artBox.height,
       orbitBesideHeading:headingBox.right<=artBox.left+2 &&
        artBox.top<headingBox.bottom && artBox.bottom>headingBox.top,
       introBelowOrbit:introBox.top>=artBox.bottom-2,
-      headingFont:parseFloat(getComputedStyle(document.querySelector('#home-title')).fontSize),
+      headingFont:parseFloat(getComputedStyle(heading).fontSize),
+      headingLineCount,
       cardFont:parseFloat(getComputedStyle(cards[0].querySelector('strong')).fontSize),
       cardsVisible:cards.length===3&&cards.every(n=>getComputedStyle(n).display!=='none'),
       cardsWithinOrbit:cards.every(n=>{
@@ -84,10 +94,15 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
      problems.push(label+' orbital process labels changed '+mobile.labels.join('|'));
     if(!mobile.miniHidden)problems.push(label+' duplicate mini-brand beside original orbit');
     if(!mobile.orbitBesideHeading)problems.push(label+' orbit must sit BESIDE the headline, not below');
+    if(mobile.headingArtTopDelta>8)problems.push(label+' headline and orbit top edges are misaligned '+mobile.headingArtTopDelta.toFixed(0)+'px');
     if(!mobile.introBelowOrbit)problems.push(label+' hero introduction overlaps the orbit');
-    if(mobile.headingFont<25||mobile.cardFont<7.5)problems.push(label+' heading or floating card text too small');
-    if(mobile.artHeight<200||mobile.artHeight>300)
-     problems.push(label+' orbital proportions outside compact mobile range '+mobile.artHeight.toFixed(0));
+    if(mobile.headingFont<20||mobile.cardFont<7.5)problems.push(label+' heading or floating card text too small');
+    if(mobile.headingLineCount!==3)problems.push(label+' headline must retain desktop three-line composition, got '+mobile.headingLineCount);
+    if(mobile.artAspect<.95||mobile.artAspect>1.15)
+     problems.push(label+' mobile orbit aspect ratio outside proportion '+mobile.artAspect.toFixed(2));
+    if(mobile.researchPosition<.04||mobile.researchPosition>.18)problems.push(label+' research card no longer near orbit top');
+    if(mobile.evaluatePosition<.23||mobile.evaluatePosition>.42)problems.push(label+' intelligence card no longer near orbit middle');
+    if(mobile.founderBottomGap<.04||mobile.founderBottomGap>.18)problems.push(label+' founder card no longer near orbit bottom');
     // The fuller orbit legitimately extends the first screen; it must not grow without bounds.
     if(mobile.heroHeight>height+120)
      problems.push(label+' excessive mobile hero height '+mobile.heroHeight.toFixed(0)+'/'+height);
