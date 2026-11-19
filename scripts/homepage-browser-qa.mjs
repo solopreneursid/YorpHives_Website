@@ -59,6 +59,11 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
      const introBox=document.querySelector('#home .hero-intro').getBoundingClientRect();
      const introFont=parseFloat(getComputedStyle(document.querySelector('#home .hero-intro')).fontSize);
      const buttons=[...document.querySelectorAll('#home .hero-ctas .button')].map(n=>n.getBoundingClientRect());
+     const heroBottom=document.querySelector('#home .hero-bottom');
+     const bottomStatus=heroBottom.querySelector(':scope > span');
+     const bottomLink=heroBottom.querySelector('a');
+     const footerCaptionsDoNotWrap=getComputedStyle(bottomStatus).whiteSpace==='nowrap' &&
+      getComputedStyle(bottomLink).whiteSpace==='nowrap';
      const cards=[...art.querySelectorAll('.art-node')];
      const cardBoxes=cards.map(n=>n.getBoundingClientRect());
      const labels=cards.map(n=>n.querySelector('strong')?.textContent.trim());
@@ -78,6 +83,7 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
       introBesideOrbit:introBox.right<=artBox.left+2 &&
        introBox.top<artBox.bottom-10,
       introFont,
+      footerCaptionsDoNotWrap,
       ctasSideBySide:buttons.length===2 &&
        Math.abs(buttons[0].top-buttons[1].top)<2 &&
        buttons[0].right<=buttons[1].left+2,
@@ -111,6 +117,7 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
     if(!mobile.introUnderHeading||!mobile.introBesideOrbit)
      problems.push(label+' description must sit immediately UNDER headline and BESIDE artwork');
     if(!mobile.buttonsUnderComposition)problems.push(label+' hero buttons overlap headline or artwork');
+    if(!mobile.footerCaptionsDoNotWrap)problems.push(label+' desktop-style hero closing captions wrap on phone');
     if(width>=360&&!mobile.ctasSideBySide)problems.push(label+' desktop-like paired buttons not side by side');
     if(width<360&&!mobile.ctasStacked)problems.push(label+' narrow-phone buttons should stack without clipping');
     if(mobile.headingFont<20||mobile.cardFont<7.5||mobile.introFont<11)
