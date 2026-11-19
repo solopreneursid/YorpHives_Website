@@ -34,8 +34,9 @@ function updateHeroPriority(){
 }
 
 const views=[...document.querySelectorAll('.view')];
-const names={home:'Home',ventures:'HQventures',builders:'Builders',tools:'Free tools',partners:'Partnerships',contact:'Contact'};
-const special={ecosystem:'home','featured-tools':'home','home-progress':'home',impact:'home','venture-collection':'ventures',explore:'ventures',connect:'contact',opportunities:'builders',membership:'builders'};
+const names={home:'Home',ventures:'HQventures',tools:'Free tools',partners:'Partnerships',contact:'Contact'};
+const special={ecosystem:'home','featured-tools':'home','home-progress':'home',impact:'home','venture-collection':'ventures',explore:'ventures',connect:'contact'};
+const retiredRoutes=new Set(['builders','opportunities','membership','post']);
 let current='home';
 let routeReady=false;
 let routeMotionTimer=0;
@@ -52,6 +53,10 @@ function moreClose(){
 }
 function route(){
  let hash=location.hash.slice(1);try{hash=decodeURIComponent(hash)}catch{hash='home'}
+ if(retiredRoutes.has(hash)){
+  history.replaceState(null,'',location.pathname+location.search+'#home');
+  hash='home';
+ }
  const active=names[hash]?hash:special[hash]||'home';
  const changed=current!==active;
  views.forEach(v=>v.hidden=v.id!==active);
@@ -228,10 +233,10 @@ async function loadCatalog(){
 function renderActivity(items){
  if(!Array.isArray(items))return;
  const entries=items.filter(x=>x&&typeof x.title==='string'&&x.title.length<180&&typeof x.kind==='string'&&
-   ((x.kind==='tools'&&verifiedPublic.has(x.url)) || (x.kind==='builders'&&x.url==='#builders') || (x.kind==='explore'&&x.url==='#explore'))).slice(0,3);
+   ((x.kind==='tools'&&verifiedPublic.has(x.url)) || (x.kind==='explore'&&x.url==='#explore'))).slice(0,3);
  if(!entries.length)return;
  $('activity-list').replaceChildren(...entries.map((x,i)=>{
-   const a=el('a','','activity-card');a.href=x.kind==='tools'?'../'+x.url:x.kind==='builders'?'#builders':'#ventures';
+   const a=el('a','','activity-card');a.href=x.kind==='tools'?'../'+x.url:'#ventures';
    a.append(el('span','0'+(i+1)+' / VERIFIED UPDATE','activity-number'),el('h3',x.title));
    const summary=typeof x.summary==='string'&&x.summary.trim().length>=12&&x.summary.trim().length<=160?x.summary.trim():'';
    if(summary)a.append(el('p',summary,'activity-summary'));
