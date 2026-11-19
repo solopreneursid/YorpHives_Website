@@ -45,7 +45,7 @@ svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-wi
 .header-cta{background:var(--forest);color:white}
 .header-cta:hover,.button:hover{transform:translateY(-2px)}
 .header-cta svg,.button svg{width:16px;height:16px}
-.kofi-support{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:5px 10px;border:1px solid var(--line);border-radius:12px;background:#fff9;color:#536151}
+.kofi-support{display:none;align-items:center;gap:8px;min-height:42px;padding:5px 10px;border:1px solid var(--line);border-radius:12px;background:#fff9;color:#536151}
 .kofi-support>svg{width:17px;height:17px;color:#8a9b78}
 .kofi-support>span{display:flex;flex-direction:column;gap:1px;text-align:left}
 .kofi-support strong{font-size:10px;line-height:1.1}
