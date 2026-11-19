@@ -34,8 +34,6 @@
   Cache-Control: no-store
 /usage-public.json
   Cache-Control: no-store
-/builders-updates.json
-  Cache-Control: no-store
 
 /next.css
   Cache-Control: no-cache, max-age=0, must-revalidate
