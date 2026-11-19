@@ -5,159 +5,102 @@ import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>readFile(resolve(root,p),'utf8');
-const present=async p=>stat(resolve(root,p)).then(s=>s.isFile()).catch(()=>false);
+const exists=p=>stat(resolve(root,p)).then(x=>x.isFile()).catch(()=>false);
 
-test('full reimagined experience has five complete page routes and separate navigation',async()=>{
+test('fresh YorpHives experience has five clear routes and accessible navigation',async()=>{
  const html=await read('reimagined/index.html');
  for(const route of ['home','ventures','tools','partners','contact']){
-  assert.match(html,new RegExp('id="'+route+'"[^>]*aria-labelledby='),route);
+  assert.match(html,new RegExp('<section class="view" id="'+route+'"[^>]*aria-labelledby='),route);
   assert.ok(html.includes('href="#'+route+'"'),route+' route is linked');
  }
- assert.match(html,/class="topnav"/);assert.match(html,/class="mobile-dock"/);
- assert.match(html,/id="more-panel"/);assert.match(html,/id="mobile-menu"/);
- assert.match(html,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
- assert.match(html,/Free tools\. New ventures\. People building what/);
- assert.doesNotMatch(html,/<section class="view" id="impact"/);
- assert.doesNotMatch(html,/<a[^>]*href="#impact"/);
- assert.match(html,/id="home-progress"/);
- assert.match(html,/href="#home-progress">See our progress/);
- assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"|Builders/);
- assert.match(html,/id="hero-tool-count"/);
- assert.match(html,/id="featured-tools-grid"/);
- assert.match(html,/id="featured-tools-title"/);
- assert.match(html,/Start with something <em>useful\.<\/em>/);
- assert.match(html,/Explore <em>YorpHives\.<\/em>/);
- assert.match(html,/id="hero-primary-link" href="#tools">Explore <span id="hero-tool-count"/);
- assert.match(html,/id="kofi-support"/);
- assert.match(html,/id="anonymous-analytics-toggle"/);
- assert.match(html,/DESIGN PREVIEW · NOT LIVE/);
- assert.match(html,/noindex,nofollow/);
-});
-
-test('3D navigation is tactile, accessible, and does not delay routing',async()=>{
- const [css,js]=await Promise.all([read('reimagined/studio.css'),read('reimagined/studio.js')]);
- assert.match(css,/\.topbar \.topnav a:active/);
- assert.match(css,/\.topbar \.topnav a\[aria-current=page\]/);
- assert.match(css,/\.mobile-dock a:active/);
- assert.match(css,/\.topbar a:focus-visible/);
- assert.match(css,/prefers-reduced-motion:reduce/);
- assert.match(css,/yorp-view-appear/);
- assert.match(css,/Equal-size 3D primary navigation/);
- assert.match(css,/\.topbar \.topnav a,\.topbar \.header-actions \.header-partner/);
- assert.match(css,/width:112px/);
- assert.match(css,/height:43px/);
- assert.match(css,/width:91px/);
- assert.match(css,/@media\(min-width:941px\) and \(max-width:1100px\)/);
- assert.match(css,/\.topbar \.topnav,\.topbar \.header-contact\{display:none\}/);
- assert.match(css,/\.topbar \.menu-toggle\{display:flex/);
- assert.match(js,/innerWidth>1100\)menuClose\(\)/);
-
-
- assert.match(js,/routeReady&&changed&&allowsMotion\(\)/);
- assert.match(js,/routeMotionTimer=setTimeout/);
- assert.match(js,/views\.forEach\(v=>v\.hidden=v\.id!==active\)/);
-});
-
-test('responsive layout supports small phones, tablets, landscape, touch and safe areas',async()=>{
- const [html,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.css')]);
- assert.match(html,/name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/);
- assert.match(css,/@media\(min-width:1600px\)/);
- assert.match(css,/@media\(min-width:761px\) and \(max-width:1100px\)/);
- assert.match(css,/@media\(max-width:520px\)/);
- assert.match(css,/@media\(max-width:370px\)/);
- assert.match(css,/@media\(max-width:760px\) and \(orientation:landscape\) and \(max-height:480px\)/);
- assert.match(css,/@media\(hover:none\),\(pointer:coarse\)/);
- assert.match(css,/env\(safe-area-inset-bottom/);
- assert.match(css,/overflow-x:hidden/);
- assert.match(css,/\.contact-form input,\.contact-form select,\.contact-form textarea\{font-size:16px\}/);
- assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.match(html,/class="desktop-nav"/);
  assert.match(html,/class="mobile-menu"/);
+ assert.match(html,/class="mobile-dock"/);
+ assert.match(html,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
+ assert.match(html,/Free tools\. New ventures\. People building what's next\./);
+ assert.match(html,/id="home-title"/);
+ assert.match(html,/id="featured-tools-grid"/);
+ assert.match(html,/id="tool-search"/);
+ assert.match(html,/id="venture-products"/);
+ assert.match(html,/id="contact-form"/);
+ assert.match(html,/id="yh-pulse"/);
+ assert.match(html,/id="yh-pulse-item"/);
  assert.match(html,/id="kofi-support"/);
  assert.match(html,/id="anonymous-analytics-toggle"/);
+ assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"/);
 });
-
-test('homepage visual QA retains navigation and reduced-motion tactile polish',async()=>{
- const [html,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.css')]);
- assert.match(html,/id="eco-motion-toggle"/);
- assert.match(html,/id="activity-list"/);
- assert.match(html,/id="home-tool-count"/);
- assert.match(html,/id="featured-tools-grid"/);
- assert.match(html,/id="kofi-support"/);
- assert.doesNotMatch(html,/<div class="eco-controls"><span>IN THE ECOSYSTEM/);
- assert.match(css,/Screenshot-led visual QA/);
- assert.match(css,/\.home-foundation \.eco-card:active/);
- assert.match(css,/\.featured-tool-card:active/);
- assert.match(css,/@media\(hover:none\),\(pointer:coarse\)/);
- assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+test('the new visual system is original, responsive and reduced-motion safe',async()=>{
+ const css=await read('reimagined/studio.css');
+ assert.match(css,/:root\\{/);
+ assert.match(css,/--lime:#d8f36a/);
+ assert.match(css,/\\.hero-layout\\{display:grid/);
+ assert.match(css,/\\.ecosystem-grid\\{display:grid/);
+ assert.match(css,/\\.featured-tools-grid\\{display:grid/);
+ assert.match(css,/\\.mobile-dock\\{/);
+ assert.match(css,/@media\\(max-width:760px\\)/);
+ assert.match(css,/@media\\(max-width:350px\\)/);
+ assert.match(css,/env\\(safe-area-inset-bottom/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.doesNotMatch(css,/@import|url\\(['"]?https?:/i);
 });
-
-test('ecosystem strips continuously scroll verified content right-to-left',async()=>{
- const [html,js,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/rotators.js'),read('reimagined/rotators.css')]);
- for(const key of ['ventures','tools']){
-  assert.match(html,new RegExp('class="eco-strip-viewport"><span class="eco-strip-copy" id="eco-strip-'+key+'"'));
- }
- assert.match(js,/const makeGroup=\(clone=false\)/);
- assert.match(js,/group\.setAttribute\('aria-hidden','true'\)/);
- assert.match(js,/dataset\.tickerIndex/);
- assert.match(js,/document\.querySelector\('\[data-strip="/);
- assert.match(js,/\.classList\.toggle\('is-paused',ecoPaused\)/);
- assert.match(js,/is-offscreen/);
- assert.match(css,/@keyframes eco-ticker-move/);
- assert.match(css,/translateX\(-50%\)/);
- assert.match(css,/animation-play-state:paused/);
- assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+test('public discovery is catalog-backed, searchable and paginated',async()=>{
+ const [js,html]=await Promise.all([read('reimagined/studio.js'),read('reimagined/index.html')]);
+ assert.match(js,/getCatalog\\(\\)/);
+ assert.match(js,/subscribeCatalog\\(applyCatalog\\)/);
+ assert.match(js,/qualifiedProducts\\(allItems\\)/);
+ assert.match(js,/function filteredTools\\(/);
+ assert.match(js,/const pageSize=12/);
+ assert.match(js,/toggleSaved/);
+ assert.match(js,/readSaved/);
+ assert.match(js,/function renderVentures\\(/);
+ assert.match(html,/id="tool-results"/);
+ assert.match(html,/id="tool-categories"/);
+ assert.match(html,/id="tool-pagination"/);
+ assert.match(html,/id="saved-toggle"/);
 });
-test('new frontend is independent, local-first, and protects original tool engines',async()=>{
- const [html,js,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js'),read('reimagined/studio.css')]);
- assert.match(html,/href="studio\.css"/);
- assert.match(html,/src="studio\.js"/);
- assert.doesNotMatch(html,/(?:src|href)="https?:\/\//i);
- assert.doesNotMatch(css,/@import|url\(['"]?https?:/i);
- assert.doesNotMatch(js,/google-analytics|gtag|posthog|mixpanel|segment\.io|fingerprintjs/i);
- assert.match(js,/getCatalog\(\)/);
- const sync=await read('reimagined/catalog-sync.mjs');
- assert.match(sync,/fetch\('\.\.\/catalog\.json'/);
- assert.match(js,/qualifiedProducts\(allItems\)/);
- assert.match(js,/link\.href='\.\.\/'\+t\.url/);
- assert.match(js,/saved=new Set/);assert.match(js,/localStorage/);
- assert.match(js,/saved-toggle/);assert.match(js,/tool-pagination/);
- assert.match(css,/@media\(max-width:760px\)/);
- assert.match(css,/@media\(max-width:460px\)/);
- assert.match(css,/@media\(max-width:350px\)/);
- assert.match(css, /prefers-reduced-motion:reduce/);
-});
-
-test('homepage retains truthful progress without a separate Impact page',async()=>{
- const [html,js,data]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js'),read('reimagined/impact-public.json')]);
- assert.match(html,/Built\. Published\. <em>Improving\.<\/em>/);
- assert.match(html,/id="home-tool-count"/);
- assert.match(html,/class="building-public-grid"/);
- assert.match(html,/id="home-tool-badge"/);
- assert.match(html,/id="activity-list"/);
- assert.match(html,/class="hero-quicklinks"/);
- assert.doesNotMatch(html,/class="footer-statement"/);
+test('public progress and portfolio never imply an unapproved launch',async()=>{
+ const [html,js,policy]=await Promise.all([
+  read('reimagined/index.html'),read('reimagined/studio.js'),read('product-policy.mjs')
+ ]);
  assert.match(html,/id="home-venture-count"/);
- assert.match(html,/href="#tools">Explore our free tools/);
- assert.doesNotMatch(html,/id="impact-title"|data-nav="impact"/);
- assert.doesNotMatch(js,/renderPublicImpact|loadImpact/);
- assert.equal(JSON.parse(data).publication.approvedByFounder,false);
+ assert.match(html,/id="home-progress"/);
+ assert.match(html,/Products appear here only after research review and founder approval/);
+ assert.match(html,/Nothing launches without approval/);
+ assert.match(js,/qualifiedProducts\\(allItems\\)/);
+ assert.match(js,/fetch\\('\\/activity\\.json'/);
+ assert.match(policy,/approvedByFounder/);
 });
-
-test('new site is copied to preview after public-page audit and never to production',async()=>{
- const build=await read('scripts/build-site.mjs');
- const copy=build.indexOf("await cp(resolve(root,'reimagined'),resolve(dest,'reimagined'),{recursive:true})");
- const audit=build.indexOf('await auditHtml()');
- const preview=build.indexOf("if(target==='preview'){",audit);
- const prod=build.indexOf('}else{',preview);
- assert.ok(audit>0&&preview>audit&&copy>preview&&prod>copy);
- assert.ok((await read('reimagined/index.html')).includes('name="robots" content="noindex,nofollow"'));
- if(await present('dist/reimagined/index.html')){
-   const rendered=await read('dist/reimagined/index.html');
-   assert.match(rendered,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
-   assert.ok(await present('dist/reimagined/studio.css'));
-   assert.ok(await present('dist/reimagined/studio.js'));
- } else {
-   // This is the correct expected state for a production-only build.
-   assert.ok(true);
- }
+test('fresh root uses only local assets and first-party analytics controls',async()=>{
+ const [html,js,client]=await Promise.all([
+  read('reimagined/index.html'),read('reimagined/studio.js'),read('insights-client.mjs')
+ ]);
+ assert.match(html,/href="studio\\.css"/);
+ assert.match(html,/src="studio\\.js"/);
+ assert.match(html,/src="\\/insights-client\\.mjs"/);
+ assert.doesNotMatch(html,/(?:src|href)="https?:\\/\\//i);
+ assert.match(html,/id="anonymous-analytics-toggle"/);
+ assert.match(client,/globalPrivacyControl/);
+ assert.match(client,/navigator\\.doNotTrack/);
+ assert.match(js,/retiredRoutes/);
+ assert.doesNotMatch(js,/google-analytics|gtag|posthog|mixpanel|segment\\.io/i);
+});
+test('the direct A–Z library remains crawlable and searchable',async()=>{
+ const [html,css,search]=await Promise.all([
+  read('tools/index.html'),read('tools/directory-next.css'),read('tools/directory-search.mjs')
+ ]);
+ assert.match(html,/TOOL_DIRECTORY_START/);
+ assert.match(html,/TOOL_DIRECTORY_END/);
+ assert.match(html,/id="directory-search"/);
+ assert.match(html,/id="directory-saved-only"/);
+ assert.match(css,/\\.directory-card/);
+ assert.match(css,/@media\\(max-width:760px\\)/);
+ assert.match(search,/directory-search-status/);
+});
+test('the release gate validates the fresh design rather than the retired layout',async()=>{
+ const release=await read('scripts/release-check.mjs');
+ assert.match(release,/FRESH STATIC RELEASE CHECK PASSED/);
+ assert.match(release,/home-title/);
+ assert.match(release,/directory-search/);
+ assert.match(release,/mobile-dock/);
+ assert.doesNotMatch(release,/home-explore|home-use|hero-geometry|renderFeaturedProject/);
 });
