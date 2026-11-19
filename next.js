@@ -50,7 +50,7 @@
       if(link.dataset.nav===active)link.setAttribute('aria-current','page');
       else link.removeAttribute('aria-current');
     });
-    document.title=active==='home'?'YorpHives — Ideas in motion':names[active]+' — YorpHives';
+    document.title=active==='home'?'YorpHives — Venture studio for what’s next':names[active]+' — YorpHives';
     closeMenu();
     if(subpage){
       requestAnimationFrame(()=>document.getElementById(hash)?.scrollIntoView({block:'start'}));
