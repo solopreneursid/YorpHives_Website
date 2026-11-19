@@ -6,14 +6,14 @@ import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>readFile(resolve(root,p),'utf8');
 
-test('three lightweight, separately sourced rotating strips live inside their own ecosystem cards',async()=>{
+test('two lightweight, separately sourced rotating strips live inside their own ecosystem cards',async()=>{
  const html=await read('reimagined/index.html');
- for(const kind of ['ventures','builders','tools']){
+ for(const kind of ['ventures','tools']){
   const source=new RegExp('class="eco-card eco-'+kind+'"[^\\n]+data-strip="'+kind+'"[^\\n]+</a>');
   assert.match(html,source,kind+' ticker must remain inside original card link');
   assert.match(html,new RegExp('id="eco-strip-'+kind+'"'));
  }
- assert.equal((html.match(/class="eco-strip eco-strip-/g)||[]).length,3);
+ assert.equal((html.match(/class="eco-strip eco-strip-/g)||[]).length,2);
  assert.match(html,/id="eco-motion-toggle"/);
  assert.match(html,/href="rotators.css"/);
  assert.match(html,/src="rotators.js"/);
@@ -23,15 +23,13 @@ test('three lightweight, separately sourced rotating strips live inside their ow
  assert.equal((html.match(/id="yh-pulse"/g)||[]).length,1);
 });
 
-test('rotating data uses genuine published categories, qualified products and verified builders',async()=>{
+test('rotating data uses genuine published categories and qualified products',async()=>{
  const js=await read('reimagined/rotators.js');
  assert.match(js,/qualifiedProducts\(items\)/);
  assert.match(js,/const tools=items.filter\(publicTool\)/);
  assert.match(js,/categoryCounts/);
  assert.match(js,/useCard\('ventures',qualified\.map/);
  assert.match(js,/useCard\('tools',categories/);
- assert.match(js,/useCard\('builders',builderEntries/);
- assert.match(js,/builderRows.filter\(event=>event\?\.kind==='builders'/);
  assert.match(js,/\.slice\(0,10\)/);
  assert.match(js,/const displayEntries=entries\.length\?entries:fallback\[key\]/);
  assert.match(js,/renderTicker\(card\)/);
@@ -62,24 +60,15 @@ test('YHpulse publishes no fake most-used list without founder-approved verified
  assert.doesNotMatch(js,/fakeVisits|mockData|dummyAnalytics|Math\.random/);
 });
 
-test('Builders update generator independently collects newest ten verified public updates',async()=>{
- const build=await read('scripts/build-site.mjs');
- assert.match(build,/const publicNotes=await loadActivityNotes\(root\)/);
- assert.match(build,/const builderNotes=\[\.\.\.publicNotes,\.\.\.publicPageChanges\]/);
- assert.match(build,/e\?\.kind==='builders'&&e\.url==='#builders'/);
- assert.match(build,/\.slice\(0,10\)\.map\(\(\{id,kind,title,url,timestamp\}\)/);
- const copy=build.indexOf("await cp(resolve(root,'reimagined'),resolve(dest,'reimagined'),{recursive:true})");
- const builderWrite=build.indexOf("await write('reimagined/builders-updates.json'");
- const audit=build.indexOf('await auditHtml()');
- const preview=build.indexOf("if(target==='preview'){",audit);
- const production=build.indexOf('}else{',preview);
- assert.ok(audit>0&&preview>audit&&copy>preview&&builderWrite>copy&&production>builderWrite);
- const path=resolve(root,'dist/reimagined/builders-updates.json');
- if(await stat(path).then(s=>s.isFile()).catch(()=>false)){
-  const feed=JSON.parse(await read('dist/reimagined/builders-updates.json'));
-  assert.ok(Array.isArray(feed.items)&&feed.items.length<=10);
-  assert.ok(feed.items.every(x=>x.kind==='builders'&&x.url==='#builders'));
- }
+test('the retired Builders feed is no longer generated or requested',async()=>{
+ const [build,rotators,html,headers]=await Promise.all([
+  read('scripts/build-site.mjs'),read('reimagined/rotators.js'),
+  read('reimagined/index.html'),read('_headers')
+ ]);
+ assert.doesNotMatch(build,/builders-updates|builderNotes|Builders-only/);
+ assert.doesNotMatch(rotators,/builders-updates|builderFeed|builderEntries/);
+ assert.doesNotMatch(html,/builders-updates|data-strip="builders"|id="builders"/);
+ assert.doesNotMatch(headers,/builders-updates/);
 });
 
 test('mobile strip layout and motion respect reduced-motion and overflow protection',async()=>{
