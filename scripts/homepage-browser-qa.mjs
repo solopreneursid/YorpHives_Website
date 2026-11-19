@@ -51,6 +51,14 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
      const art=document.querySelector('#home .hero-art');
      const logo=document.querySelector('#home .hero-mini-brand');
      const dock=document.querySelector('.mobile-dock');
+     const dockStyle=getComputedStyle(dock);
+     const dockBox=dock.getBoundingClientRect();
+     const dockContentLeft=dockBox.left+parseFloat(dockStyle.paddingLeft);
+     const dockContentRight=dockBox.right-parseFloat(dockStyle.paddingRight);
+     const dockButtons=[...dock.querySelectorAll(':scope > a,:scope > button')].map(n=>{
+      const b=n.getBoundingClientRect();
+      return {left:b.left,right:b.right,width:b.width};
+     });
      const artBox=art.getBoundingClientRect();
      const heading=document.querySelector('#home-title');
      const headingBox=heading.getBoundingClientRect();
@@ -101,9 +109,14 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
       }),
       labels,
       miniHidden:getComputedStyle(logo).display==='none',
-      dockHeight:dock.getBoundingClientRect().height,
-      dockInset:dock.getBoundingClientRect().left,
-      dockButtonHeight:dock.querySelector('a').getBoundingClientRect().height
+      dockHeight:dockBox.height,
+      dockInset:dockBox.left,
+      dockButtonHeight:dock.querySelector('a').getBoundingClientRect().height,
+      dockColumns:dockStyle.gridTemplateColumns.trim().split(/\s+/).length,
+      dockButtonCount:dockButtons.length,
+      dockWidths:dockButtons.map(b=>b.width),
+      dockLeftGap:dockButtons[0].left-dockContentLeft,
+      dockRightGap:dockContentRight-dockButtons.at(-1).right
      };
     });
     // Mobile now uses the same original floating-card orbit as desktop.
@@ -134,6 +147,12 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
     if(mobile.dockHeight>60)problems.push(label+' oversized mobile dock '+mobile.dockHeight.toFixed(0));
     if(mobile.dockInset<4)problems.push(label+' dock not floating inside its 3D tray');
     if(mobile.dockButtonHeight<44)problems.push(label+' dock touch target below 44px');
+    if(mobile.dockColumns!==4||mobile.dockButtonCount!==4)
+     problems.push(label+' bottom navigation must use four equal columns for four buttons');
+    if(mobile.dockWidths.some(w=>Math.abs(w-mobile.dockWidths[0])>1.5))
+     problems.push(label+' bottom navigation buttons are not evenly sized '+mobile.dockWidths.join('/'));
+    if(Math.abs(mobile.dockLeftGap)>2||Math.abs(mobile.dockRightGap)>2)
+     problems.push(label+' bottom navigation has unused side space '+mobile.dockLeftGap.toFixed(1)+'/'+mobile.dockRightGap.toFixed(1)+'px');
     const menu=page.locator('#menu-toggle');
     await menu.click();
     const menuBounds=await page.locator('#mobile-menu').boundingBox();
