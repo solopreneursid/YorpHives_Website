@@ -16,8 +16,8 @@ test('fresh YorpHives experience has five clear routes and accessible navigation
  assert.match(html,/class="desktop-nav"/);
  assert.match(html,/class="mobile-menu"/);
  assert.match(html,/class="mobile-dock"/);
- assert.match(html,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
- assert.match(html,/Free tools\. New ventures\. People building what's next\./);
+ assert.match(html,/INDEPENDENT · AI-POWERED VENTURE STUDIO/);
+ assert.ok(html.includes('Curiosity in. Useful things out.'));
  assert.match(html,/id="home-title"/);
  assert.match(html,/id="featured-tools-grid"/);
  assert.match(html,/id="tool-search"/);
