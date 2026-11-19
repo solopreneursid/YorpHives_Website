@@ -54,8 +54,8 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
      const artBox=art.getBoundingClientRect();
      const headingBox=document.querySelector('#home-title').getBoundingClientRect();
      const introBox=document.querySelector('#home .hero-intro').getBoundingClientRect();
-     const cardBoxes=cards.map(n=>n.getBoundingClientRect());
      const cards=[...art.querySelectorAll('.art-node')];
+     const cardBoxes=cards.map(n=>n.getBoundingClientRect());
      const labels=cards.map(n=>n.querySelector('strong')?.textContent.trim());
      return {
       heroHeight:hero.getBoundingClientRect().height,
