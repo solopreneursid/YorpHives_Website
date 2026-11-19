@@ -37,6 +37,8 @@ export function setupDirectorySearch(doc=globalThis.document,win=globalThis.wind
  empty.textContent='No matching tools. Try a simpler word or browse the categories.';
  list.after(empty);
  const total=entries.reduce((count,group)=>count+group.cards.length,0);
+ const totalLabel=doc.getElementById('directory-total');
+ if(totalLabel)totalLabel.textContent=String(total)+'+';
  function apply(){
   const query=input.value.trim();
   let visible=0;
