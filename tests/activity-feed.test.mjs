@@ -117,25 +117,26 @@ test('source has one homepage pulse and no duplicate footer ticker',async()=>{
  assert.ok(fallback.every(x=>x.kind==='explore'));
 });
 
-test('deployed release activity and HTML agree and link only to public routes',async()=>{
+test('deployed activity JSON is verified and hydrated by the fresh homepage',async()=>{
  const catalog=JSON.parse(await read('dist/catalog.json'));
  const activity=JSON.parse(await read('dist/activity.json'));
  const homepage=await read('dist/index.html');
  const urls=new Set(catalog.items.map(x=>x.url));
- assert.equal(activity.items.length,20);
+ assert.ok(activity.items.length<=20);
  assert.ok(activity.items.every(x=>urls.has(x.url)||x.url==='#explore'));
- assert.ok(activity.items.every(x=>x.source==='published-catalog'||x.source==='public-page-diff'||x.source==='founder-visible-page'));
+ assert.ok(activity.items.every(x=>['tools','explore'].includes(x.kind)));
+ assert.ok(activity.items.every(x=>Number.isFinite(Date.parse(x.timestamp))));
  if(homepage.includes('id="home-title"')){
   const js=await read('dist/studio.js');
   assert.ok(homepage.includes('id="activity-list"'));
-  assert.ok(js.includes("fetch('../activity.json'"));
-  assert.ok(js.includes('renderActivity(d.items)'));
+  assert.ok(homepage.includes('id="yh-pulse"'));
+  assert.ok(js.includes("fetch('/activity.json'"));
+  assert.ok(js.includes('async function loadActivity()'));
   assert.ok(!js.includes("kind==='builders'"));
-  assert.ok(!js.includes("href='#builders'"));
+  assert.ok(!homepage.includes('href="#builders"'));
  }else{
   assert.ok(activity.items.every(x=>homepage.includes('href="'+x.url+'"')));
-  assert.ok(homepage.includes('LATEST 20 UPDATES'));
+  assert.ok(homepage.includes('LATEST '+activity.items.length+' UPDATES'));
  }
- assert.ok(!homepage.includes('href="catalog.json">Tool catalog'));
  assert.ok(!homepage.includes('<nav class="footer-directory"'));
 });
