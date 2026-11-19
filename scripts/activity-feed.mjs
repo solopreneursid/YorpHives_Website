@@ -16,26 +16,20 @@ const git=(root,args)=>{
   try{return execFileSync('git',args,{cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore'],timeout:5000,maxBuffer:12*1024*1024}).trim();}
   catch{return '';}
 };
-const areaHtml=(html,area)=>{
+const areaHtml=html=>{
   if(typeof html!=='string')return '';
-  const a=area==='builders'
-    ?'<section class="page" id="builders"'
-    :'<section class="page" id="explore"';
-  const b=area==='builders'
-    ?'<section class="page" id="connect"'
-    :'<section class="page" id="builders"';
-  const i=html.indexOf(a),j=html.indexOf(b,i+a.length);
+  const start='<section class="page" id="explore"';
+  const end='<section class="page partnership-section" id="partners"';
+  const i=html.indexOf(start),j=html.indexOf(end,i+start.length);
   return i>=0&&j>i?html.slice(i,j):'';
 };
-const areaStyle=(style,area)=>{
+const areaStyle=style=>{
   if(typeof style!=='string')return '';
-  const selectors=area==='builders'
-    ?/(?:#builders\b|#home \.builders-home\b|#home \.builders-home-card\b)/
-    :/(?:#explore\b|#home \.explore-spotlight\b|#home \.home-feature\b|#home \.explore-showcase\b)/;
-  return [...style.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+  const selectors=/(?:#explore\\b|#home \\.explore-spotlight\\b|#home \\.home-feature\\b|#home \\.explore-showcase\\b)/;
+  return [...style.matchAll(/([^{}]+)\\{([^{}]*)\\}/g)]
     .filter(m=>selectors.test(m[1]))
-    .map(m=>m[1].replace(/\s+/g,' ').trim()+'{'+m[2].replace(/\s+/g,' ').trim()+'}')
-    .join('\n');
+    .map(m=>m[1].replace(/\\s+/g,' ').trim()+'{'+m[2].replace(/\\s+/g,' ').trim()+'}')
+    .join('\\n');
 };
 
 // Scan public page/content changes, not merely commits mentioning those pages.
@@ -44,36 +38,29 @@ const areaStyle=(style,area)=>{
 export function discoverPublicPageUpdates(root,limit=80){
   const log=git(root,['log','-n',String(limit),'--format=%H%x09%cI','--','index.html','style.css']);
   if(!log)return [];
-  const commits=log.split('\n').map(line=>{
-    const [sha,time]=line.split('\t');
+  const commits=log.split('\\n').map(line=>{
+    const [sha,time]=line.split('\\t');
     return /^[a-f0-9]{40}$/.test(sha||'')&&Number.isFinite(isoTime(time))?{sha,time}:null;
   }).filter(Boolean);
-  const found=new Map();
   let later=null;
   const readRevision=(sha,file)=>git(root,['show',sha+':'+file]);
   for(const commit of commits){
     const html=readRevision(commit.sha,'index.html');
     const css=readRevision(commit.sha,'style.css');
-    const current={
-      builders:areaHtml(html,'builders')+areaStyle(css,'builders'),
-      explore:areaHtml(html,'explore')+areaStyle(css,'explore')
-    };
-    if(later)for(const area of ['builders','explore']){
-      if(!found.has(area)&&later[area]&&later[area]!==current[area]){
-        found.set(area,{
-          id:'page:'+area,
-          kind:area,
-          title:area==='builders'?'Builders page updated':'Explore collection updated',
-          url:area==='builders'?'#builders':'#explore',
-          timestamp:later.time,
-          source:'public-page-diff'
-        });
-      }
+    const current=areaHtml(html)+areaStyle(css);
+    if(later&&later.content&&later.content!==current){
+      return [{
+        id:'page:explore',
+        kind:'explore',
+        title:'Explore collection updated',
+        url:'#explore',
+        timestamp:later.time,
+        source:'public-page-diff'
+      }];
     }
-    later={...current,time:commit.time};
-    if(found.size===2)break;
+    later={content:current,time:commit.time};
   }
-  return [...found.values()];
+  return [];
 }
 
 // The last committed change to each published tool's own directory provides
@@ -94,10 +81,9 @@ export function discoverToolEditTimes(root,limit=220){
 }
 
 function validPublicEvent(item,allowed,now){
-  if(!item||!['builders','explore','tools'].includes(item.kind)||!safeText(item.title))
+  if(!item||!['explore','tools'].includes(item.kind)||!safeText(item.title))
     return false;
   if(!Number.isFinite(isoTime(item.timestamp))||isoTime(item.timestamp)>now)return false;
-  if(item.kind==='builders')return item.url==='#builders';
   if(item.kind==='explore')return item.url==='#explore';
   return allowed.has(item.url);
 }
@@ -126,7 +112,7 @@ export function collectPublicActivity({published,notes=[],pageChanges=[],toolEdi
     ...notes.filter(x=>validPublicEvent(x,toolPaths,now))
   ];
   // One public change event per section; the latest verified source wins.
-  for(const area of ['builders','explore']){
+  for(const area of ['explore']){
     const matches=fallback.filter(x=>x.kind===area)
       .sort((a,b)=>isoTime(b.timestamp)-isoTime(a.timestamp));
     if(matches[0])candidates.push(matches[0]);
