@@ -5,7 +5,7 @@
 (() => {
   'use strict';
   const pages = [...document.querySelectorAll('.page')];
-  const names = {home:'Home',tools:'Free tools',explore:'HQventures',builders:'Builders',connect:'Contact'};
+  const names = {home:'Home',tools:'Free tools',explore:'HQventures',partners:'Partnerships',connect:'Contact'};
   const menuButton = document.getElementById('menu-toggle');
   const menuPanel = document.getElementById('mobile-menu');
   let previousPage = '';
@@ -34,12 +34,17 @@
   });
   window.addEventListener('resize',()=>{if(innerWidth>760&&!menuPanel.hidden)closeMenu();});
 
-  const subpages = new Set(['post','opportunities','membership','partners','how-it-works','projects-collection','our-ai-team','home-explore','home-use','home-connect']);
+  const subpages = new Set(['how-it-works','projects-collection','our-ai-team','home-explore','home-use','home-connect']);
+  const retiredRoutes = new Set(['builders','post','opportunities','membership']);
   function route() {
     let hash=location.hash.slice(1);
     try{hash=decodeURIComponent(hash);}catch{hash='home';}
+    if(retiredRoutes.has(hash)){
+      history.replaceState(null,'',location.pathname+location.search+'#home');
+      hash='home';
+    }
     const subpage=subpages.has(hash);
-    const active=['how-it-works','our-ai-team','home-explore','home-use','home-connect'].includes(hash)?'home':hash==='projects-collection'?'explore':subpage?'builders':Object.hasOwn(names,hash)?hash:'home';
+    const active=['how-it-works','our-ai-team','home-explore','home-use','home-connect'].includes(hash)?'home':hash==='projects-collection'?'explore':Object.hasOwn(names,hash)?hash:'home';
     pages.forEach(page=>{page.hidden=page.id!==active;});
     document.querySelectorAll('[data-nav]').forEach(link=>{
       if(link.dataset.nav===active)link.setAttribute('aria-current','page');
@@ -48,8 +53,7 @@
     document.title=active==='home'?'YorpHives — Ideas in motion':names[active]+' — YorpHives';
     closeMenu();
     if(subpage){
-      const id=hash==='post'?'membership':hash;
-      requestAnimationFrame(()=>document.getElementById(id)?.scrollIntoView({block:'start'}));
+      requestAnimationFrame(()=>document.getElementById(hash)?.scrollIntoView({block:'start'}));
     } else if(active!==previousPage){
       window.scrollTo({top:0,behavior:'instant'});
     }

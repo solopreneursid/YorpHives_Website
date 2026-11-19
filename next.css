@@ -124,9 +124,7 @@ img{display:block;max-width:100%}h1,h2,h3,p{margin:0}h1,h2,h3{letter-spacing:-.0
 .product-card h3{font-size:20px;margin:12px 0 6px}.product-card p{font-size:12px;line-height:1.6;color:#78897c}.product-card a{display:inline-block;margin-top:18px;color:#2f8153;font-size:12px;font-weight:820}
 .empty-product{display:flex;flex-direction:column;align-items:flex-start;padding:34px;border:1px solid #cfe4d4;border-radius:18px;background:#e5f2e8}
 .empty-product-icon{font-size:41px;color:#4a9f68;margin-bottom:13px}.empty-product h3{font-size:25px;margin:10px 0 7px}.empty-product p{color:#6c876f;font-size:12px;line-height:1.55;margin-bottom:17px}
-/* Builders: visible, independent partnership discovery with founder review. */
-.builders-hero-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.builders-hero-actions .btn{min-width:155px}
+/* Partnerships: founder-reviewed collaboration pathways. */
 .partnership-section{padding-block:76px 74px;background:linear-gradient(125deg,#e0f2e7,#f1f8ee);scroll-margin-top:75px}
 .partnership-layout{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);align-items:center;gap:40px 7%}
 .partnership-copy h2{margin:15px 0;font-size:clamp(35px,3.9vw,54px);line-height:1.09}
@@ -146,19 +144,6 @@ img{display:block;max-width:100%}h1,h2,h3,p{margin:0}h1,h2,h3{letter-spacing:-.0
 .partnership-panel-foot small{color:#a8d1b8;font-size:11px}
 .partnership-disclosure{grid-column:1/-1;border-top:1px solid #c4dfca;padding-top:17px;color:#688571;font-size:11px;line-height:1.6}
 .partnership-disclosure strong{color:#39784f}
-.builders-graphic{position:relative;min-height:245px;border-radius:50%;border:1px solid #9be6b64d;background:radial-gradient(circle at center,#386e4a4a,transparent 65%);box-shadow:0 0 0 28px #9be6b610}
-.bgraph-center{position:absolute;inset:34%;display:grid;place-items:center;border-radius:18px;background:#bcf9d5;color:#285b3b;font-size:60px;animation:mark-breathe 6s ease-in-out infinite}\n@keyframes mark-breathe{50%{transform:scale(1.06);box-shadow:0 0 0 12px #b5f5ce11}}
-.bnode{position:absolute;padding:10px 15px;border:1px solid #9de8bd70;border-radius:10px;background:#245540;color:#bff6d4;font-size:10px;letter-spacing:.1em;font-weight:800}
-.bnode-one{top:4%;left:24%}.bnode-two{right:-1%;top:47%}.bnode-three{bottom:4%;left:5%}
-.member-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.member-grid article{display:flex;flex-direction:column;gap:9px;min-height:179px;padding:23px;background:#fff;border:1px solid var(--line);border-radius:16px}
-.member-icon{font-size:27px;color:#448b61}.member-grid h3{font-size:21px}.member-grid p{color:#738779;font-size:12px;line-height:1.5}.member-tag{margin-top:auto;font-size:9px;color:#46815d;letter-spacing:.1em;font-weight:830}
-.access-note{margin-top:16px;padding:15px 17px;border:1px solid #d2e6d5;border-radius:12px;background:#eaf4eb;font-size:11px;line-height:1.6;color:#64806b}
-.communities{margin-top:10px;color:#72927a;font-size:11px;line-height:1.6}
-.membership-section{padding-block:59px 70px;background:#143529;color:#eaffee}.membership-section .section-heading h2 em{color:#b4f5ce}
-.membership-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.membership-card{display:flex;flex-direction:column;gap:9px;min-height:208px;padding:23px;border:1px solid #8cceb053;border-radius:16px;background:#20503b}
-.membership-card h3{font-size:24px;margin:12px 0 0}.membership-card p{color:#bad3c1;font-size:12px;line-height:1.55}
-.membership-foot{margin-top:auto;color:#a1e2b9;font-size:10px;line-height:1.55}
 .contact-graphic{position:relative;display:flex;flex-direction:column;justify-content:center;min-height:208px;padding:30px;border-radius:21px;background:linear-gradient(125deg,#bdf1ce,#8dc6a5);color:#28684a;transform:rotate(-3deg)}
 .contact-graphic>span{font-size:10px;font-weight:850;letter-spacing:.17em}.contact-graphic strong{font-size:clamp(39px,4vw,64px);line-height:1.1;margin:12px 0}.contact-graphic i{align-self:flex-end;font-style:normal;font-size:33px;animation:arrow-drift 3.8s ease-in-out infinite}\n@keyframes arrow-drift{50%{transform:translate(5px,-6px)}}
 .contact-layout{display:grid;grid-template-columns:.65fr 1.35fr;gap:9%;padding-block:68px 83px}
