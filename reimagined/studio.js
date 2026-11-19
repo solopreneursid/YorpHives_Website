@@ -55,7 +55,7 @@ function route(){
  });
  document.title=(active==='home'?'Make ideas useful':viewNames[active])+' | YorpHives';
  closeMenu();
- if(active!==previousView){window.scrollTo({top:0,behavior:'instant'});previousView=active}
+ if(active!==previousView){window.scrollTo({top:0,behavior:'auto'});previousView=active}
 }
 window.addEventListener('hashchange',route);
 route();
@@ -188,6 +188,7 @@ function applyCatalog(items){
  tools=allItems.filter(publicTool);
  ventures=qualifiedProducts(allItems);
  $('home-tool-count').textContent=number(tools.length);
+ $('hero-tool-count').textContent=number(tools.length);
  $('home-venture-count').textContent=number(ventures.length);
  $('tools-count-big').textContent=number(tools.length);
  categoryChips();renderFeaturedTools();renderTools();renderVentures();
@@ -195,7 +196,7 @@ function applyCatalog(items){
 subscribeCatalog(applyCatalog);
 startCatalogMonitoring();
 getCatalog().then(()=>loadActivity()).catch(()=>{
- $('home-tool-count').textContent='—';$('home-venture-count').textContent='—';$('tools-count-big').textContent='—';
+ $('home-tool-count').textContent='—';$('hero-tool-count').textContent='—';$('home-venture-count').textContent='—';$('tools-count-big').textContent='—';
  $('featured-tools-grid').replaceChildren(make('p','The catalogue could not be loaded. Please try again or browse the directory.','loading-note'));
  $('tool-results').replaceChildren();
  $('tool-results-count').textContent='Catalogue unavailable';
