@@ -547,3 +547,5 @@ svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-wi
 .analytics-toggle{border:0;background:transparent;color:#91a18d;font-size:8px;font-weight:750;text-align:left;cursor:pointer;padding:4px 0}
 .analytics-toggle:hover{color:#d8f36a}
 @media(max-width:760px){.analytics-toggle{font-size:7px}}
+
+.kofi-support:disabled{opacity:1;cursor:not-allowed}
