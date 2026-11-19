@@ -8,10 +8,10 @@ const read=p=>readFile(resolve(root,p),'utf8');
 
 test('the new homepage leads with a clear independent venture-studio proposition',async()=>{
  const html=await read('reimagined/index.html');
- assert.match(html,/Curiosity in\.<br><em>Useful things out\.<\\/em>/);
- assert.match(html,/Free tools\\. New ventures\\. People building what's next\\./);
+ assert.match(html,/Curiosity in\.<br><em>Useful things out\.<\/em>/);
+ assert.match(html,/Free tools\. New ventures\. People building what's next\./);
  assert.match(html,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
- assert.match(html,/INDEPENDENT\\. HUMAN-LED\\. BUILT TO EVOLVE\\./);
+ assert.match(html,/INDEPENDENT\. HUMAN-LED\. BUILT TO EVOLVE\./);
  assert.match(html,/class="hero-art"/);
  assert.match(html,/class="ecosystem-grid"/);
  assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"/);
@@ -35,7 +35,7 @@ test('the venture studio separates research signals from founder-approved launch
  assert.match(html,/Nothing launches without approval/);
  assert.match(html,/Products appear here only after research review and founder approval/);
  assert.match(html,/id="venture-products"/);
- assert.match(js,/qualifiedProducts\\(allItems\\)/);
+ assert.match(js,/qualifiedProducts\(allItems\)/);
  assert.match(js,/renderVentures/);
  assert.match(policy,/approvedByFounder/);
 });
@@ -43,9 +43,9 @@ test('Free Tools has working catalogue search, categories, saved filter and pagi
  const [html,js]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js')]);
  for(const id of ['tool-search','tool-categories','tool-results','saved-toggle','tool-prev','tool-next'])
   assert.match(html,new RegExp('id="'+id+'"'));
- assert.match(js,/function filteredTools\\(/);
- assert.match(js,/function categoryChips\\(/);
- assert.match(js,/function renderTools\\(/);
+ assert.match(js,/function filteredTools\(/);
+ assert.match(js,/function categoryChips\(/);
+ assert.match(js,/function renderTools\(/);
  assert.match(js,/const pageSize=12/);
  assert.match(js,/toggleSaved/);
 });
@@ -57,7 +57,7 @@ test('partnerships and contact are easy to discover without implying open enroll
  assert.match(html,/Content collaboration/);
  assert.match(html,/Submitting an idea is an initial enquiry/);
  assert.match(html,/id="contact-form"/);
- assert.match(html,/connect@yorphives\\.com/);
+ assert.match(html,/connect@yorphives\.com/);
  assert.match(html,/Nothing is sent automatically by this website/);
 });
 test('navigation and privacy controls cover mobile and desktop',async()=>{
@@ -71,7 +71,7 @@ test('navigation and privacy controls cover mobile and desktop',async()=>{
  assert.match(html,/id="anonymous-analytics-toggle"/);
  assert.match(js,/aria-current/);
  assert.match(js,/retiredRoutes/);
- assert.match(css,/env\\(safe-area-inset-bottom/);
+ assert.match(css,/env\(safe-area-inset-bottom/);
  assert.match(css,/prefers-reduced-motion:reduce/);
 });
 test('release gate protects the new layout and the original tool catalogue',async()=>{
