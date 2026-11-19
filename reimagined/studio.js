@@ -160,7 +160,7 @@ function featuredCard(tool,index){
 function renderFeaturedTools(){
  const host=$('featured-tools-grid');if(!host)return;
  const selected=featuredToolUrls.map(url=>tools.find(tool=>tool.url===url)).filter(Boolean);
- for(const tool of tools){if(selected.length>=4)break;if(!selected.some(item=>item.url===tool.url))selected.push(tool)}
+ for(const tool of tools){if(selected.length>=6)break;if(!selected.some(item=>item.url===tool.url))selected.push(tool)}
  if(!selected.length){host.replaceChildren(make('p','The tool collection is temporarily unavailable. Please visit the full directory.','loading-note'));return}
  host.replaceChildren(...selected.map(featuredCard));
 }
