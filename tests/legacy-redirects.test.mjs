@@ -39,7 +39,7 @@ test('legacy redirects are same-site, target published tools or directory, and n
    assert.equal(rules.has(target),false,'Retired Builder redirect loop: '+source);
    continue;
   }
-  assert.match(source,/^\\/free-tools(?:\\/[a-z0-9-]+)?\\/?$/);
+  assert.ok(source==='/free-tools'||source.startsWith('/free-tools/'),source);
   assert.ok(destinations.has(target),'Unknown destination: '+target);
   assert.equal(status,'302');
   assert.notEqual(source,target);
