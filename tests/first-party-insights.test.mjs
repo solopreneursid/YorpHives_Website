@@ -51,13 +51,13 @@ test('fresh homepage progress and YHpulse use public catalogue data, not invente
  ]);
  for(const id of ['home-progress','home-tool-count','home-venture-count','anonymous-analytics-toggle','yh-pulse','activity-list'])
   assert.ok(html.includes('id="'+id+'"'),id);
- assert.match(studio,/qualifiedProducts\\(allItems\\)/);
- assert.match(studio,/fetch\\('\\/activity\\.json'/);
+ assert.match(studio,/qualifiedProducts\(allItems\)/);
+ assert.match(studio,/fetch\('\/activity\.json'/);
  assert.match(studio,/LATEST /);
- assert.doesNotMatch(studio,/fetch\\('\\/api\\/insights\\/public'/);
+ assert.doesNotMatch(studio,/fetch\('\/api\/insights\/public'/);
  assert.match(client,/globalPrivacyControl/);
  assert.match(client,/yorphives:tool-completed/);
- assert.doesNotMatch(client,/String\\(node\\.value\\)\\.slice/);
+ assert.doesNotMatch(client,/String\(node\.value\)\.slice/);
  assert.equal(JSON.parse(impact).publication.approvedByFounder,false);
  assert.equal(JSON.parse(usage).publication.approvedByFounder,false);
  assert.deepEqual(JSON.parse(usage).ranked,[]);
