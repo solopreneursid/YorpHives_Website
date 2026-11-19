@@ -37,7 +37,7 @@ test('the venture studio separates research signals from founder-approved launch
  assert.match(html,/id="venture-products"/);
  assert.match(js,/qualifiedProducts\(allItems\)/);
  assert.match(js,/renderVentures/);
- assert.match(policy,/approvedByFounder/);
+ assert.match(policy,/founderApproval/);
 });
 test('Free Tools has working catalogue search, categories, saved filter and pagination',async()=>{
  const [html,js]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js')]);
