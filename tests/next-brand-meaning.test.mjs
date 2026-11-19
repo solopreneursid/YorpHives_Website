@@ -69,7 +69,7 @@ test('Connect directs visitors to the independent Partnerships page without a Bu
  assert.match(home,/class="home-cta"/);
  assert.match(home,/href="#partners"/);
  assert.match(html,/id="partners"/);
- assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"|\\bBuilders\\b/);
+ assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"|Builders/);
 });
 test('one verified YHpulse appears and moving elements have pause and reduced-motion support',async()=>{
  const [html,css,base,js]=await Promise.all([read('index.html'),read('home-experience.css'),read('next.css'),read('next.js')]);
@@ -87,7 +87,7 @@ test('navigation and safeguards cover the five public pages and human decision g
  const html=await read('reimagined/index.html'),js=await read('reimagined/studio.js');
  for(const id of ['home','ventures','tools','partners','contact'])
   assert.ok(html.includes('id="'+id+'"'),id);
- assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"/);
+ assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"|Builders/);
  assert.match(js,/retiredRoutes/);
  assert.match(js,/history\\.replaceState/);
  assert.match(html,/id="kofi-support"/);
