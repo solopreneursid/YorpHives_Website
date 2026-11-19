@@ -31,28 +31,28 @@ test('fresh YorpHives experience has five clear routes and accessible navigation
 });
 test('the new visual system is original, responsive and reduced-motion safe',async()=>{
  const css=await read('reimagined/studio.css');
- assert.match(css,/:root\\{/);
+ assert.match(css,/:root\{/);
  assert.match(css,/--lime:#d8f36a/);
- assert.match(css,/\\.hero-layout\\{display:grid/);
- assert.match(css,/\\.ecosystem-grid\\{display:grid/);
- assert.match(css,/\\.featured-tools-grid\\{display:grid/);
- assert.match(css,/\\.mobile-dock\\{/);
- assert.match(css,/@media\\(max-width:760px\\)/);
- assert.match(css,/@media\\(max-width:350px\\)/);
- assert.match(css,/env\\(safe-area-inset-bottom/);
+ assert.match(css,/\.hero-layout\{display:grid/);
+ assert.match(css,/\.ecosystem-grid\{display:grid/);
+ assert.match(css,/\.featured-tools-grid\{display:grid/);
+ assert.match(css,/\.mobile-dock\{/);
+ assert.match(css,/@media\(max-width:760px\)/);
+ assert.match(css,/@media\(max-width:350px\)/);
+ assert.match(css,/env\(safe-area-inset-bottom/);
  assert.match(css,/prefers-reduced-motion:reduce/);
- assert.doesNotMatch(css,/@import|url\\(['"]?https?:/i);
+ assert.doesNotMatch(css,/@import|url\(['"]?https?:/i);
 });
 test('public discovery is catalog-backed, searchable and paginated',async()=>{
  const [js,html]=await Promise.all([read('reimagined/studio.js'),read('reimagined/index.html')]);
- assert.match(js,/getCatalog\\(\\)/);
- assert.match(js,/subscribeCatalog\\(applyCatalog\\)/);
- assert.match(js,/qualifiedProducts\\(allItems\\)/);
- assert.match(js,/function filteredTools\\(/);
+ assert.match(js,/getCatalog\(\)/);
+ assert.match(js,/subscribeCatalog\(applyCatalog\)/);
+ assert.match(js,/qualifiedProducts\(allItems\)/);
+ assert.match(js,/function filteredTools\(/);
  assert.match(js,/const pageSize=12/);
  assert.match(js,/toggleSaved/);
  assert.match(js,/readSaved/);
- assert.match(js,/function renderVentures\\(/);
+ assert.match(js,/function renderVentures\(/);
  assert.match(html,/id="tool-results"/);
  assert.match(html,/id="tool-categories"/);
  assert.match(html,/id="tool-pagination"/);
@@ -66,23 +66,23 @@ test('public progress and portfolio never imply an unapproved launch',async()=>{
  assert.match(html,/id="home-progress"/);
  assert.match(html,/Products appear here only after research review and founder approval/);
  assert.match(html,/Nothing launches without approval/);
- assert.match(js,/qualifiedProducts\\(allItems\\)/);
- assert.match(js,/fetch\\('\\/activity\\.json'/);
+ assert.match(js,/qualifiedProducts\(allItems\)/);
+ assert.match(js,/fetch\('\/activity\.json'/);
  assert.match(policy,/approvedByFounder/);
 });
 test('fresh root uses only local assets and first-party analytics controls',async()=>{
  const [html,js,client]=await Promise.all([
   read('reimagined/index.html'),read('reimagined/studio.js'),read('insights-client.mjs')
  ]);
- assert.match(html,/href="studio\\.css"/);
- assert.match(html,/src="studio\\.js"/);
- assert.match(html,/src="\\/insights-client\\.mjs"/);
- assert.doesNotMatch(html,/(?:src|href)="https?:\\/\\//i);
+ assert.match(html,/href="studio\.css"/);
+ assert.match(html,/src="studio\.js"/);
+ assert.match(html,/src="\/insights-client\.mjs"/);
+ assert.doesNotMatch(html,/(?:src|href)="https?:\/\//i);
  assert.match(html,/id="anonymous-analytics-toggle"/);
  assert.match(client,/globalPrivacyControl/);
- assert.match(client,/navigator\\.doNotTrack/);
+ assert.match(client,/navigator\.doNotTrack/);
  assert.match(js,/retiredRoutes/);
- assert.doesNotMatch(js,/google-analytics|gtag|posthog|mixpanel|segment\\.io/i);
+ assert.doesNotMatch(js,/google-analytics|gtag|posthog|mixpanel|segment\.io/i);
 });
 test('the direct A–Z library remains crawlable and searchable',async()=>{
  const [html,css,search]=await Promise.all([
@@ -92,8 +92,8 @@ test('the direct A–Z library remains crawlable and searchable',async()=>{
  assert.match(html,/TOOL_DIRECTORY_END/);
  assert.match(html,/id="directory-search"/);
  assert.match(html,/id="directory-saved-only"/);
- assert.match(css,/\\.directory-card/);
- assert.match(css,/@media\\(max-width:760px\\)/);
+ assert.match(css,/\.directory-card/);
+ assert.match(css,/@media\(max-width:760px\)/);
  assert.match(search,/directory-search-status/);
 });
 test('the release gate validates the fresh design rather than the retired layout',async()=>{
