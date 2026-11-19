@@ -15,7 +15,7 @@ test('the built root promotes the fresh experience while preview remains noindex
  for(const view of ['home','ventures','tools','partners','contact'])
   assert.match(home,new RegExp('<section class="view" id="'+view+'"'));
  assert.match(home,/class="kofi-support" id="kofi-support" type="button" disabled/);
- assert.match(home,/rel="canonical" href="https:\\/\\/yorphives\\.com\\//);
+ assert.match(home,/rel="canonical" href="https:\/\/yorphives\.com\//);
  assert.doesNotMatch(home,/DESIGN PREVIEW|name="robots" content="noindex/);
  assert.match(home,/id="yh-pulse"/);
  assert.match(home,/id="anonymous-analytics-toggle"/);
@@ -30,7 +30,7 @@ test('legacy Builders and membership hashes route home while HQventures remains 
  assert.match(js,/explore:'ventures'/);
  assert.match(js,/connect:'contact'/);
  assert.match(js,/retiredRoutes/);
- assert.match(js,/history\\.replaceState/);
+ assert.match(js,/history\.replaceState/);
  assert.doesNotMatch(js,/builders:'Builders'|opportunities:'builders'|membership:'builders'/);
  const html=await read('reimagined/index.html');
  assert.match(html,/href="#ventures"/);
@@ -43,13 +43,13 @@ test('all 143 direct tool pages retain their real processors and receive the new
  assert.ok(items.length>=140);
  const shell=await read('scripts/next-tool-shell.mjs');
  assert.match(shell,/class="mobile-dock"/);
- assert.match(shell,/href="\\.\\.\\/\\.\\.\\/#tools"/);
+ assert.match(shell,/href="\.\.\/\.\.\/#tools"/);
  const css=await read('tools/tool-next.css');
- assert.match(css,/@media\\(max-width:760px\\)/);
+ assert.match(css,/@media\(max-width:760px\)/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  if(await exists('dist/tools/word-counter/index.html')){
   const tool=await read('dist/tools/word-counter/index.html');
-  assert.match(tool,/href="\\.\\.\\/tool-next\\.css"/);
+  assert.match(tool,/href="\.\.\/tool-next\.css"/);
   assert.match(tool,/class="mobile-dock"/);
   assert.match(tool,/id="utility-form"/);
   assert.match(tool,/id="yorphives-discovery-schema"/);
@@ -63,8 +63,8 @@ test('public analytics and usage signals remain privacy-first and founder-qualif
  assert.match(home,/id="anonymous-analytics-toggle"/);
  assert.match(home,/id="home-tool-count"/);
  assert.match(home,/id="home-venture-count"/);
- assert.match(js,/qualifiedProducts\\(allItems\\)/);
- assert.match(js,/fetch\\('\\/activity\\.json'/);
+ assert.match(js,/qualifiedProducts\(allItems\)/);
+ assert.match(js,/fetch\('\/activity\.json'/);
  assert.match(client,/globalPrivacyControl/);
  assert.equal(JSON.parse(impact).publication.approvedByFounder,false);
  assert.equal(JSON.parse(usage).publication.approvedByFounder,false);
