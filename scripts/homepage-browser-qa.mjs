@@ -53,6 +53,7 @@ for(const [engineName,engine] of Object.entries(engines)){
    if(home.nav!==4)problems.push(label+' desktop navigation count changed');
    if(home.dock!==4)problems.push(label+' four-item mobile navigation missing');
    if(!home.heading||!home.count||home.count==='—')problems.push(label+' homepage identity or catalogue count missing');
+   if(await page.locator('#anonymous-analytics-toggle').count()!==1)problems.push(label+' anonymous analytics opt-out missing');
    if(mobile){
     const dock=await page.evaluate(()=>{
      const node=document.querySelector('.mobile-dock'),box=node.getBoundingClientRect(),style=getComputedStyle(node);
