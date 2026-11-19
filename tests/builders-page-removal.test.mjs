@@ -2,34 +2,43 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 
-const [html,router,homeCss]=await Promise.all([
- readFile(new URL('../index.html',import.meta.url),'utf8'),
- readFile(new URL('../next.js',import.meta.url),'utf8'),
- readFile(new URL('../home-experience.css',import.meta.url),'utf8')
+const read=path=>readFile(new URL('../'+path,import.meta.url),'utf8');
+const [legacyHtml,legacyRouter,studioHtml,studioRouter,rotators,build,release,landings,redirects]=await Promise.all([
+ read('index.html'),read('next.js'),read('reimagined/index.html'),read('reimagined/studio.js'),
+ read('reimagined/rotators.js'),read('scripts/build-site.mjs'),read('scripts/release-check.mjs'),
+ read('scripts/section-landings.mjs'),read('_redirects')
 ]);
 
-test('the Builders page and all homepage entry points are removed',()=>{
- assert.doesNotMatch(html,/id=["']builders["']/i);
- assert.doesNotMatch(html,/href=["']#builders["']/i);
- assert.doesNotMatch(html,/data-nav=["']builders["']/i);
- assert.doesNotMatch(html,/\bBuilders\b/i);
+test('the production homepage and legacy template no longer expose a Builders page',()=>{
+ for(const html of [legacyHtml,studioHtml]){
+  assert.doesNotMatch(html,/id=["']builders["']/i);
+  assert.doesNotMatch(html,/href=["']#builders["']/i);
+  assert.doesNotMatch(html,/data-nav=["']builders["']/i);
+  assert.doesNotMatch(html,/\bBuilders\b/i);
+ }
+ assert.equal((studioHtml.match(/class="eco-card eco-/g)||[]).length,2);
+ assert.equal((studioHtml.match(/class="eco-strip eco-strip-/g)||[]).length,2);
 });
 
-test('Partnerships remains a standalone, navigable page',()=>{
- assert.match(html,/class=["']page partnership-section["'][^>]*id=["']partners["']/);
- assert.match(html,/href=["']#partners["'][^>]*data-nav=["']partners["']/);
- assert.match(html,/Partner with us/);
- assert.match(router,/partners:'Partnerships'/);
+test('Partnerships remains a standalone, reachable page',()=>{
+ assert.match(legacyHtml,/id="partners"/);
+ assert.match(studioHtml,/id="partners"/);
+ assert.match(studioHtml,/href="#partners"/);
+ assert.match(studioHtml,/Partnerships/);
 });
 
-test('the homepage Connect section contains only contact and partnership cards',()=>{
- const section=html.slice(html.indexOf('id="home-connect"'),html.indexOf('<!-- Verified recent public updates'));
- assert.equal((section.match(/class="connection-card/g)||[]).length,2);
- assert.match(homeCss,/connection-paths\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+test('old Builder URLs and hashes safely return visitors to Home',()=>{
+ for(const router of [legacyRouter,studioRouter]){
+  assert.match(router,/retiredRoutes/);
+  assert.match(router,/history\.replaceState/);
+ }
+ for(const rule of ['/builders / 301','/builders/ / 301','/builders/* / 301'])
+  assert.ok(redirects.includes(rule),rule);
 });
 
-test('legacy Builder routes safely return visitors to Home',()=>{
- assert.match(router,/retiredRoutes = new Set\(\['builders','post','opportunities','membership'\]\)/);
- assert.match(router,/history\.replaceState\(null,'',location\.pathname\+location\.search\+'#home'\)/);
- assert.doesNotMatch(router,/builders:'Builders'/);
+test('Builders-only feeds, SEO pages, and release dependencies are retired',()=>{
+ assert.doesNotMatch(rotators,/builders-updates|builderFeed|builderEntries/);
+ assert.doesNotMatch(build,/builders-updates|builderNotes|Builders-only/);
+ assert.doesNotMatch(release,/builders-updates|builderFeed/);
+ assert.doesNotMatch(landings,/builders|Builders|#builders/);
 });
