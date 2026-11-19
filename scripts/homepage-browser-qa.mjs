@@ -112,7 +112,7 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
       dockHeight:dockBox.height,
       dockInset:dockBox.left,
       dockButtonHeight:dock.querySelector('a').getBoundingClientRect().height,
-      dockColumns:dockStyle.gridTemplateColumns.trim().split(/\\s+/).length,
+      dockColumns:dockStyle.gridTemplateColumns.trim().split(/\s+/).length,
       dockButtonCount:dockButtons.length,
       dockWidths:dockButtons.map(b=>b.width),
       dockLeftGap:dockButtons[0].left-dockContentLeft,
