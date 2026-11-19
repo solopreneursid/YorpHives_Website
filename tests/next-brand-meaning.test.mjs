@@ -8,9 +8,9 @@ const read=p=>readFile(resolve(root,p),'utf8');
 
 test('the new homepage leads with a clear independent venture-studio proposition',async()=>{
  const html=await read('reimagined/index.html');
- assert.match(html,/Curiosity in\.<br><em>Useful things out\.<\/em>/);
+ assert.ok(html.includes('Ideas worth finding.<br><em>Ventures worth building.</em>'));
  assert.match(html,/Free tools\. New ventures\. People building what's next\./);
- assert.match(html,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
+ assert.match(html,/INDEPENDENT · AI-POWERED VENTURE STUDIO/);
  assert.match(html,/INDEPENDENT\. HUMAN-LED\. BUILT TO EVOLVE\./);
  assert.match(html,/class="hero-art"/);
  assert.match(html,/class="ecosystem-grid"/);
