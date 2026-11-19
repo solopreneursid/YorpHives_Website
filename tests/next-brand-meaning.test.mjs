@@ -88,3 +88,30 @@ test('release gate protects the new layout and the original tool catalogue',asyn
  assert.match(release,/Privacy-first security headers/);
  assert.doesNotMatch(release,/home-explore|home-use|hero-geometry|renderFeaturedProject/);
 });
+
+test('HQventures leads desktop, mobile and homepage without displacing free tools',async()=>{
+ const [html,css,js]=await Promise.all([
+  read('reimagined/index.html'),read('reimagined/studio.css'),read('reimagined/studio.js')
+ ]);
+ const within=(opening,closing)=>{
+  const first=html.indexOf(opening);
+  assert.ok(first>=0,'missing '+opening);
+  return html.slice(first,html.indexOf(closing,first));
+ };
+ for(const section of [
+  within('<nav class="desktop-nav"','</nav>'),
+  within('<nav class="mobile-menu"','</nav>'),
+  within('<nav class="mobile-dock"','</nav>'),
+  within('<div class="hero-actions"','</div>'),
+  within('<div class="ecosystem-grid"','</section>')
+ ]){
+  assert.ok(section.indexOf('href="#ventures"')>=0);
+  assert.ok(section.indexOf('href="#tools"')>=0);
+  assert.ok(section.indexOf('href="#ventures"')<section.indexOf('href="#tools"'));
+ }
+ assert.match(html,/id="home-title">Ideas worth finding/);
+ assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+ assert.match(css,/@media\(max-width:760px\)/);
+ assert.ok(js.includes('tools/pdf-merge/'));
+ assert.ok(js.includes('tools/image-resizer/'));
+});
