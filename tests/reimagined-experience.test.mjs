@@ -21,7 +21,7 @@ test('full reimagined experience has five complete page routes and separate navi
  assert.doesNotMatch(html,/<a[^>]*href="#impact"/);
  assert.match(html,/id="home-progress"/);
  assert.match(html,/href="#home-progress">See our progress/);
- assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"|\\bBuilders\\b/);
+ assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"|Builders/);
  assert.match(html,/id="hero-tool-count"/);
  assert.match(html,/id="featured-tools-grid"/);
  assert.match(html,/id="featured-tools-title"/);
