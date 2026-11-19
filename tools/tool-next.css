@@ -200,3 +200,5 @@ body.tool-page [hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){
  body.tool-page *,body.tool-page *:before,body.tool-page *:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+body.tool-page .site-header .header-kofi:disabled{opacity:1;cursor:not-allowed}
