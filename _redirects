@@ -49,3 +49,8 @@
 /free-tools/url-decoder /tools/url-encoder/ 302
 /free-tools/sha256-generator/ /tools/hash-generator/ 302
 /free-tools/sha256-generator /tools/hash-generator/ 302
+
+# Retired Builders URLs return to the main YorpHives homepage.
+/builders / 301
+/builders/ / 301
+/builders/* / 301
