@@ -285,25 +285,6 @@ if(target==='preview'){
  // An entirely new site experience for review, added AFTER public HTML auditing.
  // No new unregistered pages are ever introduced into the production build.
  await cp(resolve(root,'reimagined'),resolve(dest,'reimagined'),{recursive:true});
- // Independent Builders-only update feed: newest ten *verified* public notes.
- // The main activity feed is capped at 20 items and heavily features tools;
- // it is not a reliable source for ten separate Builders announcements.
- const builderNotes=[...publicNotes,...publicPageChanges].filter(e=>
-   e?.kind==='builders'&&e.url==='#builders'&&
-   typeof e.id==='string'&&e.id.length<=100&&
-   typeof e.title==='string'&&e.title.length>=3&&e.title.length<=90&&
-   !/[<>]/.test(e.title)&&typeof e.timestamp==='string'&&
-   Number.isFinite(Date.parse(e.timestamp))&&Date.parse(e.timestamp)<=Date.now());
- const uniqueBuilderNotes=new Map();
- for(const note of builderNotes){
-  const prior=uniqueBuilderNotes.get(note.id);
-  if(!prior||Date.parse(note.timestamp)>Date.parse(prior.timestamp))
-   uniqueBuilderNotes.set(note.id,note);
- }
- const builders=[...uniqueBuilderNotes.values()]
-  .sort((a,b)=>Date.parse(b.timestamp)-Date.parse(a.timestamp))
-  .slice(0,10).map(({id,kind,title,url,timestamp})=>({id,kind,title,url,timestamp}));
- await write('reimagined/builders-updates.json',JSON.stringify({version:1,items:builders},null,2)+'\n');
  // Robots must be allowed to fetch pages to see the noindex response header.
  // A blanket robots.txt Disallow would prevent verification of noindex.
  await write('robots.txt','User-agent: *\nAllow: /\n');
@@ -400,22 +381,7 @@ async function publishReimaginedRoot(prefix=''){
   throw Error('Reimagined release candidate failed initial public safety gates');
  homepage=homepage.replace('</body>','<script type="module" src="/agentic-browser.mjs"></script></body>');
  await write(prefix+'index.html',homepage);
- // Only actually reviewed Builders updates: no invented announcement records.
- const notes=[...publicNotes,...publicPageChanges].filter(x=>
-   x?.kind==='builders'&&x.url==='#builders'&&
-   typeof x.id==='string'&&x.id.length<=100&&
-   typeof x.title==='string'&&x.title.length<=90&&
-   !/[<>]/.test(x.title)&&typeof x.timestamp==='string'&&
-   Number.isFinite(Date.parse(x.timestamp))&&Date.parse(x.timestamp)<=Date.now());
- const deduped=new Map();
- for(const event of notes){
-  const old=deduped.get(event.id);
-  if(!old||Date.parse(event.timestamp)>Date.parse(old.timestamp))deduped.set(event.id,event);
- }
- const items=[...deduped.values()].sort((a,b)=>Date.parse(b.timestamp)-Date.parse(a.timestamp))
-   .slice(0,10).map(({id,kind,title,url,timestamp})=>({id,kind,title,url,timestamp}));
- await write(prefix+'builders-updates.json',JSON.stringify({version:1,items},null,2)+'\n');
- console.log('REIMAGINED ROOT READY: '+(prefix||'/')+'; '+items.length+' verified Builders updates.');
+ console.log('REIMAGINED ROOT READY: '+(prefix||'/')+'; Builders page removed; Partnerships preserved.');
 }
 
 let llms=await output('llms.txt');
