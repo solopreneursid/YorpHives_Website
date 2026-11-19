@@ -44,18 +44,23 @@ test('Cloudflare Functions stay confined to analytics and read-only agent discov
  assert.ok(s.includes("include:['/api/insights/*','/api/agent/v1/*']"));
  assert.ok(s.includes("insights-client.mjs"));
 });
-test('homepage progress and YHpulse show measured, not invented, results',async()=>{
- const [html,studio,rotators,client]=await Promise.all(['reimagined/index.html','reimagined/studio.js','reimagined/rotators.js','insights-client.mjs'].map(read));
- assert.ok(html.includes('id="home-progress"'));
- assert.ok(html.includes('id="home-tool-count"'));
- assert.ok(html.includes('id="home-venture-count"'));
- assert.ok(html.includes('anonymous-analytics-toggle'));
- assert.ok(!studio.includes("fetch('/api/insights/public'"));
- assert.ok(rotators.includes("getJson('/api/insights/public')"));
- assert.ok(rotators.includes('browser_reported_completed_actions'));
- assert.ok(client.includes('globalPrivacyControl'));
- assert.ok(client.includes('yorphives:tool-completed'));
- assert.ok(!client.includes('String(node.value).slice'));
+test('fresh homepage progress and YHpulse use public catalogue data, not invented rankings',async()=>{
+ const [html,studio,client,impact,usage]=await Promise.all([
+  read('reimagined/index.html'),read('reimagined/studio.js'),read('insights-client.mjs'),
+  read('reimagined/impact-public.json'),read('reimagined/usage-public.json')
+ ]);
+ for(const id of ['home-progress','home-tool-count','home-venture-count','anonymous-analytics-toggle','yh-pulse','activity-list'])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(studio,/qualifiedProducts\\(allItems\\)/);
+ assert.match(studio,/fetch\\('\\/activity\\.json'/);
+ assert.match(studio,/LATEST /);
+ assert.doesNotMatch(studio,/fetch\\('\\/api\\/insights\\/public'/);
+ assert.match(client,/globalPrivacyControl/);
+ assert.match(client,/yorphives:tool-completed/);
+ assert.doesNotMatch(client,/String\\(node\\.value\\)\\.slice/);
+ assert.equal(JSON.parse(impact).publication.approvedByFounder,false);
+ assert.equal(JSON.parse(usage).publication.approvedByFounder,false);
+ assert.deepEqual(JSON.parse(usage).ranked,[]);
 });
 test('shared tool processors mark real successful completion',async()=>{
  for(const file of ['utility-page.mjs','file-tool-page.mjs','wave1-page.mjs','wave2-page.mjs','wave3-page.mjs']){
