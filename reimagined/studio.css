@@ -954,7 +954,7 @@ section[id],.view[id],#home-progress,#featured-tools{scroll-margin-top:clamp(72p
     letter-spacing:.06em;line-height:1.2;
   }
   #home .hero-mobile-step strong{
-    color:#f1fff5;font-size:clamp(9px,2.35vw,11px);
+    color:#f1fff5;font-size:clamp(9px,2.7vw,11.5px);
     line-height:1.2;letter-spacing:-.02em;overflow-wrap:normal;
   }
   #home .hero-mobile-step:last-child{
