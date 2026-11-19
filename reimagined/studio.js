@@ -12,7 +12,7 @@ let previousView='';
 let allItems=[],tools=[],ventures=[];
 let activeCategory='All',onlySaved=false,page=1,sortMode='name';
 const pageSize=12;
-const featuredToolUrls=['tools/word-counter/','tools/qr-code-generator/','tools/password-generator/','tools/json-formatter/'];
+const featuredToolUrls=['tools/word-counter/','tools/qr-code-generator/','tools/password-generator/','tools/json-formatter/','tools/pdf-merge/','tools/image-resizer/'];
 const icon=name=>{
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
  svg.setAttribute('aria-hidden','true');
@@ -53,7 +53,7 @@ function route(){
   if(link.dataset.nav===active)link.setAttribute('aria-current','page');
   else link.removeAttribute('aria-current');
  });
- document.title=(active==='home'?'Make ideas useful':viewNames[active])+' | YorpHives';
+ document.title=(active==='home'?'Ideas into ventures':viewNames[active])+' | YorpHives';
  closeMenu();
  if(active!==previousView){window.scrollTo({top:0,behavior:'auto'});previousView=active}
 }
