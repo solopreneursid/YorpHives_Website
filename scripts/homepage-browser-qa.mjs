@@ -76,6 +76,8 @@ for(const [engineName,engine] of Object.entries(engines)){
     const dimensions=await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
     if(dimensions.scroll>dimensions.width+2)problems.push(label+' '+view+' overflow '+JSON.stringify(dimensions));
    }
+   await page.evaluate(()=>{location.hash='#tools'});
+   await page.waitForFunction(()=>location.hash==='#tools'&&!document.getElementById('tools').hidden);
    await page.locator('#tool-search').fill('qr');
    await page.waitForFunction(()=>document.querySelectorAll('#tool-results .tool-card').length>0);
    const results=await page.locator('#tool-results .tool-card').count();
