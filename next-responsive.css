@@ -7,7 +7,6 @@
  .header-cta{gap:12px}
  .rail-faint{display:none}
  .interior-grid{grid-template-columns:1fr .78fr}
- .builders-graphic{min-height:212px}
 }
 @media(max-width:760px){
  html{scroll-padding-top:70px}html,body{max-width:100%;overflow-x:clip}
@@ -66,13 +65,7 @@
  .interior-content{padding-block:46px 57px}.product-grid{grid-template-columns:1fr}
  .empty-product{padding:25px;border-radius:15px}.empty-product-icon{font-size:35px;margin-bottom:10px}
  .empty-product h3{font-size:23px}
- .builders-graphic{min-height:190px;max-width:330px;width:83%;margin:4px auto 12px}
- .bgraph-center{font-size:43px;border-radius:12px}
- .member-grid{grid-template-columns:1fr;gap:9px}.member-grid article{min-height:142px;padding:17px}
- .member-grid h3{font-size:19px}
- .membership-section{padding-block:46px 53px}.membership-grid{grid-template-columns:1fr;gap:10px}
- .membership-card{min-height:161px;padding:17px}.membership-card h3{font-size:21px;margin:7px 0 0}
- .contact-graphic{min-height:155px;transform:rotate(-1deg);padding:21px}
+.contact-graphic{min-height:155px;transform:rotate(-1deg);padding:21px}
  .contact-graphic strong{font-size:40px}.contact-layout{grid-template-columns:1fr;gap:21px;padding-block:49px 63px}
  .contact-copy p{font-size:12px}.contact-tip{margin-top:15px;padding-top:12px}
  .contact-form{padding:18px}.contact-form input,.contact-form textarea,.contact-form select{font-size:16px}
@@ -103,11 +96,8 @@
 @media(max-width:900px){
  .partnership-layout{grid-template-columns:1fr;gap:25px}
  .partnership-panel{max-width:780px;width:100%}
- .builders-hero-actions{gap:9px}
 }
 @media(max-width:760px){
- .builders-hero-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
- .builders-hero-actions .btn{min-width:0;min-height:44px;padding:10px 12px;font-size:11px;white-space:normal}
  .partnership-section{padding-block:49px 50px;scroll-margin-top:67px}
  .partnership-copy h2{font-size:clamp(36px,8.1vw,45px);margin:10px 0}
  .partnership-copy p{font-size:12px;margin-bottom:17px}
@@ -120,7 +110,6 @@
  .partnership-disclosure{padding-top:14px;font-size:10px}
 }
 @media(max-width:350px){
- .builders-hero-actions .btn{font-size:10px;padding:9px}
  .partnership-path{grid-template-columns:20px minmax(0,1fr);gap:8px}
  .partnership-path small{grid-column:2;text-align:left}
  .partnership-panel-foot small{font-size:10px}
