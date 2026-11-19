@@ -363,8 +363,8 @@ async function publishReimaginedRoot(prefix=''){
  const sharing=[
   '<meta property="og:type" content="website">',
   '<meta property="og:site_name" content="YorpHives">',
-  '<meta property="og:title" content="YorpHives — A cloud-based AI-powered venture studio">',
-  '<meta property="og:description" content="Discover founder-approved ventures, build connections and explore useful tools.">',
+  '<meta property="og:title" content="YorpHives — HQventures, our independent venture studio">',
+  '<meta property="og:description" content="Explore founder-reviewed opportunities and ventures through HQventures, plus free tools you can use today.">',
   '<meta property="og:url" content="https://yorphives.com/">',
   '<meta property="og:image" content="https://yorphives.com/tools/brand-icon.webp">',
   '<meta property="og:image:alt" content="YorpHives brand emblem">',
