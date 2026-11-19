@@ -22,8 +22,8 @@
  .mobile-menu:not([hidden]){position:fixed;z-index:80;display:block;top:62px;left:0;right:0;padding:10px clamp(16px,4.7vw,26px) 21px;background:#123225;box-shadow:0 15px 23px #021a1466}
  .mobile-menu nav{display:grid}.mobile-menu a{display:flex;align-items:center;justify-content:space-between;min-height:52px;padding:11px 7px;border-bottom:1px solid #a2dcb52a;color:#f0fff5;font-size:17px;font-weight:760}
  .mobile-menu a span{font-size:10px;color:#9edeb8}.mobile-menu a[aria-current="page"]{color:#b4f5ce}
- .mobile-dock{position:fixed;bottom:0;left:0;right:0;z-index:75;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;min-height:66px;padding:6px max(7px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(7px,env(safe-area-inset-right,0px));background:#0e251bf8;color:#cde9d2;border-top:1px solid #b1ebc33b;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
- .mobile-dock a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;min-width:0;color:#b6cfbf;border-radius:11px;font-size:10.5px;font-weight:700;line-height:1.2}
+ .mobile-dock{position:fixed;bottom:0;left:0;right:0;z-index:75;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;min-height:64px;padding:6px max(7px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(7px,env(safe-area-inset-right,0px));background:#0e251bf8;color:#cde9d2;border-top:1px solid #b1ebc33b;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+ .mobile-dock a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:51px;min-width:0;color:#b6cfbf;border-radius:11px;font-size:10px;font-weight:700;line-height:1.2}
  .dock-icon{font-size:21px;line-height:1}.mobile-dock a[aria-current="page"]{color:#174631;background:#baf5ce}
  body.menu-open .mobile-dock{visibility:hidden}
  h2{font-size:clamp(30px,7vw,39px)}.section-heading{margin-bottom:17px}.section-heading h2{margin-top:8px}
@@ -69,7 +69,7 @@
  .contact-graphic strong{font-size:40px}.contact-layout{grid-template-columns:1fr;gap:21px;padding-block:49px 63px}
  .contact-copy p{font-size:12px}.contact-tip{margin-top:15px;padding-top:12px}
  .contact-form{padding:18px}.contact-form input,.contact-form textarea,.contact-form select{font-size:16px}
- .site-footer{padding-top:38px;padding-bottom:calc(82px + env(safe-area-inset-bottom,0px))}
+ .site-footer{padding-top:38px;padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
  .footer-top{grid-template-columns:1fr;gap:25px;padding-bottom:28px}.footer-top>div>p{margin-top:12px}
  .footer-nav{gap:17px}.footer-nav a{font-size:11px}
  .pulse-viewport{mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
