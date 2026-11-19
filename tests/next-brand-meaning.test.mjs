@@ -26,7 +26,7 @@ test('three primary discovery paths replace repeated homepage explanations',asyn
  assert.match(html,/Discover/);
  assert.match(html,/Evaluate/);
  assert.match(html,/Founder decides/);
- assert.match(html,/Build &amp; improve/);
+ assert.match(html,/Build & improve/);
 });
 test('the venture studio separates research signals from founder-approved launches',async()=>{
  const [html,js,policy]=await Promise.all([
