@@ -89,7 +89,7 @@ test('navigation and safeguards cover the five public pages and human decision g
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"|Builders/);
  assert.match(js,/retiredRoutes/);
- assert.match(js,/history\\.replaceState/);
+ assert.ok(js.includes('history.replaceState'));
  assert.match(html,/id="kofi-support"/);
  assert.match(html,/type="button" disabled/);
  assert.match(html,/href="#partners"/);
