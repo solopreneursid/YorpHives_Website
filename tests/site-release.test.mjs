@@ -7,7 +7,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=(path,base=root)=>readFile(resolve(base,path),'utf8');
 test('sitemap has the homepage, directory and all tool URLs',async()=>{
  const items=JSON.parse(await read('catalog.json')).items;
- const xml=await read('sitemap.xml');
+ const xml=await read('sitemap.xml',resolve(root,'dist'));
  assert.match(xml,/^<\?xml version="1.0"/);
  for(const page of ['https://yorphives.com/','https://yorphives.com/tools/',...items.filter(x=>x.type==='tool').map(x=>'https://yorphives.com/'+x.url)])
   assert.ok(xml.includes('<loc>'+page+'</loc>'),'Missing '+page);

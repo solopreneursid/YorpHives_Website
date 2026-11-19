@@ -15,7 +15,10 @@ test('fresh homepage keeps a visible but genuinely disabled support action',asyn
  assert.match(button,/id="kofi-support"/);
  assert.match(button,/type="button" disabled/);
  assert.match(button,/Support/);
- assert.doesNotMatch(button,/<a\\b|onclick=|href="https?:\\/\\/|https?:\\/\\//);
+ assert.ok(!button.includes('<a'));
+ assert.ok(!button.includes('onclick='));
+ assert.ok(!button.includes('href="https://'));
+ assert.ok(!button.includes('http://'));
  assert.match(css,/\.kofi-support:disabled\{opacity:1;cursor:not-allowed\}/);
 });
 test('all public tools and directory receive disabled first-party support controls',async()=>{
