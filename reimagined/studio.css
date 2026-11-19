@@ -543,3 +543,7 @@ svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-wi
  html{scroll-behavior:auto}
  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+.analytics-toggle{border:0;background:transparent;color:#91a18d;font-size:8px;font-weight:750;text-align:left;cursor:pointer;padding:4px 0}
+.analytics-toggle:hover{color:#d8f36a}
+@media(max-width:760px){.analytics-toggle{font-size:7px}}
