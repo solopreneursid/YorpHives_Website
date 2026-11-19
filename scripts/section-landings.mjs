@@ -1,3 +1,4 @@
+import {readFile} from 'node:fs/promises';
 // Lightweight, independently crawlable front doors for the existing studio sections.
 // No frameworks, remote calls, fake launch claims, external subscriptions or HQ access.
 export const sectionLandingPaths=Object.freeze(['hqventures/','partnerships/']);
@@ -63,6 +64,7 @@ function page(s){
 `;
 }
 export async function publishSectionLandings(write){
- await write('section-landing.css',css+'\n');
+ const freshCss=await readFile(new URL('./section-landing-fresh.css',import.meta.url),'utf8');
+ await write('section-landing.css',freshCss+'\n');
  for(const section of sections)await write(section.slug+'/index.html',page(section));
 }
