@@ -18,7 +18,7 @@ test('production release promotes the new design to the actual domain root',asyn
  }
  assert.match(home,/id="home-title"/);
  assert.match(home,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
- for(const view of ['home','ventures','builders','tools','partners','contact'])
+ for(const view of ['home','ventures','tools','partners','contact'])
   assert.match(home,new RegExp('<section class="view" id="'+view+'"'),view);
  assert.match(home,/class="kofi-support" id="kofi-support" type="button" disabled/);
  assert.match(home,/rel="canonical" href="https:\/\/yorphives\.com\/"/);
@@ -26,7 +26,7 @@ test('production release promotes the new design to the actual domain root',asyn
  assert.match(home,/id="yh-pulse"/);
  assert.ok(home.indexOf('id="yh-pulse"')<home.indexOf('<footer class="footer">'));
  for(const asset of ['studio.css','studio.js','rotators.css','rotators.js',
-  'catalog-sync.mjs','impact-public.json','usage-public.json','builders-updates.json'])
+  'catalog-sync.mjs','impact-public.json','usage-public.json'])
   assert.ok(await exists(path+asset),'missing '+path+asset);
  const impact=JSON.parse(await file(path+'impact-public.json'));
  const usage=JSON.parse(await file(path+'usage-public.json'));
@@ -35,12 +35,13 @@ test('production release promotes the new design to the actual domain root',asyn
  assert.deepEqual(usage.ranked,[]);
 });
 
-test('old HQventures, contact and membership links remain valid after cutover',async()=>{
+test('legacy Builders and membership hashes return Home while HQventures and Contact remain valid',async()=>{
  const js=await file('reimagined/studio.js');
  assert.match(js,/explore:'ventures'/);
  assert.match(js,/connect:'contact'/);
- assert.match(js,/opportunities:'builders'/);
- assert.match(js,/membership:'builders'/);
+ assert.match(js,/retiredRoutes/);
+ assert.match(js,/history\\.replaceState/);
+ assert.doesNotMatch(js,/builders:'Builders'|opportunities:'builders'|membership:'builders'/);
  assert.match(js,/special\[hash\]/);
  assert.match(js,/qualifiedProducts\(allItems\)/);
  const [reimagined,headers]=await Promise.all([
@@ -48,7 +49,7 @@ test('old HQventures, contact and membership links remain valid after cutover',a
  ]);
  assert.match(reimagined,/id="kofi-support" type="button" disabled/);
  for(const asset of ['/catalog.json','/studio.js','/rotators.js','/catalog-sync.mjs',
-  '/impact-public.json','/usage-public.json','/builders-updates.json'])
+  '/impact-public.json','/usage-public.json'])
   assert.ok(headers.includes(asset+'\n  Cache-Control:'),'Missing cache rule '+asset);
 });
 
