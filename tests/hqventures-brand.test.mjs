@@ -35,5 +35,5 @@ test('the venture count is tied to qualified public releases, not ideas or draft
  assert.match(html,/id="venture-total"/);
  assert.match(js,/ventures=qualifiedProducts\(allItems\)/);
  assert.match(js,/number\(ventures\.length\)/);
- assert.match(policy,/approvedByFounder/);
+ assert.match(policy,/founderApproval/);
 });

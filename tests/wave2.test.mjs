@@ -11,7 +11,7 @@ test('new tools are independently registered and have local entry pages',async()
  const catalog=JSON.parse(await readFile(resolve(root,'catalog.json'),'utf8'));
  assert.equal(catalog.items.filter(x=>x.type==='tool').length,143);
  assert.equal(new Set(WAVE2_IDS).size,6);
- const directory=await readFile(resolve(root,'tools/index.html'),'utf8');
+ const directory=await readFile(resolve(root,'dist/tools/index.html'),'utf8');
  for(const id of WAVE2_IDS){
   const item=catalog.items.find(x=>x.url==='tools/'+id+'/');
   assert.ok(item,id);assert.equal(item.execution,'browser-local');

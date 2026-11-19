@@ -62,13 +62,13 @@ test('public progress and portfolio never imply an unapproved launch',async()=>{
  const [html,js,policy]=await Promise.all([
   read('reimagined/index.html'),read('reimagined/studio.js'),read('product-policy.mjs')
  ]);
- assert.match(html,/id="home-venture-count"/);
- assert.match(html,/id="home-progress"/);
- assert.match(html,/Products appear here only after research review and founder approval/);
- assert.match(html,/Nothing launches without approval/);
- assert.match(js,/qualifiedProducts\(allItems\)/);
- assert.match(js,/fetch\('\/activity\.json'/);
- assert.match(policy,/founderApproval/);
+ assert.ok(html.includes('id="home-venture-count"'));
+ assert.ok(html.includes('id="home-progress"'));
+ assert.ok(html.includes('Products appear here only after research review and founder approval'));
+ assert.ok(html.includes('Nothing launches without approval'));
+ assert.ok(js.includes('qualifiedProducts(allItems)'));
+ assert.ok(js.includes("fetch('/activity.json'"));
+ assert.ok(policy.includes('founderApproval'));
 });
 test('fresh root uses only local assets and first-party analytics controls',async()=>{
  const [html,js,client]=await Promise.all([

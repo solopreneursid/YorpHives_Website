@@ -8,7 +8,7 @@ test('all catalog entries have unique, existing local tool pages and modules', a
   const catalog = JSON.parse(await readFile(resolve(root, 'catalog.json'), 'utf8'));
   assert.ok(catalog.items.filter(item => item.type === 'tool').length >= 82);
   assert.equal(new Set(catalog.items.map(item => item.url)).size, catalog.items.length);
-  const directory = await readFile(resolve(root, 'tools/index.html'), 'utf8');
+  const directory = await readFile(resolve(root, 'dist/tools/index.html'), 'utf8');
   for (const item of catalog.items) {
     assert.ok(['tool', 'app', 'product'].includes(item.type));
     assert.ok(item.category && item.name && item.description);
