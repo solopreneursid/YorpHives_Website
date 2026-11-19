@@ -2,7 +2,7 @@
    Reads only public static catalogue/activity data. No private HQ access or remote SaaS. */
 import {qualifiedProducts} from '../product-policy.mjs';
 import {getCatalog,subscribeCatalog,startCatalogMonitoring} from './catalog-sync.mjs';
-import {readSaved,toggleSaved,SAVED_KEY} from '../tools/save-tool.mjs';
+import {readSaved,toggleSaved} from '../tools/save-tool.mjs';
 
 const $=id=>document.getElementById(id);
 const views=[...document.querySelectorAll('main>.view')];
@@ -193,7 +193,7 @@ function applyCatalog(items){
 }
 subscribeCatalog(applyCatalog);
 startCatalogMonitoring();
-getCatalog().catch(()=>{
+getCatalog().then(()=>loadActivity()).catch(()=>{
  $('home-tool-count').textContent='—';$('tools-count-big').textContent='—';
  $('featured-tools-grid').replaceChildren(make('p','The catalogue could not be loaded. Please try again or browse the directory.','loading-note'));
  $('tool-results').replaceChildren();
@@ -242,7 +242,6 @@ async function loadActivity(){
   }));
  }catch{/* Public activity is optional; the rest of the site remains usable. */}
 }
-loadActivity();
 
 document.querySelectorAll('[data-interest]').forEach(link=>link.addEventListener('click',()=>{
  const select=$('interest'),value=link.dataset.interest;
