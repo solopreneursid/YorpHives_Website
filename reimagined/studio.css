@@ -932,34 +932,60 @@ section[id],.view[id],#home-progress,#featured-tools{scroll-margin-top:clamp(72p
  #home .mini-brand-core{transform:translate(-50%,-50%) rotate(-9deg)}
 }
 
-/* Mobile hero only: show all three process cards alongside the existing small logo.
-   Desktop and tablet retain their unchanged orbital artwork and cards. */
-.hero-mobile-steps{display:none}
+
+/* Match the desktop hero's original orbital composition on phones.
+   Reuse the desktop illustration and floating cards, not a separate card row.
+   Only the Home hero changes at mobile widths. */
 @media(max-width:760px){
-  #home .hero-mobile-steps{
-    display:grid;
-    grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:clamp(6px,1.8vw,10px);
-    margin-top:clamp(7px,2vw,11px);
-    margin-bottom:clamp(4px,1vw,8px);
-  }
-  #home .hero-mobile-step{
-    display:flex;flex-direction:column;justify-content:center;gap:4px;
-    min-width:0;min-height:clamp(58px,15vw,70px);padding:8px clamp(7px,2vw,11px);
-    border:1px solid #9cfbc84d;border-radius:11px;
-    background:#112d27d9;box-shadow:0 8px 22px #0003;
-  }
-  #home .hero-mobile-step small{
-    color:#90bea9;font-size:clamp(6px,1.5vw,8px);font-weight:780;
-    letter-spacing:.06em;line-height:1.2;
-  }
-  #home .hero-mobile-step strong{
-    color:#f1fff5;font-size:clamp(9px,2.7vw,11.5px);
-    line-height:1.2;letter-spacing:-.02em;overflow-wrap:normal;
-  }
-  #home .hero-mobile-step:last-child{
-    background:#baffc8;border-color:#baffc8;
-  }
-  #home .hero-mobile-step:last-child small{color:#397d58}
-  #home .hero-mobile-step:last-child strong{color:#123b2b}
+ #home .hero-layout{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:0;
+ }
+ #home .hero-copy{display:contents}
+ #home .hero-copy>.eyebrow{grid-column:1;grid-row:1}
+ #home .hero-title-lockup{display:block;grid-column:1;grid-row:2}
+ #home .hero-title-lockup h1{
+  font-size:clamp(35px,9.3vw,58px);
+  margin:clamp(10px,2vh,16px) 0 7px;
+ }
+ #home .hero-mini-brand{display:none}
+ #home .hero-art{
+  display:block!important;
+  grid-column:1;grid-row:3;
+  justify-self:center;align-self:auto;
+  width:min(100%,420px);height:clamp(254px,78vw,338px);
+  min-height:0;margin:1px auto 7px;pointer-events:none;
+ }
+ #home .hero-art .art-node{display:flex}
+ #home .hero-art .art-ring-caption{display:block}
+ #home .art-core{
+  width:clamp(94px,29vw,126px);
+  height:clamp(94px,29vw,126px);
+  top:49%;border-radius:29px;
+  box-shadow:0 20px 55px #40e7ab55,inset 0 0 38px #84f7ad33;
+ }
+ #home .art-core:before{border-radius:24px}
+ #home .art-core img{width:66%;height:66%;object-fit:contain}
+ #home .art-node{
+  gap:4px;min-width:clamp(94px,29vw,120px);
+  padding:9px 12px;border-radius:11px;
+ }
+ #home .art-node small{font-size:clamp(6px,1.6vw,7.5px);letter-spacing:.1em}
+ #home .art-node strong{font-size:clamp(9px,2.5vw,11px)}
+ #home .node-dot{width:6px;height:6px;right:9px;top:11px}
+ #home .node-research{left:0;top:11%}
+ #home .node-evaluate{right:0;top:31%}
+ #home .node-founder{
+  left:6%;bottom:10%;
+  min-width:clamp(120px,38vw,155px);padding-right:25px;
+ }
+ #home .node-confirm{right:8px;top:13px}
+ #home .node-confirm svg{width:14px;height:14px}
+ #home .art-ring-caption{
+  right:1%;bottom:0;
+  font-size:clamp(6px,1.4vw,7.5px);letter-spacing:.07em;
+ }
+ #home .hero-intro{grid-column:1;grid-row:4}
+ #home .hero-ctas{grid-column:1;grid-row:5}
+ #home .hero-quicklinks{grid-column:1;grid-row:6}
+ #home .hero-micro{grid-column:1;grid-row:7}
 }
