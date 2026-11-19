@@ -25,11 +25,11 @@ const areaHtml=html=>{
 };
 const areaStyle=style=>{
   if(typeof style!=='string')return '';
-  const selectors=/(?:#explore\\b|#home \\.explore-spotlight\\b|#home \\.home-feature\\b|#home \\.explore-showcase\\b)/;
-  return [...style.matchAll(/([^{}]+)\\{([^{}]*)\\}/g)]
+  const selectors=/(?:#explore\b|#home \.explore-spotlight\b|#home \.home-feature\b|#home \.explore-showcase\b)/;
+  return [...style.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
     .filter(m=>selectors.test(m[1]))
-    .map(m=>m[1].replace(/\\s+/g,' ').trim()+'{'+m[2].replace(/\\s+/g,' ').trim()+'}')
-    .join('\\n');
+    .map(m=>m[1].replace(/\s+/g,' ').trim()+'{'+m[2].replace(/\s+/g,' ').trim()+'}')
+    .join('\n');
 };
 
 // Scan public page/content changes, not merely commits mentioning those pages.
@@ -38,7 +38,7 @@ const areaStyle=style=>{
 export function discoverPublicPageUpdates(root,limit=80){
   const log=git(root,['log','-n',String(limit),'--format=%H%x09%cI','--','index.html','style.css']);
   if(!log)return [];
-  const commits=log.split('\\n').map(line=>{
+  const commits=log.split('\n').map(line=>{
     const [sha,time]=line.split('\\t');
     return /^[a-f0-9]{40}$/.test(sha||'')&&Number.isFinite(isoTime(time))?{sha,time}:null;
   }).filter(Boolean);
