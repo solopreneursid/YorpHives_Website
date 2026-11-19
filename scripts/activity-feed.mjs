@@ -39,7 +39,7 @@ export function discoverPublicPageUpdates(root,limit=80){
   const log=git(root,['log','-n',String(limit),'--format=%H%x09%cI','--','index.html','style.css']);
   if(!log)return [];
   const commits=log.split('\n').map(line=>{
-    const [sha,time]=line.split('\\t');
+    const [sha,time]=line.split('\t');
     return /^[a-f0-9]{40}$/.test(sha||'')&&Number.isFinite(isoTime(time))?{sha,time}:null;
   }).filter(Boolean);
   let later=null;
