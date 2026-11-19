@@ -32,13 +32,26 @@ test('legacy redirects are same-site, target published tools or directory, and n
  const rules=parse(raw),catalog=JSON.parse(catalogText);
  const destinations=new Set(['/tools/',...catalog.items.filter(x=>x.type==='tool').map(x=>'/'+x.url)]);
  for(const [source,{target,status}] of rules){
-  assert.match(source,/^\/free-tools(?:\/[a-z0-9-]+)?\/?$/);
+  if(source.startsWith('/builders')){
+   assert.ok(['/builders','/builders/','/builders/*'].includes(source));
+   assert.equal(target,'/');
+   assert.equal(status,'301');
+   assert.equal(rules.has(target),false,'Retired Builder redirect loop: '+source);
+   continue;
+  }
+  assert.match(source,/^\\/free-tools(?:\\/[a-z0-9-]+)?\\/?$/);
   assert.ok(destinations.has(target),'Unknown destination: '+target);
   assert.equal(status,'302');
   assert.notEqual(source,target);
   assert.equal(rules.has(target),false,'Redirect chain: '+source+' to '+target);
  }
 });
+test('retired Builders paths redirect permanently to the homepage',async()=>{
+ const rules=parse(await file('_redirects'));
+ for(const source of ['/builders','/builders/','/builders/*'])
+  assert.deepEqual(rules.get(source),{target:'/',status:'301'});
+});
+
 test('six retired image-format aliases redirect to actual conversion tool',async()=>{
  const map=parse(await file('_redirects'));
  for(const slug of ['png-to-jpg','jpg-to-png','png-to-webp','jpg-to-webp','webp-to-png','webp-to-jpg']){
