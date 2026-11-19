@@ -75,14 +75,14 @@ test('the latest verified Explore page change replaces its fallback event',()=>{
 test('generated pulse is clickable, escaped and has a non-focusable duplicate set',()=>{
  const samples=collectPublicActivity({published:[tool('Writer & Reader',4)],notes,now:instant});
  const html=renderFooterPulse(samples);
- assert.match(html,/<b>YHpulse<\\/b>/);
- assert.match(html,/LATEST 2 UPDATES/);
- assert.doesNotMatch(html,/href="#builders"/);
- assert.match(html,/href="#explore"/);
- assert.match(html,/href="tools\\/example-4\\/"/);
- assert.match(html,/Writer &amp; Reader/);
+ assert.ok(html.includes('<b>YHpulse</b>'));
+ assert.ok(html.includes('LATEST 2 UPDATES'));
+ assert.ok(!html.includes('href="#builders"'));
+ assert.ok(html.includes('href="#explore"'));
+ assert.ok(html.includes('href="tools/example-4/"'));
+ assert.ok(html.includes('Writer &amp; Reader'));
  assert.equal((html.match(/class="pulse-items"/g)||[]).length,2);
- assert.match(html,/aria-hidden="true"/);
+ assert.ok(html.includes('aria-hidden="true"'));
  assert.equal((html.match(/tabindex="-1"/g)||[]).length,2);
  assert.equal(renderFooterPulse([]).includes('Published updates will appear here.'),true);
 });
@@ -90,29 +90,29 @@ test('generated pulse is clickable, escaped and has a non-focusable duplicate se
 test('the homepage pulse contains only scrolling verified links, no extra header',()=>{
  const items=collectPublicActivity({published:[tool('Writer & Reader',4)],notes,now:instant});
  const track=renderHomePulse(items);
- assert.match(track,/class="pulse-track/);
- assert.match(track,/href="tools\\/example-4\\/"/);
+ assert.ok(track.includes('class="pulse-track'));
+ assert.ok(track.includes('href="tools/example-4/"'));
  assert.equal((track.match(/class="pulse-items"/g)||[]).length,2);
- assert.doesNotMatch(track,/<b>YHpulse<\\/b>/);
- assert.doesNotMatch(track,/class="pulse-viewport"/);
+ assert.ok(!track.includes('<b>YHpulse</b>'));
+ assert.ok(!track.includes('class="pulse-viewport"'));
 });
 
 test('source has one homepage pulse and no duplicate footer ticker',async()=>{
  const html=await read('index.html'),css=await read('style.css'),build=await read('scripts/build-site.mjs');
- assert.doesNotMatch(html,/id="footer-pulse"/);
- assert.match(html,/id="home-pulse-viewport"/);
- assert.match(html,/<!-- PULSE_START -->/);
- assert.match(html,/<!-- PULSE_END -->/);
- assert.doesNotMatch(html,/class="footer-directory"/);
- assert.doesNotMatch(html,/<nav class="footer-directory" aria-label="Free tools"/);
- assert.match(build,/renderHomePulse\\(activity\\)/);
- assert.match(build,/await write\\('activity.json'/);
- assert.match(build,/discoverToolEditTimes\\(root\\)/);
- assert.match(build,/discoverPublicPageUpdates\\(root\\)/);
- assert.match(css,/grid-template-columns:190px minmax\\(0,1fr\\)/);
- assert.match(css,/@keyframes pulse-marquee/);
- assert.match(css,/\\.footer-pulse:hover \\.pulse-track/);
- assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.ok(!html.includes('id="footer-pulse"'));
+ assert.ok(html.includes('id="home-pulse-viewport"'));
+ assert.ok(html.includes('<!-- PULSE_START -->'));
+ assert.ok(html.includes('<!-- PULSE_END -->'));
+ assert.ok(!html.includes('class="footer-directory"'));
+ assert.ok(!html.includes('<nav class="footer-directory" aria-label="Free tools"'));
+ assert.ok(build.includes('renderHomePulse(activity)'));
+ assert.ok(build.includes("await write('activity.json'"));
+ assert.ok(build.includes('discoverToolEditTimes(root)'));
+ assert.ok(build.includes('discoverPublicPageUpdates(root)'));
+ assert.ok(css.includes('grid-template-columns:190px minmax(0,1fr)'));
+ assert.ok(css.includes('@keyframes pulse-marquee'));
+ assert.ok(css.includes('.footer-pulse:hover .pulse-track'));
+ assert.ok(css.includes('prefers-reduced-motion:reduce'));
  const fallback=await loadActivityNotes(root);
  assert.ok(fallback.every(x=>x.kind==='explore'));
 });
@@ -127,14 +127,15 @@ test('deployed release activity and HTML agree and link only to public routes',a
  assert.ok(activity.items.every(x=>x.source==='published-catalog'||x.source==='public-page-diff'||x.source==='founder-visible-page'));
  if(homepage.includes('id="home-title"')){
   const js=await read('dist/studio.js');
-  assert.match(homepage,/id="activity-list"/);
-  assert.match(js,/fetch\\('\\.\\.\\/activity\\.json'/);
-  assert.match(js,/renderActivity\\(d\\.items\\)/);
-  assert.doesNotMatch(js,/kind==='builders'|href='#builders'/);
+  assert.ok(homepage.includes('id="activity-list"'));
+  assert.ok(js.includes("fetch('../activity.json'"));
+  assert.ok(js.includes('renderActivity(d.items)'));
+  assert.ok(!js.includes("kind==='builders'"));
+  assert.ok(!js.includes("href='#builders'"));
  }else{
   assert.ok(activity.items.every(x=>homepage.includes('href="'+x.url+'"')));
   assert.ok(homepage.includes('LATEST 20 UPDATES'));
  }
- assert.doesNotMatch(homepage,/href="catalog\\.json">Tool catalog/);
- assert.doesNotMatch(homepage,/<nav class="footer-directory"/);
+ assert.ok(!homepage.includes('href="catalog.json">Tool catalog'));
+ assert.ok(!homepage.includes('<nav class="footer-directory"'));
 });
