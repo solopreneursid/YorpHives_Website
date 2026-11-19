@@ -15,7 +15,7 @@ test('Eight new Wave 6 pages and modules are registered without duplicates',asyn
  const tools=cat.items.filter(x=>x.type==='tool');
  assert.equal(tools.length,143);
  assert.equal(new Set(tools.map(x=>x.url)).size,143);
- const directory=await readFile(resolve(root,'tools/index.html'),'utf8');
+ const directory=await readFile(resolve(root,'dist/tools/index.html'),'utf8');
  for(const id of ids){
   const item=tools.find(x=>x.url==='tools/'+id+'/');assert.ok(item,id);
   assert.equal(item.execution,'browser-local');

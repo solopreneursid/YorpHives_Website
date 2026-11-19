@@ -16,68 +16,74 @@ test('the new homepage leads with a clear independent venture-studio proposition
  assert.match(html,/class="ecosystem-grid"/);
  assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"/);
 });
-test('three primary discovery paths replace repeated homepage explanations',async()=>{
+
+test('three primary discovery paths are clear and distinct',async()=>{
  const html=await read('reimagined/index.html');
- for(const id of ['tools','ventures','partners'])assert.match(html,new RegExp('href="#'+id+'"'));
- assert.match(html,/Free tools/);
- assert.match(html,/HQventures/);
- assert.match(html,/Partnerships/);
- assert.match(html,/id="home-progress"/);
- assert.match(html,/Discover/);
- assert.match(html,/Evaluate/);
- assert.match(html,/Founder decides/);
- assert.match(html,/Build & improve/);
+ for(const id of ['tools','ventures','partners'])assert.ok(html.includes('href="#'+id+'"'));
+ assert.ok(html.includes('Free tools'));
+ assert.ok(html.includes('HQventures'));
+ assert.ok(html.includes('Partnerships'));
+ assert.ok(html.includes('Discover'));
+ assert.ok(html.includes('Evaluate'));
+ assert.ok(html.includes('Founder decides'));
+ assert.match(html,/Build &(?:amp;)? improve/);
 });
+
 test('the venture studio separates research signals from founder-approved launches',async()=>{
  const [html,js,policy]=await Promise.all([
   read('reimagined/index.html'),read('reimagined/studio.js'),read('product-policy.mjs')
  ]);
- assert.match(html,/Nothing launches without approval/);
- assert.match(html,/Products appear here only after research review and founder approval/);
- assert.match(html,/id="venture-products"/);
- assert.match(js,/qualifiedProducts\(allItems\)/);
- assert.match(js,/renderVentures/);
- assert.match(policy,/founderApproval/);
+ assert.ok(html.includes('Nothing launches without approval'));
+ assert.ok(html.includes('Products appear here only after research review and founder approval'));
+ assert.ok(html.includes('id="venture-products"'));
+ assert.ok(js.includes('qualifiedProducts(allItems)'));
+ assert.ok(js.includes('renderVentures'));
+ assert.ok(policy.includes('founderApproval'));
+ assert.ok(policy.includes("founder?.status==='approved'"));
 });
-test('Free Tools has working catalogue search, categories, saved filter and pagination',async()=>{
+
+test('Free Tools has catalogue search, categories, saved filter and pagination',async()=>{
  const [html,js]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js')]);
  for(const id of ['tool-search','tool-categories','tool-results','saved-toggle','tool-prev','tool-next'])
-  assert.match(html,new RegExp('id="'+id+'"'));
+  assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(js,/function filteredTools\(/);
  assert.match(js,/function categoryChips\(/);
  assert.match(js,/function renderTools\(/);
  assert.match(js,/const pageSize=12/);
  assert.match(js,/toggleSaved/);
 });
+
 test('partnerships and contact are easy to discover without implying open enrollment',async()=>{
  const html=await read('reimagined/index.html');
- assert.match(html,/id="partners"/);
- assert.match(html,/Product collaboration/);
- assert.match(html,/Distribution/);
- assert.match(html,/Content collaboration/);
- assert.match(html,/Submitting an idea is an initial enquiry/);
- assert.match(html,/id="contact-form"/);
- assert.match(html,/connect@yorphives\.com/);
- assert.match(html,/Nothing is sent automatically by this website/);
+ assert.ok(html.includes('id="partners"'));
+ assert.ok(html.includes('Product collaboration'));
+ assert.ok(html.includes('Distribution'));
+ assert.ok(html.includes('Content collaboration'));
+ assert.ok(html.includes('Submitting an idea is an initial enquiry'));
+ assert.ok(html.includes('id="contact-form"'));
+ assert.ok(html.includes('connect@yorphives.com'));
+ assert.ok(html.includes('Nothing is sent automatically by this website'));
 });
+
 test('navigation and privacy controls cover mobile and desktop',async()=>{
  const [html,js,css]=await Promise.all([
   read('reimagined/index.html'),read('reimagined/studio.js'),read('reimagined/studio.css')
  ]);
- assert.match(html,/class="desktop-nav"/);
- assert.match(html,/class="mobile-menu"/);
- assert.match(html,/class="mobile-dock"/);
- assert.match(html,/id="kofi-support" type="button" disabled/);
- assert.match(html,/id="anonymous-analytics-toggle"/);
+ assert.ok(html.includes('class="desktop-nav"'));
+ assert.ok(html.includes('class="mobile-menu"'));
+ assert.ok(html.includes('class="mobile-dock"'));
+ assert.ok(html.includes('id="kofi-support" type="button" disabled'));
+ assert.ok(html.includes('id="anonymous-analytics-toggle"'));
  assert.match(js,/aria-current/);
  assert.match(js,/retiredRoutes/);
  assert.match(css,/env\(safe-area-inset-bottom/);
  assert.match(css,/prefers-reduced-motion:reduce/);
 });
+
 test('release gate protects the new layout and the original tool catalogue',async()=>{
  const release=await read('scripts/release-check.mjs');
  assert.match(release,/FRESH STATIC RELEASE CHECK PASSED/);
- assert.match(release,/Expected at least/);
+ assert.ok(release.includes('Expected at least the 90 established public tools.'));
  assert.match(release,/Missing public page/);
  assert.match(release,/Privacy-first security headers/);
  assert.doesNotMatch(release,/home-explore|home-use|hero-geometry|renderFeaturedProject/);

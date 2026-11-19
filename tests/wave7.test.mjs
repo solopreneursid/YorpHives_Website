@@ -13,7 +13,7 @@ test('All eight Wave 7 public pages and secure engines are present',async()=>{
  const c=JSON.parse(await readFile(resolve(root,'catalog.json'),'utf8'));
  const items=c.items.filter(x=>x.type==='tool');assert.equal(items.length,143);
  assert.equal(new Set(items.map(x=>x.url)).size,143);
- const dir=await readFile(resolve(root,'tools/index.html'),'utf8');
+ const dir=await readFile(resolve(root,'dist/tools/index.html'),'utf8');
  for(const id of ids){
   const item=items.find(t=>t.url==='tools/'+id+'/');assert.ok(item,id);
   assert.equal(item.execution,'browser-local');
