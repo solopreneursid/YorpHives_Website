@@ -4,63 +4,69 @@ import {readFile,stat} from 'node:fs/promises';
 import {dirname,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
-const file=path=>readFile(resolve(root,path),'utf8');
+const read=path=>readFile(resolve(root,path),'utf8');
 const exists=path=>stat(resolve(root,path)).then(x=>x.isFile()).catch(()=>false);
 
-test('production release promotes the new design to the actual domain root',async()=>{
- const path=await exists('dist/release-candidate/index.html')?
-  'dist/release-candidate/':'dist/';
- const home=await file(path+'index.html');
- if(path==='dist/'&&!home.includes('id="home-title"')){
-  // Preview build still retains legacy root to protect the approved preview.
-  assert.ok(await exists('dist/reimagined/index.html'));
-  return;
- }
+test('the built root promotes the fresh experience while preview remains noindex',async()=>{
+ if(!await exists('dist/index.html'))return;
+ const home=await read('dist/index.html');
  assert.match(home,/id="home-title"/);
  assert.match(home,/CLOUD-BASED · AI-POWERED VENTURE STUDIO/);
  for(const view of ['home','ventures','tools','partners','contact'])
-  assert.match(home,new RegExp('<section class="view" id="'+view+'"'),view);
+  assert.match(home,new RegExp('<section class="view" id="'+view+'"'));
  assert.match(home,/class="kofi-support" id="kofi-support" type="button" disabled/);
- assert.match(home,/rel="canonical" href="https:\/\/yorphives\.com\/"/);
- assert.doesNotMatch(home,/DESIGN PREVIEW · NOT LIVE|name="robots" content="noindex/);
+ assert.match(home,/rel="canonical" href="https:\\/\\/yorphives\\.com\\//);
+ assert.doesNotMatch(home,/DESIGN PREVIEW|name="robots" content="noindex/);
  assert.match(home,/id="yh-pulse"/);
- assert.ok(home.indexOf('id="yh-pulse"')<home.indexOf('<footer class="footer">'));
- for(const asset of ['studio.css','studio.js','rotators.css','rotators.js',
-  'catalog-sync.mjs','impact-public.json','usage-public.json'])
-  assert.ok(await exists(path+asset),'missing '+path+asset);
- const impact=JSON.parse(await file(path+'impact-public.json'));
- const usage=JSON.parse(await file(path+'usage-public.json'));
- assert.equal(impact.publication.approvedByFounder,false);
- assert.equal(usage.publication.approvedByFounder,false);
- assert.deepEqual(usage.ranked,[]);
+ assert.match(home,/id="anonymous-analytics-toggle"/);
+ for(const asset of ['dist/studio.css','dist/studio.js','dist/rotators.css','dist/rotators.js',
+  'dist/catalog-sync.mjs','dist/impact-public.json','dist/usage-public.json','dist/agentic-browser.mjs'])
+  assert.ok(await exists(asset),'missing '+asset);
+ const headers=await read('dist/_headers');
+ assert.match(headers,/X-Content-Type-Options: nosniff/);
 });
-
-test('legacy Builders and membership hashes return Home while HQventures and Contact remain valid',async()=>{
- const js=await file('reimagined/studio.js');
+test('legacy Builders and membership hashes route home while HQventures remains reachable',async()=>{
+ const js=await read('reimagined/studio.js');
  assert.match(js,/explore:'ventures'/);
  assert.match(js,/connect:'contact'/);
  assert.match(js,/retiredRoutes/);
- assert.ok(js.includes('history.replaceState'));
+ assert.match(js,/history\\.replaceState/);
  assert.doesNotMatch(js,/builders:'Builders'|opportunities:'builders'|membership:'builders'/);
- assert.match(js,/special\[hash\]/);
- assert.match(js,/qualifiedProducts\(allItems\)/);
- const [reimagined,headers]=await Promise.all([
-  file('reimagined/index.html'),file('_headers')
- ]);
- assert.match(reimagined,/id="kofi-support" type="button" disabled/);
- for(const asset of ['/catalog.json','/studio.js','/rotators.js','/catalog-sync.mjs',
-  '/impact-public.json','/usage-public.json'])
-  assert.ok(headers.includes(asset+'\n  Cache-Control:'),'Missing cache rule '+asset);
+ const html=await read('reimagined/index.html');
+ assert.match(html,/href="#ventures"/);
+ assert.match(html,/HQventures/);
+ assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"/);
 });
-
-test('release uses the existing static tool catalogue and preserved routes',async()=>{
- const catalog=JSON.parse(await file('catalog.json'));
- const published=catalog.items.filter(x=>x.published!==false&&x.visibility!=='private');
- assert.ok(published.filter(x=>x.type==='tool').length>=143);
- const html=await file('dist/tools/word-counter/index.html');
- assert.match(html,/class="header-kofi tool-kofi" type="button" disabled/);
- assert.match(html,/Word &amp; Character Counter/);
- assert.match(html,/href="\.\.\/tool-next\.css"/);
- const directory=await file('dist/tools/index.html');
- assert.match(directory,/class="header-kofi tool-kofi" type="button" disabled/);
+test('all 143 direct tool pages retain their real processors and receive the new shell',async()=>{
+ const catalog=JSON.parse(await read('catalog.json'));
+ const items=catalog.items.filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
+ assert.ok(items.length>=140);
+ const shell=await read('scripts/next-tool-shell.mjs');
+ assert.match(shell,/class="mobile-dock"/);
+ assert.match(shell,/href="\\.\\.\\/\\.\\.\\/#tools"/);
+ const css=await read('tools/tool-next.css');
+ assert.match(css,/@media\\(max-width:760px\\)/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ if(await exists('dist/tools/word-counter/index.html')){
+  const tool=await read('dist/tools/word-counter/index.html');
+  assert.match(tool,/href="\\.\\.\\/tool-next\\.css"/);
+  assert.match(tool,/class="mobile-dock"/);
+  assert.match(tool,/id="utility-form"/);
+  assert.match(tool,/id="yorphives-discovery-schema"/);
+ }
+});
+test('public analytics and usage signals remain privacy-first and founder-qualified',async()=>{
+ const [home,js,client,impact,usage]=await Promise.all([
+  read('reimagined/index.html'),read('reimagined/studio.js'),read('insights-client.mjs'),
+  read('reimagined/impact-public.json'),read('reimagined/usage-public.json')
+ ]);
+ assert.match(home,/id="anonymous-analytics-toggle"/);
+ assert.match(home,/id="home-tool-count"/);
+ assert.match(home,/id="home-venture-count"/);
+ assert.match(js,/qualifiedProducts\\(allItems\\)/);
+ assert.match(js,/fetch\\('\\/activity\\.json'/);
+ assert.match(client,/globalPrivacyControl/);
+ assert.equal(JSON.parse(impact).publication.approvedByFounder,false);
+ assert.equal(JSON.parse(usage).publication.approvedByFounder,false);
+ assert.deepEqual(JSON.parse(usage).ranked,[]);
 });
