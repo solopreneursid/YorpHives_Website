@@ -1022,6 +1022,14 @@ section[id],.view[id],#home-progress,#featured-tools{scroll-margin-top:clamp(72p
  }
  #home .hero-quicklinks{grid-column:1/-1;grid-row:5;margin-top:14px}
  #home .hero-micro{grid-column:1/-1;grid-row:6;margin-top:16px}
+ /* Keep the two closing hero labels on one line, as on the desktop hero. */
+ #home .hero-bottom{
+  font-size:clamp(6px,1.9vw,8px);letter-spacing:.055em;
+  gap:clamp(4px,1vw,8px);
+ }
+ #home .hero-bottom>span{gap:5px;white-space:nowrap}
+ #home .hero-bottom a{font-size:inherit;gap:4px;white-space:nowrap}
+ #home .hero-bottom a span{font-size:14px}
 }
 @media(max-width:350px){
  #home .hero-title-lockup h1{font-size:clamp(20px,6.7vw,24px)}
