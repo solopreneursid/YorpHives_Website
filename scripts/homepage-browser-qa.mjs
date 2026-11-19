@@ -52,12 +52,19 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
      const logo=document.querySelector('#home .hero-mini-brand');
      const dock=document.querySelector('.mobile-dock');
      const artBox=art.getBoundingClientRect();
+     const headingBox=document.querySelector('#home-title').getBoundingClientRect();
+     const introBox=document.querySelector('#home .hero-intro').getBoundingClientRect();
      const cards=[...art.querySelectorAll('.art-node')];
      const labels=cards.map(n=>n.querySelector('strong')?.textContent.trim());
      return {
       heroHeight:hero.getBoundingClientRect().height,
       artVisible:getComputedStyle(art).display!=='none',
       artHeight:artBox.height,
+      orbitBesideHeading:headingBox.right<=artBox.left+2 &&
+       artBox.top<headingBox.bottom && artBox.bottom>headingBox.top,
+      introBelowOrbit:introBox.top>=artBox.bottom-2,
+      headingFont:parseFloat(getComputedStyle(document.querySelector('#home-title')).fontSize),
+      cardFont:parseFloat(getComputedStyle(cards[0].querySelector('strong')).fontSize),
       cardsVisible:cards.length===3&&cards.every(n=>getComputedStyle(n).display!=='none'),
       cardsWithinOrbit:cards.every(n=>{
        const b=n.getBoundingClientRect();
@@ -76,8 +83,11 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
     if(mobile.labels.join('|')!=='Spot the signal|Test the idea|Decide & create')
      problems.push(label+' orbital process labels changed '+mobile.labels.join('|'));
     if(!mobile.miniHidden)problems.push(label+' duplicate mini-brand beside original orbit');
-    if(mobile.artHeight<220||mobile.artHeight>365)
-     problems.push(label+' orbital proportions outside mobile range '+mobile.artHeight.toFixed(0));
+    if(!mobile.orbitBesideHeading)problems.push(label+' orbit must sit BESIDE the headline, not below');
+    if(!mobile.introBelowOrbit)problems.push(label+' hero introduction overlaps the orbit');
+    if(mobile.headingFont<25||mobile.cardFont<7.5)problems.push(label+' heading or floating card text too small');
+    if(mobile.artHeight<200||mobile.artHeight>300)
+     problems.push(label+' orbital proportions outside compact mobile range '+mobile.artHeight.toFixed(0));
     // The fuller orbit legitimately extends the first screen; it must not grow without bounds.
     if(mobile.heroHeight>height+120)
      problems.push(label+' excessive mobile hero height '+mobile.heroHeight.toFixed(0)+'/'+height);
