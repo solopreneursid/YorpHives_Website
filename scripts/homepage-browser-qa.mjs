@@ -57,6 +57,8 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
      const headingLineHeight=parseFloat(getComputedStyle(heading).lineHeight);
      const headingLineCount=Math.round(headingBox.height/headingLineHeight);
      const introBox=document.querySelector('#home .hero-intro').getBoundingClientRect();
+     const introFont=parseFloat(getComputedStyle(document.querySelector('#home .hero-intro')).fontSize);
+     const buttons=[...document.querySelectorAll('#home .hero-ctas .button')].map(n=>n.getBoundingClientRect());
      const cards=[...art.querySelectorAll('.art-node')];
      const cardBoxes=cards.map(n=>n.getBoundingClientRect());
      const labels=cards.map(n=>n.querySelector('strong')?.textContent.trim());
@@ -71,7 +73,18 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
       founderBottomGap:(artBox.bottom-cardBoxes[2].bottom)/artBox.height,
       orbitBesideHeading:headingBox.right<=artBox.left+2 &&
        artBox.top<headingBox.bottom && artBox.bottom>headingBox.top,
-      introBelowOrbit:introBox.top>=artBox.bottom-2,
+      introUnderHeading:introBox.top>=headingBox.bottom-2 &&
+       Math.abs(introBox.left-headingBox.left)<=2,
+      introBesideOrbit:introBox.right<=artBox.left+2 &&
+       introBox.top<artBox.bottom-10,
+      introFont,
+      ctasSideBySide:buttons.length===2 &&
+       Math.abs(buttons[0].top-buttons[1].top)<2 &&
+       buttons[0].right<=buttons[1].left+2,
+      ctasStacked:buttons.length===2 &&
+       buttons[1].top>=buttons[0].bottom-1,
+      buttonsUnderComposition:buttons.length===2 &&
+       buttons[0].top>=Math.max(artBox.bottom,introBox.bottom)-2,
       headingFont:parseFloat(getComputedStyle(heading).fontSize),
       headingLineCount,
       cardFont:parseFloat(getComputedStyle(cards[0].querySelector('strong')).fontSize),
@@ -95,8 +108,13 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
     if(!mobile.miniHidden)problems.push(label+' duplicate mini-brand beside original orbit');
     if(!mobile.orbitBesideHeading)problems.push(label+' orbit must sit BESIDE the headline, not below');
     if(mobile.headingArtTopDelta>8)problems.push(label+' headline and orbit top edges are misaligned '+mobile.headingArtTopDelta.toFixed(0)+'px');
-    if(!mobile.introBelowOrbit)problems.push(label+' hero introduction overlaps the orbit');
-    if(mobile.headingFont<20||mobile.cardFont<7.5)problems.push(label+' heading or floating card text too small');
+    if(!mobile.introUnderHeading||!mobile.introBesideOrbit)
+     problems.push(label+' description must sit immediately UNDER headline and BESIDE artwork');
+    if(!mobile.buttonsUnderComposition)problems.push(label+' hero buttons overlap headline or artwork');
+    if(width>=360&&!mobile.ctasSideBySide)problems.push(label+' desktop-like paired buttons not side by side');
+    if(width<360&&!mobile.ctasStacked)problems.push(label+' narrow-phone buttons should stack without clipping');
+    if(mobile.headingFont<20||mobile.cardFont<7.5||mobile.introFont<11)
+     problems.push(label+' hero headline, description or card text too small');
     if(mobile.headingLineCount!==3)problems.push(label+' headline must retain desktop three-line composition, got '+mobile.headingLineCount);
     if(mobile.artAspect<.95||mobile.artAspect>1.15)
      problems.push(label+' mobile orbit aspect ratio outside proportion '+mobile.artAspect.toFixed(2));
