@@ -95,7 +95,7 @@ try{
   assert.ok(layout.scroll<=layout.client+8,JSON.stringify(layout));
  },{mobile:true});
  await check('mobile: marketing landing pages are reachable and readable',async page=>{
-  for(const path of ['/hqventures/','/builders/','/partnerships/']){
+  for(const path of ['/hqventures/','/partnerships/']){
    await open(page,path);
    assert.equal(await page.locator('h1').count(),1);
    assert.ok(await page.locator('h1').isVisible());

@@ -7,9 +7,9 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>readFile(resolve(root,p),'utf8');
 const present=async p=>stat(resolve(root,p)).then(s=>s.isFile()).catch(()=>false);
 
-test('full reimagined experience has six complete page routes and separate navigation',async()=>{
+test('full reimagined experience has five complete page routes and separate navigation',async()=>{
  const html=await read('reimagined/index.html');
- for(const route of ['home','ventures','builders','tools','partners','contact']){
+ for(const route of ['home','ventures','tools','partners','contact']){
   assert.match(html,new RegExp('id="'+route+'"[^>]*aria-labelledby='),route);
   assert.ok(html.includes('href="#'+route+'"'),route+' route is linked');
  }
@@ -21,6 +21,7 @@ test('full reimagined experience has six complete page routes and separate navig
  assert.doesNotMatch(html,/<a[^>]*href="#impact"/);
  assert.match(html,/id="home-progress"/);
  assert.match(html,/href="#home-progress">See our progress/);
+ assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"|Builders/);
  assert.match(html,/id="hero-tool-count"/);
  assert.match(html,/id="featured-tools-grid"/);
  assert.match(html,/id="featured-tools-title"/);
@@ -92,7 +93,7 @@ test('homepage visual QA retains navigation and reduced-motion tactile polish',a
 
 test('ecosystem strips continuously scroll verified content right-to-left',async()=>{
  const [html,js,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/rotators.js'),read('reimagined/rotators.css')]);
- for(const key of ['ventures','builders','tools']){
+ for(const key of ['ventures','tools']){
   assert.match(html,new RegExp('class="eco-strip-viewport"><span class="eco-strip-copy" id="eco-strip-'+key+'"'));
  }
  assert.match(js,/const makeGroup=\(clone=false\)/);

@@ -17,14 +17,14 @@ const notes=[
  {id:'page:explore',kind:'explore',title:'Explore collection updated',url:'#explore',timestamp:'2026-11-15T13:00:00Z'}
 ];
 
-test('public activity selects twenty verified recent changes without fixed featured-tool links',()=>{
+test('public activity selects twenty verified updates and excludes the retired Builders route',()=>{
  const items=Array.from({length:24},(_,i)=>tool('Example Tool '+i,i));
  const result=collectPublicActivity({published:items,notes,now:instant});
  assert.equal(result.length,20);
- assert.equal(result[0].kind,'builders');
- assert.equal(result[1].kind,'explore');
- assert.equal(result.filter(x=>x.kind==='tools').length,18);
- assert.ok(result.every(x=>x.url.startsWith('tools/')||x.url==='#builders'||x.url==='#explore'));
+ assert.equal(result[0].kind,'explore');
+ assert.equal(result[1].kind,'tools');
+ assert.equal(result.filter(x=>x.kind==='tools').length,19);
+ assert.ok(result.every(x=>x.url.startsWith('tools/')||x.url==='#explore'));
  assert.ok(result.every(x=>Number.isFinite(Date.parse(x.timestamp))));
 });
 
@@ -51,7 +51,7 @@ test('new catalog additions join feed automatically, tool updates sort by verifi
  assert.ok(newer.some(x=>x.title.includes('Fourth Tool')));
 });
 
-test('private or unregistered activity and future/forged notes never enter the public feed',()=>{
+test('private, unregistered, retired and future activity never enter the public feed',()=>{
  const published=[tool('Safe Tool',1)];
  const incoming=[
   {id:'forged',kind:'builders',title:'Private job opportunity',url:'/jobs/secret',timestamp:'2026-11-15T14:00:00Z'},
@@ -63,79 +63,79 @@ test('private or unregistered activity and future/forged notes never enter the p
  assert.deepEqual(result.map(x=>x.title),['Added: Safe Tool']);
 });
 
-test('when Git detects a newer page change it replaces the fallback event',()=>{
- const history=[{id:'page:builders',kind:'builders',title:'Builders page updated',
-  url:'#builders',timestamp:'2026-11-15T17:00:00Z'}];
+test('the latest verified Explore page change replaces its fallback event',()=>{
+ const history=[{id:'page:explore',kind:'explore',title:'Explore page updated',
+  url:'#explore',timestamp:'2026-11-15T17:00:00Z'}];
  const result=collectPublicActivity({published:[],notes,pageChanges:history,now:instant});
- assert.equal(result.length,2);
- assert.equal(result[0].title,'Builders page updated');
- assert.equal(result.filter(x=>x.kind==='builders').length,1);
+ assert.equal(result.length,1);
+ assert.equal(result[0].title,'Explore page updated');
+ assert.equal(result[0].kind,'explore');
 });
 
-test('generated footer is clickable, escaped and has a non-focusable duplicate set',()=>{
+test('generated pulse is clickable, escaped and has a non-focusable duplicate set',()=>{
  const samples=collectPublicActivity({published:[tool('Writer & Reader',4)],notes,now:instant});
  const html=renderFooterPulse(samples);
- assert.match(html,/<b>YHpulse<\/b>/);
- assert.match(html,/LATEST 3 UPDATES/);
- assert.match(html,/href="#builders"/);
- assert.match(html,/href="#explore"/);
- assert.match(html,/href="tools\/example-4\/"/);
- assert.match(html,/Writer &amp; Reader/);
+ assert.ok(html.includes('<b>YHpulse</b>'));
+ assert.ok(html.includes('LATEST 2 UPDATES'));
+ assert.ok(!html.includes('href="#builders"'));
+ assert.ok(html.includes('href="#explore"'));
+ assert.ok(html.includes('href="tools/example-4/"'));
+ assert.ok(html.includes('Writer &amp; Reader'));
  assert.equal((html.match(/class="pulse-items"/g)||[]).length,2);
- assert.match(html,/aria-hidden="true"/);
- assert.equal((html.match(/tabindex="-1"/g)||[]).length,3);
+ assert.ok(html.includes('aria-hidden="true"'));
+ assert.equal((html.match(/tabindex="-1"/g)||[]).length,2);
  assert.equal(renderFooterPulse([]).includes('Published updates will appear here.'),true);
 });
 
-test('the homepage pulse contains only the scrolling verified links, no extra header',()=>{
+test('the homepage pulse contains only scrolling verified links, no extra header',()=>{
  const items=collectPublicActivity({published:[tool('Writer & Reader',4)],notes,now:instant});
  const track=renderHomePulse(items);
- assert.match(track,/class="pulse-track/);
- assert.match(track,/href="tools\/example-4\//);
+ assert.ok(track.includes('class="pulse-track'));
+ assert.ok(track.includes('href="tools/example-4/"'));
  assert.equal((track.match(/class="pulse-items"/g)||[]).length,2);
- assert.doesNotMatch(track,/<b>YHpulse<\/b>/);
- assert.doesNotMatch(track,/class="pulse-viewport"/);
+ assert.ok(!track.includes('<b>YHpulse</b>'));
+ assert.ok(!track.includes('class="pulse-viewport"'));
 });
 
 test('source has one homepage pulse and no duplicate footer ticker',async()=>{
  const html=await read('index.html'),css=await read('style.css'),build=await read('scripts/build-site.mjs');
- assert.doesNotMatch(html,/id="footer-pulse"/);
- assert.match(html,/id="home-pulse-viewport"/);
- assert.match(html,/<!-- PULSE_START -->/);
- assert.match(html,/<!-- PULSE_END -->/);
- assert.doesNotMatch(html,/class="footer-directory"/);
- assert.doesNotMatch(html,/<nav class="footer-directory" aria-label="Free tools"/);
- assert.match(build,/renderHomePulse\(activity\)/);
- assert.match(build,/await write\('activity.json'/);
- assert.match(build,/discoverToolEditTimes\(root\)/);
- assert.match(build,/discoverPublicPageUpdates\(root\)/);
- assert.match(css,/grid-template-columns:190px minmax\(0,1fr\)/);
- assert.match(css,/@keyframes pulse-marquee/);
- assert.match(css,/\.footer-pulse:hover \.pulse-track/);
- assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.ok(!html.includes('id="footer-pulse"'));
+ assert.ok(html.includes('id="home-pulse-viewport"'));
+ assert.ok(html.includes('<!-- PULSE_START -->'));
+ assert.ok(html.includes('<!-- PULSE_END -->'));
+ assert.ok(!html.includes('class="footer-directory"'));
+ assert.ok(!html.includes('<nav class="footer-directory" aria-label="Free tools"'));
+ assert.ok(build.includes('renderHomePulse(activity)'));
+ assert.ok(build.includes("await write('activity.json'"));
+ assert.ok(build.includes('discoverToolEditTimes(root)'));
+ assert.ok(build.includes('discoverPublicPageUpdates(root)'));
+ assert.ok(css.includes('grid-template-columns:190px minmax(0,1fr)'));
+ assert.ok(css.includes('@keyframes pulse-marquee'));
+ assert.ok(css.includes('.footer-pulse:hover .pulse-track'));
+ assert.ok(css.includes('prefers-reduced-motion:reduce'));
  const fallback=await loadActivityNotes(root);
- assert.ok(fallback.every(x=>['builders','explore'].includes(x.kind)));
+ assert.ok(fallback.every(x=>x.kind==='explore'));
 });
 
-test('deployed release activity and HTML agree and link only to published public routes',async()=>{
+test('deployed release activity and HTML agree and link only to public routes',async()=>{
  const catalog=JSON.parse(await read('dist/catalog.json'));
  const activity=JSON.parse(await read('dist/activity.json'));
  const homepage=await read('dist/index.html');
  const urls=new Set(catalog.items.map(x=>x.url));
  assert.equal(activity.items.length,20);
- assert.ok(activity.items.every(x=>urls.has(x.url)||x.url==='#builders'||x.url==='#explore'));
+ assert.ok(activity.items.every(x=>urls.has(x.url)||x.url==='#explore'));
  assert.ok(activity.items.every(x=>x.source==='published-catalog'||x.source==='public-page-diff'||x.source==='founder-visible-page'));
  if(homepage.includes('id="home-title"')){
-  // The reimagined home renders a smaller verified feed using the local
-  // activity JSON; not all published events belong in initial HTML.
   const js=await read('dist/studio.js');
-  assert.match(homepage,/id="activity-list"/);
-  assert.match(js,/fetch\('\.\.\/activity\.json'/);
-  assert.match(js,/renderActivity\(d\.items\)/);
+  assert.ok(homepage.includes('id="activity-list"'));
+  assert.ok(js.includes("fetch('../activity.json'"));
+  assert.ok(js.includes('renderActivity(d.items)'));
+  assert.ok(!js.includes("kind==='builders'"));
+  assert.ok(!js.includes("href='#builders'"));
  }else{
   assert.ok(activity.items.every(x=>homepage.includes('href="'+x.url+'"')));
   assert.ok(homepage.includes('LATEST 20 UPDATES'));
  }
- assert.doesNotMatch(homepage,/href="catalog\.json">Tool catalog/);
- assert.doesNotMatch(homepage,/<nav class="footer-directory"/);
+ assert.ok(!homepage.includes('href="catalog.json">Tool catalog'));
+ assert.ok(!homepage.includes('<nav class="footer-directory"'));
 });

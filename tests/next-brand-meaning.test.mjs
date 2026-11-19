@@ -63,16 +63,13 @@ test('Use has a real search form, actual catalog-backed tools and animated categ
  assert.match(js,/function renderRibbon\(\)/);
  assert.match(css,/scroll-snap-type:x mandatory/);
 });
-test('Connect differentiates contacting YorpHives from the still-closed Builders network',async()=>{
- const h=home(await read('index.html'));
- assert.match(h,/class="connection-network"/);
- assert.match(h,/Have an idea\?/);
- assert.match(h,/Start a conversation/);
- assert.match(h,/href="#connect"/);
- assert.match(h,/Find your people/);
- assert.match(h,/Builders network · Coming soon/);
- assert.match(h,/href="#builders"/);
- assert.doesNotMatch(h,/Pay now|Join immediately|Apply to public jobs/i);
+test('Connect directs visitors to the independent Partnerships page without a Builders page',async()=>{
+ const html=await read('reimagined/index.html');
+ const home=html.split('<!-- VENTURES -->')[0];
+ assert.match(home,/class="home-cta"/);
+ assert.match(home,/href="#partners"/);
+ assert.match(html,/id="partners"/);
+ assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"|Builders/);
 });
 test('one verified YHpulse appears and moving elements have pause and reduced-motion support',async()=>{
  const [html,css,base,js]=await Promise.all([read('index.html'),read('home-experience.css'),read('next.css'),read('next.js')]);
@@ -86,15 +83,16 @@ test('one verified YHpulse appears and moving elements have pause and reduced-mo
  assert.match(js,/aria-pressed/);
  assert.doesNotMatch(js,/function initPulse\(\)/);
 });
-test('navigation and safeguards still cover all five pages and human decision gate',async()=>{
- const html=await read('index.html'),js=await read('next.js');
- for(const id of ['home','tools','explore','builders','connect','projects-collection'])
+test('navigation and safeguards cover the five public pages and human decision gate',async()=>{
+ const html=await read('reimagined/index.html'),js=await read('reimagined/studio.js');
+ for(const id of ['home','ventures','tools','partners','contact'])
   assert.ok(html.includes('id="'+id+'"'),id);
- assert.match(js,/'home-explore','home-use','home-connect'/);
- assert.match(html,/Jobs and posting require verified paid membership/);
- assert.match(html,/Enrollment is not open yet/);
- assert.match(html,/Nothing is uploaded by this form/);
- assert.doesNotMatch(html,/data-form="opportunity"|id="job-listings"/);
+ assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"|Builders/);
+ assert.match(js,/retiredRoutes/);
+ assert.ok(js.includes('history.replaceState'));
+ assert.match(html,/id="kofi-support"/);
+ assert.match(html,/type="button" disabled/);
+ assert.match(html,/href="#partners"/);
 });
 test('release gate enforces three experiences, the qualified showcase and single public pulse',async()=>{
  const release=await read('scripts/release-check.mjs');

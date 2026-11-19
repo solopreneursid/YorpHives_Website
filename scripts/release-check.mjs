@@ -21,14 +21,14 @@ const isReimagined=homepage.includes('id="home-title"')&&homepage.includes('id="
 // staging and live. This prevents successful builds of an obsolete preview.
 if(!isReimagined)problems.push('Preview/live parity failure: outdated homepage at root.');
 if(isReimagined){
- const ids=['home','ventures','builders','tools','partners','contact'];
+ const ids=['home','ventures','tools','partners','contact'];
  for(const id of ids)if(!homepage.includes('<section class="view" id="'+id+'"'))
   problems.push('Reimagined public route missing: '+id);
  const css=await read('studio.css');
  const js=await read('studio.js');
  const rotators=await read('rotators.js');
  const catalogSync=await read('catalog-sync.mjs');
- for(const filename of ['rotators.css','impact-public.json','usage-public.json','builders-updates.json'])
+ for(const filename of ['rotators.css','impact-public.json','usage-public.json'])
   try{await stat(resolve(root,filename));}catch{problems.push('New homepage asset missing: '+filename);}
  if(!homepage.includes('CLOUD-BASED · AI-POWERED VENTURE STUDIO')||
     !homepage.includes("Free tools. New ventures. People building what's next.")||
@@ -53,10 +53,12 @@ if(isReimagined){
     usage.publication?.approvedByFounder!==false||
     (usage.ranked||[]).length)
   problems.push('Unverified Impact or top-ten usage must not be published.');
- const builderFeed=JSON.parse(await read('builders-updates.json'));
- if(!Array.isArray(builderFeed.items)||builderFeed.items.length>10||
-    builderFeed.items.some(x=>x.kind!=='builders'||x.url!=='#builders'))
-  problems.push('Builders update feed includes unverified or invalid entries.');
+ if(/id="builders"|href="#builders"|data-nav="builders"/i.test(homepage))
+  problems.push('Retired Builders page or navigation remains in public root.');
+ if(!homepage.includes('id="partners"')||!homepage.includes('href="#partners"'))
+  problems.push('Standalone Partnerships page or homepage entry point is missing.');
+ if(!js.includes("retiredRoutes=new Set(['builders','opportunities','membership','post'])"))
+  problems.push('Legacy Builders and membership hashes do not return to Home.');
  if(/data-form="opportunity"|<form[^>]*id="post"|id="job-listings"/i.test(homepage))
   problems.push('Public job listing unavailable until paid membership enforcement exists.');
 }else{
@@ -113,11 +115,10 @@ if(!Array.isArray(activityData.items)||activityData.items.length>20||
 else {
  const ids=new Set(),urls=new Set(items.map(x=>x.url));
  for(const event of activityData.items){
-  if(typeof event?.id!=='string'||ids.has(event.id)||!['tools','builders','explore'].includes(event.kind))
+  if(typeof event?.id!=='string'||ids.has(event.id)||!['tools','explore'].includes(event.kind))
    problems.push('Duplicate or invalid public activity type.');
   ids.add(event.id);
   if(event.kind==='tools'&&!urls.has(event.url))problems.push('Activity points at an unpublished tool.');
-  if(event.kind==='builders'&&event.url!=='#builders')problems.push('Builder activity leaks a private URL.');
   if(event.kind==='explore'&&event.url!=='#explore')problems.push('Explore activity points at an unapproved URL.');
   if(typeof event.title!=='string'||event.title.includes('<')||event.title.includes('>'))
    problems.push('Activity has unsafe public title.');
@@ -134,12 +135,10 @@ if(homepage.includes('id="footer-pulse"')||
    homepage.includes('<nav class="footer-directory"'))
  problems.push('YHpulse must appear exactly once, on the homepage, with verified updates.');
 
-if(!homepage.includes('id="builders"')||
-   !homepage.includes('id="opportunities"')||
-   !homepage.includes('id="membership"')||
-   !homepage.includes('id="partners"')||
-   !homepage.includes('Find paid work.'))
- problems.push('Builders future paid-membership landing page is incomplete.');
+if(homepage.includes('id="builders"')||homepage.includes('href="#builders"')||
+   homepage.includes('data-nav="builders"'))
+ problems.push('Retired Builders page or navigation remains in the public site.');
+
 
 if(!home.includes('class="connection-card connection-partner" href="#partners"')||
    !homepage.includes('class="partnership-section" id="partners"')||
@@ -147,13 +146,11 @@ if(!home.includes('class="connection-card connection-partner" href="#partners"')
    !homepage.includes('data-contact-reason="Partnership"')||
    !homepage.includes('Formal applications are not open yet.')||
    !homepage.includes('Contact is for an initial discussion, not an application or approval.'))
- problems.push('Partnerships must be discoverable from Home and Builders without implying open enrollment.');
+ problems.push('Partnerships must be discoverable from Home without implying open enrollment.');
 
 if(/data-form="opportunity"|<form[^>]*id="post"|id="job-listings"|id="post"/i.test(homepage))
  problems.push('Public job listing or job-posting form is forbidden without membership enforcement.');
-if(!homepage.includes('Jobs and posting require verified paid membership.')||
-   !homepage.includes('Enrollment is not open yet.'))
- problems.push('Builders paid-access disclosure missing.');
+
 
 }
 const sitemap=await read('sitemap.xml');

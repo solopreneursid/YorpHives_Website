@@ -97,7 +97,7 @@ test('every direct-entry page keeps Ko-fi disabled in its own navigation',async(
 
 test('all 23 legacy URLs retain both slash and slashless first-party redirects',async()=>{
  const redirects=await read('_redirects',dest);
- const rules=redirects.split('\n').filter(x=>x.trim()&&!x.trim().startsWith('#')).map(x=>x.trim().split(/\s+/));
+ const rules=redirects.split('\n').filter(x=>x.trim()&&!x.trim().startsWith('#')).map(x=>x.trim().split(/\s+/)).filter(x=>x[0].startsWith('/free-tools'));
  assert.equal(rules.length,46);
  assert.equal(new Set(rules.map(x=>x[0])).size,46);
  const oldPaths=['/free-tools/','/free-tools/file-studio/',

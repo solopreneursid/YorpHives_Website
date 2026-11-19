@@ -158,8 +158,10 @@ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
    if(name==='phone'||name==='desktop'){
     await page.screenshot({path:'qa-'+engineName+'-'+name+'.png',fullPage:true});
     await page.evaluate(()=>{location.hash='#builders'});
-    await page.waitForTimeout(100);
-    if(await page.locator('#builders').isHidden())problems.push(label+' Builders route failed');
+    await page.waitForFunction(()=>location.hash==='#home',null,{timeout:3000}).catch(()=>{});
+    const activeHash=await page.evaluate(()=>location.hash);
+    if(activeHash!=='#home'||await page.locator('#home').isHidden())
+     problems.push(label+' retired Builders hash did not return to Home');
    }
    console.log('PASS',label,result);
   }catch(e){problems.push(engineName+'/'+name+': '+e.message.slice(0,190))}

@@ -42,7 +42,6 @@ function renderTicker(card){
  const fallback={
   ventures:[{text:'Founder-approved launches will appear here'},{text:'Explore HQventures'}],
   tools:[{text:'Free tools catalogue updating'},{text:'Explore all free tools'}],
-  builders:[{text:'Verified Builders updates will appear here'},{text:'Explore Builders'}]
  };
  const displayEntries=entries.length?entries:fallback[key];
  const makeGroup=(clone=false)=>{
@@ -59,7 +58,7 @@ function renderTicker(card){
  target.append(makeGroup(),makeGroup(true));
  target.classList.add('is-ticker');wrap.classList.add('has-ticker');
  wrap.style.setProperty('--eco-scroll-duration',Math.max(14,Math.min(48,displayEntries.length*5.5))+'s');
- wrap.setAttribute('aria-label',(key==='tools'?'Free tool categories':key==='ventures'?'Approved ventures':'Builders updates')+': '+displayEntries.map(x=>x.text).join('; '));
+ wrap.setAttribute('aria-label',(key==='tools'?'Free tool categories':'Approved ventures')+': '+displayEntries.map(x=>x.text).join('; '));
  wrap.classList.toggle('is-paused',ecoPaused);
 }
 function useCard(key,entries){
@@ -104,15 +103,6 @@ async function initEco(){
  initEcoControl();
  subscribeCatalog(onCatalogUpdate);
  await getCatalog();
- const builderFeed=await getJson('builders-updates.json');
- const builderRows=Array.isArray(builderFeed?.items)?builderFeed.items:[];
- const unique=new Set();
- const builderEntries=builderRows.filter(event=>event?.kind==='builders'&&event?.url==='#builders'&&
-   typeof event.timestamp==='string'&&Number.isFinite(Date.parse(event.timestamp))&&
-   Date.parse(event.timestamp)<=Date.now()&&safeText(event.title)&&!unique.has(event.id)&&unique.add(event.id))
-  .sort((a,b)=>Date.parse(b.timestamp)-Date.parse(a.timestamp)).slice(0,10)
-  .map(e=>({text:e.title}));
- useCard('builders',builderEntries);
  const toolsCard=document.querySelector('.eco-tools');
  toolsCard?.addEventListener('click',event=>{
   if(!event.target.closest('[data-strip="tools"]'))return;

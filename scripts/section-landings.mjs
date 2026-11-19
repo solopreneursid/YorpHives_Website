@@ -1,6 +1,6 @@
 // Lightweight, independently crawlable front doors for the existing studio sections.
 // No frameworks, remote calls, fake launch claims, external subscriptions or HQ access.
-export const sectionLandingPaths=Object.freeze(['hqventures/','builders/','partnerships/']);
+export const sectionLandingPaths=Object.freeze(['hqventures/','partnerships/']);
 const sections=[
  {slug:'hqventures',label:'HQventures',title:'Explore founder-reviewed ventures',
  description:'Discover YorpHives initiatives and useful products. Publishing decisions remain founder-controlled.',
@@ -10,14 +10,6 @@ const sections=[
  points:[['Explore projects','View venture information and current release status before trying a product.'],
  ['Try useful tools','Browse the public collection of privacy-conscious, browser-local utilities.'],
  ['Evidence before claims','We distinguish verified releases from ideas and work in progress.']]},
- {slug:'builders',label:'Builders',title:'Build and collaborate with YorpHives',
- description:'Learn how builders can connect around practical ideas, open collaboration and useful products.',
- headline:'Good ideas need people who build.',
- lead:'YorpHives brings together people interested in building and improving useful technology. Membership and paid programs are not available until officially launched.',
- action:'Explore Builders on the main site',hash:'builders',
- points:[['Discover','See the studio and its published work before proposing a collaboration.'],
- ['Connect','Use our contact section to share a concrete proposal for review.'],
- ['Stay informed','Announcements describe verified progress, not promised returns or unlaunched benefits.']]},
  {slug:'partnerships',label:'Partnerships',title:'Partner with YorpHives',
  description:'Explore collaboration possibilities with YorpHives, an independently operated AI-powered venture studio.',
  headline:'Create something useful together.',
@@ -55,7 +47,7 @@ function page(s){
 <a class="skip" href="#main">Skip to content</a>
 <header class="top"><div class="wrap">
 <a class="brand" href="/"><img src="/tools/brand-icon.webp" width="37" height="37" alt="">yorpHives</a>
-<nav class="nav" aria-label="Main navigation"><a href="/">Home</a><a href="/hqventures/"${s.slug==='hqventures'?' aria-current="page"':''}>HQventures</a><a href="/builders/"${s.slug==='builders'?' aria-current="page"':''}>Builders</a><a href="/tools/">Free tools</a><a href="/partnerships/"${s.slug==='partnerships'?' aria-current="page"':''}>Partnerships</a></nav>
+<nav class="nav" aria-label="Main navigation"><a href="/">Home</a><a href="/hqventures/"${s.slug==='hqventures'?' aria-current="page"':''}>HQventures</a><a href="/tools/">Free tools</a><a href="/partnerships/"${s.slug==='partnerships'?' aria-current="page"':''}>Partnerships</a></nav>
 </div></header>
 <main id="main" class="wrap">
 <section class="hero" aria-labelledby="page-title">
