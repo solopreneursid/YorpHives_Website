@@ -40,7 +40,7 @@ test('legacy Builders and membership hashes return Home while HQventures and Con
  assert.match(js,/explore:'ventures'/);
  assert.match(js,/connect:'contact'/);
  assert.match(js,/retiredRoutes/);
- assert.match(js,/history\\.replaceState/);
+ assert.ok(js.includes('history.replaceState'));
  assert.doesNotMatch(js,/builders:'Builders'|opportunities:'builders'|membership:'builders'/);
  assert.match(js,/special\[hash\]/);
  assert.match(js,/qualifiedProducts\(allItems\)/);
