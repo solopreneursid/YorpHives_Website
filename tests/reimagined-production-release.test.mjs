@@ -11,7 +11,7 @@ test('the built root promotes the fresh experience while preview remains noindex
  if(!await exists('dist/index.html'))return;
  const home=await read('dist/index.html');
  assert.match(home,/id="home-title"/);
- assert.match(home,/INDEPENDENT · AI-POWERED VENTURE STUDIO/);
+ assert.match(home,/YORPHIVES \/ INDEPENDENT SOFTWARE STUDIO/);
  for(const view of ['home','ventures','tools','partners','contact'])
   assert.match(home,new RegExp('<section class="view" id="'+view+'"'));
  assert.match(home,/class="kofi-support" id="kofi-support" type="button" disabled/);
