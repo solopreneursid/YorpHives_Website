@@ -32,6 +32,8 @@ test('the venture count is tied to qualified public releases, not ideas or draft
   read('reimagined/index.html'),read('reimagined/studio.js'),read('product-policy.mjs')
  ]);
  assert.match(html,/id="home-venture-count"/);
+ assert.match(html,/id="venture-hero-count"/);
+ assert.match(js,/heroCount\.textContent=number\(ventures\.length\)/);
  assert.match(html,/id="venture-total"/);
  assert.match(js,/ventures=qualifiedProducts\(allItems\)/);
  assert.match(js,/number\(ventures\.length\)/);
