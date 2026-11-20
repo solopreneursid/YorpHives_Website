@@ -52,7 +52,7 @@ test('fresh homepage progress and YHpulse use public catalogue data, not invente
   read('reimagined/index.html'),read('reimagined/studio.js'),read('insights-client.mjs'),
   read('reimagined/impact-public.json'),read('reimagined/usage-public.json')
  ]);
- for(const id of ['home-progress','home-tool-count','home-venture-count','anonymous-analytics-toggle','yh-pulse','activity-list'])
+ for(const id of ['home-progress','tools-count-big','venture-hero-count','anonymous-analytics-toggle','yh-pulse','activity-list'])
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(studio,/qualifiedProducts\(allItems\)/);
  assert.match(studio,/fetch\('\/activity\.json'/);

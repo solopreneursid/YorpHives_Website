@@ -48,7 +48,7 @@ test('first-party client cannot send content or upload files',async()=>{
  const client=await read('insights-client.mjs');
  const backend=await read('functions/_lib/insights.mjs');
  const html=await read('reimagined/index.html');
- for(const id of ['anonymous-analytics-toggle','home-tool-count','home-venture-count'])
+ for(const id of ['anonymous-analytics-toggle','tools-count-big','venture-hero-count'])
   assert.ok(html.includes('id="'+id+'"'));
  assert.match(client,/navigator\.globalPrivacyControl/);
  assert.match(client,/navigator\.doNotTrack/);
