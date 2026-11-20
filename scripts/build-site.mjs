@@ -53,7 +53,7 @@ await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
 // One first-party analytics client for the marketing site and published tools.
 await cp(resolve(root,'insights-client.mjs'),resolve(dest,'insights-client.mjs'));
 // Lightweight, first-party motion shared by every public page (including tools).
-for(const file of ['interaction.css','interaction.mjs','personal-space.css'])
+for(const file of ['interaction.css','interaction.mjs','personal-space.css','quick-launcher.mjs'])
  await cp(resolve(root,file),resolve(dest,file));
 
 // Only the analytics API invokes Pages Functions. All static pages and tool

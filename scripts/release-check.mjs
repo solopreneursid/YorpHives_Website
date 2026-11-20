@@ -197,6 +197,7 @@ if(!directory.includes('id="directory-search"')||!directory.includes('id="direct
  !directory.includes('TOOL_DIRECTORY_END'))
  fail('The A–Z directory is missing search, saved tools or generated category markers.');
 for(const item of tools)if(!directory.includes('../'+item.url))fail('Missing crawlable directory link: '+item.url);
+if(!await exists('quick-launcher.mjs')||!await exists('personal-space.css'))fail('Shared personal launcher assets missing.');
 if(!headers.includes("connect-src 'self'")||!headers.includes("script-src 'self'")||
  !headers.includes('X-Content-Type-Options: nosniff'))
  fail('Privacy-first security headers are incomplete.');
