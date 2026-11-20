@@ -129,16 +129,34 @@
 </section>
 
 <section class="view" id="ventures" aria-labelledby="ventures-title" hidden>
- <div class="page-hero page-hero-green"><div class="shell page-hero-layout"><div><p class="eyebrow eyebrow-dark"><span class="eyebrow-dot"></span> HQVENTURES / OUR FLAGSHIP STUDIO</p><h1 id="ventures-title">HQventures.<br><em>Research before release.</em></h1><p>HQventures researches product ideas and evaluates their value and risks. Only founder-approved, publicly launched products appear below; ideas and internal research are not presented as launches.</p><a class="button button-primary" href="#partners">Discuss a collaboration <svg><use href="#i-arrow"/></svg></a></div><div class="page-hero-art" aria-hidden="true"><span class="hero-art-ring"></span><span class="hero-art-ring ring-two"></span><span class="hero-art-star">✳</span><span class="hero-art-caption">RESEARCH → REVIEW → BUILD</span></div></div></div>
+ <div class="page-hero page-hero-green venture-hero">
+  <div class="shell page-hero-layout">
+   <div>
+    <p class="eyebrow eyebrow-dark"><span class="eyebrow-dot"></span> HQVENTURES / OUR FLAGSHIP STUDIO</p>
+    <h1 id="ventures-title">Product research.<br><em>Launch only when approved.</em></h1>
+    <p>HQventures studies potential software products and evaluates demand, usefulness and risk. Until a venture is approved and publicly launched, it stays off the public portfolio.</p>
+    <div class="venture-hero-actions">
+     <a class="button button-primary" href="#tools">Use our current tools <svg><use href="#i-arrow"/></svg></a>
+     <a class="button venture-quiet" href="#contact">Contact the studio <svg><use href="#i-external"/></svg></a>
+    </div>
+   </div>
+   <aside class="venture-status-panel" aria-label="Verified public portfolio status">
+    <span class="venture-status-label"><span class="status-led"></span> PUBLIC PORTFOLIO STATUS</span>
+    <strong><span id="venture-hero-count">0</span> publicly launched ventures</strong>
+    <p>Only founder-approved, verified launches appear here. Private ideas and research are not public products.</p>
+    <a href="#tools">See software available today <svg><use href="#i-arrow"/></svg></a>
+   </aside>
+  </div>
+ </div>
  <div class="shell page-content">
-  <div class="section-heading"><div><p class="section-kicker">THE PORTFOLIO</p><h2>Only the <em>approved.</em></h2></div><span class="count-pill" id="venture-total">Checking approved launches…</span></div>
+  <div class="section-heading"><div><p class="section-kicker">THE PORTFOLIO</p><h2>Public <em>projects.</em></h2></div><span class="count-pill" id="venture-total">Checking approved launches…</span></div>
   <div class="venture-products" id="venture-products" aria-live="polite"><div class="empty-state"><span class="empty-state-mark">✳</span><div><span class="section-kicker">PUBLIC PORTFOLIO STATUS</span><h3>No approved public launches yet.</h3><p>Products appear here only after research review and founder approval. We won't present a possibility as a launch.</p></div></div></div>
  </div>
- <section class="process-band"><div class="shell process-band-layout"><div><p class="section-kicker section-kicker-light">THE RELEASE STANDARD</p><h2>AI finds the signal.<br><em>People make the call.</em></h2><p>YorpHivesHQ is an observation and research system. It recommends; the founder approves and executes.</p></div><div class="process-list"><div><b>01</b><span><strong>Discover</strong><small>Market signals and user needs</small></span></div><div><b>02</b><span><strong>Validate</strong><small>Evidence, feasibility and risk</small></span></div><div><b>03</b><span><strong>Approve</strong><small>Founder review is mandatory</small></span></div><div><b>04</b><span><strong>Launch</strong><small>Only verified, approved releases</small></span></div></div></div></section>
+ <section class="process-band"><div class="shell process-band-layout"><div><p class="section-kicker section-kicker-light">THE RELEASE STANDARD</p><h2>Who can approve<br><em>a public release?</em></h2><p>YorpHivesHQ researches and recommends, but cannot change the website or publish a product. The founder reviews the evidence and authorizes releases.</p></div><div class="process-list"><div><b>01</b><span><strong>Discover</strong><small>Market signals and user needs</small></span></div><div><b>02</b><span><strong>Validate</strong><small>Evidence, feasibility and risk</small></span></div><div><b>03</b><span><strong>Approve</strong><small>Founder review is mandatory</small></span></div><div><b>04</b><span><strong>Launch</strong><small>Only verified, approved releases</small></span></div></div></div></section>
 </section>
 
 <section class="view" id="tools" aria-labelledby="tools-title" hidden>
- <div class="page-hero page-hero-cream"><div class="shell tools-page-hero"><div><p class="eyebrow eyebrow-dark"><span class="eyebrow-dot"></span> THE FREE TOOL LIBRARY</p><h1 id="tools-title">Less busywork.<br><em>More momentum.</em></h1><p>Simple browser-based tools for writing, files, images, calculations and everyday work.</p></div><div class="tool-count-card"><strong id="tools-count-big">143</strong><span>TOOLS<br>READY TO USE</span><small>No account. No unnecessary uploads.</small></div></div></div>
+ <div class="page-hero page-hero-cream"><div class="shell tools-page-hero"><div><p class="eyebrow eyebrow-dark"><span class="eyebrow-dot"></span> THE FREE TOOL LIBRARY</p><h1 id="tools-title">Find a tool.<br><em>Finish the task.</em></h1><p>Search published tools for writing, PDFs, images, calculations and developer work. Open a tool directly, without creating an account.</p></div><div class="tool-count-card"><strong id="tools-count-big">143</strong><span>TOOLS<br>READY TO USE</span><small>No account. No unnecessary uploads.</small></div></div></div>
  <div class="shell page-content tool-library-content">
   <div class="tool-search-panel" role="search" aria-label="Search the free tool library"><label for="tool-search">What do you need to do?</label><div class="tool-search-row"><span aria-hidden="true">⌕</span><input id="tool-search" type="search" placeholder="Try word counter, PDF, image resize…" autocomplete="off" spellcheck="false"><button id="tool-search-clear" type="button" hidden>Clear</button></div><p>Search by tool name, description or category.</p></div>
   <div class="tool-category-row"><div class="category-chips" id="tool-categories" aria-label="Filter by category"></div></div>
@@ -151,7 +169,7 @@
 </section>
 
 <section class="view" id="partners" aria-labelledby="partners-title" hidden>
- <div class="page-hero page-hero-green"><div class="shell page-hero-layout"><div><p class="eyebrow eyebrow-dark"><span class="eyebrow-dot"></span> PARTNERSHIPS / BUILD TOGETHER</p><h1 id="partners-title">Good work gets<br><em>better together.</em></h1><p>We are open to practical conversations with people who can help useful products reach more people.</p><a class="button button-primary" href="#contact">Start a conversation <svg><use href="#i-arrow"/></svg></a></div><div class="page-hero-art partner-hero-art" aria-hidden="true"><span class="partner-orbit"></span><span class="partner-orbit orbit-two"></span><span class="partner-plus-large">+</span><span class="partner-node partner-node-one"></span><span class="partner-node partner-node-two"></span></div></div></div>
+ <div class="page-hero page-hero-green"><div class="shell page-hero-layout"><div><p class="eyebrow eyebrow-dark"><span class="eyebrow-dot"></span> PARTNERSHIPS / BUILD TOGETHER</p><h1 id="partners-title">Work with<br><em>YorpHives.</em></h1><p>We are open to practical conversations with people who can help useful products reach more people.</p><a class="button button-primary" href="#contact">Start a conversation <svg><use href="#i-arrow"/></svg></a></div><div class="page-hero-art partner-hero-art" aria-hidden="true"><span class="partner-orbit"></span><span class="partner-orbit orbit-two"></span><span class="partner-plus-large">+</span><span class="partner-node partner-node-one"></span><span class="partner-node partner-node-two"></span></div></div></div>
  <div class="shell page-content">
   <div class="section-heading"><div><p class="section-kicker">WAYS TO WORK TOGETHER</p><h2>Make the next move <em>count.</em></h2></div><p class="section-aside">No automated acceptance or open enrollment. Every collaboration is reviewed individually.</p></div>
   <div class="partner-grid">
@@ -164,7 +182,7 @@
 </section>
 
 <section class="view" id="contact" aria-labelledby="contact-title" hidden>
- <div class="page-hero page-hero-cream"><div class="shell contact-hero"><div><p class="eyebrow eyebrow-dark"><span class="eyebrow-dot"></span> CONTACT / SAY HELLO</p><h1 id="contact-title">Have a thought?<br><em>Let's hear it.</em></h1><p>Tell us what you're exploring. A clear first message is all it takes.</p></div><div class="contact-hero-mark" aria-hidden="true">✳</div></div></div>
+ <div class="page-hero page-hero-cream"><div class="shell contact-hero"><div><p class="eyebrow eyebrow-dark"><span class="eyebrow-dot"></span> CONTACT / SAY HELLO</p><h1 id="contact-title">Contact<br><em>YorpHives.</em></h1><p>Tell us what you're exploring. A clear first message is all it takes.</p></div><div class="contact-hero-mark" aria-hidden="true">✳</div></div></div>
  <div class="shell contact-layout">
   <div class="contact-copy"><p class="section-kicker">A DIRECT LINE</p><h2>Good conversations<br>start <em>somewhere.</em></h2><p>Whether you're asking about a tool, proposing a collaboration or sharing a product idea, send a note to the studio.</p><a class="contact-email" href="mailto:connect@yorphives.com"><svg><use href="#i-mail"/></svg> connect@yorphives.com <svg><use href="#i-external"/></svg></a><div class="contact-response-note">Your message opens in your email app. Nothing is sent automatically by this website.</div></div>
   <form class="contact-form" id="contact-form">
