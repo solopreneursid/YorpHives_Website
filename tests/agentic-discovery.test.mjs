@@ -64,6 +64,18 @@ test('OpenAPI lists only read-only discovery and tightly bounded stateless utili
  }
  assert.deepEqual([...executed].sort(),[...callable].sort());
 });
+test('Pages review exposes callable utility registry as JSON rather than SPA HTML',async()=>{
+ const {onRequestGet,onRequestHead}=await import('../functions/api/agent/v1/tools.js');
+ const request=new Request('https://preview.example/api/agent/v1/tools');
+ const response=await onRequestGet({request,env:{}});
+ assert.equal(response.status,200);
+ assert.ok((response.headers.get('content-type')||'').includes('application/json'));
+ const registry=await response.json();
+ assert.equal(registry.schemaVersion,1);
+ assert.equal(registry.tools.length,5);
+ const headResponse=await onRequestHead({request:new Request(request.url,{method:'HEAD'}),env:{}});
+ assert.equal(headResponse.status,200);
+});
 test('read-only discovery remains GET-only and fails closed',async()=>{
  const req=(path,method='GET')=>new Request('https://yorphives.com'+path,{method});
  const missing=await agentGet(req('/api/agent/v1/capabilities'),{ASSETS:{fetch:async()=>new Response('Unavailable',{status:503})}},'/api/agent/v1/capabilities');

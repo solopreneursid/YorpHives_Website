@@ -52,11 +52,14 @@ for(const file of ['index.html','app.js','style.css','next.css','next-responsive
 await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
 // One first-party analytics client for the marketing site and published tools.
 await cp(resolve(root,'insights-client.mjs'),resolve(dest,'insights-client.mjs'));
+// Lightweight, first-party motion shared by every public page (including tools).
+for(const file of ['interaction.css','interaction.mjs','personal-space.css','quick-launcher.mjs'])
+ await cp(resolve(root,file),resolve(dest,file));
 
 // Only the analytics API invokes Pages Functions. All static pages and tool
 // assets bypass function compute and retain free static asset delivery.
 await write('_routes.json',JSON.stringify({
- version:1,include:['/api/insights/*','/api/agent/v1/*'],exclude:[]
+ version:1,include:['/api/insights/*','/api/agent/v1/*','/api/hqconnect'],exclude:[]
 },null,2)+'\n');
 
 
@@ -187,9 +190,13 @@ for(const item of published){
    '<a href="/tools/?saved=1">View saved tools →</a></div>';
   if(!html.includes('</main>'))throw Error('Missing tool main: '+item.url);
   html=html.replace('</main>',save+suggestions+'</main>');
-  html=html.replace('</body>','<script type="module" src="/tools/save-tool.mjs"></script></body>');
+  html=html.replace('</body>','<script type="module" src="/tools/save-tool.mjs"></script><script type="module" src="/tools/visit-tool.mjs"></script></body>');
  }
- // Progressive local browser agents can discover utilities from any public page.
+ if(item.type==='app'||item.type==='product'){
+   const stable=typeof item.id==='string'&&/^[a-z0-9][a-z0-9-]{0,95}$/.test(item.id)?'products/'+item.id+'/':item.url;
+   html=html.replace('</body>','<script type="module" src="/tools/visit-product.mjs" data-product-id="'+esc(stable)+'"></script></body>');
+  }
+  // Progressive local browser agents can discover utilities from any public page.
  if(!html.includes('agentic-browser.mjs'))
   html=html.replace('</body>','<script type="module" src="/agentic-browser.mjs"></script></body>');
  await write(path,html);
@@ -345,8 +352,8 @@ if(target==='preview'){
 // This routine is also used to render a path-isolated acceptance candidate.
 async function publishReimaginedRoot(prefix=''){
  if(prefix)await mkdir(resolve(dest,prefix),{recursive:true});
- const assets=['studio.css','studio.js','rotators.css','rotators.js',
-  'catalog-sync.mjs','impact-public.json','usage-public.json'];
+ const assets=['studio.css','hqconnect.css','hero-system.css','surfaces.css','showcase.css','studio.js','showcase.mjs','rotators.css','rotators.js',
+  'catalog-sync.mjs','venture-activity.mjs','impact-public.json','usage-public.json'];
  for(const asset of assets)
   await cp(resolve(root,'reimagined',asset),resolve(dest,prefix+asset));
  // Browser fixture is isolated to preview acceptance; never ship it on production root.

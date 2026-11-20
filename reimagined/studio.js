@@ -1,19 +1,23 @@
 /* YorpHives Fresh — first-party navigation, catalogue discovery and contact.
    Reads only public static catalogue/activity data. No private HQ access or remote SaaS. */
 import {qualifiedProducts} from '../product-policy.mjs';
+import {approvedVentureReleases} from './venture-activity.mjs';
+import {createRotatingShowcase} from './showcase.mjs';
 import {getCatalog,subscribeCatalog,startCatalogMonitoring} from './catalog-sync.mjs';
 import {readSaved,toggleSaved} from '../tools/save-tool.mjs';
+import {readSpace,toggleSpace,recordRecent,moveSaved,productIdentity,notifySpace,SPACE_EVENT,isSpaceKey} from '../tools/personal-space.mjs';
 
 const $=id=>document.getElementById(id);
 const views=[...document.querySelectorAll('main>.view')];
-const viewNames={home:'Home',tools:'Free tools',ventures:'HQventures',partners:'Partnerships',contact:'Contact'};
+const viewNames={home:'Home',tools:'Free tools',ventures:'HQventures'};
 const retiredRoutes=new Set(['builders','opportunities','membership','post']);
 let previousView='';
 let allItems=[],tools=[],ventures=[];
-let activeCategory='All',onlySaved=false,page=1,sortMode='name';
+let activeCategory='All',page=1,sortMode='name';
+let toolTab='all',productTab='all',toolTabChosen=false,productTabChosen=false;
+const local=()=>{try{return window.localStorage}catch{return null}};
 const pageSize=12;
-const featuredToolUrls=['tools/word-counter/','tools/qr-code-generator/','tools/password-generator/','tools/json-formatter/','tools/pdf-merge/','tools/image-resizer/'];
-const quickstartToolUrls=['tools/word-counter/','tools/pdf-merge/','tools/image-resizer/','tools/qr-code-generator/'];
+const showcase=createRotatingShowcase(document.getElementById('featured-tools-grid'),document.getElementById('showcase-pause'));
 const icon=name=>{
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
  svg.setAttribute('aria-hidden','true');
@@ -47,16 +51,20 @@ function route(){
  let hash=location.hash.slice(1);
  try{hash=decodeURIComponent(hash)}catch{hash=''}
  if(retiredRoutes.has(hash)){history.replaceState(history.state,'',location.pathname+location.search+'#home');hash='home'}
- const aliases={explore:'ventures',connect:'contact'};
- const active=aliases[hash]|| (Object.hasOwn(viewNames,hash)?hash:'home');
+ const connectHashes=new Set(['hqconnect','contact','connect','partners']);
+ const isConnect=connectHashes.has(hash);
+ const aliases={explore:'ventures'};
+ const active=isConnect?'home':(aliases[hash]|| (Object.hasOwn(viewNames,hash)?hash:'home'));
  views.forEach(view=>{view.hidden=view.id!==active});
  document.querySelectorAll('[data-nav]').forEach(link=>{
-  if(link.dataset.nav===active)link.setAttribute('aria-current','page');
+  if(link.dataset.nav===(isConnect?'hqconnect':active))link.setAttribute('aria-current','page');
   else link.removeAttribute('aria-current');
  });
  document.title=(active==='home'?'Free browser tools and HQventures':viewNames[active])+' | YorpHives';
  closeMenu();
- if(active!==previousView){window.scrollTo({top:0,behavior:'auto'});previousView=active}
+ if(isConnect){requestAnimationFrame(()=>$('hqconnect')?.scrollIntoView({block:'start',behavior:'auto'}))}
+ else if(active!==previousView){window.scrollTo({top:0,behavior:'auto'})}
+ previousView=active;
 }
 window.addEventListener('hashchange',route);
 route();
@@ -83,10 +91,23 @@ $('year').textContent=String(new Date().getFullYear());
 function savedSet(){
  try{return new Set(readSaved(window.localStorage))}catch{return new Set()}
 }
-function updateSavedButton(){
- const button=$('saved-toggle');
- if(button){button.setAttribute('aria-pressed',String(onlySaved));button.textContent=onlySaved?'♥ Showing saved':'♡ Saved'}
+function drawTabs(selector,mode){
+ document.querySelectorAll(selector).forEach(button=>{
+  const key=selector.includes('product')?'productspaceTab':'toolspaceTab';
+  button.setAttribute('aria-pressed',String(button.dataset[key]===mode));
+ });
 }
+function openToolTab(mode){
+ if(!['saved','recent','all'].includes(mode))return;
+ toolTab=mode;toolTabChosen=true;page=1;
+ renderTools();
+}
+function openProductTab(mode){
+ if(!['saved','recent','all'].includes(mode))return;
+ productTab=mode;productTabChosen=true;
+ renderVentures();
+}
+
 function categoryChips(){
  const counts=new Map();
  for(const tool of tools){const category=tool.category||'Other';counts.set(category,(counts.get(category)||0)+1)}
@@ -101,15 +122,21 @@ function categoryChips(){
 }
 function filteredTools(){
  const query=($('tool-search')?.value||'').trim().toLocaleLowerCase('en-US');
- const saved=onlySaved?savedSet():null;
+ const order=toolTab==='all'?null:readSpace(local(),'tools',toolTab);
+ const allowed=order?new Set(order):null;
  const matches=tools.filter(tool=>
   (activeCategory==='All'||(tool.category||'Other')===activeCategory)&&
-  (!saved||saved.has(tool.url))&&
+  (!allowed||allowed.has(tool.url))&&
   (!query||[tool.name,tool.description,tool.category||''].some(value=>value.toLocaleLowerCase('en-US').includes(query)))
  );
- matches.sort((a,b)=>sortMode==='recent'
-  ?String(b.updatedAt||b.date||'').localeCompare(String(a.updatedAt||a.date||''))||a.name.localeCompare(b.name)
-  :a.name.localeCompare(b.name));
+ if(order){
+  const positions=new Map(order.map((url,i)=>[url,i]));
+  matches.sort((a,b)=>(positions.get(a.url)??Infinity)-(positions.get(b.url)??Infinity));
+ }else{
+  matches.sort((a,b)=>sortMode==='recent'
+   ?String(b.updatedAt||b.date||'').localeCompare(String(a.updatedAt||a.date||''))||a.name.localeCompare(b.name)
+   :a.name.localeCompare(b.name));
+ }
  return matches;
 }
 function toolCard(tool,index){
@@ -126,14 +153,29 @@ function toolCard(tool,index){
   if(result===null){favourite.setAttribute('aria-label','Saving is unavailable in this browser');return}
   favourite.setAttribute('aria-pressed',String(result));
   favourite.setAttribute('aria-label',(result?'Remove saved tool: ':'Save tool: ')+tool.name);
-  if(onlySaved)renderTools();
+  renderTools();notifySpace(window);
  });
  top.append(picture,favourite);
+ if(toolTab==='saved'){
+  const actions=make('div','','space-actions');
+  const order=readSpace(local(),'tools'),index=order.indexOf(tool.url);
+  for(const [label,dir] of [['↑ Move up',-1],['↓ Move down',1]]){
+   const button=make('button',label);button.type='button';
+   button.disabled=dir<0?index===0:index===order.length-1;
+   button.setAttribute('aria-label',label+': '+tool.name);
+   button.addEventListener('click',()=>{
+    if(moveSaved(local(),'tools',tool.url,dir)){renderTools();notifySpace(window)}
+   });
+   actions.append(button);
+  }
+  article.append(actions);
+ }
  const title=make('h3',tool.name),description=make('p',tool.description);
  const foot=make('div','','tool-card-foot');
  foot.append(make('span',tool.category||'Utility'));
  const link=make('a','Open tool');link.href='/'+tool.url;link.append(icon('external'));
- foot.append(link);article.append(top,title,description,foot);return article;
+ link.addEventListener('click',()=>recordRecent(local(),'tools',tool.url));
+ foot.append(link);article.prepend(top,title,description);article.append(foot);return article;
 }
 function renderTools(){
  const host=$('tool-results');if(!host)return;
@@ -142,84 +184,107 @@ function renderTools(){
  const offset=(page-1)*pageSize;
  host.replaceChildren(...matches.slice(offset,offset+pageSize).map(toolCard));
  $('tool-results-count').textContent=number(matches.length)+' result'+(matches.length===1?'':'s');
- $('tool-results-description').textContent=onlySaved?'Showing your saved tools':activeCategory!=='All'?activeCategory+' tools':'Search, filter or save what you need.';
+ $('tool-results-description').textContent=toolTab==='saved'?'Your saved Toolspace in your preferred order.':toolTab==='recent'?'Tools opened recently on this device.':activeCategory!=='All'?activeCategory+' tools':'Search, filter or save what you need.';
  $('tool-empty').hidden=matches.length>0;
+ $('tool-empty').querySelector('strong').textContent=toolTab==='saved'?'Your Toolspace is empty.':toolTab==='recent'?'No recently used tools yet.':'No tools found.';
+ $('tool-empty').querySelector('p').textContent=toolTab==='saved'?'Choose All Tools and save favourites to see them here.':toolTab==='recent'?'Open a tool and it will appear here automatically.':'Try a shorter search or choose another category.';
  $('tool-pagination').hidden=matches.length<=pageSize;
  $('tool-page-label').textContent=page+' / '+pages;
  $('tool-prev').disabled=page<=1;$('tool-next').disabled=page>=pages;
  $('tool-search-clear').hidden=!$('tool-search').value;
- updateSavedButton();
-}
-function featuredCard(tool,index){
- const link=make('a','','featured-tool-card');link.href='/'+tool.url;
- const head=make('div','','featured-tool-heading');
- head.append(make('span',['Aa','▦','{}','✳'][index%4],'featured-tool-icon'),icon('external'));
- const category=make('span',tool.category||'Utility','featured-tool-category');
- const title=make('h3',tool.name),description=make('p',tool.description),action=make('span','Open tool →','featured-tool-action');
- link.append(head,category,title,description,action);return link;
-}
-
-/** Only published catalog URLs are allowed into the quick-launch panel.
- * Static first-party links remain usable if a network request fails. */
-function renderQuickstarts(){
- const host=$('hero-quickstart-list');
- if(!host)return;
- const selected=quickstartToolUrls.map(url=>tools.find(tool=>tool.url===url)).filter(Boolean);
- if(selected.length!==quickstartToolUrls.length)return;
- const marks=['Aa','PDF','▧','▦'];
- const cards=selected.map((tool,index)=>{
-  const link=make('a','','quickstart-tool');link.href='/'+tool.url;
-  const symbol=make('span',marks[index],'quickstart-symbol');
-  const detail=make('span');
-  detail.append(make('strong',tool.name),make('small',tool.category||'Free browser tool'));
-  link.append(symbol,detail,make('span','↗','quickstart-arrow'));
-  link.setAttribute('aria-label','Open '+tool.name);
-  return link;
- });
- host.replaceChildren(...cards);
-}
-
-function renderFeaturedTools(){
- const host=$('featured-tools-grid');if(!host)return;
- const selected=featuredToolUrls.map(url=>tools.find(tool=>tool.url===url)).filter(Boolean);
- for(const tool of tools){if(selected.length>=6)break;if(!selected.some(item=>item.url===tool.url))selected.push(tool)}
- if(!selected.length){host.replaceChildren(make('p','The tool collection is temporarily unavailable. Please visit the full directory.','loading-note'));return}
- host.replaceChildren(...selected.map(featuredCard));
+ drawTabs('[data-toolspace-tab]',toolTab);
+ const sorting=$('tool-sort')?.closest('.sort-control');if(sorting)sorting.hidden=toolTab!=='all';
 }
 function renderVentures(){
  const total=$('venture-total');
  if(total)total.textContent=number(ventures.length)+' founder-approved public launch'+(ventures.length===1?'':'es');
  const heroCount=$('venture-hero-count');if(heroCount)heroCount.textContent=number(ventures.length);
  const host=$('venture-products');if(!host)return;
- if(!ventures.length){
+ drawTabs('[data-productspace-tab]',productTab);
+ const order=productTab==='all'?null:readSpace(local(),'products',productTab);
+ const positions=order?new Map(order.map((id,i)=>[id,i])):null;
+ const available=order?ventures.filter(item=>positions.has(productIdentity(item))).sort((a,b)=>positions.get(productIdentity(a))-positions.get(productIdentity(b))):ventures;
+ if(!available.length){
   const empty=make('div','','empty-state');
   empty.append(make('span','✳','empty-state-mark'));
   const copy=make('div');
-  copy.append(make('span','PUBLIC PORTFOLIO STATUS','section-kicker'),make('h3','No approved public launches yet.'));
-  const p=make('p','Products appear here only after research review and founder approval. We will not present a possibility as a launch.');
-  copy.append(p);empty.append(copy);host.replaceChildren(empty);return;
+  const title=productTab==='saved'?'Your My Products collection is empty.':productTab==='recent'?'No recently viewed products yet.':'No approved public launches yet.';
+  const message=productTab==='saved'?'Explore founder-approved launches and save the products you want to revisit.':productTab==='recent'?'Products you explore will appear here for quick access.':'Products appear here only after research review and founder approval. We will not present a possibility as a launch.';
+  copy.append(make('span',productTab==='all'?'PUBLIC PORTFOLIO STATUS':'YOUR PRIVATE COLLECTION','section-kicker'),make('h3',title),make('p',message));
+  if(productTab!=='all'){
+   const explore=make('button','Explore Products','space-explore');explore.type='button';
+   explore.addEventListener('click',()=>openProductTab('all'));copy.append(explore);
+  }
+  empty.append(copy);host.replaceChildren(empty);return;
  }
- const cards=ventures.map(item=>{
-  const card=make('article','','venture-item');
+ host.replaceChildren(...available.map(item=>{
+  const id=productIdentity(item),card=make('article','','venture-item');
   card.append(make('span','FOUNDER-APPROVED · LAUNCHED','section-kicker'),make('h3',item.name),make('p',item.description));
-  const link=make('a','Explore venture →');link.href='/'+item.url;card.append(link);return card;
+  const actions=make('div','','space-actions'),saved=readSpace(local(),'products').includes(id);
+  const toggle=make('button',saved?'♥ Saved':'♡ Save product');
+  toggle.type='button';toggle.setAttribute('aria-pressed',String(saved));
+  toggle.setAttribute('aria-label',(saved?'Remove saved product: ':'Save product: ')+item.name);
+  toggle.addEventListener('click',()=>{
+   if(toggleSpace(local(),'products',id)===null){toggle.textContent='Saving unavailable';return}
+   renderVentures();notifySpace(window);
+  });
+  actions.append(toggle);
+  if(productTab==='saved'){
+   const index=order.indexOf(id);
+   for(const [label,dir] of [['↑ Move up',-1],['↓ Move down',1]]){
+    const button=make('button',label);button.type='button';
+    button.disabled=dir<0?index===0:index===order.length-1;
+    button.setAttribute('aria-label',label+': '+item.name);
+    button.addEventListener('click',()=>{
+     if(moveSaved(local(),'products',id,dir)){renderVentures();notifySpace(window)}
+    });actions.append(button);
+   }
+  }
+  const link=make('a','View product →');link.href='/'+item.url;
+  link.addEventListener('click',()=>recordRecent(local(),'products',id));
+  card.append(actions,link);return card;
+ }));
+}
+
+// HQventures has its own feed: every item must satisfy the public
+// founder-reviewed product gate. Tools and general activity never enter it.
+function renderVentureActivity(){
+ const section=$('venture-activity');
+ const host=$('venture-activity-list');
+ if(!section||!host)return;
+ const releases=approvedVentureReleases(allItems);
+ if(!releases.length){section.hidden=true;host.replaceChildren();return}
+ const cards=releases.map((item,index)=>{
+  const row=make('article','','pulse-item');
+  row.append(make('span',String(index+1).padStart(2,'0'),'pulse-item-number'));
+  const copy=make('div');
+  const link=make('a','Launched: '+item.name,'pulse-title');
+  link.href='/'+item.url;
+  copy.append(link,make('p',item.description));
+  row.append(copy);
+  const time=make('time',safeDate(item.date));
+  time.setAttribute('datetime',item.date);
+  row.append(time,make('span','↗','pulse-arrow'));
+  return row;
  });
  host.replaceChildren(...cards);
+ $('venture-activity-count').textContent=releases.length+' VERIFIED PRODUCT '+(releases.length===1?'RELEASE':'RELEASES');
+ section.hidden=false;
 }
+
 function applyCatalog(items){
  allItems=Array.isArray(items)?items:[];
  tools=allItems.filter(publicTool);
  ventures=qualifiedProducts(allItems);
- $('home-tool-count').textContent=number(tools.length);
- $('hero-tool-count').textContent=number(tools.length);
- $('home-venture-count').textContent=number(ventures.length);
+ if(!toolTabChosen){toolTab=readSpace(local(),'tools').length?'saved':'all';toolTabChosen=true}
+ if(!productTabChosen){productTab=readSpace(local(),'products').length?'saved':'all';productTabChosen=true}
  $('tools-count-big').textContent=number(tools.length);
- categoryChips();renderQuickstarts();renderFeaturedTools();renderTools();renderVentures();
+ categoryChips();showcase.update(allItems);renderTools();renderVentures();renderVentureActivity();
 }
 subscribeCatalog(applyCatalog);
 startCatalogMonitoring();
 getCatalog().then(()=>loadActivity()).catch(()=>{
- $('home-tool-count').textContent='—';$('hero-tool-count').textContent='—';$('home-venture-count').textContent='—';$('tools-count-big').textContent='—';
+ $('tools-count-big').textContent='—';
  $('featured-tools-grid').replaceChildren(make('p','The catalogue could not be loaded. Please try again or browse the directory.','loading-note'));
  $('tool-results').replaceChildren();
  $('tool-results-count').textContent='Catalogue unavailable';
@@ -234,10 +299,13 @@ $('tool-search')?.addEventListener('keydown',event=>{
  if(event.key==='Escape'&&event.currentTarget.value){event.currentTarget.value='';page=1;renderTools()}
 });
 $('tool-search-clear')?.addEventListener('click',()=>{$('tool-search').value='';page=1;renderTools();$('tool-search').focus()});
-$('saved-toggle')?.addEventListener('click',()=>{onlySaved=!onlySaved;page=1;renderTools()});
+document.querySelectorAll('[data-toolspace-tab]').forEach(button=>button.addEventListener('click',()=>openToolTab(button.dataset.toolspaceTab)));
+document.querySelectorAll('[data-productspace-tab]').forEach(button=>button.addEventListener('click',()=>openProductTab(button.dataset.productspaceTab)));
+window.addEventListener('storage',event=>{if(isSpaceKey(event.key)){renderTools();renderVentures()}});
+window.addEventListener(SPACE_EVENT,()=>{renderTools();renderVentures()});
 $('tool-sort')?.addEventListener('change',event=>{sortMode=event.target.value;page=1;renderTools()});
 $('reset-tool-filters')?.addEventListener('click',()=>{
- activeCategory='All';onlySaved=false;page=1;$('tool-search').value='';$('tool-sort').value='name';sortMode='name';categoryChips();renderTools();
+ activeCategory='All';toolTab='all';page=1;$('tool-search').value='';$('tool-sort').value='name';sortMode='name';categoryChips();renderTools();
 });
 $('tool-prev')?.addEventListener('click',()=>{page=Math.max(1,page-1);renderTools();$('tool-results').scrollIntoView({block:'start',behavior:'smooth'})});
 $('tool-next')?.addEventListener('click',()=>{page+=1;renderTools();$('tool-results').scrollIntoView({block:'start',behavior:'smooth'})});
@@ -249,17 +317,17 @@ async function loadActivity(){
   const data=await response.json();
   const valid=(Array.isArray(data.items)?data.items:[]).filter(item=>
    item&&typeof item.title==='string'&&item.title.length<=100&&!/[<>]/.test(item.title)&&
-   ((item.kind==='tools'&&tools.some(tool=>tool.url===item.url))||(item.kind==='explore'&&item.url==='#explore'))&&
+   (item.kind==='tools'&&tools.some(tool=>tool.url===item.url))&&
    Number.isFinite(Date.parse(item.timestamp))&&Date.parse(item.timestamp)<=Date.now()
   ).slice(0,4);
-  $('pulse-count').textContent='LATEST '+valid.length+' VERIFIED UPDATES';
+  $('pulse-count').textContent='LATEST '+valid.length+' VERIFIED TOOL UPDATES';
   if(!valid.length)return;
   const host=$('activity-list');
   host.replaceChildren(...valid.map((item,index)=>{
    const article=make('article','','pulse-item');
    article.append(make('span',String(index+1).padStart(2,'0'),'pulse-item-number'));
    const copy=make('div');
-   const link=make('a',item.title);link.href=item.kind==='tools'?'/'+item.url:'#ventures';link.className='pulse-title';
+   const link=make('a',item.title);link.href='/'+item.url;link.className='pulse-title';
    copy.append(link);
    if(item.summary)copy.append(make('p',String(item.summary).slice(0,150)));
    article.append(copy);
@@ -269,14 +337,74 @@ async function loadActivity(){
  }catch{/* Public activity is optional; the rest of the site remains usable. */}
 }
 
-document.querySelectorAll('[data-interest]').forEach(link=>link.addEventListener('click',()=>{
- const select=$('interest'),value=link.dataset.interest;
- if(select&&[...select.options].some(option=>option.value===value))select.value=value;
+// Copy the visible address directly rather than invoking the operating system
+// mailto handler. Browser clipboard API first; selection fallback for older browsers.
+const copyEmailButton=$('hqconnect-copy-email');
+const copyEmailAddress=$('hqconnect-email');
+const copyEmailStatus=$('hqconnect-copy-status');
+let copyEmailResetTimer;
+copyEmailButton?.addEventListener('click',async()=>{
+ const address=copyEmailAddress?.textContent?.trim();
+ if(!address)return;
+ let copied=false;
+ try{
+  if(navigator.clipboard?.writeText){
+   await navigator.clipboard.writeText(address);
+   copied=true;
+  }
+ }catch{/* Clipboard permissions may be unavailable; try selecting the address. */}
+ if(!copied){
+  const selection=window.getSelection?.();
+  if(selection&&copyEmailAddress){
+   const range=document.createRange();
+   range.selectNodeContents(copyEmailAddress);
+   selection.removeAllRanges();selection.addRange(range);
+   try{copied=document.execCommand('copy')===true}catch{}
+   if(copied)selection.removeAllRanges();
+  }
+ }
+ window.clearTimeout(copyEmailResetTimer);
+ copyEmailButton.textContent=copied?'Copied ✓':'Copy';
+ copyEmailStatus.textContent=copied?'Email address copied.':'Select the highlighted email address and copy it.';
+ if(copied){
+  copyEmailResetTimer=window.setTimeout(()=>{
+   copyEmailButton.textContent='Copy';
+   copyEmailStatus.textContent='';
+  },2200);
+ }
+});
+
+document.querySelectorAll('[data-interest]').forEach(button=>button.addEventListener('click',()=>{
+ const select=$('interest');
+ if(select&&[...select.options].some(option=>option.value===button.dataset.interest))select.value=button.dataset.interest;
+ $('contact-form')?.scrollIntoView({block:'center',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
 }));
-$('contact-form')?.addEventListener('submit',event=>{
+const requestForm=$('contact-form');
+if(requestForm)requestForm.dataset.startedAt=String(Date.now());
+requestForm?.addEventListener('submit',async event=>{
  event.preventDefault();
- const form=event.currentTarget;if(!form.reportValidity())return;
- const parts=[...new FormData(form)].map(([name,value])=>name+': '+String(value).trim()).filter(item=>item.length>0);
- const subject='YorpHives enquiry — '+String($('interest').value||'General enquiry');
- location.href='mailto:connect@yorphives.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(parts.join('\n\n'));
+ const form=event.currentTarget;
+ if(!form.reportValidity())return;
+ const fields=Object.fromEntries(new FormData(form));
+ const status=$('hqconnect-feedback'),button=form.querySelector('[type="submit"]');
+ if(fields.website)return; // Spam honeypot: silently do nothing.
+ const payload={
+  name:String(fields.name||'').trim(),email:String(fields.email||'').trim(),
+  requestType:String(fields.requestType||''),project:String(fields.project||'').trim(),
+  message:String(fields.message||'').trim(),timeline:String(fields.timeline||''),
+  budget:String(fields.budget||''),consent:fields.consent==='on',
+  startedAt:Number(form.dataset.startedAt||0)
+ };
+ button.disabled=true;status.textContent='Sending your request securely…';
+ try{
+  const res=await fetch('/api/hqconnect',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload),credentials:'same-origin',cache:'no-store'});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok||!data.ok)throw Error('Your request could not be saved. Please use the email link below.');
+  form.reset();form.dataset.startedAt=String(Date.now());
+  status.textContent='Request received. Reference: '+String(data.reference||'').slice(0,60)+'. We will review it and contact you by email if it is a fit.';
+  status.dataset.state='success';
+ }catch{
+  status.textContent='Online submission is unavailable. Please contact connect@yorphives.com using the email address below.';
+  status.dataset.state='error';
+ }finally{button.disabled=false}
 });

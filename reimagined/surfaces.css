@@ -1,0 +1,520 @@
+/* YorpHives sectional surfaces — self-contained, dimensional and portable.
+   Applies to Home, HQventures, Free Tools and HQconnect, including every hero.
+   Pure CSS: no dependencies, GPU-heavy scenes or third-party services. */
+:root{
+ --panel-edge:#cad8c3;
+ --panel-rise:0 6px 0 -1px #c1d1bc,0 20px 42px -19px #16321c3f,inset 0 2px 0 #ffffffd9;
+ --panel-rise-dark:0 6px 0 -1px #759a7c,0 23px 48px -18px #071a15a3,inset 0 2px 0 #e1ffdd28;
+ --section-round:clamp(17px,2vw,26px);
+}
+body{
+ background:radial-gradient(ellipse at 10% 4%,#f5f7ed 0,transparent 44%),
+            radial-gradient(ellipse at 90% 60%,#dfe9dc55 0,transparent 42%),#e9eee5;
+}
+.site-header{box-shadow:0 8px 20px -17px #173a236a}
+#main{width:min(1460px,calc(100% - 44px));margin:18px auto 62px}
+#main>.view:not([hidden]){
+ display:flex;flex-direction:column;gap:clamp(16px,2vw,26px);
+ min-width:0;
+}
+/* Every major section is a separate, raised surface. */
+#main>.view:not([hidden])> :is(.hero,.home-section,.hqconnect,.page-hero,.page-content,.home-process){
+ position:relative;min-width:0;
+ overflow:hidden;
+ border:1px solid var(--panel-edge);
+ border-radius:var(--section-round);
+ box-shadow:var(--panel-rise);
+}
+/* Dark dimensional sections: give the hero the same physical separation. */
+#main>.view:not([hidden])> :is(.hero,.home-process){
+ border-color:#406c55;
+ box-shadow:var(--panel-rise-dark);
+}
+#main>.view:not([hidden])>.hero{
+ background:radial-gradient(ellipse at 73% 40%,#285a4773,transparent 52%),#11251d;
+}
+#main>.view:not([hidden])>.home-process{background:#10251d}
+/* Full-width boxed sections with readable, consistent inner gutters. */
+#main>.view:not([hidden])> :is(.home-section.shell,.page-content.shell){
+ width:100%;max-width:none;margin-inline:0;
+ padding-inline:max(23px,calc((100% - 1160px)/2));
+}
+#main>.view:not([hidden])>.home-section.shell{
+ background:linear-gradient(155deg,#fffefa 0%,#f0f4e9 100%);
+}
+#main>.view:not([hidden])>.featured-section{
+ background:linear-gradient(145deg,#edf3e6 0%,#e8eee1 100%);
+}
+#main>.view:not([hidden])>.page-content.shell{
+ background:linear-gradient(155deg,#fffefa,#f5f7ef);
+}
+#main>.view:not([hidden])>.page-hero-green{
+ background:linear-gradient(130deg,#e8f1e3 0%,#d9e7d4 100%);
+}
+#main>.view:not([hidden])>.page-hero-cream{
+ background:linear-gradient(135deg,#f5f4e9 0%,#e8eee1 100%);
+}
+#main>.view:not([hidden])>.hqconnect{
+ background:radial-gradient(ellipse at 80% 13%,#d9edc9 0,transparent 55%),#eff4e8;
+}
+#main>.view:not([hidden])>.venture-workflow{margin-top:0}
+/* Add quieter secondary depth within the raised sections. */
+#main .ecosystem-card,
+#main .featured-tool-card,
+#main .tool-card,
+#main .venture-item,
+#main .venture-status-panel,
+#main .tool-search-panel,
+#main .pulse-panel{
+ box-shadow:0 4px 0 -2px #bfceb8,0 16px 27px -20px #1b35245c,inset 0 1px 0 #ffffffbd;
+}
+#main .ecosystem-card:hover,
+#main .featured-tool-card:hover,
+#main .tool-card:hover{
+ box-shadow:0 7px 0 -3px #b1c9a9,0 22px 32px -19px #18331f72;
+}
+#main .process-steps>div{
+ box-shadow:0 4px 0 -2px #56735a,0 10px 20px -15px #06160b9a,inset 0 1px 0 #ffffff13;
+}
+#main .process-steps>.step-founder{
+ box-shadow:0 4px 0 -2px #91b953,0 13px 21px -16px #06160b8f,inset 0 1px 0 #ffffff93;
+}
+#main .hqconnect-form{
+ box-shadow:0 8px 0 -4px #b6cbb1,0 24px 45px -28px #103e2e8c,inset 0 2px 0 #ffffff;
+}
+/* Footer is separated visually too, without changing semantic navigation. */
+.site-footer{
+ width:min(1460px,calc(100% - 44px));margin:0 auto 21px;
+ overflow:hidden;border:1px solid #3f604b;border-radius:var(--section-round);
+ box-shadow:0 6px 0 -1px #91a991,0 18px 32px -20px #0c2819a1,inset 0 2px 0 #ffffff19;
+}
+@media(max-width:1050px){
+ #main{width:calc(100% - 32px);margin-top:15px}
+ .site-footer{width:calc(100% - 32px)}
+ #main>.view:not([hidden])> :is(.home-section.shell,.page-content.shell){
+  padding-inline:clamp(20px,4vw,38px);
+ }
+}
+@media(max-width:760px){
+ #main{width:calc(100% - 18px);margin:10px auto 40px}
+ #main>.view:not([hidden]){gap:12px}
+ #main>.view:not([hidden])> :is(.hero,.home-section,.hqconnect,.page-hero,.page-content,.home-process){
+  border-radius:17px;
+  box-shadow:0 4px 0 -1px #c0d1bc,0 12px 22px -13px #16321c4a,inset 0 1px 0 #ffffffb6;
+ }
+ #main>.view:not([hidden])> :is(.hero,.home-process){
+  box-shadow:0 4px 0 -1px #719778,0 14px 26px -14px #071a15bd,inset 0 1px 0 #e1ffdd24;
+ }
+ #main>.view:not([hidden])> :is(.home-section.shell,.page-content.shell){
+  padding-inline:17px;
+ }
+ #main>.view:not([hidden])>.home-section.shell{padding-block:28px}
+ #main>.view:not([hidden])>.page-content.shell{padding-block:25px 32px}
+ .site-footer{
+  width:calc(100% - 18px);margin-bottom:calc(13px + env(safe-area-inset-bottom,0px));
+  border-radius:17px;
+ }
+}
+@media(max-width:390px){
+ #main{width:calc(100% - 14px)}
+ #main>.view:not([hidden]){gap:10px}
+ #main>.view:not([hidden])> :is(.home-section.shell,.page-content.shell){padding-inline:13px}
+ .site-footer{width:calc(100% - 14px)}
+}
+@media(prefers-reduced-motion:reduce){
+ #main .ecosystem-card,#main .featured-tool-card,#main .tool-card{transition:none}
+}
+
+
+/* UNIFORM COMPACT RHYTHM / 2026-11-20
+   Two shared tokens govern all outer section and card-grid gaps.
+   Keep shadows visible without oversized gutters or blank panel interiors. */
+:root{
+ --section-gap:10px;
+ --card-gap:8px;
+ --section-pad:24px;
+}
+#main{margin-top:10px;margin-bottom:26px}
+#main>.view:not([hidden]){gap:var(--section-gap)}
+/* Equal spacing throughout the three main site views. */
+#main>.view:not([hidden])> :is(.home-section.shell,.page-content.shell){
+ padding-block:var(--section-pad);
+}
+#main>.view:not([hidden])>.featured-section{padding-block:var(--section-pad)}
+#main>.view:not([hidden])>.hqconnect{padding-block:var(--section-pad)}
+#main>.view:not([hidden])> :is(.hero,.page-hero,.home-process) :is(.hero-layout,.page-hero-layout,.tools-page-hero,.process-layout){
+ padding-block:var(--section-pad);
+}
+#home .hero-layout{gap:20px}
+#ventures .venture-hero .page-hero-layout{gap:20px}
+#main .hqconnect-layout{gap:20px}
+#main :is(.section-heading,.section-heading-tight){margin-bottom:12px}
+#main :is(.ecosystem-grid,.featured-tools-grid,.tool-results-grid,.venture-products,.process-steps,.hqconnect-offers,.hqconnect-fields,.tool-categories,.category-chips){
+ gap:var(--card-gap);
+}
+#main .hqconnect-offers{margin-top:14px}
+#main .hqconnect-heading .hqconnect-note{margin-top:10px}
+#main .hqconnect-form{gap:var(--card-gap)}
+#main .tool-category-row{margin-top:var(--card-gap)}
+#main .tool-results-toolbar{margin:12px 0 10px}
+#main .pulse-section{padding-block:var(--section-pad)}
+#main .pulse-item{gap:var(--card-gap)}
+#main .section-heading .section-sub{margin-top:6px}
+.site-footer{margin-bottom:10px}
+/* Smaller equal intervals at phone widths; do not reduce input hit targets. */
+@media(max-width:760px){
+ :root{--section-gap:8px;--card-gap:6px;--section-pad:16px}
+ #main{margin:8px auto 22px}
+ #main>.view:not([hidden]){gap:var(--section-gap)}
+ #main>.view:not([hidden])> :is(.home-section.shell,.page-content.shell){padding-block:var(--section-pad)}
+ #main>.view:not([hidden])>.featured-section{padding-block:var(--section-pad)}
+ #main>.view:not([hidden])>.hqconnect{padding-block:var(--section-pad)}
+ #main>.view:not([hidden])> :is(.hero,.page-hero,.home-process) :is(.hero-layout,.page-hero-layout,.tools-page-hero,.process-layout){
+  padding-block:var(--section-pad);
+ }
+ #main .hqconnect-layout{gap:13px}
+ #main .ecosystem-grid{gap:var(--card-gap)}
+ #main .process-steps{gap:var(--card-gap)}
+ #main .section-heading{margin-bottom:10px}
+ #main .hqconnect-offers{margin-top:12px}
+ .site-footer{margin-bottom:calc(9px + env(safe-area-inset-bottom,0px))}
+}
+
+
+/* DIMENSIONAL UNIFORM HEADER — all four destinations share one palette.
+   Raised slim shell, 44px click targets, visible keyboard focus. */
+:root{
+ --nav-face:#e7eee2;
+ --nav-border:#c6d7be;
+ --nav-ink:#294330;
+ --nav-edge:#b7cbb2;
+}
+.site-header{
+ width:min(1460px,calc(100% - 44px));height:64px;
+ margin:10px auto 0;padding:0 clamp(15px,2.5vw,30px);
+ gap:9px;top:7px;
+ border:1px solid #c4d4bd;border-radius:17px;
+ background:linear-gradient(160deg,#fffff9f7,#edf4e9f7);
+ box-shadow:0 5px 0 -1px #bacdb4,0 17px 32px -17px #1c3a2754,inset 0 2px 0 #ffffffed;
+}
+.site-header .desktop-nav{gap:6px}
+.site-header .header-actions{gap:6px}
+.site-header .desktop-nav a,
+.site-header .header-cta{
+ display:inline-flex;align-items:center;justify-content:center;
+ flex:0 0 auto;width:112px;height:44px;min-width:112px;min-height:44px;
+ padding:0 9px;gap:6px;
+ border:1px solid var(--nav-border);border-radius:11px;
+ background:var(--nav-face);color:var(--nav-ink);
+ box-shadow:0 3px 0 -1px var(--nav-edge),inset 0 1px 0 #fffffff0;
+ font:750 11px/1.2 var(--sans);
+ letter-spacing:-.01em;text-decoration:none;white-space:nowrap;
+ transition:transform .15s,box-shadow .15s,border-color .15s;
+}
+.site-header .desktop-nav a::after{content:none}
+.site-header .desktop-nav a:hover,
+.site-header .header-cta:hover{
+ transform:translateY(-1px);
+ background:var(--nav-face);color:var(--nav-ink);
+ border-color:#8dae83;
+ box-shadow:0 4px 0 -1px var(--nav-edge),0 6px 13px -10px #19351a9e,inset 0 1px 0 #fffffff0;
+}
+.site-header .desktop-nav a[aria-current=page],
+.site-header .header-cta[aria-current=page]{
+ color:var(--nav-ink);background:var(--nav-face);border-color:#5e9958;
+ box-shadow:inset 0 0 0 1px #83ad78,0 3px 0 -1px var(--nav-edge);
+}
+.site-header .header-cta svg{width:13px;height:13px;flex:none}
+.site-header :is(.desktop-nav a,.header-cta,.menu-toggle):focus-visible{
+ outline:2px solid #3f8446;outline-offset:2px;
+}
+@media(max-width:1050px){
+ .site-header{width:calc(100% - 32px);padding-inline:17px}
+ .site-header .desktop-nav a,.site-header .header-cta{
+  width:100px;min-width:100px;font-size:10px;
+ }
+}
+@media(max-width:760px){
+ /* The full-size desktop CTA is replaced by the four-way mobile navigation. */
+ .site-header .desktop-nav,.site-header .header-cta{display:none}
+ .site-header{
+  width:calc(100% - 18px);height:56px;margin-top:6px;top:5px;
+  padding-inline:14px;border-radius:13px;
+ }
+ .site-header .brand img{width:30px;height:30px}
+ .site-header .menu-toggle{
+  display:grid;width:44px;height:44px;min-height:44px;
+  background:var(--nav-face);color:var(--nav-ink);
+  border:1px solid var(--nav-border);border-radius:10px;
+  box-shadow:0 3px 0 -1px var(--nav-edge),inset 0 1px 0 #fff;
+ }
+ .mobile-menu{
+  top:62px;left:9px;right:9px;
+  padding:8px 12px;border:1px solid #c4d4bd;border-top:0;
+  border-radius:0 0 13px 13px;
+  background:#f5f8ef;box-shadow:0 12px 24px -14px #17382175;
+ }
+ .mobile-menu a{min-height:44px;color:var(--nav-ink);font-size:12px}
+ .mobile-menu a[aria-current=page]{color:#286833}
+}
+@media(max-width:390px){
+ .site-header{width:calc(100% - 14px);padding-inline:11px}
+ .mobile-menu{left:7px;right:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ .site-header .desktop-nav a,.site-header .header-cta{transition:none}
+}
+
+/* THIRTY-PERCENT SMALLER NAVIGATION: 78px versus 112px painted width,
+   and 30px versus 44px painted height. Keep 44px accessible targets. */
+.site-header .desktop-nav{gap:4px}
+.site-header .desktop-nav a,.site-header .header-cta{
+ position:relative;isolation:isolate;flex:none;
+ width:78px;min-width:78px;height:44px;min-height:44px;
+ padding:0 3px;gap:2px;border:0;border-radius:0;
+ background:transparent;color:var(--nav-ink);box-shadow:none;
+ font-size:9px;letter-spacing:-.025em;
+}
+.site-header .desktop-nav a::before,.site-header .header-cta::before{
+ content:"";position:absolute;z-index:-1;inset:7px 0;
+ border:1px solid var(--nav-border);border-radius:9px;
+ background:var(--nav-face);
+ box-shadow:0 2px 0 -1px var(--nav-edge),inset 0 1px 0 #ffffffef;
+}
+.site-header .desktop-nav a:hover,.site-header .header-cta:hover{
+ background:transparent;color:var(--nav-ink);border:0;box-shadow:none;
+}
+.site-header .desktop-nav a:hover::before,.site-header .header-cta:hover::before{border-color:#8dae83}
+.site-header .desktop-nav a[aria-current=page],.site-header .header-cta[aria-current=page]{
+ background:transparent;color:var(--nav-ink);border:0;box-shadow:none;
+}
+.site-header .desktop-nav a[aria-current=page]::before,.site-header .header-cta[aria-current=page]::before{
+ border-color:#5e9958;box-shadow:inset 0 0 0 1px #83ad78,0 2px 0 -1px var(--nav-edge);
+}
+.site-header .header-cta svg{width:10px;height:10px}
+@media(max-width:1050px){
+ .site-header .desktop-nav a,.site-header .header-cta{width:78px;min-width:78px;font-size:9px}
+}
+@media(max-width:760px){
+ .site-header .desktop-nav,.site-header .header-cta{display:none}
+}
+
+
+/* SUPPORT NAVIGATION — same green raised 30px visual pill, always disabled. */
+.site-header .header-actions .kofi-support{
+ position:relative;isolation:isolate;display:inline-flex;
+ flex:none;align-items:center;justify-content:center;
+ width:78px;min-width:78px;height:44px;min-height:44px;
+ margin:0;padding:0 3px;gap:0;border:0;border-radius:0;
+ background:transparent;color:var(--nav-ink);box-shadow:none;
+ font:750 9px/1.2 var(--sans);letter-spacing:-.025em;
+ white-space:nowrap;opacity:1;cursor:not-allowed;
+}
+.site-header .header-actions .kofi-support::before{
+ content:"";position:absolute;z-index:-1;inset:7px 0;
+ border:1px solid var(--nav-border);border-radius:9px;
+ background:var(--nav-face);
+ box-shadow:0 2px 0 -1px var(--nav-edge),inset 0 1px 0 #ffffffef;
+}
+@media(max-width:1050px){
+ .site-header .header-actions .kofi-support{width:78px;min-width:78px}
+}
+@media(max-width:760px){
+ .site-header .header-actions .kofi-support{display:none}
+ .mobile-menu button{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;min-height:44px;padding:0;border:0;
+  border-bottom:1px solid var(--nav-border);background:transparent;
+  color:var(--nav-ink);font:760 12px/1.3 var(--sans);
+  text-align:left;opacity:1;cursor:not-allowed;
+ }
+ .mobile-dock{grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
+ .mobile-dock button{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;min-width:0;min-height:44px;height:44px;margin-block:-5px;padding:0;
+  border:0;border-radius:8px;background:transparent;color:#71806d;
+  font:800 9px/1.05 var(--sans);opacity:1;cursor:not-allowed;
+ }
+ .mobile-dock button>span{font-size:13px;line-height:1}
+ .mobile-dock button small,.mobile-dock a small{font-size:8px;line-height:1.05;white-space:nowrap}
+}
+@media(max-width:350px){
+ .mobile-dock button small,.mobile-dock a small{font-size:7px}
+}
+
+
+/* BRAND-ALIGNED COLOUR PALETTE — 2026-11-20.
+   Palette only: dark forest/teal heroes and footer, varied pale surfaces.
+   Existing dimensions, typography, navigation and interactions are unchanged. */
+:root{
+ --hive-night:#091d19;
+ --hive-forest:#113c30;
+ --hive-deep-teal:#174b46;
+ --hive-moss:#426d3d;
+ --hive-lime:#d8f36a;
+ --hive-mint:#bdf0c9;
+ --hive-ivory:#fbf8ed;
+ --hive-sage:#e6f0de;
+ --hive-seafoam:#e3f3eb;
+ --hive-cream:#f9eed9;
+}
+body{
+ background:
+  radial-gradient(ellipse at 6% 8%,#eaf4e5c4,transparent 48%),
+  radial-gradient(ellipse at 91% 52%,#e2efe9b8,transparent 48%),
+  #eaf0e8;
+}
+/* All hero areas: layered dark backgrounds with subtle pattern texture. */
+#main #home>.hero{
+ background:
+  repeating-linear-gradient(110deg,#baf4c509 0 1px,transparent 1px 48px),
+  radial-gradient(ellipse at 79% 28%,#336842a0,transparent 53%),
+  radial-gradient(ellipse at 7% 92%,#23514f98,transparent 50%),
+  linear-gradient(132deg,#0a1e1a,#103e31 57%,#091a17);
+ border-color:#2b6350;
+}
+#main #home>.hero h1{color:#f6faed}
+#main #home>.hero .eyebrow{color:#cbe8b0}
+#main #home>.hero .hero-tagline{color:#e8f5da}
+#main #home>.hero .hero-description{color:#c3d8ca}
+#main #ventures>.page-hero{
+ background:
+  repeating-linear-gradient(120deg,#d8f36a0a 0 1px,transparent 1px 50px),
+  radial-gradient(ellipse at 82% 16%,#4a6e3a99,transparent 53%),
+  linear-gradient(131deg,#0b241e 0%,#164533 56%,#0b2b2c 100%);
+ color:#f3faec;border-color:#426d53;
+}
+#main #tools>.page-hero{
+ background:
+  repeating-linear-gradient(110deg,#adf4e709 0 1px,transparent 1px 45px),
+  radial-gradient(ellipse at 81% 8%,#2e7071a8,transparent 49%),
+  linear-gradient(138deg,#0a2929 0%,#175045 58%,#101f1b 100%);
+ color:#f3faec;border-color:#347368;
+}
+#main :is(#ventures,#tools)>.page-hero h1{color:#f6faed}
+#main :is(#ventures,#tools)>.page-hero h1 em{color:#dcf38c}
+#main :is(#ventures,#tools)>.page-hero .eyebrow-dark{color:#cfefb5}
+#main :is(#ventures,#tools)>.page-hero .eyebrow-dot{
+ background:#d8f36a;box-shadow:0 0 0 5px #d8f36a24;
+}
+#main #ventures>.page-hero .page-hero-layout>div:first-child>p:not(.eyebrow),
+#main #tools>.page-hero .tools-page-hero>div:first-child>p:not(.eyebrow){
+ color:#cee3d3;
+}
+/* The informational cards inside dark heroes remain high-contrast and light. */
+#main #ventures .venture-status-panel{
+ background:linear-gradient(147deg,#f8faef,#e5f2df);
+ border-color:#a5cba8;color:#203929;
+}
+#main #tools .tool-count-card{
+ background:linear-gradient(145deg,#f5f9eb,#dcefe3);
+ border-color:#a9cbb6;color:#203c2d;
+}
+/* Home content: each surface has its own pastel mix/texture. */
+#main #home>.home-section.shell[aria-labelledby="home-discover-title"]{
+ background:
+  radial-gradient(circle at 93% 8%,#d1ecc9 0%,transparent 42%),
+  repeating-linear-gradient(125deg,#8eae8c09 0 1px,transparent 1px 42px),
+  linear-gradient(135deg,#f7faf0,#e6f2e1);
+ border-color:#b9d3b2;
+}
+#main #home>.featured-section{
+ background:
+  radial-gradient(circle at 10% 12%,#fcf5d0 0%,transparent 48%),
+  repeating-linear-gradient(110deg,#acb98a0a 0 1px,transparent 1px 45px),
+  linear-gradient(140deg,#fffaf0,#f0eddb);
+ border-color:#dfd7b6;
+}
+#main #home>.hqconnect{
+ background:
+  radial-gradient(ellipse at 83% 10%,#c8e9de 0%,transparent 53%),
+  repeating-linear-gradient(120deg,#7aa89d0b 0 1px,transparent 1px 50px),
+  linear-gradient(139deg,#f1faf5,#e4f3eb);
+ border-color:#b6d3c6;
+}
+/* HQventures portfolio and workflow: light, distinct from the dark hero. */
+#main #ventures>.page-content.shell{
+ background:
+  radial-gradient(ellipse at 90% 10%,#e4edc9 0%,transparent 49%),
+  linear-gradient(145deg,#fdfaf0,#ecf3df);
+ border-color:#cad4b2;
+}
+#main #ventures>.home-process{
+ background:
+  radial-gradient(ellipse at 12% 82%,#d7ecde 0%,transparent 47%),
+  repeating-linear-gradient(120deg,#83ae960b 0 1px,transparent 1px 48px),
+  linear-gradient(140deg,#f5faf1,#e0efe7);
+ border-color:#b9d3c5;
+ box-shadow:var(--panel-rise);
+ color:#203b2d;
+}
+#main #ventures .process-copy h2{color:#172f25}
+#main #ventures .process-copy h2 em{color:#3b7550}
+#main #ventures .process-copy .section-kicker-light{color:#3e7850}
+#main #ventures .process-copy>p:not(.section-kicker){color:#4b6858}
+#main #ventures .process-copy .text-link-light{color:#2a6646}
+#main #ventures .process-steps>div:not(.step-founder){
+ background:linear-gradient(135deg,#fafff6,#e3f2e8);
+ border-color:#bad6c5;
+ color:#203c2b;
+ box-shadow:0 3px 0 -1px #b3cdb7,0 13px 24px -18px #173c2b45;
+}
+#main #ventures .process-steps>div:not(.step-founder)>span{color:#387b51}
+#main #ventures .process-steps>div:not(.step-founder) small{color:#5b7564}
+#main #ventures .process-steps>.step-founder{
+ background:linear-gradient(135deg,#edf8bd,#d4eb8f);
+ border-color:#aac76b;color:#243a1c;
+}
+#main #ventures>.venture-release-section{
+ background:linear-gradient(145deg,#faf4e4,#e7f0df);border-color:#d8d6bc;
+}
+/* Free Tools: cooler sea-mist catalogue and warmer update panel. */
+#main #tools>.page-content.shell{
+ background:
+  radial-gradient(ellipse at 92% 9%,#d4ede8 0%,transparent 47%),
+  linear-gradient(143deg,#f3faf8,#e5f1eb);
+ border-color:#bdd8ce;
+}
+#main #tools>.pulse-section{
+ background:
+  radial-gradient(circle at 7% 14%,#faefcd 0%,transparent 41%),
+  linear-gradient(145deg,#fdf9ef,#eaf0e2);
+ border-color:#dcd5b9;
+}
+/* Cards vary gently while keeping existing content legible. */
+#main .ecosystem-card:nth-child(3n+1){
+ background:linear-gradient(148deg,#fffef5,#edf3e0);border-color:#d6dfbd;
+}
+#main .ecosystem-card:nth-child(3n+2){
+ background:linear-gradient(148deg,#fbfff9,#e3f3eb);border-color:#c5ded1;
+}
+#main .ecosystem-card:nth-child(3n){
+ background:linear-gradient(148deg,#fff9ed,#f1e8d9);border-color:#e2d5bf;
+}
+#main .featured-tool-card:nth-child(3n+1),
+#main .tool-card:nth-child(3n+1){background:linear-gradient(150deg,#fffefa,#edf4e3)}
+#main .featured-tool-card:nth-child(3n+2),
+#main .tool-card:nth-child(3n+2){background:linear-gradient(150deg,#fcfffc,#e6f2ee)}
+#main .featured-tool-card:nth-child(3n),
+#main .tool-card:nth-child(3n){background:linear-gradient(150deg,#fffcf4,#f4eadb)}
+#main .tool-search-panel{
+ background:linear-gradient(145deg,#fffefa,#edf5ee);border-color:#bcd4c5;
+}
+#main .directory-callout{
+ background:linear-gradient(140deg,#f4f3dd,#e1eddc);border-color:#c6d4b7;
+}
+#main .pulse-panel{
+ background:linear-gradient(145deg,#fffefa,#f0f5ec);border-color:#c6d7c5;
+}
+/* Footer: deepest tones on each site view, echoing the brand mark. */
+.site-footer{
+ background:
+  radial-gradient(ellipse at 93% -5%,#2c684f8c,transparent 45%),
+  repeating-linear-gradient(112deg,#ceffbb0a 0 1px,transparent 1px 55px),
+  linear-gradient(128deg,#071b17,#11382d 56%,#091b19);
+ color:#e8f6e8;border-color:#325943;
+}
+.site-footer .footer-links a{color:#d8e9d3}
+.site-footer .footer-brand>p{color:#bbd0be}
+.site-footer .footer-bottom{color:#c1d4c5}
+.site-footer .footer-links>div>span{color:#d8ef9e}

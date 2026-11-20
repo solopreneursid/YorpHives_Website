@@ -1,0 +1,74 @@
+name: YorpHives 100 RPS sustained static and browser review
+on:
+  push:
+    branches:
+      - design/yorphives-hqconnect-unified-20261120
+    paths:
+      - '.github/workflows/yorphives-review-100rps.yml'
+permissions:
+  contents: read
+concurrency:
+  group: yorphives-review-100rps-sustained
+  cancel-in-progress: true
+jobs:
+  static-endurance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm review target, static-only routes and bounded rate
+        run: |
+          set -Eeuo pipefail
+          grep -Fq "const ORIGIN='https://073b7c05.yorphives-v1-review.pages.dev'" scripts/benchmarks/review-100rps.js
+          grep -Fq "rate:100,timeUnit:'1s',duration:'90s'" scripts/benchmarks/review-100rps.js
+          ! grep -Eq 'https://yorphives.com|/api/|POST|DELETE' scripts/benchmarks/review-100rps.js
+      - name: Run sustained 100 RPS for 90 seconds with fail-closed thresholds
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" \
+            -v "$PWD/scripts/benchmarks:/work" -w /work \
+            grafana/k6:0.54.0 run \
+            --summary-export=/work/review-100rps.json \
+            /work/review-100rps.js
+      - name: Summarize measured throughput
+        if: always()
+        run: |
+          node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs=require('node:fs');
+          if(!fs.existsSync('scripts/benchmarks/review-100rps.json')){console.log('k6 metrics unavailable; check job output');process.exit(0)}
+          const m=JSON.parse(fs.readFileSync('scripts/benchmarks/review-100rps.json')).metrics;
+          console.log('### 100 RPS static review endurance — 90 seconds');
+          for(const [name,key] of [['Requests','http_reqs'],['Failure rate','http_req_failed'],['Latency','http_req_duration'],['Dropped','dropped_iterations'],['HTTP checks','checks']])
+            console.log(name+': '+JSON.stringify(m[key]?.values||{}));
+          NODE
+      - name: Preserve k6 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yorphives-100rps-static-endurance
+          path: scripts/benchmarks/review-100rps.json
+          if-no-files-found: ignore
+          retention-days: 7
+  browser-and-read-api:
+    needs: static-endurance
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check two read-only public API routes
+        run: node scripts/benchmarks/review-api-100rps.mjs
+      - name: Install open-source Chromium browser runner
+        run: |
+          npm install --no-save --ignore-scripts --package-lock=false --no-audit --no-fund playwright@1.65.1
+          npx playwright install --with-deps chromium
+      - name: Verify mobile and desktop real-browser flows
+        run: node scripts/benchmarks/review-browser-100rps.mjs
+      - name: Preserve browser and API results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yorphives-100rps-api-browser-smoke
+          path: |
+            scripts/benchmarks/review-api-100rps.json
+            scripts/benchmarks/review-browser-100rps.json
+          if-no-files-found: ignore
+          retention-days: 7

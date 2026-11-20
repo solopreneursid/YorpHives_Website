@@ -163,3 +163,288 @@ details.directory-section[open] .directory-chevron{transform:rotate(180deg)}
 }
 
 .directory-header .header-kofi:disabled{opacity:1;cursor:not-allowed}
+
+/* COMPACT DIRECTORY PASS / same search, categories and real tool links. */
+.directory-header{height:64px;gap:16px}
+.directory-brand img{width:32px;height:32px}
+.directory-brand>span{font-size:18px}
+.directory-main{width:min(1080px,calc(100% - 52px));padding:17px 0 54px}
+.directory-hero{grid-template-columns:1fr .65fr;gap:5%;padding:28px 0 28px}
+.directory-hero h1{font-size:clamp(2.25rem,4.2vw,4.05rem);margin:11px 0 12px;line-height:1.04}
+.directory-hero-copy>p:not(.directory-kicker){font-size:12px;line-height:1.6}
+.directory-benefits{margin-top:13px}
+.directory-hero-art{min-height:183px;border-radius:15px}
+.directory-art-tile{width:58px;height:58px;border-radius:14px;font-size:16px}
+.directory-finder{padding:16px;border-radius:13px}
+.finder-heading{margin-bottom:9px}
+.finder-heading label{font-size:14px}
+.directory-search-row{min-height:46px;border-radius:10px}
+.directory-search-row input{height:45px}
+.directory-list{margin-top:30px}
+.directory-list-heading{margin-bottom:12px}
+.directory-list-heading h2{font-size:clamp(1.85rem,3vw,2.8rem)}
+details.directory-section{margin-top:7px;border-radius:12px}
+details.directory-section>summary{min-height:50px;padding:10px 14px;font-size:13px}
+.directory-grid{gap:7px;padding:9px}
+.directory-card{min-height:82px;padding:11px;border-radius:9px;gap:5px}
+.directory-bottom-card{margin-top:22px;padding:15px}
+.directory-footer-main{padding:23px 0 18px}
+@media(max-width:760px){
+ .directory-header{height:60px}
+ .directory-main{width:calc(100% - 30px);padding:14px 0 45px}
+ .directory-hero{grid-template-columns:1fr;gap:13px;padding:22px 0}
+ .directory-hero h1{font-size:clamp(2.05rem,7.8vw,3rem)}
+ .directory-hero-art{min-height:125px}
+ .directory-art-tile{width:48px;height:48px;border-radius:11px}
+ .directory-finder{padding:13px}
+ .directory-list{margin-top:24px}
+ .directory-card{min-height:78px;padding:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ .directory-card{transition:none}
+}
+
+/* DIMENSIONAL A–Z DIRECTORY — raised, independent functional sections. */
+body.directory-page{
+ background:radial-gradient(circle at 8% 5%,#f7f8f1,transparent 43%),#e9eee5;
+}
+.directory-header{box-shadow:0 8px 20px -17px #173a236a}
+.directory-main{
+ display:flex;flex-direction:column;gap:19px;
+ width:min(1160px,calc(100% - 44px));padding:20px 0 54px;
+}
+.directory-breadcrumb{flex-wrap:wrap}
+.directory-main> :is(.directory-hero,.directory-finder,.directory-list,.directory-bottom-card){
+ min-width:0;margin:0;
+ padding:clamp(18px,2.8vw,28px);
+ border:1px solid #cbd9c3;border-radius:22px;
+ box-shadow:0 6px 0 -1px #bfcfb9,0 19px 35px -19px #173a2557,inset 0 2px 0 #ffffffdb;
+}
+.directory-main>.directory-hero{
+ background:linear-gradient(140deg,#f3f7ee,#e7f0e4);
+}
+.directory-main>.directory-finder{
+ background:linear-gradient(145deg,#fffefa,#f5f8f0);
+}
+.directory-main>.directory-list{
+ background:linear-gradient(150deg,#fffefa,#f0f5eb);
+}
+.directory-main>.directory-bottom-card{
+ background:linear-gradient(145deg,#edf4e7,#e0eedb);
+}
+details.directory-section{
+ box-shadow:0 3px 0 -1px #c8d8c3,0 11px 20px -14px #173a254d,inset 0 1px 0 #fff;
+}
+.directory-card{box-shadow:0 4px 0 -2px #c2d3be,0 10px 17px -15px #173a254c,inset 0 1px 0 #fff}
+.directory-footer{
+ width:min(1160px,calc(100% - 44px));margin:0 auto 22px;
+ overflow:hidden;border:1px solid #cad8c3;border-radius:22px;
+ box-shadow:0 5px 0 -1px #bfcfb9,0 17px 30px -19px #173a2557;
+}
+@media(max-width:760px){
+ .directory-main{width:calc(100% - 18px);gap:12px;padding:12px 0 42px}
+ .directory-main> :is(.directory-hero,.directory-finder,.directory-list,.directory-bottom-card){
+  padding:16px;border-radius:16px;
+  box-shadow:0 4px 0 -1px #c0d1bc,0 12px 21px -13px #173a2554,inset 0 1px 0 #ffffffb6;
+ }
+ .directory-main>.directory-hero{gap:12px}
+ .directory-footer{width:calc(100% - 18px);border-radius:16px}
+}
+@media(max-width:390px){
+ .directory-main,.directory-footer{width:calc(100% - 14px)}
+ .directory-main> :is(.directory-hero,.directory-finder,.directory-list,.directory-bottom-card){padding:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ .directory-card,details.directory-section{transition:none}
+}
+
+
+/* UNIFORM COMPACT RHYTHM — A–Z hero, search and category panels. */
+body.directory-page{--section-gap:10px;--card-gap:8px}
+.directory-main{gap:var(--section-gap);padding-top:12px;padding-bottom:38px}
+.directory-main> :is(.directory-hero,.directory-finder,.directory-list,.directory-bottom-card){
+ padding:20px;margin:0;
+}
+.directory-main>.directory-hero{gap:18px}
+.directory-list-heading{gap:var(--card-gap);margin-bottom:var(--card-gap)}
+.directory-grid{gap:var(--card-gap);padding:var(--card-gap)}
+details.directory-section{margin-top:var(--card-gap)}
+.directory-card{gap:var(--card-gap)}
+.directory-bottom-card{gap:var(--card-gap)}
+.directory-footer{margin-bottom:10px}
+@media(max-width:760px){
+ body.directory-page{--section-gap:8px;--card-gap:6px}
+ .directory-main{gap:var(--section-gap);padding-top:8px}
+ .directory-main> :is(.directory-hero,.directory-finder,.directory-list,.directory-bottom-card){
+  padding:14px;
+ }
+ .directory-main>.directory-hero{gap:12px}
+ .directory-grid{gap:var(--card-gap);padding:var(--card-gap)}
+ details.directory-section{margin-top:var(--card-gap)}
+ .directory-footer{margin-bottom:9px}
+}
+
+/* DIMENSIONAL UNIFORM HEADER — consistent navigation pills on A–Z pages. */
+.directory-header{
+ width:min(1460px,calc(100% - 44px));height:64px;
+ margin:10px auto 0;padding:0 clamp(15px,2.5vw,30px);top:7px;gap:9px;
+ border:1px solid #c4d4bd;border-radius:17px;
+ background:linear-gradient(160deg,#fffff9f7,#edf4e9f7);
+ box-shadow:0 5px 0 -1px #bacdb4,0 17px 32px -17px #1c3a2754,inset 0 2px 0 #ffffffed;
+}
+.directory-nav{gap:6px}
+.directory-nav a,.directory-cta{
+ display:inline-flex;align-items:center;justify-content:center;
+ flex:0 0 auto;width:105px;min-width:105px;height:44px;min-height:44px;
+ padding:0 8px;gap:6px;
+ border:1px solid #c6d7be;border-radius:11px;
+ background:#e7eee2;color:#294330;
+ box-shadow:0 3px 0 -1px #b7cbb2,inset 0 1px 0 #fffffff0;
+ font:750 10px/1.2 Inter,ui-sans-serif,system-ui,sans-serif;
+ text-decoration:none;white-space:nowrap;
+ transition:transform .15s,border-color .15s;
+}
+.directory-nav a[aria-current=page]{border-bottom:1px solid #5e9958}
+.directory-nav a:hover,.directory-cta:hover{
+ transform:translateY(-1px);background:#e7eee2;color:#294330;border-color:#8dae83;
+}
+.directory-nav a[aria-current=page]{
+ background:#e7eee2;color:#294330;border-color:#5e9958;
+ box-shadow:inset 0 0 0 1px #83ad78,0 3px 0 -1px #b7cbb2;
+}
+@media(max-width:950px){
+ .directory-header{width:calc(100% - 32px);gap:7px;padding-inline:12px}
+ .directory-nav a,.directory-cta{width:88px;min-width:88px;font-size:9px}
+}
+@media(max-width:760px){
+ .directory-nav,.directory-cta{display:none}
+ .directory-header{
+  width:calc(100% - 18px);height:56px;margin-top:6px;top:5px;
+  padding-inline:14px;border-radius:13px;
+ }
+}
+@media(max-width:390px){
+ .directory-header{width:calc(100% - 14px);padding-inline:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ .directory-nav a,.directory-cta{transition:none}
+}
+
+/* THIRTY-PERCENT SMALLER NAVIGATION: 74px vs 105px width, 30px visible
+   height vs 44px original. The interactive area remains 44px high. */
+.directory-nav{gap:4px}
+.directory-nav a,.directory-cta{
+ position:relative;isolation:isolate;flex:none;
+ width:74px;min-width:74px;height:44px;min-height:44px;
+ padding:0 3px;gap:2px;border:0;border-radius:0;
+ background:transparent;color:#294330;box-shadow:none;font-size:9px;
+}
+.directory-nav a::before,.directory-cta::before{
+ content:"";position:absolute;z-index:-1;inset:7px 0;
+ border:1px solid #c6d7be;border-radius:9px;background:#e7eee2;
+ box-shadow:0 2px 0 -1px #b7cbb2,inset 0 1px 0 #ffffffef;
+}
+.directory-nav a:hover,.directory-cta:hover{background:transparent;color:#294330;border:0;box-shadow:none}
+.directory-nav a:hover::before,.directory-cta:hover::before{border-color:#8dae83}
+.directory-nav a[aria-current=page]{background:transparent;color:#294330;border:0;box-shadow:none}
+.directory-nav a[aria-current=page]::before{
+ border-color:#5e9958;box-shadow:inset 0 0 0 1px #83ad78,0 2px 0 -1px #b7cbb2;
+}
+@media(max-width:950px){
+ .directory-nav a,.directory-cta{width:74px;min-width:74px;font-size:9px}
+}
+@media(max-width:760px){.directory-nav,.directory-cta{display:none}}
+/* SUPPORT NAVIGATION — identical green raised pill, disabled by default. */
+.directory-header .directory-support{
+ position:relative;isolation:isolate;display:inline-flex;
+ flex:none;align-items:center;justify-content:center;
+ width:74px;min-width:74px;height:44px;min-height:44px;
+ padding:0 3px;border:0;border-radius:0;background:transparent;
+ color:#294330;font:750 9px/1.2 Inter,ui-sans-serif,system-ui,sans-serif;
+ white-space:nowrap;opacity:1;cursor:not-allowed;
+}
+.directory-header .directory-support::before{
+ content:"";position:absolute;z-index:-1;inset:7px 0;
+ border:1px solid #c6d7be;border-radius:9px;background:#e7eee2;
+ box-shadow:0 2px 0 -1px #b7cbb2,inset 0 1px 0 #ffffffef;
+}
+@media(max-width:760px){
+ .directory-header .directory-support{display:none}
+ .directory-dock{grid-template-columns:repeat(5,minmax(0,1fr));height:36px;gap:2px;padding:0 3px;border-radius:10px}
+ .directory-dock a,.directory-dock button{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;min-width:0;min-height:44px;height:44px;margin-block:-5px;padding:0;
+  border:0;border-radius:8px;background:transparent;color:#71806d;
+  font:800 9px/1.05 Inter,ui-sans-serif,system-ui,sans-serif;
+ }
+ .directory-dock button{opacity:1;cursor:not-allowed}
+ .directory-dock a[aria-current=page]{background:transparent;color:#294a2e;position:relative;isolation:isolate}
+ .directory-dock a[aria-current=page]::before{
+  content:"";position:absolute;z-index:-1;inset:5px 0;border-radius:8px;background:#dcebc9;
+ }
+ .directory-dock a>span,.directory-dock button>span{font-size:13px;line-height:1}
+ .directory-dock a small,.directory-dock button small{
+  font-size:8px;line-height:1.05;white-space:nowrap;
+ }
+}
+@media(max-width:350px){
+ .directory-dock a small,.directory-dock button small{font-size:7px}
+}
+
+
+/* BRAND-ALIGNED COLOUR PALETTE — visual-only A-Z directory recolouring.
+   Dark hero/footer with separate pastel discovery, search and category panels. */
+body.directory-page{
+ background:
+  radial-gradient(ellipse at 7% 8%,#e5f2e1,transparent 44%),
+  radial-gradient(ellipse at 96% 57%,#e4f1e9,transparent 48%),
+  #eaf1e9;
+}
+.directory-main>.directory-hero{
+ background:
+  repeating-linear-gradient(114deg,#c5f3b708 0 1px,transparent 1px 48px),
+  radial-gradient(ellipse at 83% 8%,#32705b9e,transparent 53%),
+  linear-gradient(133deg,#0c251f,#154c40 60%,#092823);
+ border-color:#386a59;color:#f4faed;
+}
+.directory-hero h1{color:#f7fbef}
+.directory-hero h1 em{color:#ddf49c}
+.directory-hero .directory-kicker{color:#c9efab}
+.directory-hero .directory-kicker>span{background:#d8f36a}
+.directory-hero-copy>p:not(.directory-kicker){color:#c8ddcf}
+.directory-hero .directory-benefits{color:#d8efd4}
+.directory-main>.directory-finder{
+ background:
+  radial-gradient(circle at 90% 6%,#d5eee0,transparent 46%),
+  linear-gradient(142deg,#fffefa,#e8f4e9);
+ border-color:#c0d8c7;
+}
+.directory-main>.directory-list{
+ background:
+  radial-gradient(circle at 6% 9%,#faf0cf,transparent 49%),
+  linear-gradient(145deg,#fffbf4,#f0f0df);
+ border-color:#ded8bf;
+}
+.directory-main>.directory-bottom-card{
+ background:linear-gradient(140deg,#e9f5e8,#e0f1e9 57%,#f6eedc);
+ border-color:#c1d9c5;
+}
+details.directory-section:nth-of-type(3n+1){
+ background:linear-gradient(145deg,#fffef9,#eaf3e4);
+}
+details.directory-section:nth-of-type(3n+2){
+ background:linear-gradient(145deg,#fafffb,#e5f3ef);
+}
+details.directory-section:nth-of-type(3n){
+ background:linear-gradient(145deg,#fffdf7,#f4eddc);
+}
+.directory-footer{
+ background:
+  radial-gradient(ellipse at 87% 0%,#2a684f8d,transparent 49%),
+  repeating-linear-gradient(116deg,#c9f2b309 0 1px,transparent 1px 55px),
+  linear-gradient(133deg,#071b17,#11382c 55%,#0a2420);
+ color:#ecf6e7;border-color:#35634f;
+}
+.directory-footer .directory-footer-links a{color:#d7e8d3}
+.directory-footer .directory-footer-bottom{color:#c1d4c5}
+.directory-footer .directory-footer-links strong{color:#d7ed9f}

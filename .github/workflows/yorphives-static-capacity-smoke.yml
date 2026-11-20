@@ -1,0 +1,38 @@
+name: YorpHives read-only capacity smoke
+on:
+  push:
+    branches:
+      - design/yorphives-hqconnect-unified-20261120
+    paths:
+      - '.github/workflows/yorphives-static-capacity-smoke.yml'
+permissions:
+  contents: read
+concurrency:
+  group: yorphives-readonly-smoke-review
+  cancel-in-progress: true
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout review branch
+        uses: actions/checkout@v4
+      - name: Run strictly read-only k6 smoke (peak 10 VUs)
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/scripts/benchmarks:/work" -w /work grafana/k6:0.54.0 run --summary-export=/work/k6-result.json /work/yorphives-static-smoke.js
+      - name: Summarize measured HTTP results
+        if: always()
+        run: |
+          if test -f scripts/benchmarks/k6-result.json; then
+            node -e 'const d=require("./scripts/benchmarks/k6-result.json");const m=d.metrics;const keys=["http_reqs","http_req_failed","http_req_duration","checks","iterations","vus_max"];for(const k of keys)console.log(k,JSON.stringify(m[k]?.values??{}))' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'k6 summary unavailable; inspect runner logs.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Preserve reproducible results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yorphives-k6-static-review-smoke
+          path: scripts/benchmarks/k6-result.json
+          if-no-files-found: ignore
+          retention-days: 3

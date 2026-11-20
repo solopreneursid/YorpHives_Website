@@ -38,18 +38,21 @@ test('analytics schema never stores sensitive content or identifiers',async()=>{
  for(const forbidden of ['ip_address','user_agent','email','filename','user_input','fingerprint'])
   assert.ok(!sql.includes(forbidden),forbidden);
 });
-test('Cloudflare Functions stay confined to analytics and read-only agent discovery routes',async()=>{
- const s=await read('scripts/build-site.mjs');
+test("Cloudflare Functions stay confined to analytics and read-only agent discovery routes",async()=>{
+ const [s,intake]=await Promise.all([read('scripts/build-site.mjs'),read('functions/api/hqconnect.js')]);
  assert.ok(s.includes("'_routes.json'"));
- assert.ok(s.includes("include:['/api/insights/*','/api/agent/v1/*']"));
+ assert.ok(s.includes("include:['/api/insights/*','/api/agent/v1/*','/api/hqconnect']"));
  assert.ok(s.includes("insights-client.mjs"));
+ assert.match(intake,/origin!==site/);
+ assert.match(intake,/HQCONNECT_DB/);
+ assert.doesNotMatch(intake,/onRequestDelete|onRequestPut|onRequestPatch/);
 });
 test('fresh homepage progress and YHpulse use public catalogue data, not invented rankings',async()=>{
  const [html,studio,client,impact,usage]=await Promise.all([
   read('reimagined/index.html'),read('reimagined/studio.js'),read('insights-client.mjs'),
   read('reimagined/impact-public.json'),read('reimagined/usage-public.json')
  ]);
- for(const id of ['home-progress','home-tool-count','home-venture-count','anonymous-analytics-toggle','yh-pulse','activity-list'])
+ for(const id of ['home-progress','tools-count-big','venture-hero-count','anonymous-analytics-toggle','yh-pulse','activity-list'])
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(studio,/qualifiedProducts\(allItems\)/);
  assert.match(studio,/fetch\('\/activity\.json'/);

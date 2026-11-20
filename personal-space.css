@@ -1,0 +1,42 @@
+/* Browser-local collections for Free Tools and HQventures, responsive and accessible. */
+.space-tabs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:18px 0 15px}
+.space-tabs button{min-height:44px;border:1px solid #cbdacc;border-radius:999px;background:#fffefa;color:#365744;font-size:13px;font-weight:750;line-height:1.2;padding:10px 16px;cursor:pointer}
+.space-tabs button[aria-pressed=true]{background:#20553d;border-color:#20553d;color:#fff}
+.space-tabs button:hover{border-color:#4f8767}
+.space-tabs button:focus-visible,.space-actions button:focus-visible{outline:3px solid #72bd80;outline-offset:2px}
+.space-note{margin:6px 0 16px;font-size:12px;color:#657668;line-height:1.6}
+.space-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.space-actions button,.space-explore{min-height:40px;border:1px solid #cddacb;border-radius:9px;background:#f6f9f1;color:#2c603e;padding:8px 12px;font-size:12px;font-weight:750;cursor:pointer}
+.space-actions button:disabled{opacity:.45;cursor:default}
+.space-actions button:hover:not(:disabled){background:#e1f2df}
+.space-empty{padding:26px;background:#fbfcf7;border:1px dashed #bacfbd;border-radius:16px;color:#597060;line-height:1.55}
+.space-empty strong{display:block;font-size:18px;margin-bottom:7px;color:#244d37}
+.space-empty p{margin:0 0 13px}
+.space-item-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.space-item{min-width:0;display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid #dce0d4;border-radius:14px;background:#fffefa}
+.space-item h3{margin:0;font-size:16px;line-height:1.3;color:#193c2a}
+.space-item p{margin:0;color:#738071;line-height:1.5;font-size:12px;flex:1}
+.space-item-link{display:inline-flex;align-items:center;min-height:40px;color:#307248;font-weight:800;font-size:13px}
+.space-item-label{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#528060}
+.directory-space-results{margin-top:22px}
+.directory-space-results[hidden],.directory-list[hidden]{display:none!important}
+@media(max-width:760px){.space-item-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.space-tabs{gap:5px}.space-tabs button{font-size:12px;padding:8px 12px}}
+@media(max-width:480px){.space-item-grid{grid-template-columns:1fr}.space-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.space-tabs button{font-size:11px;min-height:44px;padding:7px 5px;white-space:normal}.space-item{padding:14px}.space-note{font-size:11px}}
+
+.space-launch{margin-left:8px;min-height:40px;border:1px solid #c4d6c5;border-radius:9px;padding:7px 12px;background:#f3f8ee;color:#295740;font-weight:800;cursor:pointer}
+.yh-quick-dialog{position:fixed;inset:0 0 auto;top:clamp(5vh,12vh,110px);width:min(560px,calc(100% - 28px));max-height:80vh;overflow:auto;padding:18px;border:1px solid #c8d9c9;border-radius:20px;box-shadow:0 20px 80px #071c16a8;background:#fffefa;color:#193c2a;font:400 15px/1.5 system-ui,sans-serif}
+.yh-quick-dialog::backdrop{background:#091c17b8;backdrop-filter:blur(5px)}
+.yh-quick-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
+.yh-quick-top strong{font-size:20px;letter-spacing:-.04em}
+.yh-quick-close{border:1px solid #d2dfd2;border-radius:10px;padding:8px 12px;background:#f8fbf5;cursor:pointer;color:#29543c}
+.yh-quick-input{width:100%;min-height:48px;padding:10px 14px;border:2px solid #abc4ad;border-radius:12px;background:#fff;color:#122e20;font:inherit}
+.yh-quick-note{font-size:12px;color:#6c7d70;margin:10px 0 16px}
+.yh-quick-results{display:flex;flex-direction:column;gap:5px}
+.yh-quick-option{display:flex;align-items:center;justify-content:space-between;gap:12px;border-radius:11px;padding:10px 12px;text-decoration:none;background:#f5f7f1;color:#183d2b}
+.yh-quick-option:hover,.yh-quick-option:focus{background:#e4f3e4;outline:2px solid #94c39c}
+.yh-quick-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.yh-quick-copy strong{font-size:14px;line-height:1.3}
+.yh-quick-copy small{font-size:11px;color:#6d7a70}
+.yh-quick-badge{font-weight:800;color:#35744b;font-size:12px;white-space:nowrap}
+.yh-quick-empty{color:#708273;padding:15px 4px}
+@media(max-width:480px){.space-launch{display:inline-block;margin:6px 0 0;width:100%}.yh-quick-dialog{top:5vh;padding:13px;border-radius:16px;max-height:86vh}.yh-quick-top strong{font-size:18px}}

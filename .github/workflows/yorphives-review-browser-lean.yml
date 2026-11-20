@@ -1,0 +1,47 @@
+name: YorpHives review real-browser lean verification — corrected directory check
+on:
+  push:
+    branches:
+      - design/yorphives-hqconnect-unified-20261120
+    paths:
+      - '.github/workflows/yorphives-review-browser-lean.yml'
+permissions:
+  contents: read
+concurrency:
+  group: yorphives-review-browser-lean
+  cancel-in-progress: true
+jobs:
+  real-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      YORPHIVES_REVIEW_URL: https://802c5f99.yorphives-v1-review.pages.dev
+      YORPHIVES_CHROME_CHANNEL: chrome
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm review-only target and installed Chrome
+        run: |
+          set -Eeuo pipefail
+          test "$YORPHIVES_REVIEW_URL" = 'https://802c5f99.yorphives-v1-review.pages.dev'
+          command -v google-chrome || command -v google-chrome-stable
+      - name: Install only Playwright JavaScript in isolated scratch directory
+        run: |
+          set -Eeuo pipefail
+          mkdir -p /tmp/yh-qa
+          cp scripts/benchmarks/review-browser-100rps.mjs /tmp/yh-qa/
+          cd /tmp/yh-qa
+          npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.65.1
+      - name: Exercise real browser sessions without writes
+        run: |
+          set -Eeuo pipefail
+          cd /tmp/yh-qa
+          node review-browser-100rps.mjs
+          cp review-browser-100rps.json "$GITHUB_WORKSPACE/scripts/benchmarks/review-browser-100rps.json"
+      - name: Keep test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yorphives-review-real-browser-lean
+          path: scripts/benchmarks/review-browser-100rps.json
+          if-no-files-found: ignore
+          retention-days: 7

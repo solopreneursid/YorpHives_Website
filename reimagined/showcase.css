@@ -1,0 +1,53 @@
+/* Six-card 3D flipping showcase. Styles scoped to homepage featured cards.
+ * No external textures, libraries or layout changes elsewhere on YorpHives. */
+#home .showcase-controls{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+#home .showcase-pause{
+ display:inline-flex;align-items:center;justify-content:center;min-height:44px;
+ padding:8px 13px;border:1px solid #a6c5a1;border-radius:10px;
+ background:linear-gradient(140deg,#f7fff1,#e3f0db);
+ color:#2c6040;font:800 11px/1.25 var(--sans);cursor:pointer;
+ box-shadow:0 3px 0 -1px #bdcdb7,inset 0 1px 0 #fff;
+}
+#home .showcase-pause:focus-visible{outline:2px solid #28683a;outline-offset:2px}
+#home .showcase-slot{position:relative;min-width:0;height:190px;perspective:900px}
+#home .showcase-flipper{
+ position:relative;display:block;width:100%;height:100%;
+ transform-style:preserve-3d;
+ transition:transform 680ms cubic-bezier(.2,.72,.15,1);
+}
+#home .showcase-slot.is-flipped .showcase-flipper{transform:rotateY(180deg)}
+#home .showcase-slot .showcase-face{
+ position:absolute;inset:0;display:flex;flex-direction:column;
+ height:100%;min-height:0;box-sizing:border-box;
+ backface-visibility:hidden;-webkit-backface-visibility:hidden;
+ overflow:hidden;transform:rotateY(0);
+}
+#home .showcase-slot .showcase-back{transform:rotateY(180deg)}
+#home .showcase-slot .showcase-face:hover{transform:rotateY(0)}
+#home .showcase-slot .showcase-back:hover{transform:rotateY(180deg)}
+#home .showcase-slot .showcase-face:focus-visible{outline:3px solid #307341;outline-offset:-3px}
+#home .showcase-slot .showcase-face .showcase-description{
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
+ line-clamp:3;overflow:hidden;
+}
+#home .showcase-arrow{font-size:19px;color:#43884b;line-height:1}
+#home .showcase-slot .featured-tool-category{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#home .showcase-slot .featured-tool-card:has(.featured-tool-category) {cursor:pointer}
+#home .showcase-slot .featured-tool-card:has(.featured-tool-category):hover{box-shadow:0 5px 0 -2px #adccac,0 13px 23px -15px #153e1b72}
+@media(max-width:760px){
+ #home .showcase-controls{gap:8px}
+ #home .showcase-pause{min-height:44px;padding:8px 11px;font-size:10px}
+ #home .showcase-slot{height:180px}
+}
+@media(max-width:430px){
+ #home .showcase-slot{height:177px}
+ #home .showcase-slot .featured-tool-category{font-size:7px}
+ #home .showcase-slot .showcase-description{-webkit-line-clamp:2;line-clamp:2}
+}
+@media(max-width:350px){
+ #home .showcase-slot{height:173px}
+}
+@media(prefers-reduced-motion:reduce){
+ #home .showcase-flipper{transition:none!important}
+ #home .showcase-slot .showcase-face{transition:none!important}
+}

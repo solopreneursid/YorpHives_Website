@@ -7,26 +7,19 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>readFile(resolve(root,p),'utf8');
 const exists=p=>stat(resolve(root,p)).then(x=>x.isFile()).catch(()=>false);
 
-test('fresh YorpHives experience has five clear routes and accessible navigation',async()=>{
+test("fresh YorpHives experience has five clear routes and accessible navigation",async()=>{
  const html=await read('reimagined/index.html');
- for(const route of ['home','ventures','tools','partners','contact']){
+ for(const route of ['home','ventures','tools']){
   assert.match(html,new RegExp('<section class="view" id="'+route+'"[^>]*aria-labelledby='),route);
-  assert.ok(html.includes('href="#'+route+'"'),route+' route is linked');
+  assert.ok(html.includes('href="#'+route+'"'),route+' linked');
  }
+ assert.match(html,/<section class="hqconnect" id="hqconnect"/);
  assert.match(html,/class="desktop-nav"/);
  assert.match(html,/class="mobile-menu"/);
  assert.match(html,/class="mobile-dock"/);
- assert.match(html,/YORPHIVES \/ INDEPENDENT SOFTWARE STUDIO/);
- assert.ok(html.includes('Pick a task. Open a tool. Get it done.'));
- assert.match(html,/id="home-title"/);
- assert.match(html,/id="featured-tools-grid"/);
- assert.match(html,/id="tool-search"/);
- assert.match(html,/id="venture-products"/);
- assert.match(html,/id="contact-form"/);
- assert.match(html,/id="yh-pulse"/);
- assert.match(html,/id="yh-pulse-item"/);
- assert.match(html,/id="kofi-support"/);
- assert.match(html,/id="anonymous-analytics-toggle"/);
+ assert.match(html,/by yorphivesHQ - AI powered venture studio/);
+ for(const id of ['home-title','featured-tools-grid','tool-search','venture-products','contact-form','yh-pulse','yh-pulse-item','kofi-support','anonymous-analytics-toggle'])
+  assert.ok(html.includes('id="'+id+'"'),id);
  assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"/);
 });
 test('the new visual system is original, responsive and reduced-motion safe',async()=>{
@@ -56,19 +49,20 @@ test('public discovery is catalog-backed, searchable and paginated',async()=>{
  assert.match(html,/id="tool-results"/);
  assert.match(html,/id="tool-categories"/);
  assert.match(html,/id="tool-pagination"/);
- assert.match(html,/id="saved-toggle"/);
+ assert.match(html,/data-toolspace-tab="saved"/);
 });
-test('public progress and portfolio never imply an unapproved launch',async()=>{
+test("public progress and portfolio never imply an unapproved launch",async()=>{
  const [html,js,policy]=await Promise.all([
   read('reimagined/index.html'),read('reimagined/studio.js'),read('product-policy.mjs')
  ]);
- assert.ok(html.includes('id="home-venture-count"'));
- assert.ok(html.includes('id="home-progress"'));
- assert.ok(html.includes('Products appear here only after research review and founder approval'));
- assert.ok(html.includes('Nothing launches without approval'));
- assert.ok(js.includes('qualifiedProducts(allItems)'));
- assert.ok(js.includes("fetch('/activity.json'"));
- assert.ok(policy.includes('founderApproval'));
+ assert.doesNotMatch(html,/class="trust-strip shell"|id="home-venture-count"/);
+ assert.match(html,/id="home-progress"/);
+ assert.match(html,/Products appear here only after research review and founder approval/);
+ assert.match(html,/Every real launch requires an explicit decision/);
+ assert.match(html,/No approved public launches yet/);
+ assert.match(js,/qualifiedProducts\(allItems\)/);
+ assert.match(js,/fetch\('\/activity\.json'/);
+ assert.match(policy,/founderApproval/);
 });
 test('fresh root uses only local assets and first-party analytics controls',async()=>{
  const [html,js,client]=await Promise.all([
@@ -91,7 +85,7 @@ test('the direct A–Z library remains crawlable and searchable',async()=>{
  assert.match(html,/TOOL_DIRECTORY_START/);
  assert.match(html,/TOOL_DIRECTORY_END/);
  assert.match(html,/id="directory-search"/);
- assert.match(html,/id="directory-saved-only"/);
+ assert.match(html,/data-directory-space-tab="saved"/);
  assert.match(css,/\.directory-card/);
  assert.match(css,/@media\(max-width:760px\)/);
  assert.match(search,/directory-search-status/);

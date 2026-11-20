@@ -17,15 +17,15 @@ test('served fresh homepage and preview no longer expose a Builders page',async(
  assert.match(router,/history\.replaceState/);
 });
 
-test('Partnerships remains a standalone, reachable page',async()=>{
+test("Partnerships remains a standalone, reachable page",async()=>{
  const [built,source]=await Promise.all([read('dist/index.html'),read('reimagined/index.html')]);
  for(const html of [built,source]){
-  assert.match(html,/id="partners"/);
-  assert.match(html,/href="#partners"/);
-  assert.match(html,/Partnerships/);
+  assert.match(html,/<section class="hqconnect" id="hqconnect"/);
+  assert.match(html,/data-interest="Long-term partnership"/);
+  assert.match(html,/data-interest="Build a product"/);
+  assert.doesNotMatch(html,/<section class="view" id="partners"|<section class="view" id="contact"/);
  }
 });
-
 test('old Builder URLs and hashes safely return visitors to Home',async()=>{
  const [router,redirects]=await Promise.all([read('reimagined/studio.js'),read('_redirects')]);
  assert.match(router,/retiredRoutes/);

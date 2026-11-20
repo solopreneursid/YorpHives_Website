@@ -18,7 +18,9 @@ test('public activity is loaded from the generated first-party registry',async()
  const js=await read('reimagined/studio.js');
  assert.match(js,/fetch\('\/activity\.json'/);
  assert.match(js,/kind==='tools'/);
- assert.match(js,/kind==='explore'/);
+ // HQventures owns a separate founder-qualified release timeline, not this tool feed.
+ assert.doesNotMatch(js,/item.kind==='explore'/);
+ assert.match(js,/approvedVentureReleases\(allItems\)/);
  assert.match(js,/tools\.some\(tool=>tool\.url===item\.url\)/);
  assert.match(js,/Date\.parse\(item\.timestamp\)<=Date\.now\(\)/);
  assert.match(js,/LATEST /);

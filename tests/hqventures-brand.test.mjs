@@ -20,18 +20,19 @@ test('HQventures is the public product-studio name across homepage, directory an
  assert.match(shell,/href="\.\.\/\.\.\/#ventures">HQventures/);
  assert.doesNotMatch(html,/data-nav="builders"|href="#builders"/);
 });
-test('public studio language keeps founder approval explicit',async()=>{
+test("public studio language keeps founder approval explicit",async()=>{
  const html=await read('reimagined/index.html');
- assert.match(html,/YORPHIVES \/ INDEPENDENT SOFTWARE STUDIO/);
- assert.match(html,/Founder decides/);
+ assert.match(html,/by yorphivesHQ - AI powered venture studio/);
+ assert.match(html,/founder approves what gets built and released/i);
  assert.match(html,/Products appear here only after research review and founder approval/);
- assert.match(html,/Nothing launches without approval/);
+ assert.match(html,/Every real launch requires an explicit decision/);
+ assert.match(html,/Only founder-approved, verified launches appear here/);
 });
 test('the venture count is tied to qualified public releases, not ideas or drafts',async()=>{
  const [html,js,policy]=await Promise.all([
   read('reimagined/index.html'),read('reimagined/studio.js'),read('product-policy.mjs')
  ]);
- assert.match(html,/id="home-venture-count"/);
+ assert.doesNotMatch(html,/id="home-venture-count"/);
  assert.match(html,/id="venture-hero-count"/);
  assert.match(js,/heroCount\.textContent=number\(ventures\.length\)/);
  assert.match(html,/id="venture-total"/);

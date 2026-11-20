@@ -20,7 +20,33 @@
 /catalog.json
   Cache-Control: no-store
 
+/interaction.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/personal-space.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/quick-launcher.mjs
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/interaction.mjs
+  Cache-Control: no-cache, max-age=0, must-revalidate
 /studio.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/hqconnect.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/hero-system.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/surfaces.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/showcase.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/showcase.mjs
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/venture-activity.mjs
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/agentic-browser.mjs
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/agentic-tools.mjs
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/tools/tool-next.css
   Cache-Control: no-cache, max-age=0, must-revalidate
 /rotators.css
   Cache-Control: no-cache, max-age=0, must-revalidate

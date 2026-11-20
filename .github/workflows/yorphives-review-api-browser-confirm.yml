@@ -1,0 +1,55 @@
+name: YorpHives separate review API and browser verification
+on:
+  push:
+    branches:
+      - design/yorphives-hqconnect-unified-20261120
+    paths:
+      - '.github/workflows/yorphives-review-api-browser-confirm.yml'
+permissions:
+  contents: read
+concurrency:
+  group: yorphives-review-api-browser-confirm
+  cancel-in-progress: true
+env:
+  YORPHIVES_REVIEW_URL: https://802c5f99.yorphives-v1-review.pages.dev
+jobs:
+  public-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check review-only URL before any request
+        run: |
+          test "$YORPHIVES_REVIEW_URL" = 'https://802c5f99.yorphives-v1-review.pages.dev'
+      - name: Run minimal read-only public API contract checks
+        run: node scripts/benchmarks/review-api-100rps.mjs
+      - name: Preserve API evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yorphives-public-review-api-check
+          path: scripts/benchmarks/review-api-100rps.json
+          if-no-files-found: ignore
+          retention-days: 7
+  real-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check review-only URL before any request
+        run: |
+          test "$YORPHIVES_REVIEW_URL" = 'https://802c5f99.yorphives-v1-review.pages.dev'
+      - name: Install open-source Playwright Chromium
+        run: |
+          npm install --no-save --ignore-scripts --package-lock=false --no-audit --no-fund playwright@1.65.1
+          npx playwright install --with-deps chromium
+      - name: Test mobile, desktop, saved tools and local utilities
+        run: node scripts/benchmarks/review-browser-100rps.mjs
+      - name: Preserve browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yorphives-public-review-browser-check
+          path: scripts/benchmarks/review-browser-100rps.json
+          if-no-files-found: ignore
+          retention-days: 7

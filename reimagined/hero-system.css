@@ -1,0 +1,127 @@
+/* YorpHives hero system illustration: responsive, first-party CSS only.
+   Based on the studio's existing public emblem and three stages.
+   No remote images, scripts, WebGL or external dependencies. */
+#home .hero-system{
+ position:relative;display:block;isolation:isolate;
+ width:100%;max-width:540px;height:365px;min-height:365px;
+ margin:0 0 0 auto;padding:0;border:0;border-radius:0;
+ background:transparent;color:#f2fbed;box-shadow:none;overflow:visible;
+ transform:none;
+}
+#home .hero-system::before{
+ position:absolute;content:"";inset:2% -6%;z-index:-2;
+ background:radial-gradient(circle at 51% 49%,#48d6a42b,transparent 54%);
+ pointer-events:none;
+}
+#home .system-glow{
+ position:absolute;left:50%;top:48%;width:275px;height:275px;
+ border-radius:50%;background:#3ab78f23;filter:blur(35px);
+ transform:translate(-50%,-50%);pointer-events:none;
+}
+#home .system-orbit{
+ position:absolute;left:50%;top:48%;width:340px;height:245px;
+ border:1px solid #73e6c037;border-radius:50%;
+ transform:translate(-50%,-50%) rotate(-23deg);
+ pointer-events:none;
+}
+#home .system-orbit-a{width:355px;height:250px;transform:translate(-50%,-50%) rotate(32deg);border-color:#70c9ac4a}
+#home .system-orbit-b{width:390px;height:205px;transform:translate(-50%,-50%) rotate(-58deg);border-color:#7ce4b53b}
+#home .system-orbit-c{width:255px;height:335px;border-style:dashed;stroke-dasharray:5 6;border-color:#86cbb36e;transform:translate(-50%,-50%) rotate(-25deg)}
+#home .system-core{
+ position:absolute;z-index:3;left:50%;top:48%;
+ display:grid;place-items:center;width:140px;height:140px;
+ border:1px solid #b4ffdc82;border-radius:34px;
+ background:linear-gradient(145deg,#55e8c0 0%,#237d71 60%,#1c574d 100%);
+ box-shadow:0 15px 48px #02150dcc,0 0 0 10px #3cb49412,inset 0 2px 3px #c2fff7a8;
+ transform:translate(-50%,-50%) perspective(470px) rotateX(7deg) rotateY(-12deg) rotateZ(-9deg);
+}
+#home .system-core::after{
+ position:absolute;content:"";inset:9px;border:1px solid #ddfff98f;border-radius:25px;pointer-events:none;
+}
+#home .system-core-inner{
+ display:grid;place-items:center;width:104px;height:104px;
+ border-radius:24px;background:#041527;box-shadow:0 7px 20px #051f2185;
+ overflow:hidden;
+}
+#home .system-core img{width:100%;height:100%;object-fit:contain}
+#home .system-stage{
+ position:absolute;z-index:4;display:flex;flex-direction:column;gap:7px;
+ min-width:136px;max-width:43%;padding:12px 14px;
+ border:1px solid #7ac7b954;border-radius:13px;
+ background:linear-gradient(150deg,#16382edb,#102920ec);
+ box-shadow:0 11px 34px #02180db5,inset 0 1px 0 #d0ffe41c;
+ backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+}
+#home .system-stage-top{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#91bcb0;font-size:8px;font-weight:850;letter-spacing:.12em;white-space:nowrap}
+#home .system-stage-top i{display:block;flex:none;width:7px;height:7px;border-radius:50%;background:#9af6bc;box-shadow:0 0 10px #78ffc08a}
+#home .system-stage strong{font-size:12px;font-weight:790;color:#f2f8ec;line-height:1.3;letter-spacing:-.02em}
+#home .system-stage-research{top:13%;left:0}
+#home .system-stage-intelligence{top:35%;right:0}
+#home .system-stage-founder{
+ bottom:12%;left:14%;
+ border-color:#8ef8c98c;background:linear-gradient(140deg,#c3ffd5,#9aefc4);
+ box-shadow:0 12px 30px #02180d8a;color:#164832
+}
+#home .system-stage-founder .system-stage-top{color:#447e68}
+#home .system-stage-founder .system-stage-top svg{width:14px;height:14px;stroke:#267653;stroke-width:2.8}
+#home .system-stage-founder strong{color:#1a4936}
+#home .system-caption{
+ position:absolute;bottom:4%;right:0;color:#8bad9e;
+ font-size:8px;font-weight:800;letter-spacing:.12em;white-space:nowrap;
+}
+/* One visual voice for every word: the same font, weight, color and rhythm.
+   Keep explicit line breaks so the heading remains balanced and compact. */
+#home .hero h1{
+ font-family:var(--sans);
+ font-style:normal;
+ font-weight:800;
+ line-height:1.07;
+ letter-spacing:-.055em;
+ color:#f4f7ed;
+ text-wrap:balance;
+}
+
+@media(max-width:1050px){
+ #home .hero-system{height:335px;min-height:335px}
+ #home .system-orbit-a{width:315px;height:227px}
+ #home .system-orbit-b{width:330px;height:200px}
+ #home .system-orbit-c{width:230px;height:290px}
+ #home .system-core{width:122px;height:122px;border-radius:29px}
+ #home .system-core-inner{width:92px;height:92px;border-radius:21px}
+ #home .system-stage{min-width:119px;padding:10px 11px}
+ #home .system-stage strong{font-size:11px}
+ #home .system-stage-top{font-size:7px}
+ #home .system-stage-founder{left:8%}
+}
+@media(max-width:760px){
+ #home .hero-system{width:min(100%,430px);max-width:430px;height:312px;min-height:312px;margin-inline:auto}
+ #home .system-core{width:118px;height:118px;border-radius:27px}
+ #home .system-core-inner{width:87px;height:87px}
+ #home .system-orbit-a{width:285px;height:198px}
+ #home .system-orbit-b{width:303px;height:183px}
+ #home .system-orbit-c{width:205px;height:265px}
+ #home .system-stage{min-width:122px;max-width:45%;padding:10px 11px}
+ #home .system-stage-research{left:0;top:11%}
+ #home .system-stage-intelligence{right:0;top:40%}
+ #home .system-stage-founder{left:8%;bottom:10%}
+ #home .system-caption{right:0;bottom:0;font-size:7px}
+}
+@media(max-width:430px){
+ #home .hero-system{height:285px;min-height:285px}
+ #home .system-core{width:105px;height:105px;border-radius:25px}
+ #home .system-core::after{inset:7px;border-radius:20px}
+ #home .system-core-inner{width:78px;height:78px;border-radius:18px}
+ #home .system-orbit-a{width:237px;height:166px}
+ #home .system-orbit-b{width:245px;height:150px}
+ #home .system-orbit-c{width:169px;height:224px}
+ #home .system-stage{min-width:109px;padding:9px 10px;gap:5px}
+ #home .system-stage strong{font-size:10px}
+ #home .system-stage-top{font-size:7px;letter-spacing:.07em}
+ #home .system-stage-research{top:9%}
+ #home .system-stage-intelligence{top:39%}
+ #home .system-stage-founder{left:3%;bottom:11%}
+ #home .system-caption{font-size:6px}
+}
+@media(prefers-reduced-motion:reduce){
+ #home .system-core,#home .system-stage,#home .system-orbit{animation:none!important;transition:none!important}
+}

@@ -1,0 +1,62 @@
+name: YorpHives controlled review requests-per-second test
+on:
+  push:
+    branches:
+      - design/yorphives-hqconnect-unified-20261120
+    paths:
+      - '.github/workflows/yorphives-rps-stages.yml'
+permissions:
+  contents: read
+concurrency:
+  group: yorphives-controlled-review-rps-stages
+  cancel-in-progress: true
+jobs:
+  measure-throughput:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - name: Checkout benchmark
+        uses: actions/checkout@v4
+      - name: Verify immutable review-only target and safe limits
+        run: |
+          set -Eeuo pipefail
+          grep -Fq "const ORIGIN='https://073b7c05.yorphives-v1-review.pages.dev'" scripts/benchmarks/yorphives-rps-stages.js
+          grep -Fq "const ALLOWED=new Set([25,40,60])" scripts/benchmarks/yorphives-rps-stages.js
+          ! grep -Eq 'https://yorphives.com|/api/' scripts/benchmarks/yorphives-rps-stages.js
+      - name: Run 25, 40, then 60 RPS only if prior stage passes
+        run: |
+          set -Eeuo pipefail
+          for rate in 25 40 60; do
+            echo "=== START CONTROLLED REVIEW TEST: ${rate} RPS ==="
+            docker run --rm --user "$(id -u):$(id -g)" \
+              -v "$PWD/scripts/benchmarks:/work" -w /work \
+              grafana/k6:0.54.0 run -e RATE="$rate" \
+              --summary-export="/work/rps-${rate}-results.json" \
+              /work/yorphives-rps-stages.js
+            echo "=== PASSED ${rate} RPS; ALLOW NEXT STAGE ==="
+          done
+      - name: Summarize measured throughput
+        if: always()
+        run: |
+          node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs=require('node:fs');
+          console.log('## YorpHives review-site throughput test (static GET only)');
+          console.log('| Target RPS | Actual RPS | Requests | Failure rate | p95 (ms) | Dropped | Result |');
+          console.log('|---:|---:|---:|---:|---:|---:|---|');
+          for(const r of [25,40,60]){
+            const path='scripts/benchmarks/rps-'+r+'-results.json';
+            if(!fs.existsSync(path)){console.log('| '+r+' | — | — | — | — | — | NOT RUN / STOPPED |');continue}
+            const o=JSON.parse(fs.readFileSync(path)),m=o.metrics||{},get=(k,v)=>m[k]?.values?.[v];
+            const rate=get('http_reqs','rate'),count=get('http_reqs','count'),failed=get('http_req_failed','rate'),p95=get('http_req_duration','p(95)'),drop=get('dropped_iterations','count')||0,checks=get('checks','rate');
+            const ok=failed!=null&&failed<.01&&p95<1500&&drop===0&&checks>.99&&rate>r*.9;
+            console.log('| '+r+' | '+(rate?.toFixed(2)??'?')+' | '+(count??'?')+' | '+(failed==null?'?':(100*failed).toFixed(2)+'%')+' | '+(p95?.toFixed(1)??'?')+' | '+drop+' | '+(ok?'PASS':'INVESTIGATE')+' |');
+          }
+          NODE
+      - name: Save raw metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yorphives-review-rps-performance
+          path: scripts/benchmarks/rps-*-results.json
+          if-no-files-found: ignore
+          retention-days: 7

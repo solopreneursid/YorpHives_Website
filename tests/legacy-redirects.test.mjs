@@ -39,6 +39,12 @@ test('legacy redirects are same-site, target published tools or directory, and n
    assert.equal(rules.has(target),false,'Retired Builder redirect loop: '+source);
    continue;
   }
+  if(source==='/partnerships'||source==='/partnerships/'){
+   assert.equal(target,'/');
+   assert.equal(status,'301');
+   assert.equal(rules.has(target),false,'Legacy partnership redirect loop: '+source);
+   continue;
+  }
   assert.ok(source==='/free-tools'||source.startsWith('/free-tools/'),source);
   assert.ok(destinations.has(target),'Unknown destination: '+target);
   assert.equal(status,'302');

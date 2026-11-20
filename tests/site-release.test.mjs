@@ -11,9 +11,9 @@ test('sitemap has the homepage, directory and all tool URLs',async()=>{
  assert.match(xml,/^<\?xml version="1.0"/);
  for(const page of ['https://yorphives.com/','https://yorphives.com/tools/',...items.filter(x=>x.type==='tool').map(x=>'https://yorphives.com/'+x.url)])
   assert.ok(xml.includes('<loc>'+page+'</loc>'),'Missing '+page);
- assert.equal((xml.match(/<loc>/g)||[]).length,items.filter(x=>x.type==='tool').length+4);
+ assert.equal((xml.match(/<loc>/g)||[]).length,items.filter(x=>x.type==='tool').length+3);
  assert.ok(xml.includes('<loc>https://yorphives.com/hqventures/</loc>'));
- assert.ok(xml.includes('<loc>https://yorphives.com/partnerships/</loc>'));
+ assert.ok(!xml.includes('<loc>https://yorphives.com/partnerships/</loc>'));
 });
 test('security headers enforce privacy and local execution without blocking Blob downloads',async()=>{
  const headers=await read('_headers');

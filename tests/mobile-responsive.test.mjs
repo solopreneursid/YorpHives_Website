@@ -12,12 +12,12 @@ test('fresh homepage keeps device sizing and browser zoom available',async()=>{
  assert.match(html,/<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">/);
  assert.doesNotMatch(html,/user-scalable=no|maximum-scale=1/i);
 });
-test('fresh homepage has five direct experiences and a compact mobile dock',async()=>{
+test("fresh homepage has five direct experiences and a compact mobile dock",async()=>{
  const html=await read('reimagined/index.html');
- for(const id of ['home','ventures','tools','partners','contact'])assert.match(html,new RegExp('<section class="view" id="'+id+'"'));
- assert.match(html,/class="desktop-nav"/);
- assert.match(html,/class="mobile-menu"/);
- assert.match(html,/class="mobile-dock"/);
+ for(const id of ['home','ventures','tools'])assert.match(html,new RegExp('<section class="view" id="'+id+'"'));
+ assert.match(html,/<section class="hqconnect" id="hqconnect"/);
+ assert.doesNotMatch(html,/<section class="view" id="partners"|<section class="view" id="contact"/);
+ for(const cls of ['desktop-nav','mobile-menu','mobile-dock'])assert.ok(html.includes('class="'+cls+'"'),cls);
  assert.match(html,/id="menu-toggle"/);
 });
 test('homepage responsive rules cover small phones, touch and safe areas',async()=>{
@@ -36,7 +36,7 @@ test('tool directory and direct tools have their own mobile-first layouts',async
  assert.match(tool,/@media\(max-width:760px\)/);
  assert.match(tool,/@media\(max-width:350px\)/);
  assert.match(tool,/font-size:16px/);
- assert.match(tool,/min-height:46px/);
+ assert.match(tool,/body\.tool-page \.mobile-dock a\{[^\n]*min-height:44px/);
  assert.match(tool,/env\(safe-area-inset-bottom/);
 });
 test('tool search, category filters and saved actions have mobile-friendly controls',async()=>{
@@ -45,9 +45,9 @@ test('tool search, category filters and saved actions have mobile-friendly contr
  const directory=await read('tools/index.html');
  assert.match(html,/id="tool-search"/);
  assert.match(html,/id="tool-categories"/);
- assert.match(html,/id="saved-toggle"/);
+ assert.match(html,/data-toolspace-tab="saved"/);
  assert.match(directory,/id="directory-search"/);
- assert.match(directory,/id="directory-saved-only"/);
+ assert.match(directory,/data-directory-space-tab="saved"/);
  assert.match(js,/renderTools\(\)/);
  assert.match(js,/toggleSaved/);
 });

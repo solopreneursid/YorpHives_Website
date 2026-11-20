@@ -18,6 +18,7 @@ if(new Set(items.map(x=>x.url)).size!==items.length)fail('Duplicate public URL.'
 const homepage=await read('index.html');
 const directory=await read('tools/index.html');
 const css=await read('studio.css');
+const hqCss=await read('hqconnect.css');
 const js=await read('studio.js');
 const rotators=await read('rotators.js');
 const catalogSync=await read('catalog-sync.mjs');
@@ -26,21 +27,141 @@ const headers=await read('_headers');
 const robots=await read('robots.txt');
 const sitemap=await read('sitemap.xml');
 const previews=/X-Robots-Tag:\s*noindex,\s*nofollow/i.test(headers);
-const requiredViews=['home','ventures','tools','partners','contact'];
+const requiredViews=['home','ventures','tools'];
 for(const id of requiredViews){
  if(!homepage.includes('<section class="view" id="'+id+'"'))fail('Homepage route missing: '+id);
 }
 if(!homepage.includes('id="home-title"')||!homepage.includes('id="yh-pulse"')||!homepage.includes('id="yh-pulse-item"'))
  fail('Fresh homepage heading or verified activity rail is missing.');
-if(!homepage.includes('YORPHIVES / INDEPENDENT SOFTWARE STUDIO')||
- !homepage.includes('Useful tools.<br><em>Working software.</em>')||
- !homepage.includes('id="hero-quickstart-list"')||
-  !homepage.includes('href="/tools/word-counter/"')||
+const ventureView=homepage.split('<section class="view" id="ventures"')[1]?.split('<section class="view" id="tools"')[0]||'';
+const toolView=homepage.split('<section class="view" id="tools"')[1]?.split('</main>')[0]||'';
+if(!ventureView.includes('id="venture-activity"')||!ventureView.includes('id="venture-activity-list"')||
+ ventureView.includes('id="activity-list"')||ventureView.includes('id="yh-pulse"')||
+ !toolView.includes('id="yh-pulse"')||!toolView.includes('id="activity-list"'))
+ fail('HQventures and Free Tools release updates are mixed or missing.');
+if(!js.includes('approvedVentureReleases(allItems)')||!js.includes("item.kind==='tools'"))
+ fail('Product updates must be founder-approved and tool updates must remain isolated.');
+if(!await exists('venture-activity.mjs'))fail('HQventures release filter module is missing.');
+if(/THE RELEASE STANDARD|Who can approve|class="process-band"|Market signals and user needs|Only verified, approved releases/.test(ventureView))
+ fail('Removed duplicate HQventures release-standard section must not reappear.');
+if(!ventureView.includes('id="home-progress"')||!ventureView.includes('Founder approval')||
+ !ventureView.includes('Every real launch requires an explicit decision.'))
+ fail('HQventures primary six-step workflow and founder approval must remain intact.');
+// The rotating six-card showcase uses the same published catalog and HQventures
+// founder-approval gate. No fixed/stale fixture list is allowed in production.
+const showcaseJs=await exists('showcase.mjs')?await read('showcase.mjs'):'';
+const showcaseCss=await exists('showcase.css')?await read('showcase.css'):'';
+if(!homepage.includes('href="showcase.css"')||
+ !homepage.includes('id="featured-tools-grid"')||
+ !homepage.includes('id="showcase-pause"')||
+ !js.includes("import {createRotatingShowcase} from './showcase.mjs'")||
+ !js.includes('showcase.update(allItems)')||
+ !showcaseJs.includes('qualifiedProducts(items)')||
+ !showcaseJs.includes('IntersectionObserver')||
+ !showcaseJs.includes('visibilitychange')||
+ !showcaseJs.includes('selectShowcaseItems')||
+ !showcaseCss.includes('rotateY(180deg)')||
+ !showcaseCss.includes('prefers-reduced-motion:reduce')||
+ /featuredToolUrls|renderFeaturedTools/.test(js))
+ fail('Dynamic six-card flip showcase, catalogue synchronization or approval gate is missing.');
+if(!homepage.includes('by yorphivesHQ - AI powered venture studio')||
+ !homepage.includes('The future<br>doesn\'t build<br>itself.')||
+ !homepage.includes('IDEAS IN MOTION')||
+ !homepage.includes('class="hero-art hero-system"')||
+ !['Spot the signal','Test the idea','Decide &amp; create'].every(s=>homepage.includes(s))||
+  homepage.includes('id="hero-quickstart-list"')||
   !homepage.includes('class="kofi-support" id="kofi-support" type="button" disabled'))
- fail('Product-first homepage, working quick links or safe controls are missing.');
-if(!homepage.includes('href="#partners"')||!homepage.includes('id="contact-form"')||
+ fail('Home hero identity, three-stage system illustration or safe controls are missing.');
+if(!await exists('hero-system.css'))fail('Hero system artwork CSS missing.');
+const surfaces=await exists('surfaces.css')?await read('surfaces.css'):'';
+if(!homepage.includes('href="surfaces.css"')||
+ !surfaces.includes('#main>.view:not([hidden])> :is(.hero,.home-section,.hqconnect,.page-hero,.page-content,.home-process)')||
+ !surfaces.includes('var(--panel-rise-dark)')||
+ !surfaces.includes('@media(max-width:760px)'))
+ fail('Unified three-dimensional section surfaces, including the hero, are missing.');
+if(!surfaces.includes('--section-gap:10px;')||!surfaces.includes('--card-gap:8px;')||
+ !surfaces.includes('--section-gap:8px;--card-gap:6px;--section-pad:16px')||
+ !toolCss.includes('body.tool-page{--section-gap:10px;--card-gap:8px}')||
+ !(await read('tools/directory-next.css')).includes('body.directory-page{--section-gap:10px;--card-gap:8px}'))
+ fail('Compact and uniform section/card spacing rules are missing from one or more site experiences.');
+const directoryPalette=await read('tools/directory-next.css');
+if(!surfaces.includes('BRAND-ALIGNED COLOUR PALETTE')||
+ !surfaces.includes('#main #home>.hero')||
+ !surfaces.includes('#main #ventures>.page-hero')||
+ !surfaces.includes('#main #tools>.page-hero')||
+ !surfaces.includes('#main #ventures>.home-process')||
+ !surfaces.includes('.site-footer{')||
+ !toolCss.includes('BRAND-ALIGNED COLOUR PALETTE')||
+ !toolCss.includes('body.tool-page .tool-intro')||
+ !toolCss.includes('body.tool-page .tool-footer{')||
+ !directoryPalette.includes('BRAND-ALIGNED COLOUR PALETTE')||
+ !directoryPalette.includes('.directory-main>.directory-hero')||
+ !directoryPalette.includes('.directory-footer{'))
+ fail('The site-wide logo-inspired dark hero/footer and pastel section palette is incomplete.');
+if(!surfaces.includes('THIRTY-PERCENT SMALLER NAVIGATION')||
+ !surfaces.includes('width:78px;min-width:78px;height:44px;min-height:44px')||
+ !toolCss.includes('width:74px;min-width:74px;height:44px;min-height:44px')||
+ !(await read('tools/directory-next.css')).includes('width:74px;min-width:74px;height:44px;min-height:44px'))
+ fail('Navigation needs visually 30% smaller pills and accessible 44px targets.');
+if(!surfaces.includes('DIMENSIONAL UNIFORM HEADER')||
+ !surfaces.includes('.site-header .desktop-nav a,')||
+ !surfaces.includes('.site-header .header-cta{')||
+ !toolCss.includes('DIMENSIONAL UNIFORM HEADER')||
+ !(await read('tools/directory-next.css')).includes('DIMENSIONAL UNIFORM HEADER'))
+ fail('Headers and compact navigation buttons must share a raised, uniform palette.');
+const topNav=homepage.split('<nav class="desktop-nav"')[1]?.split('</nav>')[0]||'';
+const menuNav=homepage.split('<nav class="mobile-menu"')[1]?.split('</nav>')[0]||'';
+const dockNav=homepage.split('<nav class="mobile-dock"')[1]?.split('</nav>')[0]||'';
+const directoryNav=directory.split('<nav class="directory-nav"')[1]?.split('</nav>')[0]||'';
+for(const block of [topNav,menuNav,dockNav,directoryNav]){
+ const venture=block.indexOf('ventures'),tools=block.indexOf('tools');
+ if(venture<0||tools<0||venture>tools)fail('HQventures navigation must precede Free Tools everywhere.');
+}
+if(!homepage.includes('<button class="kofi-support" id="kofi-support" type="button" disabled>Support us</button>')||
+ !directory.includes('<button class="directory-support" type="button" disabled>Support us</button>')||
+ !homepage.includes('<button type="button" disabled><span aria-hidden="true">♡</span><small>Support us</small></button>')||
+ !toolCss.includes('body.tool-page .site-header .tool-support')||
+ !surfaces.includes('grid-template-columns:repeat(5,minmax(0,1fr))')||
+ /Ko-fi support, coming soon|<small>Coming soon<\/small>/.test(homepage))
+ fail('Disabled Support us control or five-way navigation is missing, reordered or carries outdated status text.');
+if(!toolCss.includes('DIMENSIONAL TOOL SURFACES')||
+ !directory.includes('directory-next.css')||
+ !await exists('tools/directory-next.css')||
+ !(await read('tools/directory-next.css')).includes('DIMENSIONAL A–Z DIRECTORY'))
+ fail('Section surfaces are not applied throughout the direct tool and directory experiences.');
+
+const heroOnly=homepage.split('<div class="hero">')[1]?.split('<section class="home-section shell" aria-labelledby="home-discover-title">')[0]||'';
+if(/class="hero-actions"|class="hero-note"|Browse free tools|Build with us|USEFUL TODAY|OPEN FOR EVERYONE/.test(heroOnly))
+ fail('Home hero must not include buttons or the retired footer label.');
+if(/class="trust-strip shell"|id="home-tool-count"|id="home-venture-count"|PUBLISHED BROWSER TOOLS|APPROVED PUBLIC VENTURES|Published tools link directly to real pages\./.test(homepage))
+ fail('Removed homepage stats strip must stay removed.');
+const discovery=homepage.indexOf('<section class="home-section shell" aria-labelledby="home-discover-title">');
+const featured=homepage.indexOf('<section class="home-section featured-section" aria-labelledby="featured-title">');
+const hero=homepage.indexOf('<div class="hero">');
+const connect=homepage.indexOf('<section class="hqconnect" id="hqconnect"');
+if(hero<0||discovery<hero||featured<discovery||connect<featured||
+ !homepage.slice(discovery,featured).includes('class="ecosystem-grid"'))
+ fail('Home must show the three discovery paths immediately after the hero, before featured tools and HQconnect.');
+if(!homepage.includes('<option value="Long-term partnership">Long-term build & maintenance partnership</option><option value="Other">Other</option>'))
+ fail('HQconnect Other option must be available in the request form.');
+const contactMarkup=homepage.split('<section class="hqconnect" id="hqconnect"')[1]?.split('</section>')[0]||'';
+if(!contactMarkup.includes('id="hqconnect-copy-email"')||
+ !contactMarkup.includes('id="hqconnect-email"')||
+ !contactMarkup.includes('id="hqconnect-copy-status"')||
+ contactMarkup.includes('href="mailto:')||
+ !js.includes("await navigator.clipboard.writeText(address)")||
+ !js.includes("document.execCommand('copy')"))
+ fail('HQconnect contact email must be a working copy action, not a mailto link.');
+if(!homepage.includes('<section class="hqconnect" id="hqconnect"')||
+ !homepage.includes('class="header-cta" href="#hqconnect"')||
+ !homepage.includes('id="contact-form"')||
+ !homepage.includes('data-interest="Build a product"')||
+ !homepage.includes('data-interest="Long-term partnership"')||
+ !homepage.includes('name="consent" required')||
  !homepage.includes('connect@yorphives.com'))
- fail('Partnership or contact pathways are incomplete.');
+ fail('HQconnect build and partnership request pathways are incomplete.');
+if(/<section class="view" id="partners"|<section class="view" id="contact"/.test(homepage))
+ fail('Partnership and contact are home-based services, not extra public pages.');
 if(/id="builders"|href="#builders"|data-nav="builders"/i.test(homepage))
  fail('Retired Builders navigation must not return.');
 if(/data-form="opportunity"|<form[^>]*id="post"|id="job-listings"/i.test(homepage))
@@ -50,8 +171,9 @@ if(homepage.includes('DESIGN PREVIEW')||homepage.includes('name="robots" content
 if(!homepage.includes('<link rel="canonical" href="https://yorphives.com/">'))
  fail('Homepage canonical URL is missing.');
 if(/<script\b[^>]*src=["']https?:/i.test(homepage))fail('Remote homepage script found.');
-if(!css.includes('@media(max-width:350px)')||!css.includes('prefers-reduced-motion:reduce'))
- fail('Homepage is missing narrow-phone or reduced-motion styles.');
+if(!css.includes('@media(max-width:350px)')||!css.includes('prefers-reduced-motion:reduce')||
+ !hqCss.includes('@media(max-width:600px)')||!hqCss.includes('prefers-reduced-motion:reduce'))
+ fail('Homepage or HQconnect is missing narrow-phone and reduced-motion styles.');
 if(!js.includes('qualifiedProducts(allItems)')||
  !js.includes("retiredRoutes=new Set(['builders','opportunities','membership','post'])")||
  !js.includes("fetch('/activity.json'"))
@@ -71,10 +193,11 @@ if(impact.publication?.status!=='unpublished'||impact.publication?.approvedByFou
  (usage.ranked||[]).length)
  fail('Unverified Impact or usage rankings must remain unpublished.');
 if(!directory.includes('id="directory-search"')||!directory.includes('id="directory-search-status"')||
- !directory.includes('id="directory-saved-only"')||!directory.includes('TOOL_DIRECTORY_START')||
+ !directory.includes('data-directory-space-tab="saved"')||!directory.includes('TOOL_DIRECTORY_START')||
  !directory.includes('TOOL_DIRECTORY_END'))
  fail('The A–Z directory is missing search, saved tools or generated category markers.');
 for(const item of tools)if(!directory.includes('../'+item.url))fail('Missing crawlable directory link: '+item.url);
+if(!await exists('quick-launcher.mjs')||!await exists('personal-space.css'))fail('Shared personal launcher assets missing.');
 if(!headers.includes("connect-src 'self'")||!headers.includes("script-src 'self'")||
  !headers.includes('X-Content-Type-Options: nosniff'))
  fail('Privacy-first security headers are incomplete.');
@@ -83,7 +206,7 @@ if(previews&&/Sitemap:/i.test(robots))fail('Preview robots.txt must not advertis
 if(!previews&&!robots.includes('Sitemap: https://yorphives.com/sitemap.xml'))
  fail('Production robots.txt lacks the canonical sitemap.');
 if(!previews&&/X-Robots-Tag:\s*noindex/i.test(headers))fail('Production build must not inherit preview noindex.');
-for(const path of ['hqventures/index.html','partnerships/index.html']){
+for(const path of ['hqventures/index.html']){
  if(!await exists(path))fail('Missing public section page: '+path);
  else{
   const html=await read(path);
@@ -127,8 +250,25 @@ for(const event of activity.items||[]){
  if(event.kind==='tools'&&!publishedUrls.has(event.url))fail('Activity references an unpublished tool.');
  if(event.kind==='explore'&&event.url!=='#explore')fail('Explore activity references an unapproved URL.');
 }
+// Shared click/route motion must be present on every public entry surface.
+const motionCss=await exists('interaction.css')?await read('interaction.css'):'';
+const motionJs=await exists('interaction.mjs')?await read('interaction.mjs'):'';
+if(!homepage.includes('href="/interaction.css"')||
+ !homepage.includes('src="/interaction.mjs"')||
+ !directory.includes('href="/interaction.css"')||
+ !directory.includes('src="/interaction.mjs"')||
+ !motionCss.includes('@media(prefers-reduced-motion:reduce)')||
+ !motionCss.includes('@view-transition{navigation:auto}')||
+ !motionCss.includes('#main>.view:not([hidden])')||
+ !motionJs.includes("document.addEventListener('click'")||
+ /\.preventDefault\(|stopPropagation\(|location\.(?:href|assign|replace)\(/.test(motionJs))
+ fail('Shared progressive motion is missing or intercepts user actions.');
+const sectionLanding=await read('hqventures/index.html');
+if(!sectionLanding.includes('href="/interaction.css"')||!sectionLanding.includes('src="/interaction.mjs"'))
+ fail('Standalone HQventures landing does not load the shared motion system.');
 const sampleTool=await read('tools/word-counter/index.html');
-if(!sampleTool.includes('tool-next.css')||!sampleTool.includes('class="mobile-dock"'))
+if(!sampleTool.includes('tool-next.css')||!sampleTool.includes('class="mobile-dock"')||
+ !sampleTool.includes('href="/interaction.css"')||!sampleTool.includes('src="/interaction.mjs"'))
  fail('Direct tool pages are not receiving the shared mobile shell.');
 if(problems.length){
  console.error('RELEASE CHECK FAILED\n'+problems.map(item=>' - '+item).join('\n'));

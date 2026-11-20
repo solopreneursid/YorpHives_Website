@@ -1,0 +1,98 @@
+/* YorpHives motion layer: progressive CSS, no navigation/input delays.
+   Shares a calm spring-like ease across desktop and mobile.
+   Press feedback starts immediately; content settles in after ~75ms. */
+:root{
+ --yh-motion-ease:cubic-bezier(.22,.7,.25,1);
+ --yh-motion-fast:180ms;
+ --yh-motion-medium:280ms;
+ --yh-motion-in:380ms;
+ --yh-motion-delay:75ms;
+}
+/* Native cross-document transitions where supported. Other browsers retain
+   normal navigation, plus the entrance animations below. */
+@view-transition{navigation:auto}
+::view-transition-old(root){animation:210ms ease-in both yh-page-out}
+::view-transition-new(root){animation:310ms var(--yh-motion-ease) both yh-page-in}
+@keyframes yh-page-out{to{opacity:.78;filter:blur(1.5px)}}
+@keyframes yh-page-in{from{opacity:.72;filter:blur(1px)}to{opacity:1;filter:blur(0)}}
+@keyframes yh-content-in{
+ from{opacity:.2;transform:translate3d(0,8px,0)}
+ to{opacity:1;transform:translate3d(0,0,0)}
+}
+@keyframes yh-soft-appear{from{opacity:.1}to{opacity:1}}
+/* Hash-driven Home / HQventures / Free Tools transitions.
+   Applies when the previously hidden view is shown; no JS timers or locks. */
+#main>.view:not([hidden])> :is(.hero,.page-hero,.home-section,.page-content,.hqconnect,.home-process){
+ animation:yh-content-in var(--yh-motion-in) var(--yh-motion-ease) var(--yh-motion-delay) both;
+}
+/* Direct pages receive the same sequence without rewriting their processors. */
+body.directory-page .directory-main> :is(.directory-hero,.directory-finder,.directory-list,.directory-bottom-card),
+body.tool-page :is(.tool-intro,.tool-panel,.tool-help,.tool-related,.yh-tool-discover),
+body:not(.tool-page):not(.directory-page) main>.hero,
+body:not(.tool-page):not(.directory-page) main>.grid{
+ animation:yh-content-in var(--yh-motion-in) var(--yh-motion-ease) var(--yh-motion-delay) both;
+}
+/* Results and newly rendered cards materialize gently after a filter,
+   saved-toggle, pagination or category activation. */
+#tool-results>.tool-card,
+#venture-products>.venture-item,
+.directory-grid>.directory-card,
+#home .showcase-slot{
+ animation:yh-content-in 330ms var(--yh-motion-ease) 35ms both;
+}
+/* Opened details and menus reveal content instead of popping abruptly. */
+details[open]>:not(summary){animation:yh-soft-appear 250ms ease-out 65ms both}
+.mobile-menu:not([hidden]){animation:yh-content-in 270ms var(--yh-motion-ease) 35ms both}
+/* Unified hover/focus and active feedback for all actionable controls. Avoid
+   transition:all and avoid animating size/position of tool processors. */
+a[href]:not(.showcase-face),
+button:not(:disabled),
+summary,
+input:not([type=hidden]),
+select,
+textarea{
+ transition-property:background-color,color,border-color,box-shadow,filter,opacity,transform;
+ transition-duration:var(--yh-motion-medium);
+ transition-timing-function:var(--yh-motion-ease);
+ transition-delay:30ms;
+}
+:is(a[href],button:not(:disabled),summary):active{
+ filter:brightness(.94);
+ transition-duration:var(--yh-motion-fast);
+ transition-delay:0ms;
+}
+:is(a[href],button:not(:disabled),summary).yh-motion-press{
+ filter:brightness(.94);
+ transition-duration:var(--yh-motion-fast);
+ transition-delay:0ms;
+}
+:is(a[href],button:not(:disabled),summary).yh-motion-clicked{
+ filter:brightness(.97);
+ transition-duration:var(--yh-motion-medium);
+ transition-delay:40ms;
+}
+:is(input:not([type=hidden]),textarea,select):focus-visible{
+ transition-delay:0ms;
+}
+/* Small easing on selection state, without slowing forms and calculations. */
+:is(.category-chip,.saved-toggle,.reset-filters,.directory-saved-filter,
+    .directory-clear,.tool-btn,.showcase-pause,.hqconnect-copy-email)[aria-pressed=true]{
+ transition-delay:0ms;
+}
+@media(hover:none){
+ a[href]:hover,button:hover,summary:hover{transition-delay:0ms}
+}
+@media(prefers-reduced-motion:reduce){
+ @view-transition{navigation:none}
+ ::view-transition-old(root),::view-transition-new(root){animation:none!important}
+ #main>.view:not([hidden])> :is(.hero,.page-hero,.home-section,.page-content,.hqconnect,.home-process),
+ body.directory-page .directory-main> :is(.directory-hero,.directory-finder,.directory-list,.directory-bottom-card),
+ body.tool-page :is(.tool-intro,.tool-panel,.tool-help,.tool-related,.yh-tool-discover),
+ body:not(.tool-page):not(.directory-page) main>.hero,
+ body:not(.tool-page):not(.directory-page) main>.grid,
+ #tool-results>.tool-card,#venture-products>.venture-item,.directory-grid>.directory-card,
+ #home .showcase-slot,details[open]>:not(summary),.mobile-menu:not([hidden]){
+  animation:none!important;
+ }
+ a[href],button,summary,input,select,textarea{transition:none!important}
+}
