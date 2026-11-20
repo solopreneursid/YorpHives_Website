@@ -32,10 +32,12 @@ for(const id of requiredViews){
 }
 if(!homepage.includes('id="home-title"')||!homepage.includes('id="yh-pulse"')||!homepage.includes('id="yh-pulse-item"'))
  fail('Fresh homepage heading or verified activity rail is missing.');
-if(!homepage.includes('INDEPENDENT · AI-POWERED VENTURE STUDIO')||
- !homepage.includes('Ideas worth finding.<br><em>Ventures worth building.</em>')||
- !homepage.includes('class="kofi-support" id="kofi-support" type="button" disabled'))
- fail('HQventures-first identity, hero headline or disabled support control is missing.');
+if(!homepage.includes('YORPHIVES / INDEPENDENT SOFTWARE STUDIO')||
+ !homepage.includes('Useful tools.<br><em>Working software.</em>')||
+ !homepage.includes('id="hero-quickstart-list"')||
+  !homepage.includes('href="/tools/word-counter/"')||
+  !homepage.includes('class="kofi-support" id="kofi-support" type="button" disabled'))
+ fail('Product-first homepage, working quick links or safe controls are missing.');
 if(!homepage.includes('href="#partners"')||!homepage.includes('id="contact-form"')||
  !homepage.includes('connect@yorphives.com'))
  fail('Partnership or contact pathways are incomplete.');
