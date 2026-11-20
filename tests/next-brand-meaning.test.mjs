@@ -8,10 +8,10 @@ const read=p=>readFile(resolve(root,p),'utf8');
 
 test('the new homepage leads with a clear independent venture-studio proposition',async()=>{
  const html=await read('reimagined/index.html');
- assert.ok(html.includes('Ideas worth finding.<br><em>Ventures worth building.</em>'));
- assert.ok(html.includes('Curiosity in. Useful things out.'));
- assert.match(html,/INDEPENDENT · AI-POWERED VENTURE STUDIO/);
- assert.match(html,/INDEPENDENT\. HUMAN-LED\. BUILT TO EVOLVE\./);
+ assert.ok(html.includes('Useful tools.<br><em>Working software.</em>'));
+ assert.ok(html.includes('Pick a task. Open a tool. Get it done.'));
+ assert.match(html,/YORPHIVES \/ INDEPENDENT SOFTWARE STUDIO/);
+ assert.match(html,/USEFUL TODAY · OPEN FOR EVERYONE/);
  assert.match(html,/class="hero-art"/);
  assert.match(html,/class="ecosystem-grid"/);
  assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"/);
@@ -89,7 +89,7 @@ test('release gate protects the new layout and the original tool catalogue',asyn
  assert.doesNotMatch(release,/home-explore|home-use|hero-geometry|renderFeaturedProject/);
 });
 
-test('HQventures leads desktop, mobile and homepage without displacing free tools',async()=>{
+test('mobile navigation keeps HQventures prominent while live tool actions come first',async()=>{
  const [html,css,js]=await Promise.all([
   read('reimagined/index.html'),read('reimagined/studio.css'),read('reimagined/studio.js')
  ]);
@@ -98,20 +98,22 @@ test('HQventures leads desktop, mobile and homepage without displacing free tool
   assert.ok(first>=0,'missing '+opening);
   return html.slice(first,html.indexOf(closing,first));
  };
- for(const section of [
-  within('<nav class="desktop-nav"','</nav>'),
-  within('<nav class="mobile-menu"','</nav>'),
-  within('<nav class="mobile-dock"','</nav>'),
-  within('<div class="hero-actions"','</div>'),
-  within('<div class="ecosystem-grid"','</section>')
- ]){
+ for(const section of [within('<nav class="desktop-nav"','</nav>'),
+   within('<nav class="mobile-menu"','</nav>'),
+   within('<nav class="mobile-dock"','</nav>')]){
   assert.ok(section.indexOf('href="#ventures"')>=0);
   assert.ok(section.indexOf('href="#tools"')>=0);
   assert.ok(section.indexOf('href="#ventures"')<section.indexOf('href="#tools"'));
  }
- assert.match(html,/id="home-title">Ideas worth finding/);
+ const hero=within('<div class="hero-actions"','</div>');
+ assert.ok(hero.indexOf('href="#tools"')<hero.indexOf('href="#ventures"'));
+ assert.match(html,/id="home-title">Useful tools/);
+ assert.match(html,/id="hero-quickstart-list"/);
+ for(const url of ['/tools/word-counter/','/tools/pdf-merge/','/tools/image-resizer/','/tools/qr-code-generator/'])
+  assert.ok(html.includes('href="'+url+'"'),'Missing functional shortcut '+url);
+ assert.ok(html.indexOf('id="featured-title"')<html.indexOf('id="home-progress"'));
  assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
  assert.match(css,/@media\(max-width:760px\)/);
- assert.ok(js.includes('tools/pdf-merge/'));
- assert.ok(js.includes('tools/image-resizer/'));
+ assert.match(js,/function renderQuickstarts\(/);
+ assert.match(js,/quickstartToolUrls/);
 });
