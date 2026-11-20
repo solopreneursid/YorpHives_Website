@@ -6,7 +6,7 @@ const json=(body,status=200)=>new Response(JSON.stringify(body),{
 });
 const trim=(x,max)=>typeof x==='string'?x.trim().slice(0,max+1):'';
 const emailOk=x=>/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(x)&&x.length<=180;
-const allowed=new Set(['Build a product','Long-term partnership']);
+const allowed=new Set(['Build a product','Long-term partnership','Other']);
 const timelines=new Set(['','As soon as practical','1–3 months','3–6 months','Flexible']);
 const budgets=new Set(['','Under $1,000','$1,000–$5,000','$5,000–$20,000','$20,000+']);
 export async function onRequestPost({request,env}){

@@ -142,6 +142,8 @@ const connect=homepage.indexOf('<section class="hqconnect" id="hqconnect"');
 if(hero<0||discovery<hero||featured<discovery||connect<featured||
  !homepage.slice(discovery,featured).includes('class="ecosystem-grid"'))
  fail('Home must show the three discovery paths immediately after the hero, before featured tools and HQconnect.');
+if(!homepage.includes('<option value="Long-term partnership">Long-term build & maintenance partnership</option><option value="Other">Other</option>'))
+ fail('HQconnect Other option must be available in the request form.');
 if(!homepage.includes('<section class="hqconnect" id="hqconnect"')||
  !homepage.includes('class="header-cta" href="#hqconnect"')||
  !homepage.includes('id="contact-form"')||

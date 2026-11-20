@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS hqconnect_requests (
  id TEXT PRIMARY KEY,
  created_at TEXT NOT NULL,
- request_type TEXT NOT NULL CHECK (request_type IN ('Build a product','Long-term partnership')),
+ request_type TEXT NOT NULL CHECK (request_type IN ('Build a product','Long-term partnership','Other')),
  name TEXT NOT NULL,
  email TEXT NOT NULL,
  project TEXT NOT NULL DEFAULT '',

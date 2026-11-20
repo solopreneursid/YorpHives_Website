@@ -58,3 +58,36 @@ test('HQconnect stores only validated submissions into the isolated intake store
  assert.equal(saved[3],'Test Founder');
  assert.equal(saved[4],'test@example.com');
 });
+
+test('HQconnect renders Other as the third option and accepts it without changing existing choices',async()=>{
+ const [html,api,schema,migration]=await Promise.all([
+  read('reimagined/index.html'),read('functions/api/hqconnect.js'),
+  read('db/hqconnect-schema.sql'),read('db/hqconnect-add-other.sql')
+ ]);
+ const select=html.match(/<select name="requestType" id="interest" required>([\s\S]*?)<\/select>/)?.[1];
+ assert.ok(select,'HQconnect choice selector is missing');
+ assert.deepEqual([...select.matchAll(/<option value="([^"]+)"/g)].map(x=>x[1]),
+  ['Build a product','Long-term partnership','Other']);
+ assert.match(api,/const allowed=new Set\(\['Build a product','Long-term partnership','Other'\]\)/);
+ assert.match(schema,/request_type IN \('Build a product','Long-term partnership','Other'\)/);
+ assert.match(migration,/INSERT INTO hqconnect_requests_migrated/);
+ assert.match(migration,/SELECT id,created_at,request_type,name,email,project,message,timeline,budget,consent_at,status FROM hqconnect_requests/);
+});
+test('HQconnect saves Other as its own request type and rejects unsupported values',async()=>{
+ let saved=null;
+ const fakeDB={prepare(sql){assert.match(sql,/INSERT INTO hqconnect_requests/);
+  return{bind(...args){saved=args;return{async run(){return{success:true}}}}}}};
+ const ok=await onRequestPost({
+  request:makeRequest({...example(),requestType:'Other'}),
+  env:{HQCONNECT_DB:fakeDB}
+ });
+ assert.equal(ok.status,201);
+ assert.equal((await ok.json()).ok,true);
+ assert.equal(saved[2],'Other');
+ const wrong=await onRequestPost({
+  request:makeRequest({...example(),requestType:'Unauthorized'}),
+  env:{HQCONNECT_DB:fakeDB}
+ });
+ assert.equal(wrong.status,400);
+ assert.equal(saved[2],'Other');
+});
