@@ -25,7 +25,7 @@ test("public studio language keeps founder approval explicit",async()=>{
  assert.match(html,/by yorphivesHQ - AI powered venture studio/);
  assert.match(html,/founder approves what gets built and released/i);
  assert.match(html,/Products appear here only after research review and founder approval/);
- assert.match(html,/Founder review is mandatory/);
+ assert.match(html,/Every real launch requires an explicit decision/);
  assert.match(html,/Only founder-approved, verified launches appear here/);
 });
 test('the venture count is tied to qualified public releases, not ideas or drafts',async()=>{

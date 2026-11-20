@@ -29,7 +29,7 @@ test("the venture studio separates research signals from founder-approved launch
   read('reimagined/index.html'),read('reimagined/studio.js'),read('product-policy.mjs')
  ]);
  assert.match(html,/Products appear here only after research review and founder approval/);
- assert.match(html,/Founder review is mandatory/);
+ assert.match(html,/Every real launch requires an explicit decision/);
  assert.match(html,/id="venture-products"/);
  assert.match(html,/id="home-progress"/);
  assert.match(html,/Learn &amp; improve|Learn & improve/);

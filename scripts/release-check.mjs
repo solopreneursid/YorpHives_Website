@@ -42,6 +42,11 @@ if(!ventureView.includes('id="venture-activity"')||!ventureView.includes('id="ve
 if(!js.includes('approvedVentureReleases(allItems)')||!js.includes("item.kind==='tools'"))
  fail('Product updates must be founder-approved and tool updates must remain isolated.');
 if(!await exists('venture-activity.mjs'))fail('HQventures release filter module is missing.');
+if(/THE RELEASE STANDARD|Who can approve|class="process-band"|Market signals and user needs|Only verified, approved releases/.test(ventureView))
+ fail('Removed duplicate HQventures release-standard section must not reappear.');
+if(!ventureView.includes('id="home-progress"')||!ventureView.includes('Founder approval')||
+ !ventureView.includes('Every real launch requires an explicit decision.'))
+ fail('HQventures primary six-step workflow and founder approval must remain intact.');
 if(!homepage.includes('by yorphivesHQ - AI powered venture studio')||
  !homepage.includes('The future<br>doesn\'t build<br>itself.')||
  !homepage.includes('IDEAS IN MOTION')||

@@ -58,7 +58,7 @@ test("public progress and portfolio never imply an unapproved launch",async()=>{
  assert.doesNotMatch(html,/class="trust-strip shell"|id="home-venture-count"/);
  assert.match(html,/id="home-progress"/);
  assert.match(html,/Products appear here only after research review and founder approval/);
- assert.match(html,/Founder review is mandatory/);
+ assert.match(html,/Every real launch requires an explicit decision/);
  assert.match(html,/No approved public launches yet/);
  assert.match(js,/qualifiedProducts\(allItems\)/);
  assert.match(js,/fetch\('\/activity\.json'/);
