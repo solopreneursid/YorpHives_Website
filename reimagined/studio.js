@@ -5,6 +5,7 @@ import {approvedVentureReleases} from './venture-activity.mjs';
 import {createRotatingShowcase} from './showcase.mjs';
 import {getCatalog,subscribeCatalog,startCatalogMonitoring} from './catalog-sync.mjs';
 import {readSaved,toggleSaved} from '../tools/save-tool.mjs';
+import {readSpace,toggleSpace,recordRecent,moveSaved,productIdentity,notifySpace,SPACE_EVENT,isSpaceKey} from '../tools/personal-space.mjs';
 
 const $=id=>document.getElementById(id);
 const views=[...document.querySelectorAll('main>.view')];
@@ -12,7 +13,9 @@ const viewNames={home:'Home',tools:'Free tools',ventures:'HQventures'};
 const retiredRoutes=new Set(['builders','opportunities','membership','post']);
 let previousView='';
 let allItems=[],tools=[],ventures=[];
-let activeCategory='All',onlySaved=false,page=1,sortMode='name';
+let activeCategory='All',page=1,sortMode='name';
+let toolTab='all',productTab='all',toolTabChosen=false,productTabChosen=false;
+const local=()=>{try{return window.localStorage}catch{return null}};
 const pageSize=12;
 const showcase=createRotatingShowcase(document.getElementById('featured-tools-grid'),document.getElementById('showcase-pause'));
 const icon=name=>{
@@ -88,10 +91,23 @@ $('year').textContent=String(new Date().getFullYear());
 function savedSet(){
  try{return new Set(readSaved(window.localStorage))}catch{return new Set()}
 }
-function updateSavedButton(){
- const button=$('saved-toggle');
- if(button){button.setAttribute('aria-pressed',String(onlySaved));button.textContent=onlySaved?'♥ Showing saved':'♡ Saved'}
+function drawTabs(selector,mode){
+ document.querySelectorAll(selector).forEach(button=>{
+  const key=selector.includes('product')?'productspaceTab':'toolspaceTab';
+  button.setAttribute('aria-pressed',String(button.dataset[key]===mode));
+ });
 }
+function openToolTab(mode){
+ if(!['saved','recent','all'].includes(mode))return;
+ toolTab=mode;toolTabChosen=true;page=1;
+ renderTools();
+}
+function openProductTab(mode){
+ if(!['saved','recent','all'].includes(mode))return;
+ productTab=mode;productTabChosen=true;
+ renderVentures();
+}
+
 function categoryChips(){
  const counts=new Map();
  for(const tool of tools){const category=tool.category||'Other';counts.set(category,(counts.get(category)||0)+1)}
@@ -106,15 +122,21 @@ function categoryChips(){
 }
 function filteredTools(){
  const query=($('tool-search')?.value||'').trim().toLocaleLowerCase('en-US');
- const saved=onlySaved?savedSet():null;
+ const order=toolTab==='all'?null:readSpace(local(),'tools',toolTab);
+ const allowed=order?new Set(order):null;
  const matches=tools.filter(tool=>
   (activeCategory==='All'||(tool.category||'Other')===activeCategory)&&
-  (!saved||saved.has(tool.url))&&
+  (!allowed||allowed.has(tool.url))&&
   (!query||[tool.name,tool.description,tool.category||''].some(value=>value.toLocaleLowerCase('en-US').includes(query)))
  );
- matches.sort((a,b)=>sortMode==='recent'
-  ?String(b.updatedAt||b.date||'').localeCompare(String(a.updatedAt||a.date||''))||a.name.localeCompare(b.name)
-  :a.name.localeCompare(b.name));
+ if(order){
+  const positions=new Map(order.map((url,i)=>[url,i]));
+  matches.sort((a,b)=>(positions.get(a.url)??Infinity)-(positions.get(b.url)??Infinity));
+ }else{
+  matches.sort((a,b)=>sortMode==='recent'
+   ?String(b.updatedAt||b.date||'').localeCompare(String(a.updatedAt||a.date||''))||a.name.localeCompare(b.name)
+   :a.name.localeCompare(b.name));
+ }
  return matches;
 }
 function toolCard(tool,index){
@@ -131,13 +153,28 @@ function toolCard(tool,index){
   if(result===null){favourite.setAttribute('aria-label','Saving is unavailable in this browser');return}
   favourite.setAttribute('aria-pressed',String(result));
   favourite.setAttribute('aria-label',(result?'Remove saved tool: ':'Save tool: ')+tool.name);
-  if(onlySaved)renderTools();
+  renderTools();notifySpace(window);
  });
  top.append(picture,favourite);
+ if(toolTab==='saved'){
+  const actions=make('div','','space-actions');
+  const order=readSpace(local(),'tools'),index=order.indexOf(tool.url);
+  for(const [label,dir] of [['↑ Move up',-1],['↓ Move down',1]]){
+   const button=make('button',label);button.type='button';
+   button.disabled=dir<0?index===0:index===order.length-1;
+   button.setAttribute('aria-label',label+': '+tool.name);
+   button.addEventListener('click',()=>{
+    if(moveSaved(local(),'tools',tool.url,dir)){renderTools();notifySpace(window)}
+   });
+   actions.append(button);
+  }
+  article.append(actions);
+ }
  const title=make('h3',tool.name),description=make('p',tool.description);
  const foot=make('div','','tool-card-foot');
  foot.append(make('span',tool.category||'Utility'));
  const link=make('a','Open tool');link.href='/'+tool.url;link.append(icon('external'));
+ link.addEventListener('click',()=>recordRecent(local(),'tools',tool.url));
  foot.append(link);article.append(top,title,description,foot);return article;
 }
 function renderTools(){
@@ -147,34 +184,68 @@ function renderTools(){
  const offset=(page-1)*pageSize;
  host.replaceChildren(...matches.slice(offset,offset+pageSize).map(toolCard));
  $('tool-results-count').textContent=number(matches.length)+' result'+(matches.length===1?'':'s');
- $('tool-results-description').textContent=onlySaved?'Showing your saved tools':activeCategory!=='All'?activeCategory+' tools':'Search, filter or save what you need.';
+ $('tool-results-description').textContent=toolTab==='saved'?'Your saved Toolspace in your preferred order.':toolTab==='recent'?'Tools opened recently on this device.':activeCategory!=='All'?activeCategory+' tools':'Search, filter or save what you need.';
  $('tool-empty').hidden=matches.length>0;
+ $('tool-empty').querySelector('strong').textContent=toolTab==='saved'?'Your Toolspace is empty.':toolTab==='recent'?'No recently used tools yet.':'No tools found.';
+ $('tool-empty').querySelector('p').textContent=toolTab==='saved'?'Choose All Tools and save favourites to see them here.':toolTab==='recent'?'Open a tool and it will appear here automatically.':'Try a shorter search or choose another category.';
  $('tool-pagination').hidden=matches.length<=pageSize;
  $('tool-page-label').textContent=page+' / '+pages;
  $('tool-prev').disabled=page<=1;$('tool-next').disabled=page>=pages;
  $('tool-search-clear').hidden=!$('tool-search').value;
- updateSavedButton();
+ drawTabs('[data-toolspace-tab]',toolTab);
+ const sorting=$('tool-sort')?.closest('.sort-control');if(sorting)sorting.hidden=toolTab!=='all';
 }
 function renderVentures(){
  const total=$('venture-total');
  if(total)total.textContent=number(ventures.length)+' founder-approved public launch'+(ventures.length===1?'':'es');
  const heroCount=$('venture-hero-count');if(heroCount)heroCount.textContent=number(ventures.length);
  const host=$('venture-products');if(!host)return;
- if(!ventures.length){
+ drawTabs('[data-productspace-tab]',productTab);
+ const order=productTab==='all'?null:readSpace(local(),'products',productTab);
+ const positions=order?new Map(order.map((id,i)=>[id,i])):null;
+ const available=order?ventures.filter(item=>positions.has(productIdentity(item))).sort((a,b)=>positions.get(productIdentity(a))-positions.get(productIdentity(b))):ventures;
+ if(!available.length){
   const empty=make('div','','empty-state');
   empty.append(make('span','✳','empty-state-mark'));
   const copy=make('div');
-  copy.append(make('span','PUBLIC PORTFOLIO STATUS','section-kicker'),make('h3','No approved public launches yet.'));
-  const p=make('p','Products appear here only after research review and founder approval. We will not present a possibility as a launch.');
-  copy.append(p);empty.append(copy);host.replaceChildren(empty);return;
+  const title=productTab==='saved'?'Your My Products collection is empty.':productTab==='recent'?'No recently viewed products yet.':'No approved public launches yet.';
+  const message=productTab==='saved'?'Explore founder-approved launches and save the products you want to revisit.':productTab==='recent'?'Products you explore will appear here for quick access.':'Products appear here only after research review and founder approval. We will not present a possibility as a launch.';
+  copy.append(make('span',productTab==='all'?'PUBLIC PORTFOLIO STATUS':'YOUR PRIVATE COLLECTION','section-kicker'),make('h3',title),make('p',message));
+  if(productTab!=='all'){
+   const explore=make('button','Explore Products','space-explore');explore.type='button';
+   explore.addEventListener('click',()=>openProductTab('all'));copy.append(explore);
+  }
+  empty.append(copy);host.replaceChildren(empty);return;
  }
- const cards=ventures.map(item=>{
-  const card=make('article','','venture-item');
+ host.replaceChildren(...available.map(item=>{
+  const id=productIdentity(item),card=make('article','','venture-item');
   card.append(make('span','FOUNDER-APPROVED · LAUNCHED','section-kicker'),make('h3',item.name),make('p',item.description));
-  const link=make('a','Explore venture →');link.href='/'+item.url;card.append(link);return card;
- });
- host.replaceChildren(...cards);
+  const actions=make('div','','space-actions'),saved=readSpace(local(),'products').includes(id);
+  const toggle=make('button',saved?'♥ Saved':'♡ Save product');
+  toggle.type='button';toggle.setAttribute('aria-pressed',String(saved));
+  toggle.setAttribute('aria-label',(saved?'Remove saved product: ':'Save product: ')+item.name);
+  toggle.addEventListener('click',()=>{
+   if(toggleSpace(local(),'products',id)===null){toggle.textContent='Saving unavailable';return}
+   renderVentures();notifySpace(window);
+  });
+  actions.append(toggle);
+  if(productTab==='saved'){
+   const index=order.indexOf(id);
+   for(const [label,dir] of [['↑ Move up',-1],['↓ Move down',1]]){
+    const button=make('button',label);button.type='button';
+    button.disabled=dir<0?index===0:index===order.length-1;
+    button.setAttribute('aria-label',label+': '+item.name);
+    button.addEventListener('click',()=>{
+     if(moveSaved(local(),'products',id,dir)){renderVentures();notifySpace(window)}
+    });actions.append(button);
+   }
+  }
+  const link=make('a','View product →');link.href='/'+item.url;
+  link.addEventListener('click',()=>recordRecent(local(),'products',id));
+  card.append(actions,link);return card;
+ }));
 }
+
 // HQventures has its own feed: every item must satisfy the public
 // founder-reviewed product gate. Tools and general activity never enter it.
 function renderVentureActivity(){
@@ -205,6 +276,8 @@ function applyCatalog(items){
  allItems=Array.isArray(items)?items:[];
  tools=allItems.filter(publicTool);
  ventures=qualifiedProducts(allItems);
+ if(!toolTabChosen){toolTab=readSpace(local(),'tools').length?'saved':'all';toolTabChosen=true}
+ if(!productTabChosen){productTab=readSpace(local(),'products').length?'saved':'all';productTabChosen=true}
  $('tools-count-big').textContent=number(tools.length);
  categoryChips();showcase.update(allItems);renderTools();renderVentures();renderVentureActivity();
 }
@@ -226,10 +299,13 @@ $('tool-search')?.addEventListener('keydown',event=>{
  if(event.key==='Escape'&&event.currentTarget.value){event.currentTarget.value='';page=1;renderTools()}
 });
 $('tool-search-clear')?.addEventListener('click',()=>{$('tool-search').value='';page=1;renderTools();$('tool-search').focus()});
-$('saved-toggle')?.addEventListener('click',()=>{onlySaved=!onlySaved;page=1;renderTools()});
+document.querySelectorAll('[data-toolspace-tab]').forEach(button=>button.addEventListener('click',()=>openToolTab(button.dataset.toolspaceTab)));
+document.querySelectorAll('[data-productspace-tab]').forEach(button=>button.addEventListener('click',()=>openProductTab(button.dataset.productspaceTab)));
+window.addEventListener('storage',event=>{if(isSpaceKey(event.key)){renderTools();renderVentures()}});
+window.addEventListener(SPACE_EVENT,()=>{renderTools();renderVentures()});
 $('tool-sort')?.addEventListener('change',event=>{sortMode=event.target.value;page=1;renderTools()});
 $('reset-tool-filters')?.addEventListener('click',()=>{
- activeCategory='All';onlySaved=false;page=1;$('tool-search').value='';$('tool-sort').value='name';sortMode='name';categoryChips();renderTools();
+ activeCategory='All';toolTab='all';page=1;$('tool-search').value='';$('tool-sort').value='name';sortMode='name';categoryChips();renderTools();
 });
 $('tool-prev')?.addEventListener('click',()=>{page=Math.max(1,page-1);renderTools();$('tool-results').scrollIntoView({block:'start',behavior:'smooth'})});
 $('tool-next')?.addEventListener('click',()=>{page+=1;renderTools();$('tool-results').scrollIntoView({block:'start',behavior:'smooth'})});
