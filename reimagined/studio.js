@@ -1,6 +1,7 @@
 /* YorpHives Fresh — first-party navigation, catalogue discovery and contact.
    Reads only public static catalogue/activity data. No private HQ access or remote SaaS. */
 import {qualifiedProducts} from '../product-policy.mjs';
+import {approvedVentureReleases} from './venture-activity.mjs';
 import {getCatalog,subscribeCatalog,startCatalogMonitoring} from './catalog-sync.mjs';
 import {readSaved,toggleSaved} from '../tools/save-tool.mjs';
 
@@ -210,6 +211,32 @@ function renderVentures(){
  });
  host.replaceChildren(...cards);
 }
+// HQventures has its own feed: every item must satisfy the public
+// founder-reviewed product gate. Tools and general activity never enter it.
+function renderVentureActivity(){
+ const section=$('venture-activity');
+ const host=$('venture-activity-list');
+ if(!section||!host)return;
+ const releases=approvedVentureReleases(allItems);
+ if(!releases.length){section.hidden=true;host.replaceChildren();return}
+ const cards=releases.map((item,index)=>{
+  const row=make('article','','pulse-item');
+  row.append(make('span',String(index+1).padStart(2,'0'),'pulse-item-number'));
+  const copy=make('div');
+  const link=make('a','Launched: '+item.name,'pulse-title');
+  link.href='/'+item.url;
+  copy.append(link,make('p',item.description));
+  row.append(copy);
+  const time=make('time',safeDate(item.date));
+  time.setAttribute('datetime',item.date);
+  row.append(time,make('span','↗','pulse-arrow'));
+  return row;
+ });
+ host.replaceChildren(...cards);
+ $('venture-activity-count').textContent=releases.length+' VERIFIED PRODUCT '+(releases.length===1?'RELEASE':'RELEASES');
+ section.hidden=false;
+}
+
 function applyCatalog(items){
  allItems=Array.isArray(items)?items:[];
  tools=allItems.filter(publicTool);
@@ -218,7 +245,7 @@ function applyCatalog(items){
  $('hero-tool-count').textContent=number(tools.length);
  $('home-venture-count').textContent=number(ventures.length);
  $('tools-count-big').textContent=number(tools.length);
- categoryChips();renderQuickstarts();renderFeaturedTools();renderTools();renderVentures();
+ categoryChips();renderQuickstarts();renderFeaturedTools();renderTools();renderVentures();renderVentureActivity();
 }
 subscribeCatalog(applyCatalog);
 startCatalogMonitoring();
@@ -253,17 +280,17 @@ async function loadActivity(){
   const data=await response.json();
   const valid=(Array.isArray(data.items)?data.items:[]).filter(item=>
    item&&typeof item.title==='string'&&item.title.length<=100&&!/[<>]/.test(item.title)&&
-   ((item.kind==='tools'&&tools.some(tool=>tool.url===item.url))||(item.kind==='explore'&&item.url==='#explore'))&&
+   (item.kind==='tools'&&tools.some(tool=>tool.url===item.url))&&
    Number.isFinite(Date.parse(item.timestamp))&&Date.parse(item.timestamp)<=Date.now()
   ).slice(0,4);
-  $('pulse-count').textContent='LATEST '+valid.length+' VERIFIED UPDATES';
+  $('pulse-count').textContent='LATEST '+valid.length+' VERIFIED TOOL UPDATES';
   if(!valid.length)return;
   const host=$('activity-list');
   host.replaceChildren(...valid.map((item,index)=>{
    const article=make('article','','pulse-item');
    article.append(make('span',String(index+1).padStart(2,'0'),'pulse-item-number'));
    const copy=make('div');
-   const link=make('a',item.title);link.href=item.kind==='tools'?'/'+item.url:'#ventures';link.className='pulse-title';
+   const link=make('a',item.title);link.href='/'+item.url;link.className='pulse-title';
    copy.append(link);
    if(item.summary)copy.append(make('p',String(item.summary).slice(0,150)));
    article.append(copy);

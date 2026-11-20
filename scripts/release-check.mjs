@@ -33,6 +33,15 @@ for(const id of requiredViews){
 }
 if(!homepage.includes('id="home-title"')||!homepage.includes('id="yh-pulse"')||!homepage.includes('id="yh-pulse-item"'))
  fail('Fresh homepage heading or verified activity rail is missing.');
+const ventureView=homepage.split('<section class="view" id="ventures"')[1]?.split('<section class="view" id="tools"')[0]||'';
+const toolView=homepage.split('<section class="view" id="tools"')[1]?.split('</main>')[0]||'';
+if(!ventureView.includes('id="venture-activity"')||!ventureView.includes('id="venture-activity-list"')||
+ ventureView.includes('id="activity-list"')||ventureView.includes('id="yh-pulse"')||
+ !toolView.includes('id="yh-pulse"')||!toolView.includes('id="activity-list"'))
+ fail('HQventures and Free Tools release updates are mixed or missing.');
+if(!js.includes('approvedVentureReleases(allItems)')||!js.includes("item.kind==='tools'"))
+ fail('Product updates must be founder-approved and tool updates must remain isolated.');
+if(!await exists('venture-activity.mjs'))fail('HQventures release filter module is missing.');
 if(!homepage.includes('YORPHIVES / AI-POWERED SOFTWARE STUDIO')||
  !homepage.includes('We build software<br><em>that moves you forward.</em>')||
  !homepage.includes('id="hero-quickstart-list"')||
