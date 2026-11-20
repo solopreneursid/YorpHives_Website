@@ -67,6 +67,11 @@ if(!surfaces.includes('--section-gap:10px;')||!surfaces.includes('--card-gap:8px
  !toolCss.includes('body.tool-page{--section-gap:10px;--card-gap:8px}')||
  !(await read('tools/directory-next.css')).includes('body.directory-page{--section-gap:10px;--card-gap:8px}'))
  fail('Compact and uniform section/card spacing rules are missing from one or more site experiences.');
+if(!surfaces.includes('THIRTY-PERCENT SMALLER NAVIGATION')||
+ !surfaces.includes('width:78px;min-width:78px;height:44px;min-height:44px')||
+ !toolCss.includes('width:74px;min-width:74px;height:44px;min-height:44px')||
+ !(await read('tools/directory-next.css')).includes('width:74px;min-width:74px;height:44px;min-height:44px'))
+ fail('Navigation needs visually 30% smaller pills and accessible 44px targets.');
 if(!surfaces.includes('DIMENSIONAL UNIFORM HEADER')||
  !surfaces.includes('.site-header .desktop-nav a,')||
  !surfaces.includes('.site-header .header-cta{')||

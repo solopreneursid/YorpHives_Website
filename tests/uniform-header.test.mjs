@@ -9,7 +9,11 @@ test('homepage header is a raised panel with four matching compact navigation pi
  assert.match(html,/class="header-cta" href="#hqconnect" data-nav="hqconnect"/);
  assert.match(css,/DIMENSIONAL UNIFORM HEADER/);
  assert.match(css,/\.site-header \.(?:desktop-nav a),\s*\.site-header \.header-cta\{/);
- assert.match(css,/width:112px;height:44px;min-width:112px;min-height:44px/);
+ assert.match(css,/width:78px;min-width:78px;height:44px;min-height:44px/);
+ assert.match(css,/\.site-header \.desktop-nav a::before,\.site-header \.header-cta::before\{/);
+ assert.match(css,/z-index:-1;inset:7px 0/);
+ assert.ok((112-78)/112>=.30);
+ assert.ok((44-30)/44>=.30);
  assert.match(css,/background:var\(--nav-face\);color:var\(--nav-ink\)/);
  assert.match(css,/\.site-header \.desktop-nav a\[aria-current=page\],\s*\.site-header \.header-cta\[aria-current=page\]/);
  assert.match(css,/@media\(max-width:760px\)/);
@@ -22,7 +26,9 @@ test('tool pages and directory use the same header base colour and accessible na
  for(const css of [tool,dir]){
   assert.match(css,/DIMENSIONAL UNIFORM HEADER/);
   assert.match(css,/background:#e7eee2;color:#294330/);
-  assert.match(css,/height:44px;min-height:44px/);
+  assert.match(css,/width:74px;min-width:74px;height:44px;min-height:44px/);
+  assert.match(css,/inset:7px 0/);
+  assert.ok((105-74)/105>=.29);
   assert.match(css,/@media\(max-width:760px\)/);
   assert.match(css,/prefers-reduced-motion:reduce/);
  }

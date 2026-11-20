@@ -362,3 +362,32 @@ body.tool-page .tool-nav a[aria-current=page]{
 @media(prefers-reduced-motion:reduce){
  body.tool-page .tool-nav a,body.tool-page .site-header .header-cta{transition:none}
 }
+
+/* THIRTY-PERCENT SMALLER NAVIGATION: 74px vs 105px width, 30px visible
+   height vs 44px original. The interactive area remains 44px high. */
+body.tool-page .tool-nav{gap:4px}
+body.tool-page .tool-nav a,body.tool-page .site-header .header-cta{
+ position:relative;isolation:isolate;flex:none;
+ width:74px;min-width:74px;height:44px;min-height:44px;
+ padding:0 3px;gap:2px;border:0;border-radius:0;
+ background:transparent;color:#294330;box-shadow:none;font-size:9px;
+}
+body.tool-page .tool-nav a::before,body.tool-page .site-header .header-cta::before{
+ content:"";position:absolute;z-index:-1;inset:7px 0;
+ border:1px solid #c6d7be;border-radius:9px;background:#e7eee2;
+ box-shadow:0 2px 0 -1px #b7cbb2,inset 0 1px 0 #ffffffef;
+}
+body.tool-page .tool-nav a:hover,body.tool-page .site-header .header-cta:hover{
+ background:transparent;color:#294330;border:0;box-shadow:none;
+}
+body.tool-page .tool-nav a:hover::before,body.tool-page .site-header .header-cta:hover::before{border-color:#8dae83}
+body.tool-page .tool-nav a[aria-current=page]{background:transparent;color:#294330;border:0;box-shadow:none}
+body.tool-page .tool-nav a[aria-current=page]::before{
+ border-color:#5e9958;box-shadow:inset 0 0 0 1px #83ad78,0 2px 0 -1px #b7cbb2;
+}
+@media(max-width:950px){
+ body.tool-page .tool-nav a,body.tool-page .site-header .header-cta{width:74px;min-width:74px;font-size:9px}
+}
+@media(max-width:760px){
+ body.tool-page .tool-nav,body.tool-page .site-header .header-cta{display:none}
+}
