@@ -4,7 +4,7 @@ import {writeFile} from 'node:fs/promises';
 import {chromium} from 'playwright';
 const BASE=process.env.YORPHIVES_REVIEW_URL||'https://073b7c05.yorphives-v1-review.pages.dev';
 const results=[],errors=[];
-const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+const browser=await chromium.launch({channel:process.env.YORPHIVES_CHROME_CHANNEL||undefined,headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
 async function scenario(name,viewport,perform){
  const ctx=await browser.newContext({baseURL:BASE,viewport,serviceWorkers:'block'});
  const page=await ctx.newPage();
