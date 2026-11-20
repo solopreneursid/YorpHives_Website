@@ -390,3 +390,61 @@ details.directory-section{margin-top:var(--card-gap)}
 @media(max-width:350px){
  .directory-dock a small,.directory-dock button small{font-size:7px}
 }
+
+
+/* BRAND-ALIGNED COLOUR PALETTE — visual-only A-Z directory recolouring.
+   Dark hero/footer with separate pastel discovery, search and category panels. */
+body.directory-page{
+ background:
+  radial-gradient(ellipse at 7% 8%,#e5f2e1,transparent 44%),
+  radial-gradient(ellipse at 96% 57%,#e4f1e9,transparent 48%),
+  #eaf1e9;
+}
+.directory-main>.directory-hero{
+ background:
+  repeating-linear-gradient(114deg,#c5f3b708 0 1px,transparent 1px 48px),
+  radial-gradient(ellipse at 83% 8%,#32705b9e,transparent 53%),
+  linear-gradient(133deg,#0c251f,#154c40 60%,#092823);
+ border-color:#386a59;color:#f4faed;
+}
+.directory-hero h1{color:#f7fbef}
+.directory-hero h1 em{color:#ddf49c}
+.directory-hero .directory-kicker{color:#c9efab}
+.directory-hero .directory-kicker>span{background:#d8f36a}
+.directory-hero-copy>p:not(.directory-kicker){color:#c8ddcf}
+.directory-hero .directory-benefits{color:#d8efd4}
+.directory-main>.directory-finder{
+ background:
+  radial-gradient(circle at 90% 6%,#d5eee0,transparent 46%),
+  linear-gradient(142deg,#fffefa,#e8f4e9);
+ border-color:#c0d8c7;
+}
+.directory-main>.directory-list{
+ background:
+  radial-gradient(circle at 6% 9%,#faf0cf,transparent 49%),
+  linear-gradient(145deg,#fffbf4,#f0f0df);
+ border-color:#ded8bf;
+}
+.directory-main>.directory-bottom-card{
+ background:linear-gradient(140deg,#e9f5e8,#e0f1e9 57%,#f6eedc);
+ border-color:#c1d9c5;
+}
+details.directory-section:nth-of-type(3n+1){
+ background:linear-gradient(145deg,#fffef9,#eaf3e4);
+}
+details.directory-section:nth-of-type(3n+2){
+ background:linear-gradient(145deg,#fafffb,#e5f3ef);
+}
+details.directory-section:nth-of-type(3n){
+ background:linear-gradient(145deg,#fffdf7,#f4eddc);
+}
+.directory-footer{
+ background:
+  radial-gradient(ellipse at 87% 0%,#2a684f8d,transparent 49%),
+  repeating-linear-gradient(116deg,#c9f2b309 0 1px,transparent 1px 55px),
+  linear-gradient(133deg,#071b17,#11382c 55%,#0a2420);
+ color:#ecf6e7;border-color:#35634f;
+}
+.directory-footer .directory-footer-links a{color:#d7e8d3}
+.directory-footer .directory-footer-bottom{color:#c1d4c5}
+.directory-footer .directory-footer-links strong{color:#d7ed9f}

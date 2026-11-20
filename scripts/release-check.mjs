@@ -67,6 +67,20 @@ if(!surfaces.includes('--section-gap:10px;')||!surfaces.includes('--card-gap:8px
  !toolCss.includes('body.tool-page{--section-gap:10px;--card-gap:8px}')||
  !(await read('tools/directory-next.css')).includes('body.directory-page{--section-gap:10px;--card-gap:8px}'))
  fail('Compact and uniform section/card spacing rules are missing from one or more site experiences.');
+const directoryPalette=await read('tools/directory-next.css');
+if(!surfaces.includes('BRAND-ALIGNED COLOUR PALETTE')||
+ !surfaces.includes('#main #home>.hero')||
+ !surfaces.includes('#main #ventures>.page-hero')||
+ !surfaces.includes('#main #tools>.page-hero')||
+ !surfaces.includes('#main #ventures>.home-process')||
+ !surfaces.includes('.site-footer{')||
+ !toolCss.includes('BRAND-ALIGNED COLOUR PALETTE')||
+ !toolCss.includes('body.tool-page .tool-intro')||
+ !toolCss.includes('body.tool-page .tool-footer{')||
+ !directoryPalette.includes('BRAND-ALIGNED COLOUR PALETTE')||
+ !directoryPalette.includes('.directory-main>.directory-hero')||
+ !directoryPalette.includes('.directory-footer{'))
+ fail('The site-wide logo-inspired dark hero/footer and pastel section palette is incomplete.');
 if(!surfaces.includes('THIRTY-PERCENT SMALLER NAVIGATION')||
  !surfaces.includes('width:78px;min-width:78px;height:44px;min-height:44px')||
  !toolCss.includes('width:74px;min-width:74px;height:44px;min-height:44px')||

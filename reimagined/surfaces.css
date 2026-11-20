@@ -341,3 +341,180 @@ body{
 @media(max-width:350px){
  .mobile-dock button small,.mobile-dock a small{font-size:7px}
 }
+
+
+/* BRAND-ALIGNED COLOUR PALETTE — 2026-11-20.
+   Palette only: dark forest/teal heroes and footer, varied pale surfaces.
+   Existing dimensions, typography, navigation and interactions are unchanged. */
+:root{
+ --hive-night:#091d19;
+ --hive-forest:#113c30;
+ --hive-deep-teal:#174b46;
+ --hive-moss:#426d3d;
+ --hive-lime:#d8f36a;
+ --hive-mint:#bdf0c9;
+ --hive-ivory:#fbf8ed;
+ --hive-sage:#e6f0de;
+ --hive-seafoam:#e3f3eb;
+ --hive-cream:#f9eed9;
+}
+body{
+ background:
+  radial-gradient(ellipse at 6% 8%,#eaf4e5c4,transparent 48%),
+  radial-gradient(ellipse at 91% 52%,#e2efe9b8,transparent 48%),
+  #eaf0e8;
+}
+/* All hero areas: layered dark backgrounds with subtle pattern texture. */
+#main #home>.hero{
+ background:
+  repeating-linear-gradient(110deg,#baf4c509 0 1px,transparent 1px 48px),
+  radial-gradient(ellipse at 79% 28%,#336842a0,transparent 53%),
+  radial-gradient(ellipse at 7% 92%,#23514f98,transparent 50%),
+  linear-gradient(132deg,#0a1e1a,#103e31 57%,#091a17);
+ border-color:#2b6350;
+}
+#main #home>.hero h1{color:#f6faed}
+#main #home>.hero .eyebrow{color:#cbe8b0}
+#main #home>.hero .hero-tagline{color:#e8f5da}
+#main #home>.hero .hero-description{color:#c3d8ca}
+#main #ventures>.page-hero{
+ background:
+  repeating-linear-gradient(120deg,#d8f36a0a 0 1px,transparent 1px 50px),
+  radial-gradient(ellipse at 82% 16%,#4a6e3a99,transparent 53%),
+  linear-gradient(131deg,#0b241e 0%,#164533 56%,#0b2b2c 100%);
+ color:#f3faec;border-color:#426d53;
+}
+#main #tools>.page-hero{
+ background:
+  repeating-linear-gradient(110deg,#adf4e709 0 1px,transparent 1px 45px),
+  radial-gradient(ellipse at 81% 8%,#2e7071a8,transparent 49%),
+  linear-gradient(138deg,#0a2929 0%,#175045 58%,#101f1b 100%);
+ color:#f3faec;border-color:#347368;
+}
+#main :is(#ventures,#tools)>.page-hero h1{color:#f6faed}
+#main :is(#ventures,#tools)>.page-hero h1 em{color:#dcf38c}
+#main :is(#ventures,#tools)>.page-hero .eyebrow-dark{color:#cfefb5}
+#main :is(#ventures,#tools)>.page-hero .eyebrow-dot{
+ background:#d8f36a;box-shadow:0 0 0 5px #d8f36a24;
+}
+#main #ventures>.page-hero .page-hero-layout>div:first-child>p:not(.eyebrow),
+#main #tools>.page-hero .tools-page-hero>div:first-child>p:not(.eyebrow){
+ color:#cee3d3;
+}
+/* The informational cards inside dark heroes remain high-contrast and light. */
+#main #ventures .venture-status-panel{
+ background:linear-gradient(147deg,#f8faef,#e5f2df);
+ border-color:#a5cba8;color:#203929;
+}
+#main #tools .tool-count-card{
+ background:linear-gradient(145deg,#f5f9eb,#dcefe3);
+ border-color:#a9cbb6;color:#203c2d;
+}
+/* Home content: each surface has its own pastel mix/texture. */
+#main #home>.home-section.shell[aria-labelledby="home-discover-title"]{
+ background:
+  radial-gradient(circle at 93% 8%,#d1ecc9 0%,transparent 42%),
+  repeating-linear-gradient(125deg,#8eae8c09 0 1px,transparent 1px 42px),
+  linear-gradient(135deg,#f7faf0,#e6f2e1);
+ border-color:#b9d3b2;
+}
+#main #home>.featured-section{
+ background:
+  radial-gradient(circle at 10% 12%,#fcf5d0 0%,transparent 48%),
+  repeating-linear-gradient(110deg,#acb98a0a 0 1px,transparent 1px 45px),
+  linear-gradient(140deg,#fffaf0,#f0eddb);
+ border-color:#dfd7b6;
+}
+#main #home>.hqconnect{
+ background:
+  radial-gradient(ellipse at 83% 10%,#c8e9de 0%,transparent 53%),
+  repeating-linear-gradient(120deg,#7aa89d0b 0 1px,transparent 1px 50px),
+  linear-gradient(139deg,#f1faf5,#e4f3eb);
+ border-color:#b6d3c6;
+}
+/* HQventures portfolio and workflow: light, distinct from the dark hero. */
+#main #ventures>.page-content.shell{
+ background:
+  radial-gradient(ellipse at 90% 10%,#e4edc9 0%,transparent 49%),
+  linear-gradient(145deg,#fdfaf0,#ecf3df);
+ border-color:#cad4b2;
+}
+#main #ventures>.home-process{
+ background:
+  radial-gradient(ellipse at 12% 82%,#d7ecde 0%,transparent 47%),
+  repeating-linear-gradient(120deg,#83ae960b 0 1px,transparent 1px 48px),
+  linear-gradient(140deg,#f5faf1,#e0efe7);
+ border-color:#b9d3c5;
+ box-shadow:var(--panel-rise);
+ color:#203b2d;
+}
+#main #ventures .process-copy h2{color:#172f25}
+#main #ventures .process-copy h2 em{color:#3b7550}
+#main #ventures .process-copy .section-kicker-light{color:#3e7850}
+#main #ventures .process-copy>p:not(.section-kicker){color:#4b6858}
+#main #ventures .process-copy .text-link-light{color:#2a6646}
+#main #ventures .process-steps>div:not(.step-founder){
+ background:linear-gradient(135deg,#fafff6,#e3f2e8);
+ border-color:#bad6c5;
+ color:#203c2b;
+ box-shadow:0 3px 0 -1px #b3cdb7,0 13px 24px -18px #173c2b45;
+}
+#main #ventures .process-steps>div:not(.step-founder)>span{color:#387b51}
+#main #ventures .process-steps>div:not(.step-founder) small{color:#5b7564}
+#main #ventures .process-steps>.step-founder{
+ background:linear-gradient(135deg,#edf8bd,#d4eb8f);
+ border-color:#aac76b;color:#243a1c;
+}
+#main #ventures>.venture-release-section{
+ background:linear-gradient(145deg,#faf4e4,#e7f0df);border-color:#d8d6bc;
+}
+/* Free Tools: cooler sea-mist catalogue and warmer update panel. */
+#main #tools>.page-content.shell{
+ background:
+  radial-gradient(ellipse at 92% 9%,#d4ede8 0%,transparent 47%),
+  linear-gradient(143deg,#f3faf8,#e5f1eb);
+ border-color:#bdd8ce;
+}
+#main #tools>.pulse-section{
+ background:
+  radial-gradient(circle at 7% 14%,#faefcd 0%,transparent 41%),
+  linear-gradient(145deg,#fdf9ef,#eaf0e2);
+ border-color:#dcd5b9;
+}
+/* Cards vary gently while keeping existing content legible. */
+#main .ecosystem-card:nth-child(3n+1){
+ background:linear-gradient(148deg,#fffef5,#edf3e0);border-color:#d6dfbd;
+}
+#main .ecosystem-card:nth-child(3n+2){
+ background:linear-gradient(148deg,#fbfff9,#e3f3eb);border-color:#c5ded1;
+}
+#main .ecosystem-card:nth-child(3n){
+ background:linear-gradient(148deg,#fff9ed,#f1e8d9);border-color:#e2d5bf;
+}
+#main .featured-tool-card:nth-child(3n+1),
+#main .tool-card:nth-child(3n+1){background:linear-gradient(150deg,#fffefa,#edf4e3)}
+#main .featured-tool-card:nth-child(3n+2),
+#main .tool-card:nth-child(3n+2){background:linear-gradient(150deg,#fcfffc,#e6f2ee)}
+#main .featured-tool-card:nth-child(3n),
+#main .tool-card:nth-child(3n){background:linear-gradient(150deg,#fffcf4,#f4eadb)}
+#main .tool-search-panel{
+ background:linear-gradient(145deg,#fffefa,#edf5ee);border-color:#bcd4c5;
+}
+#main .directory-callout{
+ background:linear-gradient(140deg,#f4f3dd,#e1eddc);border-color:#c6d4b7;
+}
+#main .pulse-panel{
+ background:linear-gradient(145deg,#fffefa,#f0f5ec);border-color:#c6d7c5;
+}
+/* Footer: deepest tones on each site view, echoing the brand mark. */
+.site-footer{
+ background:
+  radial-gradient(ellipse at 93% -5%,#2c684f8c,transparent 45%),
+  repeating-linear-gradient(112deg,#ceffbb0a 0 1px,transparent 1px 55px),
+  linear-gradient(128deg,#071b17,#11382d 56%,#091b19);
+ color:#e8f6e8;border-color:#325943;
+}
+.site-footer .footer-links a{color:#d8e9d3}
+.site-footer .footer-brand>p{color:#bbd0be}
+.site-footer .footer-bottom{color:#c1d4c5}
+.site-footer .footer-links>div>span{color:#d8ef9e}

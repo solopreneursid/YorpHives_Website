@@ -423,3 +423,55 @@ body.tool-page .site-header .tool-support::before{
 @media(max-width:350px){
  body.tool-page .mobile-dock button small,body.tool-page .mobile-dock a small{font-size:7px}
 }
+
+
+/* BRAND-ALIGNED COLOUR PALETTE — visual-only, no layout or functional changes.
+   Deep hero/footer; mint, ivory and sage sections complement lime-green logo. */
+body.tool-page{
+ background:
+  radial-gradient(ellipse at 4% 10%,#e2f0dd,transparent 48%),
+  radial-gradient(ellipse at 93% 50%,#e1f2ec,transparent 46%),
+  #ebf1e9;
+}
+/* The tool introduction is the hero of each individual tool page. */
+body.tool-page .tool-intro,body.tool-page[data-tui-family] .tool-intro{
+ background:
+  repeating-linear-gradient(115deg,#c8f5c10a 0 1px,transparent 1px 45px),
+  radial-gradient(ellipse at 84% 14%,#296c539c,transparent 57%),
+  linear-gradient(135deg,#0b241e,#134b3e 62%,#092a28);
+ color:#f3fae9;border-color:#347358;
+}
+body.tool-page .tool-intro h1,body.tool-page[data-tui-family] .tool-intro h1{color:#f7fbef}
+body.tool-page .tool-intro .tool-kicker{color:#d2ef9a}
+body.tool-page .tool-intro>div>p:last-child,
+body.tool-page[data-tui-family] .tool-intro>div>p:last-child{color:#d0e3d4}
+body.tool-page .privacy-badge,body.tool-page[data-tui-family] .privacy-badge{
+ background:linear-gradient(140deg,#f6fce9,#d9efd9);color:#28533b;border-color:#a2cba7;
+}
+body.tool-page .tool-panel,body.tool-page[data-tui-family] .tool-panel{
+ background:linear-gradient(145deg,#fffcf4,#f3f7ec);border-color:#cad8bd;
+}
+body.tool-page .panel-head,body.tool-page[data-tui-family] .panel-head{
+ background:linear-gradient(130deg,#e0efdc,#cee7d7);color:#204431;
+}
+body.tool-page .panel-head span,body.tool-page[data-tui-family] .panel-head span{color:#4e6b58}
+body.tool-page .tool-help-card:nth-child(odd){
+ background:linear-gradient(143deg,#fafff9,#e4f1e8);border-color:#c2d7c8;
+}
+body.tool-page .tool-help-card:nth-child(even){
+ background:linear-gradient(145deg,#fffcf5,#f2eedf);border-color:#d9d3b9;
+}
+body.tool-page .tool-related{
+ background:linear-gradient(142deg,#f8faee,#e5eedc);border-color:#c6d5b7;
+}
+body.tool-page .yh-tool-discover{
+ background:linear-gradient(142deg,#f5faf6,#ddf0e9);border-color:#bcd8ce;
+}
+/* Footer stays visually distinct and high-contrast on all 143 tool pages. */
+body.tool-page .tool-footer{
+ background:
+  radial-gradient(ellipse at 85% 0%,#27634e82,transparent 57%),
+  linear-gradient(130deg,#071b18,#10382c 58%,#09231e);
+ color:#d9ebd8;
+}
+body.tool-page .tool-footer a{color:#ddf69b}
