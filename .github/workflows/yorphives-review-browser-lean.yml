@@ -1,4 +1,4 @@
-name: YorpHives review real-browser lean verification
+name: YorpHives review real-browser lean verification — corrected directory check
 on:
   push:
     branches:

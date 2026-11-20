@@ -55,7 +55,7 @@ try{
  });
  await scenario('mobile: saved tabs and crawlable directory',{width:390,height:844},async page=>{
   await navigate(page,'/tools/');
-  await page.locator('a.directory-card').first().waitFor({timeout:15000});
+  await page.locator('a.directory-card').first().waitFor({state:'attached',timeout:15000});
   assert.equal(await page.locator('a.directory-card').count(),143);
   assert.equal(await page.locator('[data-directory-space-tab="saved"]').count(),1);
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
