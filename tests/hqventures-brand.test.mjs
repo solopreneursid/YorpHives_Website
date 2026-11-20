@@ -22,7 +22,7 @@ test('HQventures is the public product-studio name across homepage, directory an
 });
 test("public studio language keeps founder approval explicit",async()=>{
  const html=await read('reimagined/index.html');
- assert.match(html,/YORPHIVES \/ AI-POWERED SOFTWARE STUDIO/);
+ assert.match(html,/by yorphivesHQ - AI powered venture studio/);
  assert.match(html,/founder approves what gets built and released/i);
  assert.match(html,/Products appear here only after research review and founder approval/);
  assert.match(html,/Founder review is mandatory/);
