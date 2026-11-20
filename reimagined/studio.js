@@ -2,6 +2,7 @@
    Reads only public static catalogue/activity data. No private HQ access or remote SaaS. */
 import {qualifiedProducts} from '../product-policy.mjs';
 import {approvedVentureReleases} from './venture-activity.mjs';
+import {createRotatingShowcase} from './showcase.mjs';
 import {getCatalog,subscribeCatalog,startCatalogMonitoring} from './catalog-sync.mjs';
 import {readSaved,toggleSaved} from '../tools/save-tool.mjs';
 
@@ -13,7 +14,7 @@ let previousView='';
 let allItems=[],tools=[],ventures=[];
 let activeCategory='All',onlySaved=false,page=1,sortMode='name';
 const pageSize=12;
-const featuredToolUrls=['tools/word-counter/','tools/qr-code-generator/','tools/password-generator/','tools/json-formatter/','tools/pdf-merge/','tools/image-resizer/'];
+const showcase=createRotatingShowcase(document.getElementById('featured-tools-grid'),document.getElementById('showcase-pause'));
 const icon=name=>{
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
  svg.setAttribute('aria-hidden','true');
@@ -154,22 +155,6 @@ function renderTools(){
  $('tool-search-clear').hidden=!$('tool-search').value;
  updateSavedButton();
 }
-function featuredCard(tool,index){
- const link=make('a','','featured-tool-card');link.href='/'+tool.url;
- const head=make('div','','featured-tool-heading');
- head.append(make('span',['Aa','▦','{}','✳'][index%4],'featured-tool-icon'),icon('external'));
- const category=make('span',tool.category||'Utility','featured-tool-category');
- const title=make('h3',tool.name),description=make('p',tool.description),action=make('span','Open tool →','featured-tool-action');
- link.append(head,category,title,description,action);return link;
-}
-
-function renderFeaturedTools(){
- const host=$('featured-tools-grid');if(!host)return;
- const selected=featuredToolUrls.map(url=>tools.find(tool=>tool.url===url)).filter(Boolean);
- for(const tool of tools){if(selected.length>=6)break;if(!selected.some(item=>item.url===tool.url))selected.push(tool)}
- if(!selected.length){host.replaceChildren(make('p','The tool collection is temporarily unavailable. Please visit the full directory.','loading-note'));return}
- host.replaceChildren(...selected.map(featuredCard));
-}
 function renderVentures(){
  const total=$('venture-total');
  if(total)total.textContent=number(ventures.length)+' founder-approved public launch'+(ventures.length===1?'':'es');
@@ -221,7 +206,7 @@ function applyCatalog(items){
  tools=allItems.filter(publicTool);
  ventures=qualifiedProducts(allItems);
  $('tools-count-big').textContent=number(tools.length);
- categoryChips();renderFeaturedTools();renderTools();renderVentures();renderVentureActivity();
+ categoryChips();showcase.update(allItems);renderTools();renderVentures();renderVentureActivity();
 }
 subscribeCatalog(applyCatalog);
 startCatalogMonitoring();

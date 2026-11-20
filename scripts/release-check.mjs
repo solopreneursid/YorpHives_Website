@@ -47,6 +47,23 @@ if(/THE RELEASE STANDARD|Who can approve|class="process-band"|Market signals and
 if(!ventureView.includes('id="home-progress"')||!ventureView.includes('Founder approval')||
  !ventureView.includes('Every real launch requires an explicit decision.'))
  fail('HQventures primary six-step workflow and founder approval must remain intact.');
+// The rotating six-card showcase uses the same published catalog and HQventures
+// founder-approval gate. No fixed/stale fixture list is allowed in production.
+const showcaseJs=await exists('showcase.mjs')?await read('showcase.mjs'):'';
+const showcaseCss=await exists('showcase.css')?await read('showcase.css'):'';
+if(!homepage.includes('href="showcase.css"')||
+ !homepage.includes('id="featured-tools-grid"')||
+ !homepage.includes('id="showcase-pause"')||
+ !js.includes("import {createRotatingShowcase} from './showcase.mjs'")||
+ !js.includes('showcase.update(allItems)')||
+ !showcaseJs.includes('qualifiedProducts(items)')||
+ !showcaseJs.includes('IntersectionObserver')||
+ !showcaseJs.includes('visibilitychange')||
+ !showcaseJs.includes('selectShowcaseItems')||
+ !showcaseCss.includes('rotateY(180deg)')||
+ !showcaseCss.includes('prefers-reduced-motion:reduce')||
+ /featuredToolUrls|renderFeaturedTools/.test(js))
+ fail('Dynamic six-card flip showcase, catalogue synchronization or approval gate is missing.');
 if(!homepage.includes('by yorphivesHQ - AI powered venture studio')||
  !homepage.includes('The future<br>doesn\'t build<br>itself.')||
  !homepage.includes('IDEAS IN MOTION')||
