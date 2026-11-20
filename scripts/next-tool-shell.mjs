@@ -5,7 +5,7 @@ export function injectNextToolUI(html,item){
  if(!/<body\b[^>]*class="tool-page"/i.test(html))throw Error('Unexpected direct tool document: '+item.url);
  if(html.includes('tool-next.css')||html.includes('class="mobile-dock"'))throw Error('Duplicate fresh tool shell: '+item.url);
  if(!html.includes('</head>'))throw Error('Tool head is missing: '+item.url);
- html=html.replace('</head>','<link rel="stylesheet" href="../tool-next.css"></head>');
+ html=html.replace('</head>','<link rel="stylesheet" href="../tool-next.css"><link rel="stylesheet" href="/interaction.css"><script type="module" src="/interaction.mjs"></script></head>');
  const header=html.match(/<header\b[^>]*class="site-header"[^>]*>[\s\S]*?<\/header>/i)?.[0];
  if(!header)throw Error('Tool navigation header missing: '+item.url);
  const nav='<nav class="tool-nav" aria-label="Main navigation">'+

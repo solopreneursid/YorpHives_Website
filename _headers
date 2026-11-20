@@ -20,6 +20,10 @@
 /catalog.json
   Cache-Control: no-store
 
+/interaction.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+/interaction.mjs
+  Cache-Control: no-cache, max-age=0, must-revalidate
 /studio.css
   Cache-Control: no-cache, max-age=0, must-revalidate
 /hqconnect.css

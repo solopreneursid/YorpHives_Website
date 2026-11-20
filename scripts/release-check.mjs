@@ -249,8 +249,25 @@ for(const event of activity.items||[]){
  if(event.kind==='tools'&&!publishedUrls.has(event.url))fail('Activity references an unpublished tool.');
  if(event.kind==='explore'&&event.url!=='#explore')fail('Explore activity references an unapproved URL.');
 }
+// Shared click/route motion must be present on every public entry surface.
+const motionCss=await exists('interaction.css')?await read('interaction.css'):'';
+const motionJs=await exists('interaction.mjs')?await read('interaction.mjs'):'';
+if(!homepage.includes('href="/interaction.css"')||
+ !homepage.includes('src="/interaction.mjs"')||
+ !directory.includes('href="/interaction.css"')||
+ !directory.includes('src="/interaction.mjs"')||
+ !motionCss.includes('@media(prefers-reduced-motion:reduce)')||
+ !motionCss.includes('@view-transition{navigation:auto}')||
+ !motionCss.includes('#main>.view:not([hidden])')||
+ !motionJs.includes("document.addEventListener('click'")||
+ /\.preventDefault\(|stopPropagation\(|location\.(?:href|assign|replace)\(/.test(motionJs))
+ fail('Shared progressive motion is missing or intercepts user actions.');
+const sectionLanding=await read('hqventures/index.html');
+if(!sectionLanding.includes('href="/interaction.css"')||!sectionLanding.includes('src="/interaction.mjs"'))
+ fail('Standalone HQventures landing does not load the shared motion system.');
 const sampleTool=await read('tools/word-counter/index.html');
-if(!sampleTool.includes('tool-next.css')||!sampleTool.includes('class="mobile-dock"'))
+if(!sampleTool.includes('tool-next.css')||!sampleTool.includes('class="mobile-dock"')||
+ !sampleTool.includes('href="/interaction.css"')||!sampleTool.includes('src="/interaction.mjs"'))
  fail('Direct tool pages are not receiving the shared mobile shell.');
 if(problems.length){
  console.error('RELEASE CHECK FAILED\n'+problems.map(item=>' - '+item).join('\n'));

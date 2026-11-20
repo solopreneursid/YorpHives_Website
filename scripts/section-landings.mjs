@@ -34,6 +34,8 @@ function page(s){
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="/tools/brand-icon.webp" type="image/webp">
 <link rel="stylesheet" href="/section-landing.css">
+<link rel="stylesheet" href="/interaction.css">
+<script type="module" src="/interaction.mjs"></script>
 <script type="application/ld+json">${meta}</script>
 </head>
 <body>

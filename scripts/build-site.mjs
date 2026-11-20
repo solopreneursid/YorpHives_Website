@@ -52,6 +52,9 @@ for(const file of ['index.html','app.js','style.css','next.css','next-responsive
 await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
 // One first-party analytics client for the marketing site and published tools.
 await cp(resolve(root,'insights-client.mjs'),resolve(dest,'insights-client.mjs'));
+// Lightweight, first-party motion shared by every public page (including tools).
+for(const file of ['interaction.css','interaction.mjs'])
+ await cp(resolve(root,file),resolve(dest,file));
 
 // Only the analytics API invokes Pages Functions. All static pages and tool
 // assets bypass function compute and retain free static asset delivery.
