@@ -168,7 +168,7 @@ function toolCard(tool,index){
    });
    actions.append(button);
   }
-  article.append(actions);
+  top.append(actions);
  }
  const title=make('h3',tool.name),description=make('p',tool.description);
  const foot=make('div','','tool-card-foot');

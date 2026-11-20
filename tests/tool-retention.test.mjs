@@ -38,7 +38,7 @@ test('production build contains saved buttons, same-category recommendations, an
   }
  }
  const directory=await readFile(resolve(dir,'tools/index.html'),'utf8');
- assert.match(directory,/id="directory-saved-only"/);
+ assert.match(directory,/data-directory-space-tab="saved"/);
  assert.match(directory,/id="directory-search"/);
  assert.match(directory,/href="\.\.\/tools\/word-counter\/"/);
  const module=await readFile(resolve(dir,'tools/directory-search.mjs'),'utf8');

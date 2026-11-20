@@ -49,7 +49,7 @@ test('public discovery is catalog-backed, searchable and paginated',async()=>{
  assert.match(html,/id="tool-results"/);
  assert.match(html,/id="tool-categories"/);
  assert.match(html,/id="tool-pagination"/);
- assert.match(html,/id="saved-toggle"/);
+ assert.match(html,/data-toolspace-tab="saved"/);
 });
 test("public progress and portfolio never imply an unapproved launch",async()=>{
  const [html,js,policy]=await Promise.all([
@@ -85,7 +85,7 @@ test('the direct A–Z library remains crawlable and searchable',async()=>{
  assert.match(html,/TOOL_DIRECTORY_START/);
  assert.match(html,/TOOL_DIRECTORY_END/);
  assert.match(html,/id="directory-search"/);
- assert.match(html,/id="directory-saved-only"/);
+ assert.match(html,/data-directory-space-tab="saved"/);
  assert.match(css,/\.directory-card/);
  assert.match(css,/@media\(max-width:760px\)/);
  assert.match(search,/directory-search-status/);

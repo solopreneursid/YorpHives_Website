@@ -1,6 +1,6 @@
 /* Browser-local collections for Free Tools and HQventures, responsive and accessible. */
 .space-tabs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:18px 0 15px}
-.space-tabs button{min-height:44px;border:1px solid #cbdacc;border-radius:999px;background:#fffefa;color:#365744;font:750 13px/1.2 inherit;padding:10px 16px;cursor:pointer}
+.space-tabs button{min-height:44px;border:1px solid #cbdacc;border-radius:999px;background:#fffefa;color:#365744;font-size:13px;font-weight:750;line-height:1.2;padding:10px 16px;cursor:pointer}
 .space-tabs button[aria-pressed=true]{background:#20553d;border-color:#20553d;color:#fff}
 .space-tabs button:hover{border-color:#4f8767}
 .space-tabs button:focus-visible,.space-actions button:focus-visible{outline:3px solid #72bd80;outline-offset:2px}

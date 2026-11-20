@@ -45,9 +45,9 @@ test('tool search, category filters and saved actions have mobile-friendly contr
  const directory=await read('tools/index.html');
  assert.match(html,/id="tool-search"/);
  assert.match(html,/id="tool-categories"/);
- assert.match(html,/id="saved-toggle"/);
+ assert.match(html,/data-toolspace-tab="saved"/);
  assert.match(directory,/id="directory-search"/);
- assert.match(directory,/id="directory-saved-only"/);
+ assert.match(directory,/data-directory-space-tab="saved"/);
  assert.match(js,/renderTools\(\)/);
  assert.match(js,/toggleSaved/);
 });
