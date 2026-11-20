@@ -23,7 +23,7 @@ test('shared progressive motion covers site sections, menus, cards and direct pa
   assert.match(page,/interaction\.css/);
   assert.match(page,/interaction\.mjs/);
  }
- assert.match(build,/for\(const file of \['interaction\.css','interaction\.mjs','personal-space\.css'\]\)/);
+ assert.match(build,/for\(const file of \['interaction\.css','interaction\.mjs','personal-space\.css','quick-launcher\.mjs'\]\)/);
  assert.match(script,/document\.addEventListener\('pointerdown'/);
  assert.match(script,/document\.addEventListener\('click'/);
  assert.match(script,/closest\('a\[href\],button,summary,\[role="button"\]'\)/);
