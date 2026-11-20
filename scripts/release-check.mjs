@@ -56,6 +56,18 @@ if(!homepage.includes('by yorphivesHQ - AI powered venture studio')||
   !homepage.includes('class="kofi-support" id="kofi-support" type="button" disabled'))
  fail('Home hero identity, three-stage system illustration or safe controls are missing.');
 if(!await exists('hero-system.css'))fail('Hero system artwork CSS missing.');
+const surfaces=await exists('surfaces.css')?await read('surfaces.css'):'';
+if(!homepage.includes('href="surfaces.css"')||
+ !surfaces.includes('#main>.view:not([hidden])> :is(.hero,.home-section,.hqconnect,.page-hero,.page-content,.home-process)')||
+ !surfaces.includes('var(--panel-rise-dark)')||
+ !surfaces.includes('@media(max-width:760px)'))
+ fail('Unified three-dimensional section surfaces, including the hero, are missing.');
+if(!toolCss.includes('DIMENSIONAL TOOL SURFACES')||
+ !directory.includes('directory-next.css')||
+ !await exists('tools/directory-next.css')||
+ !(await read('tools/directory-next.css')).includes('DIMENSIONAL A–Z DIRECTORY'))
+ fail('Section surfaces are not applied throughout the direct tool and directory experiences.');
+
 const heroOnly=homepage.split('<div class="hero">')[1]?.split('<section class="home-section shell" aria-labelledby="home-discover-title">')[0]||'';
 if(/class="hero-actions"|class="hero-note"|Browse free tools|Build with us|USEFUL TODAY|OPEN FOR EVERYONE/.test(heroOnly))
  fail('Home hero must not include buttons or the retired footer label.');

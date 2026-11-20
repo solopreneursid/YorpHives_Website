@@ -241,3 +241,53 @@ body.tool-page .yh-tool-discover{margin-top:16px;padding:14px}
 @media(prefers-reduced-motion:reduce){
  body.tool-page .tool-btn{transition:none}
 }
+ 
+/* DIMENSIONAL TOOL SURFACES — sections separated without altering processor inputs. */
+body.tool-page{
+ background:radial-gradient(circle at 8% 6%,#f6f7ed,transparent 40%),#e9eee5;
+}
+body.tool-page .site-header{box-shadow:0 8px 20px -17px #173a236a}
+body.tool-page .tool-intro,body.tool-page[data-tui-family] .tool-intro{
+ position:relative;min-width:0;margin-bottom:19px;
+ padding:clamp(17px,2.4vw,27px);
+ border:1px solid #cedbc7;border-radius:20px;
+ background:linear-gradient(135deg,#f9fbf4,#e9f2e4);
+ box-shadow:0 6px 0 -1px #becfb7,0 18px 35px -19px #193a244f,inset 0 2px 0 #ffffffde;
+}
+body.tool-page .tool-panel,body.tool-page[data-tui-family] .tool-panel{
+ border-color:#cedbc7;border-radius:20px;
+ box-shadow:0 6px 0 -1px #bacbb5,0 22px 37px -19px #173a255f,inset 0 2px 0 #ffffff;
+}
+body.tool-page .tool-help-card{
+ border-color:#cad8c3;border-radius:16px;
+ background:linear-gradient(145deg,#fffefa,#f4f7ed);
+ box-shadow:0 4px 0 -1px #c3d2bd,0 13px 24px -17px #173a2552,inset 0 1px 0 #fff;
+}
+body.tool-page .tool-related,body.tool-page .yh-tool-discover{
+ padding:clamp(14px,2vw,20px);border:1px solid #cbd9c3;
+ border-radius:17px;background:linear-gradient(145deg,#fffefa,#ecf3e9);
+ box-shadow:0 4px 0 -1px #c3d2bd,0 14px 26px -18px #173a254d,inset 0 1px 0 #fff;
+}
+body.tool-page .tool-related{margin-top:23px}
+body.tool-page .yh-tool-discover{margin-top:18px}
+@media(max-width:760px){
+ body.tool-page .tool-wrap,body.tool-page[data-tui-family] .tool-wrap{
+  width:calc(100% - 20px);padding-top:16px;
+ }
+ body.tool-page .tool-intro,body.tool-page[data-tui-family] .tool-intro{
+  padding:16px;margin-bottom:14px;border-radius:16px;
+  box-shadow:0 4px 0 -1px #bdcdb8,0 12px 21px -13px #173a255a;
+ }
+ body.tool-page .tool-panel,body.tool-page[data-tui-family] .tool-panel{
+  border-radius:16px;box-shadow:0 4px 0 -1px #bdcdb8,0 13px 23px -14px #173a255d;
+ }
+ body.tool-page .tool-help-card,body.tool-page .tool-related,body.tool-page .yh-tool-discover{
+  border-radius:14px;box-shadow:0 3px 0 -1px #c1d2bb,0 10px 18px -12px #173a2552;
+ }
+}
+@media(max-width:390px){
+ body.tool-page .tool-wrap,body.tool-page[data-tui-family] .tool-wrap{width:calc(100% - 14px)}
+}
+@media(prefers-reduced-motion:reduce){
+ body.tool-page .tool-intro,body.tool-page .tool-panel{transition:none}
+}

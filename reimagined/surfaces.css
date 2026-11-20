@@ -1,0 +1,126 @@
+/* YorpHives sectional surfaces — self-contained, dimensional and portable.
+   Applies to Home, HQventures, Free Tools and HQconnect, including every hero.
+   Pure CSS: no dependencies, GPU-heavy scenes or third-party services. */
+:root{
+ --panel-edge:#cad8c3;
+ --panel-rise:0 6px 0 -1px #c1d1bc,0 20px 42px -19px #16321c3f,inset 0 2px 0 #ffffffd9;
+ --panel-rise-dark:0 6px 0 -1px #759a7c,0 23px 48px -18px #071a15a3,inset 0 2px 0 #e1ffdd28;
+ --section-round:clamp(17px,2vw,26px);
+}
+body{
+ background:radial-gradient(ellipse at 10% 4%,#f5f7ed 0,transparent 44%),
+            radial-gradient(ellipse at 90% 60%,#dfe9dc55 0,transparent 42%),#e9eee5;
+}
+.site-header{box-shadow:0 8px 20px -17px #173a236a}
+#main{width:min(1460px,calc(100% - 44px));margin:18px auto 62px}
+#main>.view:not([hidden]){
+ display:flex;flex-direction:column;gap:clamp(16px,2vw,26px);
+ min-width:0;
+}
+/* Every major section is a separate, raised surface. */
+#main>.view:not([hidden])> :is(.hero,.home-section,.hqconnect,.page-hero,.page-content,.home-process){
+ position:relative;min-width:0;
+ overflow:hidden;
+ border:1px solid var(--panel-edge);
+ border-radius:var(--section-round);
+ box-shadow:var(--panel-rise);
+}
+/* Dark dimensional sections: give the hero the same physical separation. */
+#main>.view:not([hidden])> :is(.hero,.home-process){
+ border-color:#406c55;
+ box-shadow:var(--panel-rise-dark);
+}
+#main>.view:not([hidden])>.hero{
+ background:radial-gradient(ellipse at 73% 40%,#285a4773,transparent 52%),#11251d;
+}
+#main>.view:not([hidden])>.home-process{background:#10251d}
+/* Full-width boxed sections with readable, consistent inner gutters. */
+#main>.view:not([hidden])> :is(.home-section.shell,.page-content.shell){
+ width:100%;max-width:none;margin-inline:0;
+ padding-inline:max(23px,calc((100% - 1160px)/2));
+}
+#main>.view:not([hidden])>.home-section.shell{
+ background:linear-gradient(155deg,#fffefa 0%,#f0f4e9 100%);
+}
+#main>.view:not([hidden])>.featured-section{
+ background:linear-gradient(145deg,#edf3e6 0%,#e8eee1 100%);
+}
+#main>.view:not([hidden])>.page-content.shell{
+ background:linear-gradient(155deg,#fffefa,#f5f7ef);
+}
+#main>.view:not([hidden])>.page-hero-green{
+ background:linear-gradient(130deg,#e8f1e3 0%,#d9e7d4 100%);
+}
+#main>.view:not([hidden])>.page-hero-cream{
+ background:linear-gradient(135deg,#f5f4e9 0%,#e8eee1 100%);
+}
+#main>.view:not([hidden])>.hqconnect{
+ background:radial-gradient(ellipse at 80% 13%,#d9edc9 0,transparent 55%),#eff4e8;
+}
+#main>.view:not([hidden])>.venture-workflow{margin-top:0}
+/* Add quieter secondary depth within the raised sections. */
+#main .ecosystem-card,
+#main .featured-tool-card,
+#main .tool-card,
+#main .venture-item,
+#main .venture-status-panel,
+#main .tool-search-panel,
+#main .pulse-panel{
+ box-shadow:0 4px 0 -2px #bfceb8,0 16px 27px -20px #1b35245c,inset 0 1px 0 #ffffffbd;
+}
+#main .ecosystem-card:hover,
+#main .featured-tool-card:hover,
+#main .tool-card:hover{
+ box-shadow:0 7px 0 -3px #b1c9a9,0 22px 32px -19px #18331f72;
+}
+#main .process-steps>div{
+ box-shadow:0 4px 0 -2px #56735a,0 10px 20px -15px #06160b9a,inset 0 1px 0 #ffffff13;
+}
+#main .process-steps>.step-founder{
+ box-shadow:0 4px 0 -2px #91b953,0 13px 21px -16px #06160b8f,inset 0 1px 0 #ffffff93;
+}
+#main .hqconnect-form{
+ box-shadow:0 8px 0 -4px #b6cbb1,0 24px 45px -28px #103e2e8c,inset 0 2px 0 #ffffff;
+}
+/* Footer is separated visually too, without changing semantic navigation. */
+.site-footer{
+ width:min(1460px,calc(100% - 44px));margin:0 auto 21px;
+ overflow:hidden;border:1px solid #3f604b;border-radius:var(--section-round);
+ box-shadow:0 6px 0 -1px #91a991,0 18px 32px -20px #0c2819a1,inset 0 2px 0 #ffffff19;
+}
+@media(max-width:1050px){
+ #main{width:calc(100% - 32px);margin-top:15px}
+ .site-footer{width:calc(100% - 32px)}
+ #main>.view:not([hidden])> :is(.home-section.shell,.page-content.shell){
+  padding-inline:clamp(20px,4vw,38px);
+ }
+}
+@media(max-width:760px){
+ #main{width:calc(100% - 18px);margin:10px auto 40px}
+ #main>.view:not([hidden]){gap:12px}
+ #main>.view:not([hidden])> :is(.hero,.home-section,.hqconnect,.page-hero,.page-content,.home-process){
+  border-radius:17px;
+  box-shadow:0 4px 0 -1px #c0d1bc,0 12px 22px -13px #16321c4a,inset 0 1px 0 #ffffffb6;
+ }
+ #main>.view:not([hidden])> :is(.hero,.home-process){
+  box-shadow:0 4px 0 -1px #719778,0 14px 26px -14px #071a15bd,inset 0 1px 0 #e1ffdd24;
+ }
+ #main>.view:not([hidden])> :is(.home-section.shell,.page-content.shell){
+  padding-inline:17px;
+ }
+ #main>.view:not([hidden])>.home-section.shell{padding-block:28px}
+ #main>.view:not([hidden])>.page-content.shell{padding-block:25px 32px}
+ .site-footer{
+  width:calc(100% - 18px);margin-bottom:calc(13px + env(safe-area-inset-bottom,0px));
+  border-radius:17px;
+ }
+}
+@media(max-width:390px){
+ #main{width:calc(100% - 14px)}
+ #main>.view:not([hidden]){gap:10px}
+ #main>.view:not([hidden])> :is(.home-section.shell,.page-content.shell){padding-inline:13px}
+ .site-footer{width:calc(100% - 14px)}
+}
+@media(prefers-reduced-motion:reduce){
+ #main .ecosystem-card,#main .featured-tool-card,#main .tool-card{transition:none}
+}

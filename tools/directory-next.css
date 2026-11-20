@@ -203,3 +203,57 @@ details.directory-section>summary{min-height:50px;padding:10px 14px;font-size:13
 @media(prefers-reduced-motion:reduce){
  .directory-card{transition:none}
 }
+
+/* DIMENSIONAL A–Z DIRECTORY — raised, independent functional sections. */
+body.directory-page{
+ background:radial-gradient(circle at 8% 5%,#f7f8f1,transparent 43%),#e9eee5;
+}
+.directory-header{box-shadow:0 8px 20px -17px #173a236a}
+.directory-main{
+ display:flex;flex-direction:column;gap:19px;
+ width:min(1160px,calc(100% - 44px));padding:20px 0 54px;
+}
+.directory-breadcrumb{flex-wrap:wrap}
+.directory-main> :is(.directory-hero,.directory-finder,.directory-list,.directory-bottom-card){
+ min-width:0;margin:0;
+ padding:clamp(18px,2.8vw,28px);
+ border:1px solid #cbd9c3;border-radius:22px;
+ box-shadow:0 6px 0 -1px #bfcfb9,0 19px 35px -19px #173a2557,inset 0 2px 0 #ffffffdb;
+}
+.directory-main>.directory-hero{
+ background:linear-gradient(140deg,#f3f7ee,#e7f0e4);
+}
+.directory-main>.directory-finder{
+ background:linear-gradient(145deg,#fffefa,#f5f8f0);
+}
+.directory-main>.directory-list{
+ background:linear-gradient(150deg,#fffefa,#f0f5eb);
+}
+.directory-main>.directory-bottom-card{
+ background:linear-gradient(145deg,#edf4e7,#e0eedb);
+}
+details.directory-section{
+ box-shadow:0 3px 0 -1px #c8d8c3,0 11px 20px -14px #173a254d,inset 0 1px 0 #fff;
+}
+.directory-card{box-shadow:0 4px 0 -2px #c2d3be,0 10px 17px -15px #173a254c,inset 0 1px 0 #fff}
+.directory-footer{
+ width:min(1160px,calc(100% - 44px));margin:0 auto 22px;
+ overflow:hidden;border:1px solid #cad8c3;border-radius:22px;
+ box-shadow:0 5px 0 -1px #bfcfb9,0 17px 30px -19px #173a2557;
+}
+@media(max-width:760px){
+ .directory-main{width:calc(100% - 18px);gap:12px;padding:12px 0 42px}
+ .directory-main> :is(.directory-hero,.directory-finder,.directory-list,.directory-bottom-card){
+  padding:16px;border-radius:16px;
+  box-shadow:0 4px 0 -1px #c0d1bc,0 12px 21px -13px #173a2554,inset 0 1px 0 #ffffffb6;
+ }
+ .directory-main>.directory-hero{gap:12px}
+ .directory-footer{width:calc(100% - 18px);border-radius:16px}
+}
+@media(max-width:390px){
+ .directory-main,.directory-footer{width:calc(100% - 14px)}
+ .directory-main> :is(.directory-hero,.directory-finder,.directory-list,.directory-bottom-card){padding:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ .directory-card,details.directory-section{transition:none}
+}
