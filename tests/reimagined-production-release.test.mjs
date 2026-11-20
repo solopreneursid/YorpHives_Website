@@ -62,8 +62,8 @@ test('public analytics and usage signals remain privacy-first and founder-qualif
   read('reimagined/impact-public.json'),read('reimagined/usage-public.json')
  ]);
  assert.match(home,/id="anonymous-analytics-toggle"/);
- assert.match(home,/id="home-tool-count"/);
- assert.match(home,/id="home-venture-count"/);
+ assert.doesNotMatch(home,/class="trust-strip shell"|id="home-tool-count"|id="home-venture-count"/);
+ assert.match(home,/id="tools-count-big"/);
  assert.match(js,/qualifiedProducts\(allItems\)/);
  assert.match(js,/fetch\('\/activity\.json'/);
  assert.match(client,/globalPrivacyControl/);

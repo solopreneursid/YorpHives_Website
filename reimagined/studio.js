@@ -220,15 +220,13 @@ function applyCatalog(items){
  allItems=Array.isArray(items)?items:[];
  tools=allItems.filter(publicTool);
  ventures=qualifiedProducts(allItems);
- $('home-tool-count').textContent=number(tools.length);
- $('home-venture-count').textContent=number(ventures.length);
  $('tools-count-big').textContent=number(tools.length);
  categoryChips();renderFeaturedTools();renderTools();renderVentures();renderVentureActivity();
 }
 subscribeCatalog(applyCatalog);
 startCatalogMonitoring();
 getCatalog().then(()=>loadActivity()).catch(()=>{
- $('home-tool-count').textContent='—';$('home-venture-count').textContent='—';$('tools-count-big').textContent='—';
+ $('tools-count-big').textContent='—';
  $('featured-tools-grid').replaceChildren(make('p','The catalogue could not be loaded. Please try again or browse the directory.','loading-note'));
  $('tool-results').replaceChildren();
  $('tool-results-count').textContent='Catalogue unavailable';
