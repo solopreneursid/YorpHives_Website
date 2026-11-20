@@ -24,7 +24,7 @@ test('compact forms and direct tools retain comfortable mobile targets and respo
   read('tools/tool-next.css'),read('tools/directory-next.css')
  ]);
  assert.match(studio,/@media\(max-width:760px\)/);
- assert.match(studio,/#home \.hero-actions \.button\{min-height:44px/);
+ assert.match(studio,/\.header-cta,\.button\{min-height:44px/);
  assert.match(studio,/\.menu-toggle\{width:44px;height:44px\}/);
  assert.match(hq,/COMPACT HQCONNECT PASS/);
  assert.match(hq,/\.hqconnect-form input:not\(\[type=checkbox\]\),\.hqconnect-form select\{min-height:44px\}/);

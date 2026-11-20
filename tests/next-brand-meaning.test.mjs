@@ -100,9 +100,10 @@ test("mobile navigation keeps HQventures prominent while live tool actions come 
    assert.ok(section.indexOf('href="#ventures"')>=0);
    assert.ok(section.indexOf('href="#tools"')<section.indexOf('href="#ventures"'));
  }
- const hero=within('<div class="hero-actions"','</div>');
- assert.match(hero,/href="#tools"/);
- assert.match(hero,/href="#hqconnect"/);
+ const hero=within('<div class="hero">','</div>\n </div>\n\n <section class="home-section featured-section"');
+ assert.doesNotMatch(hero,/class="hero-actions"|class="hero-note"|USEFUL TODAY|OPEN FOR EVERYONE|Browse free tools|Build with us/);
+ assert.match(html,/class="header-cta" href="#hqconnect"/);
+ assert.match(html,/class="ecosystem-card ecosystem-tools" href="#tools"/);
  assert.match(html,/id="home-title"/);
  assert.match(html,/class="hero-art hero-system"/);
  assert.match(html,/Spot the signal/);
