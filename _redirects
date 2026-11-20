@@ -54,3 +54,7 @@
 /builders / 301
 /builders/ / 301
 /builders/* / 301
+
+# Former partnership landing now belongs to HQconnect on the main homepage.
+/partnerships / 301
+/partnerships/ / 301

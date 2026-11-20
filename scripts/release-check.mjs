@@ -18,6 +18,7 @@ if(new Set(items.map(x=>x.url)).size!==items.length)fail('Duplicate public URL.'
 const homepage=await read('index.html');
 const directory=await read('tools/index.html');
 const css=await read('studio.css');
+const hqCss=await read('hqconnect.css');
 const js=await read('studio.js');
 const rotators=await read('rotators.js');
 const catalogSync=await read('catalog-sync.mjs');
@@ -26,21 +27,28 @@ const headers=await read('_headers');
 const robots=await read('robots.txt');
 const sitemap=await read('sitemap.xml');
 const previews=/X-Robots-Tag:\s*noindex,\s*nofollow/i.test(headers);
-const requiredViews=['home','ventures','tools','partners','contact'];
+const requiredViews=['home','ventures','tools'];
 for(const id of requiredViews){
  if(!homepage.includes('<section class="view" id="'+id+'"'))fail('Homepage route missing: '+id);
 }
 if(!homepage.includes('id="home-title"')||!homepage.includes('id="yh-pulse"')||!homepage.includes('id="yh-pulse-item"'))
  fail('Fresh homepage heading or verified activity rail is missing.');
-if(!homepage.includes('YORPHIVES / INDEPENDENT SOFTWARE STUDIO')||
- !homepage.includes('Useful tools.<br><em>Working software.</em>')||
+if(!homepage.includes('YORPHIVES / AI-POWERED SOFTWARE STUDIO')||
+ !homepage.includes('We build software<br><em>that moves you forward.</em>')||
  !homepage.includes('id="hero-quickstart-list"')||
   !homepage.includes('href="/tools/word-counter/"')||
   !homepage.includes('class="kofi-support" id="kofi-support" type="button" disabled'))
  fail('Product-first homepage, working quick links or safe controls are missing.');
-if(!homepage.includes('href="#partners"')||!homepage.includes('id="contact-form"')||
+if(!homepage.includes('<section class="hqconnect" id="hqconnect"')||
+ !homepage.includes('class="header-cta" href="#hqconnect"')||
+ !homepage.includes('id="contact-form"')||
+ !homepage.includes('data-interest="Build a product"')||
+ !homepage.includes('data-interest="Long-term partnership"')||
+ !homepage.includes('name="consent" required')||
  !homepage.includes('connect@yorphives.com'))
- fail('Partnership or contact pathways are incomplete.');
+ fail('HQconnect build and partnership request pathways are incomplete.');
+if(/<section class="view" id="partners"|<section class="view" id="contact"/.test(homepage))
+ fail('Partnership and contact are home-based services, not extra public pages.');
 if(/id="builders"|href="#builders"|data-nav="builders"/i.test(homepage))
  fail('Retired Builders navigation must not return.');
 if(/data-form="opportunity"|<form[^>]*id="post"|id="job-listings"/i.test(homepage))
@@ -50,8 +58,9 @@ if(homepage.includes('DESIGN PREVIEW')||homepage.includes('name="robots" content
 if(!homepage.includes('<link rel="canonical" href="https://yorphives.com/">'))
  fail('Homepage canonical URL is missing.');
 if(/<script\b[^>]*src=["']https?:/i.test(homepage))fail('Remote homepage script found.');
-if(!css.includes('@media(max-width:350px)')||!css.includes('prefers-reduced-motion:reduce'))
- fail('Homepage is missing narrow-phone or reduced-motion styles.');
+if(!css.includes('@media(max-width:350px)')||!css.includes('prefers-reduced-motion:reduce')||
+ !hqCss.includes('@media(max-width:600px)')||!hqCss.includes('prefers-reduced-motion:reduce'))
+ fail('Homepage or HQconnect is missing narrow-phone and reduced-motion styles.');
 if(!js.includes('qualifiedProducts(allItems)')||
  !js.includes("retiredRoutes=new Set(['builders','opportunities','membership','post'])")||
  !js.includes("fetch('/activity.json'"))
@@ -83,7 +92,7 @@ if(previews&&/Sitemap:/i.test(robots))fail('Preview robots.txt must not advertis
 if(!previews&&!robots.includes('Sitemap: https://yorphives.com/sitemap.xml'))
  fail('Production robots.txt lacks the canonical sitemap.');
 if(!previews&&/X-Robots-Tag:\s*noindex/i.test(headers))fail('Production build must not inherit preview noindex.');
-for(const path of ['hqventures/index.html','partnerships/index.html']){
+for(const path of ['hqventures/index.html']){
  if(!await exists(path))fail('Missing public section page: '+path);
  else{
   const html=await read(path);

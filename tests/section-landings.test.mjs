@@ -7,7 +7,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..','dist');
 test('section pages are uniquely indexable and registered in sitemap',async()=>{
  const sitemap=await readFile(resolve(root,'sitemap.xml'),'utf8');
  const {sectionLandingPaths}=await import('../scripts/section-landings.mjs');
- assert.deepEqual(sectionLandingPaths,['hqventures/','partnerships/']);
+ assert.deepEqual(sectionLandingPaths,['hqventures/']);
  for(const route of sectionLandingPaths){
   const url='https://yorphives.com/'+route;
   const html=await readFile(resolve(root,route,'index.html'),'utf8');
@@ -26,7 +26,7 @@ test('section pages are uniquely indexable and registered in sitemap',async()=>{
  assert.ok((await stat(resolve(root,'section-landing.css'))).size>200);
 });
 test('landing pages preserve low-cost, founder-reviewed, non-transactional behavior',async()=>{
- for(const route of ['hqventures/','partnerships/']){
+ for(const route of ['hqventures/']){
   const html=await readFile(resolve(root,route,'index.html'),'utf8');
   assert.doesNotMatch(html,/<form|<iframe|<script\s+src=|payment|checkout|subscribe now/i);
   assert.ok(html.includes('href="/tools/"'));
