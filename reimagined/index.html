@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f5f4ed">
 <meta name="robots" content="noindex,nofollow">
-<meta name="description" content="YorpHives publishes real free browser tools and develops founder-approved digital ventures through HQventures. Explore working software today.">
-<title>YorpHives — Free browser tools and HQventures</title>
+<meta name="description" content="YorpHives builds useful software: free online tools, founder-approved HQventures products and HQconnect custom development partnerships.">
+<title>YorpHives — Software built for real work</title>
 <link rel="icon" href="/tools/brand-icon.webp" type="image/webp">
 <link rel="stylesheet" href="studio.css">
+<link rel="stylesheet" href="hqconnect.css">
 <script type="module" src="studio.js"></script>
 <script type="module" src="/insights-client.mjs"></script>
 </head>
@@ -29,35 +30,33 @@
  <a class="brand" href="#home" aria-label="YorpHives home"><img src="/tools/brand-icon.webp" width="38" height="38" alt=""><span class="brand-word">yorp<span>Hives</span><small>MAKE IDEAS USEFUL</small></span></a>
  <nav class="desktop-nav" aria-label="Main navigation">
   <a href="#home" data-nav="home">Home</a>
-  <a href="#ventures" data-nav="ventures">HQventures</a>
   <a href="#tools" data-nav="tools">Free tools</a>
-  <a href="#partners" data-nav="partners">Partnerships</a>
+  <a href="#ventures" data-nav="ventures">HQventures</a>
  </nav>
  <div class="header-actions">
   <button class="kofi-support" id="kofi-support" type="button" disabled aria-label="Ko-fi support, coming soon"><svg><use href="#i-heart"/></svg><span><strong>Support</strong><small>Coming soon</small></span></button>
-  <a class="header-cta" href="#contact">Let's talk <svg><use href="#i-arrow"/></svg></a>
+  <a class="header-cta" href="#hqconnect">HQconnect <svg><use href="#i-arrow"/></svg></a>
   <button class="menu-toggle" id="menu-toggle" type="button" aria-controls="mobile-menu" aria-expanded="false" aria-label="Open menu"><svg><use href="#i-menu"/></svg></button>
  </div>
 </header>
 <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile menu" hidden>
  <a href="#home" data-nav="home">Home <span>01</span></a>
- <a href="#ventures" data-nav="ventures">HQventures <span>02</span></a>
- <a href="#tools" data-nav="tools">Free tools <span>03</span></a>
- <a href="#partners" data-nav="partners">Partnerships <span>04</span></a>
- <a href="#contact" data-nav="contact">Contact <span>05</span></a>
+ <a href="#tools" data-nav="tools">Free tools <span>02</span></a>
+ <a href="#ventures" data-nav="ventures">HQventures <span>03</span></a>
+ <a href="#hqconnect" data-nav="hqconnect">HQconnect <span>04</span></a>
 </nav>
 <main id="main" tabindex="-1">
 <section class="view" id="home" aria-labelledby="home-title">
  <div class="hero">
   <div class="shell hero-layout">
    <div class="hero-copy">
-    <p class="eyebrow"><span class="eyebrow-dot"></span> YORPHIVES / INDEPENDENT SOFTWARE STUDIO</p>
-    <h1 id="home-title">Useful tools.<br><em>Working software.</em></h1>
-    <p class="hero-tagline">Pick a task. Open a tool. Get it done.</p>
-    <p class="hero-description">YorpHives publishes practical browser tools you can use without creating an account. <strong>HQventures</strong> is where we evaluate and develop new software products. Only founder-approved launches appear in our public portfolio.</p>
+    <p class="eyebrow"><span class="eyebrow-dot"></span> YORPHIVES / AI-POWERED SOFTWARE STUDIO</p>
+    <h1 id="home-title">We build software<br><em>that moves you forward.</em></h1>
+    <p class="hero-tagline">Use our free tools. Explore our products. Build yours with us.</p>
+    <p class="hero-description">YorpHives is an independent software studio combining useful tools, in-house ventures and tailored product development. Our private YorpHivesHQ researches and evaluates opportunities; the founder approves what gets built and released.</p>
     <div class="hero-actions">
      <a class="button button-primary" href="#tools">Browse free tools <svg><use href="#i-arrow"/></svg></a>
-     <a class="button button-quiet" href="#ventures">Explore HQventures <svg><use href="#i-external"/></svg></a>
+     <a class="button button-quiet" href="#hqconnect">Build with us <svg><use href="#i-external"/></svg></a>
     </div>
     <div class="hero-note"><span class="note-line"></span> USEFUL TODAY · OPEN FOR EVERYONE</div>
    </div>
@@ -89,7 +88,7 @@
  </section>
 
  <section class="home-section shell" aria-labelledby="home-discover-title">
-  <div class="section-heading"><div><p class="section-kicker">ABOUT YORPHIVES</p><h2 id="home-discover-title">Two types of work.<br><em>One independent studio.</em></h2></div><p class="section-aside">Explore what is available now and what must be reviewed before it reaches the public.</p></div>
+  <div class="section-heading"><div><p class="section-kicker">OUR WORK</p><h2 id="home-discover-title">Explore. Use.<br><em>Create together.</em></h2></div><p class="section-aside">Three clear paths into YorpHives.</p></div>
   <div class="ecosystem-grid">
    <a class="ecosystem-card ecosystem-ventures" href="#ventures">
     <div class="ecosystem-top"><span>HQVENTURES / THE FLAGSHIP</span><svg><use href="#i-arrow"/></svg></div>
@@ -99,32 +98,43 @@
     <div class="ecosystem-top"><span>FREE TOOLS / AVAILABLE NOW</span><svg><use href="#i-arrow"/></svg></div>
     <div class="ecosystem-bottom"><span class="card-label">PUBLISHED & DIRECTLY ACCESSIBLE</span><h3>Browser tool library <b>↗</b></h3><p>Writing, PDFs, images, development, calculations and more. Search by what you need to accomplish.</p><span class="ecosystem-link">Find and open a tool</span></div>
    </a>
-   <a class="ecosystem-card ecosystem-partners" href="#contact">
-    <div class="ecosystem-top"><span>CONTACT / OPEN FOR ENQUIRIES</span><svg><use href="#i-arrow"/></svg></div>
-    <div class="ecosystem-bottom"><span class="card-label">DIRECT COMMUNICATION</span><h3>Speak to the studio <b>↗</b></h3><p>Have a tool request, product idea or partnership enquiry? Prepare a message to our contact address.</p><span class="ecosystem-link">Get in touch</span></div>
+   <a class="ecosystem-card ecosystem-partners" href="#hqconnect">
+    <div class="ecosystem-top"><span>HQCONNECT / BUILD WITH US</span><svg><use href="#i-arrow"/></svg></div>
+    <div class="ecosystem-bottom"><span class="card-label">BUILD · MAINTAIN · EVOLVE</span><h3>HQconnect <b>↗</b></h3><p>Request a custom product or a long-term partnership to build, improve and maintain your software.</p><span class="ecosystem-link">Start your request</span></div>
    </a>
   </div>
  </section>
 
- <section class="home-process" id="home-progress">
-  <div class="shell process-layout">
-   <div class="process-copy"><p class="section-kicker section-kicker-light">HOW HQVENTURES WORKS</p><h2>Nothing launches<br><em>without approval.</em></h2><p>Our private research system collects evidence and makes recommendations. It cannot launch products or change the website. The founder reviews and approves every public release.</p><a class="text-link text-link-light" href="#ventures">See public venture status <svg><use href="#i-arrow"/></svg></a></div>
-   <div class="process-steps">
-    <div><span>01</span><strong>Discover</strong><small>Find a specific user problem.</small></div>
-    <div><span>02</span><strong>Evaluate</strong><small>Check demand, feasibility and risk.</small></div>
-    <div class="step-founder"><span>03</span><strong>Founder decides</strong><small>Nothing launches without approval.</small></div>
-    <div><span>04</span><strong>Build & improve</strong><small>Publish real products and review feedback.</small></div>
+
+
+ <section class="hqconnect" id="hqconnect" aria-labelledby="hqconnect-title">
+  <div class="shell hqconnect-layout">
+   <div class="hqconnect-heading">
+    <p class="section-kicker">HQCONNECT / BUILD WITH YORPHIVES</p>
+    <h2 id="hqconnect-title">Your idea.<br><em>Our next build.</em></h2>
+    <p>Need a digital product, AI workflow or a partner who can keep improving your software? Tell us what you're building. Every enquiry is reviewed by the founder.</p>
+    <div class="hqconnect-offers" aria-label="Ways to work with YorpHives">
+     <button type="button" class="hqconnect-offer" data-interest="Build a product"><span class="hqconnect-offer-icon" aria-hidden="true">✦</span><span><strong>Build something for me</strong><small>Websites, apps, tools, AI automations and custom software.</small></span><span class="offer-arrow" aria-hidden="true">↗</span></button>
+     <button type="button" class="hqconnect-offer" data-interest="Long-term partnership"><span class="hqconnect-offer-icon" aria-hidden="true">∞</span><span><strong>Long-term partnership</strong><small>Co-build, maintain, evolve and grow a product together.</small></span><span class="offer-arrow" aria-hidden="true">↗</span></button>
+    </div>
+    <p class="hqconnect-note">No automated acceptance or guarantees. We agree on scope, ownership and commercial terms before any work starts.</p>
    </div>
+   <form class="contact-form hqconnect-form" id="contact-form" aria-labelledby="hqconnect-form-title">
+    <div class="form-heading"><span>PROJECT ENQUIRY</span><strong id="hqconnect-form-title">Tell us about your project.</strong></div>
+    <div class="hqconnect-fields"><label>Your name<input name="name" type="text" autocomplete="name" placeholder="Your name" required maxlength="100"></label>
+     <label>Email address<input name="email" type="email" autocomplete="email" placeholder="you@example.com" required maxlength="180"></label></div>
+    <label>How can we help?<select name="requestType" id="interest" required><option value="Build a product">Build a product for me</option><option value="Long-term partnership">Long-term build & maintenance partnership</option></select></label>
+    <label>Project or business name <span class="hqconnect-optional">(optional)</span><input name="project" type="text" placeholder="What should we call it?" maxlength="120"></label>
+    <label>What do you want to create?<textarea name="message" rows="5" minlength="20" maxlength="4000" placeholder="Describe the problem, the users and the result you're looking for…" required></textarea></label>
+    <div class="hqconnect-fields"><label>Preferred timeline <span class="hqconnect-optional">(optional)</span><select name="timeline"><option value="">Not sure yet</option><option>As soon as practical</option><option>1–3 months</option><option>3–6 months</option><option>Flexible</option></select></label>
+     <label>Budget range <span class="hqconnect-optional">(optional)</span><select name="budget"><option value="">Prefer to discuss</option><option>Under $1,000</option><option>$1,000–$5,000</option><option>$5,000–$20,000</option><option>$20,000+</option></select></label></div>
+    <label class="hqconnect-consent"><input type="checkbox" name="consent" required><span>I agree to be contacted about this enquiry and understand that my details will be used to review it.</span></label>
+    <div class="hqconnect-trap" aria-hidden="true"><label>Leave blank<input name="website" autocomplete="off" tabindex="-1"></label></div>
+    <button class="button button-primary form-submit" type="submit">Send project request <svg><use href="#i-arrow"/></svg></button>
+    <p class="hqconnect-feedback" id="hqconnect-feedback" role="status" aria-live="polite">Your details are sent only when you submit this form. No account is required.</p>
+    <p class="hqconnect-fallback">Prefer email? <a href="mailto:connect@yorphives.com">connect@yorphives.com</a></p>
+   </form>
   </div>
- </section>
-
- <section class="home-section shell pulse-section" id="yh-pulse" aria-labelledby="pulse-title">
-  <div class="section-heading section-heading-tight"><div><p class="section-kicker">PUBLISHED ACTIVITY</p><h2 id="pulse-title">Updates backed by <em>releases.</em></h2><p class="section-sub">Changes are listed here only when connected to published work.</p></div><a class="text-link" href="#tools">Explore published tools <svg><use href="#i-arrow"/></svg></a></div>
-  <div class="pulse-panel"><div class="pulse-panel-label"><span class="pulse-led"></span><span>RECENT CHANGES</span><small id="pulse-count">CHECKING PUBLIC RELEASES</small></div><div class="pulse-list" id="activity-list" aria-live="polite"><article class="pulse-item" id="yh-pulse-item"><span class="pulse-item-number">01</span><div><strong>We show only verified public updates.</strong><p>Open a tool or browse the directory while updates load.</p></div><span class="pulse-arrow">↗</span></article></div></div>
- </section>
-
- <section class="home-cta">
-  <div class="shell cta-layout"><div><p class="section-kicker section-kicker-light">QUESTIONS OR IDEAS?</p><h2>Tell us what<br><em>you need.</em></h2></div><div><p>Request a tool, report an issue, or start a product conversation. We provide a direct contact route, not an automated promise.</p><a class="button button-lime" href="#contact">Contact the studio <svg><use href="#i-arrow"/></svg></a></div></div>
  </section>
 </section>
 
@@ -133,11 +143,11 @@
   <div class="shell page-hero-layout">
    <div>
     <p class="eyebrow eyebrow-dark"><span class="eyebrow-dot"></span> HQVENTURES / OUR FLAGSHIP STUDIO</p>
-    <h1 id="ventures-title">Product research.<br><em>Launch only when approved.</em></h1>
-    <p>HQventures studies potential software products and evaluates demand, usefulness and risk. Until a venture is approved and publicly launched, it stays off the public portfolio.</p>
+    <h1 id="ventures-title">Great ideas.<br><em>Researched. Built. Improved.</em></h1>
+    <p>HQventures creates our own products. YorpHivesHQ continuously researches opportunities, validates demand and proposes designs. The founder decides what proceeds to engineering and release.</p>
     <div class="venture-hero-actions">
      <a class="button button-primary" href="#tools">Use our current tools <svg><use href="#i-arrow"/></svg></a>
-     <a class="button venture-quiet" href="#contact">Contact the studio <svg><use href="#i-external"/></svg></a>
+     <a class="button venture-quiet" href="#hqconnect">Build with us <svg><use href="#i-external"/></svg></a>
     </div>
    </div>
    <aside class="venture-status-panel" aria-label="Verified public portfolio status">
@@ -152,6 +162,28 @@
   <div class="section-heading"><div><p class="section-kicker">THE PORTFOLIO</p><h2>Public <em>projects.</em></h2></div><span class="count-pill" id="venture-total">Checking approved launches…</span></div>
   <div class="venture-products" id="venture-products" aria-live="polite"><div class="empty-state"><span class="empty-state-mark">✳</span><div><span class="section-kicker">PUBLIC PORTFOLIO STATUS</span><h3>No approved public launches yet.</h3><p>Products appear here only after research review and founder approval. We won't present a possibility as a launch.</p></div></div></div>
  </div>
+
+ <section class="home-process venture-workflow" id="home-progress">
+  <div class="shell process-layout">
+   <div class="process-copy"><p class="section-kicker section-kicker-light">YORPHIVESHQ → HQVENTURES</p>
+    <h2>From opportunity<br><em>to a better product.</em></h2>
+    <p>Our private AI research and improvement engine finds needs, compares alternatives and builds evidence-backed product proposals. The founder controls approval and execution. Each release feeds learning into the next research cycle.</p>
+    <a class="text-link text-link-light" href="#hqconnect">Have a product in mind? HQconnect <svg><use href="#i-arrow"/></svg></a></div>
+   <div class="process-steps">
+    <div><span>01</span><strong>Discover</strong><small>Identify needs, trends and opportunities.</small></div>
+    <div><span>02</span><strong>Validate</strong><small>Check demand, competition and feasibility.</small></div>
+    <div><span>03</span><strong>Design</strong><small>Develop concepts and test prototypes.</small></div>
+    <div class="step-founder"><span>04</span><strong>Founder approval</strong><small>Every real launch requires an explicit decision.</small></div>
+    <div><span>05</span><strong>Build & launch</strong><small>Deliver approved software products.</small></div>
+    <div><span>06</span><strong>Learn & improve</strong><small>Use feedback and evidence to evolve.</small></div>
+   </div>
+  </div>
+ </section>
+
+ <section class="home-section shell pulse-section" id="yh-pulse" aria-labelledby="pulse-title">
+  <div class="section-heading section-heading-tight"><div><p class="section-kicker">PUBLISHED ACTIVITY</p><h2 id="pulse-title">Updates backed by <em>releases.</em></h2><p class="section-sub">Changes are listed here only when connected to published work.</p></div><a class="text-link" href="#tools">Explore published tools <svg><use href="#i-arrow"/></svg></a></div>
+  <div class="pulse-panel"><div class="pulse-panel-label"><span class="pulse-led"></span><span>RECENT CHANGES</span><small id="pulse-count">CHECKING PUBLIC RELEASES</small></div><div class="pulse-list" id="activity-list" aria-live="polite"><article class="pulse-item" id="yh-pulse-item"><span class="pulse-item-number">01</span><div><strong>We show only verified public updates.</strong><p>Open a tool or browse the directory while updates load.</p></div><span class="pulse-arrow">↗</span></article></div></div>
+ </section>
  <section class="process-band"><div class="shell process-band-layout"><div><p class="section-kicker section-kicker-light">THE RELEASE STANDARD</p><h2>Who can approve<br><em>a public release?</em></h2><p>YorpHivesHQ researches and recommends, but cannot change the website or publish a product. The founder reviews the evidence and authorizes releases.</p></div><div class="process-list"><div><b>01</b><span><strong>Discover</strong><small>Market signals and user needs</small></span></div><div><b>02</b><span><strong>Validate</strong><small>Evidence, feasibility and risk</small></span></div><div><b>03</b><span><strong>Approve</strong><small>Founder review is mandatory</small></span></div><div><b>04</b><span><strong>Launch</strong><small>Only verified, approved releases</small></span></div></div></div></section>
 </section>
 
@@ -168,37 +200,10 @@
  </div>
 </section>
 
-<section class="view" id="partners" aria-labelledby="partners-title" hidden>
- <div class="page-hero page-hero-green"><div class="shell page-hero-layout"><div><p class="eyebrow eyebrow-dark"><span class="eyebrow-dot"></span> PARTNERSHIPS / BUILD TOGETHER</p><h1 id="partners-title">Work with<br><em>YorpHives.</em></h1><p>We are open to practical conversations with people who can help useful products reach more people.</p><a class="button button-primary" href="#contact">Start a conversation <svg><use href="#i-arrow"/></svg></a></div><div class="page-hero-art partner-hero-art" aria-hidden="true"><span class="partner-orbit"></span><span class="partner-orbit orbit-two"></span><span class="partner-plus-large">+</span><span class="partner-node partner-node-one"></span><span class="partner-node partner-node-two"></span></div></div></div>
- <div class="shell page-content">
-  <div class="section-heading"><div><p class="section-kicker">WAYS TO WORK TOGETHER</p><h2>Make the next move <em>count.</em></h2></div><p class="section-aside">No automated acceptance or open enrollment. Every collaboration is reviewed individually.</p></div>
-  <div class="partner-grid">
-   <article class="partner-card"><span>01 / PRODUCT</span><h3>Build something useful</h3><p>Share a concrete product idea, prototype or capability that could solve a real problem.</p><a href="#contact" data-interest="Product collaboration">Discuss a product <svg><use href="#i-arrow"/></svg></a></article>
-   <article class="partner-card"><span>02 / DISTRIBUTION</span><h3>Reach the right people</h3><p>Explore ethical distribution, relevant audiences, integrations and product discovery.</p><a href="#contact" data-interest="Distribution">Discuss distribution <svg><use href="#i-arrow"/></svg></a></article>
-   <article class="partner-card"><span>03 / CONTENT</span><h3>Share useful knowledge</h3><p>Suggest relevant editorial, research or guest contribution ideas that genuinely help visitors.</p><a href="#contact" data-interest="Content collaboration">Discuss content <svg><use href="#i-arrow"/></svg></a></article>
-  </div>
-  <div class="partner-note"><span class="note-icon">i</span><p>Submitting an idea is an initial enquiry, not a partnership commitment. Ownership, scope and commercial terms are agreed explicitly before any work begins.</p></div>
- </div>
-</section>
-
-<section class="view" id="contact" aria-labelledby="contact-title" hidden>
- <div class="page-hero page-hero-cream"><div class="shell contact-hero"><div><p class="eyebrow eyebrow-dark"><span class="eyebrow-dot"></span> CONTACT / SAY HELLO</p><h1 id="contact-title">Contact<br><em>YorpHives.</em></h1><p>Tell us what you're exploring. A clear first message is all it takes.</p></div><div class="contact-hero-mark" aria-hidden="true">✳</div></div></div>
- <div class="shell contact-layout">
-  <div class="contact-copy"><p class="section-kicker">A DIRECT LINE</p><h2>Good conversations<br>start <em>somewhere.</em></h2><p>Whether you're asking about a tool, proposing a collaboration or sharing a product idea, send a note to the studio.</p><a class="contact-email" href="mailto:connect@yorphives.com"><svg><use href="#i-mail"/></svg> connect@yorphives.com <svg><use href="#i-external"/></svg></a><div class="contact-response-note">Your message opens in your email app. Nothing is sent automatically by this website.</div></div>
-  <form class="contact-form" id="contact-form">
-   <div class="form-heading"><span>01 / YOUR MESSAGE</span><strong>Let's start here.</strong></div>
-   <label>Your name<input name="Name" type="text" autocomplete="name" placeholder="How should we address you?" required maxlength="100"></label>
-   <label>Email address<input name="Email" type="email" autocomplete="email" placeholder="you@example.com" required maxlength="180"></label>
-   <label>What is this about?<select name="Topic" id="interest"><option>General enquiry</option><option>Product collaboration</option><option>Distribution</option><option>Content collaboration</option><option>Partnership</option><option>Tool feedback</option></select></label>
-   <label>Your message<textarea name="Message" rows="5" placeholder="A little context helps us understand…" required maxlength="4000"></textarea></label>
-   <button class="button button-primary form-submit" type="submit">Prepare email <svg><use href="#i-arrow"/></svg></button>
-  </form>
- </div>
-</section>
 </main>
 <footer class="site-footer">
  <div class="shell footer-main"><div class="footer-brand"><a class="brand brand-footer" href="#home"><img src="/tools/brand-icon.webp" width="38" height="38" alt=""><span class="brand-word">yorp<span>Hives</span><small>MAKE IDEAS USEFUL</small></span></a><p>Independent thinking.<br>Useful things in motion.</p></div>
-  <div class="footer-links"><div><span>EXPLORE</span><a href="#home">Home</a><a href="#ventures">HQventures</a><a href="#tools">Free tools</a></div><div><span>CONNECT</span><a href="#partners">Partnerships</a><a href="#contact">Contact</a><a href="mailto:connect@yorphives.com">Email the studio</a></div><div><span>DISCOVER</span><a href="/tools/">All tools A–Z</a><a href="/catalog.json">Public tool catalogue</a></div></div>
+  <div class="footer-links"><div><span>EXPLORE</span><a href="#home">Home</a><a href="#ventures">HQventures</a><a href="#tools">Free tools</a></div><div><span>WORK WITH US</span><a href="#hqconnect">HQconnect</a><a href="#hqconnect">Custom products & partnerships</a><a href="mailto:connect@yorphives.com">Email the studio</a></div><div><span>DISCOVER</span><a href="/tools/">All tools A–Z</a><a href="/catalog.json">Public tool catalogue</a></div></div>
  </div>
  <div class="shell footer-bottom"><span>© <span id="year">2026</span> YORPHIVES</span><button type="button" id="anonymous-analytics-toggle" class="analytics-toggle">Anonymous analytics: On (turn off)</button><span>BUILT TO EVOLVE · HUMAN-LED</span><a href="#home">BACK TO TOP ↑</a></div>
 </footer>
@@ -206,7 +211,7 @@
  <a href="#home" data-nav="home"><span aria-hidden="true">⌂</span><small>Home</small></a>
  <a href="#ventures" data-nav="ventures"><span aria-hidden="true">✳</span><small>HQventures</small></a>
  <a href="#tools" data-nav="tools"><span aria-hidden="true">▦</span><small>Tools</small></a>
- <a href="#contact" data-nav="contact"><span aria-hidden="true">↗</span><small>Contact</small></a>
+ <a href="#hqconnect" data-nav="hqconnect"><span aria-hidden="true">↗</span><small>HQconnect</small></a>
 </nav>
 </body>
 </html>

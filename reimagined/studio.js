@@ -6,7 +6,7 @@ import {readSaved,toggleSaved} from '../tools/save-tool.mjs';
 
 const $=id=>document.getElementById(id);
 const views=[...document.querySelectorAll('main>.view')];
-const viewNames={home:'Home',tools:'Free tools',ventures:'HQventures',partners:'Partnerships',contact:'Contact'};
+const viewNames={home:'Home',tools:'Free tools',ventures:'HQventures'};
 const retiredRoutes=new Set(['builders','opportunities','membership','post']);
 let previousView='';
 let allItems=[],tools=[],ventures=[];
@@ -47,16 +47,20 @@ function route(){
  let hash=location.hash.slice(1);
  try{hash=decodeURIComponent(hash)}catch{hash=''}
  if(retiredRoutes.has(hash)){history.replaceState(history.state,'',location.pathname+location.search+'#home');hash='home'}
- const aliases={explore:'ventures',connect:'contact'};
- const active=aliases[hash]|| (Object.hasOwn(viewNames,hash)?hash:'home');
+ const connectHashes=new Set(['hqconnect','contact','connect','partners']);
+ const isConnect=connectHashes.has(hash);
+ const aliases={explore:'ventures'};
+ const active=isConnect?'home':(aliases[hash]|| (Object.hasOwn(viewNames,hash)?hash:'home'));
  views.forEach(view=>{view.hidden=view.id!==active});
  document.querySelectorAll('[data-nav]').forEach(link=>{
-  if(link.dataset.nav===active)link.setAttribute('aria-current','page');
+  if(link.dataset.nav===(isConnect?'hqconnect':active))link.setAttribute('aria-current','page');
   else link.removeAttribute('aria-current');
  });
  document.title=(active==='home'?'Free browser tools and HQventures':viewNames[active])+' | YorpHives';
  closeMenu();
- if(active!==previousView){window.scrollTo({top:0,behavior:'auto'});previousView=active}
+ if(isConnect){requestAnimationFrame(()=>$('hqconnect')?.scrollIntoView({block:'start',behavior:'auto'}))}
+ else if(active!==previousView){window.scrollTo({top:0,behavior:'auto'})}
+ previousView=active;
 }
 window.addEventListener('hashchange',route);
 route();
@@ -269,14 +273,37 @@ async function loadActivity(){
  }catch{/* Public activity is optional; the rest of the site remains usable. */}
 }
 
-document.querySelectorAll('[data-interest]').forEach(link=>link.addEventListener('click',()=>{
- const select=$('interest'),value=link.dataset.interest;
- if(select&&[...select.options].some(option=>option.value===value))select.value=value;
+document.querySelectorAll('[data-interest]').forEach(button=>button.addEventListener('click',()=>{
+ const select=$('interest');
+ if(select&&[...select.options].some(option=>option.value===button.dataset.interest))select.value=button.dataset.interest;
+ $('contact-form')?.scrollIntoView({block:'center',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
 }));
-$('contact-form')?.addEventListener('submit',event=>{
+const requestForm=$('contact-form');
+if(requestForm)requestForm.dataset.startedAt=String(Date.now());
+requestForm?.addEventListener('submit',async event=>{
  event.preventDefault();
- const form=event.currentTarget;if(!form.reportValidity())return;
- const parts=[...new FormData(form)].map(([name,value])=>name+': '+String(value).trim()).filter(item=>item.length>0);
- const subject='YorpHives enquiry — '+String($('interest').value||'General enquiry');
- location.href='mailto:connect@yorphives.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(parts.join('\n\n'));
+ const form=event.currentTarget;
+ if(!form.reportValidity())return;
+ const fields=Object.fromEntries(new FormData(form));
+ const status=$('hqconnect-feedback'),button=form.querySelector('[type="submit"]');
+ if(fields.website)return; // Spam honeypot: silently do nothing.
+ const payload={
+  name:String(fields.name||'').trim(),email:String(fields.email||'').trim(),
+  requestType:String(fields.requestType||''),project:String(fields.project||'').trim(),
+  message:String(fields.message||'').trim(),timeline:String(fields.timeline||''),
+  budget:String(fields.budget||''),consent:fields.consent==='on',
+  startedAt:Number(form.dataset.startedAt||0)
+ };
+ button.disabled=true;status.textContent='Sending your request securely…';
+ try{
+  const res=await fetch('/api/hqconnect',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload),credentials:'same-origin',cache:'no-store'});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok||!data.ok)throw Error('Your request could not be saved. Please use the email link below.');
+  form.reset();form.dataset.startedAt=String(Date.now());
+  status.textContent='Request received. Reference: '+String(data.reference||'').slice(0,60)+'. We will review it and contact you by email if it is a fit.';
+  status.dataset.state='success';
+ }catch{
+  status.textContent='Online submission is unavailable. Please send your request to connect@yorphives.com using the email link below.';
+  status.dataset.state='error';
+ }finally{button.disabled=false}
 });

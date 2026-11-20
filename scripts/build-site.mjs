@@ -56,7 +56,7 @@ await cp(resolve(root,'insights-client.mjs'),resolve(dest,'insights-client.mjs')
 // Only the analytics API invokes Pages Functions. All static pages and tool
 // assets bypass function compute and retain free static asset delivery.
 await write('_routes.json',JSON.stringify({
- version:1,include:['/api/insights/*','/api/agent/v1/*'],exclude:[]
+ version:1,include:['/api/insights/*','/api/agent/v1/*','/api/hqconnect'],exclude:[]
 },null,2)+'\n');
 
 
@@ -345,7 +345,7 @@ if(target==='preview'){
 // This routine is also used to render a path-isolated acceptance candidate.
 async function publishReimaginedRoot(prefix=''){
  if(prefix)await mkdir(resolve(dest,prefix),{recursive:true});
- const assets=['studio.css','studio.js','rotators.css','rotators.js',
+ const assets=['studio.css','hqconnect.css','studio.js','rotators.css','rotators.js',
   'catalog-sync.mjs','impact-public.json','usage-public.json'];
  for(const asset of assets)
   await cp(resolve(root,'reimagined',asset),resolve(dest,prefix+asset));
