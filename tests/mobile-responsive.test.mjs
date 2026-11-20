@@ -36,7 +36,7 @@ test('tool directory and direct tools have their own mobile-first layouts',async
  assert.match(tool,/@media\(max-width:760px\)/);
  assert.match(tool,/@media\(max-width:350px\)/);
  assert.match(tool,/font-size:16px/);
- assert.match(tool,/min-height:46px/);
+ assert.match(tool,/body\.tool-page \.mobile-dock a\{[^\n]*min-height:44px/);
  assert.match(tool,/env\(safe-area-inset-bottom/);
 });
 test('tool search, category filters and saved actions have mobile-friendly controls',async()=>{

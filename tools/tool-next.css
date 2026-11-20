@@ -139,16 +139,18 @@ body.tool-page [hidden]{display:none!important}
  body.tool-page .site-header .header-cta{padding-inline:11px;font-size:9px}
 }
 @media(max-width:760px){
- body.tool-page{padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
+ body.tool-page{padding-bottom:calc(50px + env(safe-area-inset-bottom,0px))}
  body.tool-page .site-header{height:62px;min-height:62px;padding-inline:15px;gap:8px}
  body.tool-page .site-header .brand img{width:33px;height:33px}
  body.tool-page .site-header .brand-name{font-size:18px}
  body.tool-page .tool-nav,body.tool-page .site-header .header-cta,body.tool-page .site-header .header-kofi{display:none}
  body.tool-page .tool-header-back{display:inline-flex;align-items:center;justify-content:center;min-height:41px;margin-left:auto;padding:9px 12px;border:1px solid #d2ddca;border-radius:10px;background:#fffefa;color:#4d7549;font-size:10px;font-weight:850}
- body.tool-page .mobile-dock{position:fixed;z-index:70;right:9px;bottom:calc(5px + env(safe-area-inset-bottom,0px));left:9px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:3px;border:1px solid #d8e4d2;border-radius:12px;background:#f7f8eff2;box-shadow:0 4px 0 #b6c3ad,0 10px 23px #14251b27;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
- body.tool-page .mobile-dock a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;min-height:44px;border-radius:9px;color:#71806d;font-size:9px;font-weight:800}
- body.tool-page .mobile-dock a>span{font-size:15px;line-height:1}
- body.tool-page .mobile-dock a[aria-current=page]{background:#dcebc9;color:#294a2e}
+ body.tool-page .mobile-dock{position:fixed;z-index:70;right:9px;bottom:calc(5px + env(safe-area-inset-bottom,0px));left:9px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));height:36px;gap:3px;padding:0 3px;border:1px solid #d8e4d2;border-radius:10px;background:#f7f8eff2;box-shadow:0 3px 0 #b6c3ad,0 9px 20px #14251b27;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+ body.tool-page .mobile-dock a{position:relative;isolation:isolate;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-width:0;min-height:44px;height:44px;margin-block:-5px;border-radius:8px;color:#71806d;font-size:9px;font-weight:800;background:transparent}
+ body.tool-page .mobile-dock a>span{font-size:13px;line-height:1}
+ body.tool-page .mobile-dock a[aria-current=page]{background:transparent;color:#294a2e}
+ body.tool-page .mobile-dock a[aria-current=page]::before{content:"";position:absolute;inset:5px 0;background:#dcebc9;border-radius:8px;z-index:-1}
+ body.tool-page .mobile-dock a:focus-visible{outline:2px solid #294a2e;outline-offset:-3px}
  body.tool-page .tool-wrap,body.tool-page[data-tui-family] .tool-wrap{width:calc(100% - 32px);padding:26px 0 58px}
  body.tool-page .breadcrumb{gap:7px;margin-bottom:19px;font-size:9px}
  body.tool-page .tool-intro,body.tool-page[data-tui-family] .tool-intro{align-items:flex-start;flex-direction:column;gap:12px;margin-bottom:20px}

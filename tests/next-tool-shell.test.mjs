@@ -29,7 +29,7 @@ test('shared direct-tool design uses accessible mobile controls and no external 
  const shell=await read('scripts/next-tool-shell.mjs');
  assert.match(css,/@media\(max-width:760px\)/);
  assert.match(css,/@media\(max-width:350px\)/);
- assert.match(css,/min-height:46px/);
+ assert.match(css,/body\.tool-page \.mobile-dock a\{[^\n]*min-height:44px/);
  assert.match(css,/font-size:16px/);
  assert.match(css,/env\(safe-area-inset-bottom/);
  assert.match(shell,/item\.type!=='tool'/);
