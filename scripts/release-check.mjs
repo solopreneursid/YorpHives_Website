@@ -43,7 +43,7 @@ if(!js.includes('approvedVentureReleases(allItems)')||!js.includes("item.kind===
  fail('Product updates must be founder-approved and tool updates must remain isolated.');
 if(!await exists('venture-activity.mjs'))fail('HQventures release filter module is missing.');
 if(!homepage.includes('by yorphivesHQ - AI powered venture studio')||
- !homepage.includes('The future<br>doesn\'t <em>build</em><br>itself')||
+ !homepage.includes('The future<br>doesn\'t build<br>itself.')||
  !homepage.includes('IDEAS IN MOTION')||
  !homepage.includes('class="hero-art hero-system"')||
  !['Spot the signal','Test the idea','Decide &amp; create'].every(s=>homepage.includes(s))||

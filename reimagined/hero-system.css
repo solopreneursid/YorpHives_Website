@@ -69,8 +69,18 @@
  position:absolute;bottom:4%;right:0;color:#8bad9e;
  font-size:8px;font-weight:800;letter-spacing:.12em;white-space:nowrap;
 }
-#home .hero-period{color:#65e7bf;font-style:normal}
-#home .hero h1 em{color:#bbf1d7}
+/* One visual voice for every word: the same font, weight, color and rhythm.
+   Keep explicit line breaks so the heading remains balanced and compact. */
+#home .hero h1{
+ font-family:var(--sans);
+ font-style:normal;
+ font-weight:800;
+ line-height:1.07;
+ letter-spacing:-.055em;
+ color:#f4f7ed;
+ text-wrap:balance;
+}
+
 @media(max-width:1050px){
  #home .hero-system{height:335px;min-height:335px}
  #home .system-orbit-a{width:315px;height:227px}

@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 const read=path=>readFile(new URL('../'+path,import.meta.url),'utf8');
 test('homepage headline, brand motto and logo-based system match the reference',async()=>{
  const [html,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/hero-system.css')]);
- assert.match(html,/<h1 id="home-title">The future<br>doesn't <em>build<\/em><br>itself/);
+ assert.match(html,/<h1 id="home-title">The future<br>doesn't build<br>itself\./);
  assert.equal((html.match(/IDEAS IN MOTION/g)||[]).length,2);
  assert.match(html,/<p class="eyebrow"><span class="eyebrow-dot"><\/span> by yorphivesHQ - AI powered venture studio<\/p>/);
  for(const [n,label,copy] of [['01','RESEARCH','Spot the signal'],['02','INTELLIGENCE','Test the idea'],['03','FOUNDER','Decide & create']]){
@@ -16,6 +16,12 @@ test('homepage headline, brand motto and logo-based system match the reference',
  const hero=html.split('<div class="hero">')[1]?.split('<div class="trust-strip shell"')[0]||'';
  assert.doesNotMatch(hero,/id="hero-quickstart-list"|QUICK START|What do you need to do\?/);
  assert.match(css,/system-orbit-a/);
+ assert.match(css,/#home \.hero h1\{/);
+ assert.match(css,/font-family:var\(--sans\)/);
+ assert.match(css,/font-weight:800/);
+ assert.match(css,/color:#f4f7ed/);
+ assert.doesNotMatch(html,/<h1 id="home-title">[^]*?<em>/);
+ assert.doesNotMatch(html,/class="hero-period"/);
  assert.match(css,/system-stage-founder/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.doesNotMatch(css,/@import|url\(['"]?https?:/);
