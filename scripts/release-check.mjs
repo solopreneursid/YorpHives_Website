@@ -62,6 +62,11 @@ if(!homepage.includes('href="surfaces.css"')||
  !surfaces.includes('var(--panel-rise-dark)')||
  !surfaces.includes('@media(max-width:760px)'))
  fail('Unified three-dimensional section surfaces, including the hero, are missing.');
+if(!surfaces.includes('--section-gap:10px;')||!surfaces.includes('--card-gap:8px;')||
+ !surfaces.includes('--section-gap:8px;--card-gap:6px;--section-pad:16px')||
+ !toolCss.includes('body.tool-page{--section-gap:10px;--card-gap:8px}')||
+ !(await read('tools/directory-next.css')).includes('body.directory-page{--section-gap:10px;--card-gap:8px}'))
+ fail('Compact and uniform section/card spacing rules are missing from one or more site experiences.');
 if(!toolCss.includes('DIMENSIONAL TOOL SURFACES')||
  !directory.includes('directory-next.css')||
  !await exists('tools/directory-next.css')||

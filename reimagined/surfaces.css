@@ -124,3 +124,58 @@ body{
 @media(prefers-reduced-motion:reduce){
  #main .ecosystem-card,#main .featured-tool-card,#main .tool-card{transition:none}
 }
+
+
+/* UNIFORM COMPACT RHYTHM / 2026-11-20
+   Two shared tokens govern all outer section and card-grid gaps.
+   Keep shadows visible without oversized gutters or blank panel interiors. */
+:root{
+ --section-gap:10px;
+ --card-gap:8px;
+ --section-pad:24px;
+}
+#main{margin-top:10px;margin-bottom:26px}
+#main>.view:not([hidden]){gap:var(--section-gap)}
+/* Equal spacing throughout the three main site views. */
+#main>.view:not([hidden])> :is(.home-section.shell,.page-content.shell){
+ padding-block:var(--section-pad);
+}
+#main>.view:not([hidden])>.featured-section{padding-block:var(--section-pad)}
+#main>.view:not([hidden])>.hqconnect{padding-block:var(--section-pad)}
+#main>.view:not([hidden])> :is(.hero,.page-hero,.home-process) :is(.hero-layout,.page-hero-layout,.tools-page-hero,.process-layout){
+ padding-block:var(--section-pad);
+}
+#home .hero-layout{gap:20px}
+#ventures .venture-hero .page-hero-layout{gap:20px}
+#main .hqconnect-layout{gap:20px}
+#main :is(.section-heading,.section-heading-tight){margin-bottom:12px}
+#main :is(.ecosystem-grid,.featured-tools-grid,.tool-results-grid,.venture-products,.process-steps,.hqconnect-offers,.hqconnect-fields,.tool-categories,.category-chips){
+ gap:var(--card-gap);
+}
+#main .hqconnect-offers{margin-top:14px}
+#main .hqconnect-heading .hqconnect-note{margin-top:10px}
+#main .hqconnect-form{gap:var(--card-gap)}
+#main .tool-category-row{margin-top:var(--card-gap)}
+#main .tool-results-toolbar{margin:12px 0 10px}
+#main .pulse-section{padding-block:var(--section-pad)}
+#main .pulse-item{gap:var(--card-gap)}
+#main .section-heading .section-sub{margin-top:6px}
+.site-footer{margin-bottom:10px}
+/* Smaller equal intervals at phone widths; do not reduce input hit targets. */
+@media(max-width:760px){
+ :root{--section-gap:8px;--card-gap:6px;--section-pad:16px}
+ #main{margin:8px auto 22px}
+ #main>.view:not([hidden]){gap:var(--section-gap)}
+ #main>.view:not([hidden])> :is(.home-section.shell,.page-content.shell){padding-block:var(--section-pad)}
+ #main>.view:not([hidden])>.featured-section{padding-block:var(--section-pad)}
+ #main>.view:not([hidden])>.hqconnect{padding-block:var(--section-pad)}
+ #main>.view:not([hidden])> :is(.hero,.page-hero,.home-process) :is(.hero-layout,.page-hero-layout,.tools-page-hero,.process-layout){
+  padding-block:var(--section-pad);
+ }
+ #main .hqconnect-layout{gap:13px}
+ #main .ecosystem-grid{gap:var(--card-gap)}
+ #main .process-steps{gap:var(--card-gap)}
+ #main .section-heading{margin-bottom:10px}
+ #main .hqconnect-offers{margin-top:12px}
+ .site-footer{margin-bottom:calc(9px + env(safe-area-inset-bottom,0px))}
+}

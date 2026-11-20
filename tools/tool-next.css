@@ -291,3 +291,28 @@ body.tool-page .yh-tool-discover{margin-top:18px}
 @media(prefers-reduced-motion:reduce){
  body.tool-page .tool-intro,body.tool-page .tool-panel{transition:none}
 }
+
+
+/* UNIFORM COMPACT RHYTHM — standalone tools share site spacing values.
+   Forms and tool processors remain untouched; touch areas remain at least 44px. */
+body.tool-page{--section-gap:10px;--card-gap:8px}
+body.tool-page .tool-wrap,body.tool-page[data-tui-family] .tool-wrap{padding-top:15px;padding-bottom:38px}
+body.tool-page .breadcrumb{margin-bottom:var(--section-gap)}
+body.tool-page .tool-intro,body.tool-page[data-tui-family] .tool-intro{
+ gap:16px;margin-bottom:var(--section-gap);padding:20px;
+}
+body.tool-page .tool-help{gap:var(--card-gap);margin-top:var(--section-gap)}
+body.tool-page .tool-related,body.tool-page .yh-tool-discover{
+ margin-top:var(--section-gap);
+}
+body.tool-page .tool-fields,body.tool-page[data-tui-family] .tool-fields{gap:var(--card-gap)}
+body.tool-page .tool-buttons{gap:var(--card-gap)}
+body.tool-page .related-links,body.tool-page .yh-tool-discover ul{gap:var(--card-gap)}
+@media(max-width:760px){
+ body.tool-page{--section-gap:8px;--card-gap:6px}
+ body.tool-page .tool-wrap,body.tool-page[data-tui-family] .tool-wrap{padding-top:12px}
+ body.tool-page .tool-intro,body.tool-page[data-tui-family] .tool-intro{
+  gap:var(--card-gap);margin-bottom:var(--section-gap);padding:14px;
+ }
+ body.tool-page .tool-help{gap:var(--card-gap);margin-top:var(--section-gap)}
+}

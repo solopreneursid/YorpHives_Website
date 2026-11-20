@@ -38,3 +38,24 @@ test('every direct tool and the A–Z directory use separated raised sections wi
  assert.match(source,/class="mobile-dock"/);
  for(const css of [tool,dir])assert.doesNotMatch(css,/@import|url\(['"]?https?:/);
 });
+
+
+test('uniform compact spacing is shared across panels and card grids, desktop and mobile',async()=>{
+ const [surfaces,tool,dir]=await Promise.all([
+  read('reimagined/surfaces.css'),read('tools/tool-next.css'),read('tools/directory-next.css')
+ ]);
+ assert.match(surfaces,/--section-gap:10px;/);
+ assert.match(surfaces,/--card-gap:8px;/);
+ assert.match(surfaces,/@media\(max-width:760px\)\{\s*:root\{--section-gap:8px;--card-gap:6px;--section-pad:16px\}/);
+ assert.match(surfaces,/#main>\.view:not\(\[hidden\]\)\{gap:var\(--section-gap\)\}/);
+ assert.match(surfaces,/#main :is\(\.ecosystem-grid,\.featured-tools-grid,\.tool-results-grid,\.venture-products,\.process-steps,\.hqconnect-offers,\.hqconnect-fields,\.tool-categories,\.category-chips\)\{\s*gap:var\(--card-gap\)/);
+ assert.match(surfaces,/#main>\.view:not\(\[hidden\]\)> :is\(\.hero,\.page-hero,\.home-process\)/);
+ assert.match(tool,/body\.tool-page\{--section-gap:10px;--card-gap:8px\}/);
+ assert.match(tool,/body\.tool-page\{--section-gap:8px;--card-gap:6px\}/);
+ assert.match(tool,/body\.tool-page \.tool-help\{gap:var\(--card-gap\)/);
+ assert.match(dir,/body\.directory-page\{--section-gap:10px;--card-gap:8px\}/);
+ assert.match(dir,/body\.directory-page\{--section-gap:8px;--card-gap:6px\}/);
+ assert.match(dir,/\.directory-main\{gap:var\(--section-gap\)/);
+ assert.match(dir,/\.directory-grid\{gap:var\(--card-gap\)/);
+ for(const stylesheet of [surfaces,tool,dir])assert.doesNotMatch(stylesheet,/@import|url\(['"]?https?:/);
+});

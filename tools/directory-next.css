@@ -257,3 +257,29 @@ details.directory-section{
 @media(prefers-reduced-motion:reduce){
  .directory-card,details.directory-section{transition:none}
 }
+
+
+/* UNIFORM COMPACT RHYTHM — A–Z hero, search and category panels. */
+body.directory-page{--section-gap:10px;--card-gap:8px}
+.directory-main{gap:var(--section-gap);padding-top:12px;padding-bottom:38px}
+.directory-main> :is(.directory-hero,.directory-finder,.directory-list,.directory-bottom-card){
+ padding:20px;margin:0;
+}
+.directory-main>.directory-hero{gap:18px}
+.directory-list-heading{gap:var(--card-gap);margin-bottom:var(--card-gap)}
+.directory-grid{gap:var(--card-gap);padding:var(--card-gap)}
+details.directory-section{margin-top:var(--card-gap)}
+.directory-card{gap:var(--card-gap)}
+.directory-bottom-card{gap:var(--card-gap)}
+.directory-footer{margin-bottom:10px}
+@media(max-width:760px){
+ body.directory-page{--section-gap:8px;--card-gap:6px}
+ .directory-main{gap:var(--section-gap);padding-top:8px}
+ .directory-main> :is(.directory-hero,.directory-finder,.directory-list,.directory-bottom-card){
+  padding:14px;
+ }
+ .directory-main>.directory-hero{gap:12px}
+ .directory-grid{gap:var(--card-gap);padding:var(--card-gap)}
+ details.directory-section{margin-top:var(--card-gap)}
+ .directory-footer{margin-bottom:9px}
+}
