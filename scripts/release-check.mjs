@@ -149,7 +149,7 @@ if(!contactMarkup.includes('id="hqconnect-copy-email"')||
  !contactMarkup.includes('id="hqconnect-email"')||
  !contactMarkup.includes('id="hqconnect-copy-status"')||
  contactMarkup.includes('href="mailto:')||
- !js.includes("navigator.clipboard?.writeText(address)")||
+ !js.includes("await navigator.clipboard.writeText(address)")||
  !js.includes("document.execCommand('copy')"))
  fail('HQconnect contact email must be a working copy action, not a mailto link.');
 if(!homepage.includes('<section class="hqconnect" id="hqconnect"')||

@@ -103,7 +103,7 @@ test('HQconnect email uses a compact accessible copy action, not a mailto link',
  assert.match(section,/id="hqconnect-copy-status" class="hqconnect-copy-status" role="status" aria-live="polite"/);
  assert.doesNotMatch(section,/href="mailto:/);
  assert.match(js,/copyEmailButton\?\.addEventListener\('click',async\(\)=>\{/);
- assert.match(js,/navigator\.clipboard\?\.writeText\(address\)/);
+ assert.match(js,/navigator\.clipboard\.writeText\(address\)/);
  assert.match(js,/document\.execCommand\('copy'\)/);
  assert.match(js,/Copied ✓/);
  assert.match(js,/2200/);
