@@ -12,12 +12,12 @@ test('fresh homepage keeps device sizing and browser zoom available',async()=>{
  assert.match(html,/<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">/);
  assert.doesNotMatch(html,/user-scalable=no|maximum-scale=1/i);
 });
-test('fresh homepage has five direct experiences and a compact mobile dock',async()=>{
+test("fresh homepage has five direct experiences and a compact mobile dock",async()=>{
  const html=await read('reimagined/index.html');
- for(const id of ['home','ventures','tools','partners','contact'])assert.match(html,new RegExp('<section class="view" id="'+id+'"'));
- assert.match(html,/class="desktop-nav"/);
- assert.match(html,/class="mobile-menu"/);
- assert.match(html,/class="mobile-dock"/);
+ for(const id of ['home','ventures','tools'])assert.match(html,new RegExp('<section class="view" id="'+id+'"'));
+ assert.match(html,/<section class="hqconnect" id="hqconnect"/);
+ assert.doesNotMatch(html,/<section class="view" id="partners"|<section class="view" id="contact"/);
+ for(const cls of ['desktop-nav','mobile-menu','mobile-dock'])assert.ok(html.includes('class="'+cls+'"'),cls);
  assert.match(html,/id="menu-toggle"/);
 });
 test('homepage responsive rules cover small phones, touch and safe areas',async()=>{

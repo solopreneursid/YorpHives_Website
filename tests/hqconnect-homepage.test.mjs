@@ -27,3 +27,34 @@ test('first-party HQconnect intake is route-scoped, form is validated and no pub
  assert.match(build,/\/api\/hqconnect/);
  assert.match(build,/hqconnect\.css/);
 });
+
+import {onRequestPost,onRequestGet} from '../functions/api/hqconnect.js';
+const url='https://yorphives-v1-review.pages.dev/api/hqconnect';
+const makeRequest=(body,origin=new URL(url).origin)=>new Request(url,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify(body)});
+const example=()=>({
+ name:'Test Founder',email:'test@example.com',requestType:'Build a product',
+ project:'Sample',message:'A real software product enquiry describing a need.',
+ timeline:'Flexible',budget:'',consent:true,startedAt:Date.now()-8000
+});
+test('HQconnect rejects cross-origin and unconsented requests, and fails closed without the intake DB',async()=>{
+ const bad=await onRequestPost({request:makeRequest(example(),'https://evil.example'),env:{}});
+ assert.equal(bad.status,403);
+ const unconsented=await onRequestPost({request:makeRequest({...example(),consent:false}),env:{HQCONNECT_DB:{}}});
+ assert.equal(unconsented.status,400);
+ const unavailable=await onRequestPost({request:makeRequest(example()),env:{}});
+ assert.equal(unavailable.status,503);
+ assert.equal(onRequestGet().status,405);
+});
+test('HQconnect stores only validated submissions into the isolated intake store',async()=>{
+ let saved=null;
+ const fakeDB={prepare(sql){assert.match(sql,/INSERT INTO hqconnect_requests/);return {bind(...values){saved=values;return {async run(){return {success:true}}}}}}};
+ const response=await onRequestPost({request:makeRequest(example()),env:{HQCONNECT_DB:fakeDB}});
+ assert.equal(response.status,201);
+ const receipt=await response.json();
+ assert.equal(receipt.ok,true);
+ assert.match(receipt.reference,/^[a-f0-9]{8}$/);
+ assert.ok(Array.isArray(saved)&&saved.length===11);
+ assert.equal(saved[2],'Build a product');
+ assert.equal(saved[3],'Test Founder');
+ assert.equal(saved[4],'test@example.com');
+});

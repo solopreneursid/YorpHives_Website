@@ -20,12 +20,13 @@ test('HQventures is the public product-studio name across homepage, directory an
  assert.match(shell,/href="\.\.\/\.\.\/#ventures">HQventures/);
  assert.doesNotMatch(html,/data-nav="builders"|href="#builders"/);
 });
-test('public studio language keeps founder approval explicit',async()=>{
+test("public studio language keeps founder approval explicit",async()=>{
  const html=await read('reimagined/index.html');
- assert.match(html,/YORPHIVES \/ INDEPENDENT SOFTWARE STUDIO/);
- assert.match(html,/Founder decides/);
+ assert.match(html,/YORPHIVES \/ AI-POWERED SOFTWARE STUDIO/);
+ assert.match(html,/founder approves what gets built and released/i);
  assert.match(html,/Products appear here only after research review and founder approval/);
- assert.match(html,/Nothing launches without approval/);
+ assert.match(html,/Founder review is mandatory/);
+ assert.match(html,/Only founder-approved, verified launches appear here/);
 });
 test('the venture count is tied to qualified public releases, not ideas or drafts',async()=>{
  const [html,js,policy]=await Promise.all([

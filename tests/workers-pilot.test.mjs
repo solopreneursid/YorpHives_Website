@@ -18,11 +18,12 @@ test('isolated pilot Worker targets staging D1 and cannot bind production databa
  assert.equal('routes' in c,false);
  assert.equal('custom_domains' in c,false);
 });
-test('pilot build does not copy private source into public static assets',()=>{
+test("pilot build does not copy private source into public static assets",async()=>{
  const builder=readFileSync('scripts/build-site.mjs','utf8');
- assert.ok(builder.includes("await rm(dest,{recursive:true,force:true})"));
- assert.ok(builder.includes("version:1,include:['/api/insights/*','/api/agent/v1/*']"));
+ assert.match(builder,/await rm\(dest,\{recursive:true,force:true\}\)/);
+ assert.ok(builder.includes("version:1,include:['/api/insights/*','/api/agent/v1/*','/api/hqconnect']"));
  const entry=readFileSync('edge/worker.mjs','utf8');
- assert.ok(entry.includes('env.ASSETS.fetch(request)'));
- assert.ok(entry.includes("if(p.startsWith('/api/'))"));
+ assert.match(entry,/env\.ASSETS\.fetch\(request\)/);
+ assert.match(entry,/if\(p\.startsWith\('\/api\/'\)\)/);
+ assert.doesNotMatch(builder,/await cp\(resolve\(root,'db'\)/);
 });

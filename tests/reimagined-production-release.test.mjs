@@ -7,33 +7,34 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=path=>readFile(resolve(root,path),'utf8');
 const exists=path=>stat(resolve(root,path)).then(x=>x.isFile()).catch(()=>false);
 
-test('the built root promotes the fresh experience while preview remains noindex',async()=>{
+test("the built root promotes the fresh experience while preview remains noindex",async()=>{
  if(!await exists('dist/index.html'))return;
  const home=await read('dist/index.html');
  assert.match(home,/id="home-title"/);
- assert.match(home,/YORPHIVES \/ INDEPENDENT SOFTWARE STUDIO/);
- for(const view of ['home','ventures','tools','partners','contact'])
-  assert.match(home,new RegExp('<section class="view" id="'+view+'"'));
+ assert.match(home,/YORPHIVES \/ AI-POWERED SOFTWARE STUDIO/);
+ for(const view of ['home','ventures','tools'])assert.match(home,new RegExp('<section class="view" id="'+view+'"'));
+ assert.match(home,/<section class="hqconnect" id="hqconnect"/);
  assert.match(home,/class="kofi-support" id="kofi-support" type="button" disabled/);
  assert.match(home,/rel="canonical" href="https:\/\/yorphives\.com\//);
  assert.doesNotMatch(home,/DESIGN PREVIEW|name="robots" content="noindex/);
  assert.match(home,/id="yh-pulse"/);
  assert.match(home,/id="anonymous-analytics-toggle"/);
- for(const asset of ['dist/studio.css','dist/studio.js','dist/rotators.css','dist/rotators.js',
+ for(const asset of ['dist/studio.css','dist/hqconnect.css','dist/studio.js','dist/rotators.css','dist/rotators.js',
   'dist/catalog-sync.mjs','dist/impact-public.json','dist/usage-public.json','dist/agentic-browser.mjs'])
   assert.ok(await exists(asset),'missing '+asset);
  const headers=await read('dist/_headers');
  assert.match(headers,/X-Content-Type-Options: nosniff/);
 });
-test('legacy Builders and membership hashes route home while HQventures remains reachable',async()=>{
+test("legacy Builders and membership hashes route home while HQventures remains reachable",async()=>{
  const js=await read('reimagined/studio.js');
  assert.match(js,/explore:'ventures'/);
- assert.match(js,/connect:'contact'/);
+ assert.match(js,/connectHashes=new Set/);
  assert.match(js,/retiredRoutes/);
  assert.match(js,/history\.replaceState/);
  assert.doesNotMatch(js,/builders:'Builders'|opportunities:'builders'|membership:'builders'/);
  const html=await read('reimagined/index.html');
  assert.match(html,/href="#ventures"/);
+ assert.match(html,/href="#hqconnect"/);
  assert.match(html,/HQventures/);
  assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"/);
 });
