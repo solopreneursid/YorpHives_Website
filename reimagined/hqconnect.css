@@ -101,17 +101,25 @@ html{scroll-behavior:smooth}
 .hqconnect-email-row{display:inline-flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0}
 .hqconnect-email-address{color:#2e7245;font-weight:750;overflow-wrap:anywhere;user-select:text}
 .hqconnect-copy-email{
+ position:relative;isolation:isolate;
  display:inline-flex;align-items:center;justify-content:center;
- min-width:57px;min-height:36px;padding:6px 10px;
- border:1px solid #b3cdb2;border-radius:9px;
- background:linear-gradient(145deg,#f8fcf3,#dfeedd);color:#2c6741;
- box-shadow:0 3px 0 -1px #bfceb8,inset 0 1px 0 #ffffffee;
- font:800 10px/1.2 var(--sans);cursor:pointer;
+ min-width:57px;height:36px;min-height:36px;padding:0 10px;
+ border:0;border-radius:6px;background:transparent;color:#2c6741;
+ box-shadow:none;font:800 10px/1.2 var(--sans);cursor:pointer;
 }
-.hqconnect-copy-email:hover{background:linear-gradient(145deg,#fffef8,#e6f5e6);border-color:#6b9e75}
-.hqconnect-copy-email:focus-visible{outline:2px solid #27713a;outline-offset:2px}
+/* Half-height visual pill (18px), retaining the full-size accessible hit area. */
+.hqconnect-copy-email::before{
+ content:"";position:absolute;z-index:-1;inset:9px 0;
+ border:1px solid #b3cdb2;border-radius:6px;
+ background:linear-gradient(145deg,#f8fcf3,#dfeedd);
+ box-shadow:0 2px 0 -1px #bfceb8,inset 0 1px 0 #ffffffee;
+}
+.hqconnect-copy-email:hover::before{background:linear-gradient(145deg,#fffef8,#e6f5e6);border-color:#6b9e75}
+.hqconnect-copy-email:focus-visible{outline:2px solid #27713a;outline-offset:-8px}
 .hqconnect-copy-status:empty{display:none}
 .hqconnect-copy-status{color:#286c3d;font-size:10px;font-weight:750}
 @media(max-width:600px){
- .hqconnect-copy-email{min-height:44px}
+ .hqconnect-copy-email{height:44px;min-height:44px}
+ /* Half of the former 44px mobile button: a 22px visible pill. */
+ .hqconnect-copy-email::before{inset:11px 0}
 }

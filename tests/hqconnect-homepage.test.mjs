@@ -111,3 +111,13 @@ test('HQconnect email uses a compact accessible copy action, not a mailto link',
  assert.match(css,/\.hqconnect-copy-email\{min-height:44px\}/);
  assert.doesNotMatch(js,/using the email link below/);
 });
+
+test('Copy email visible button is half-height on desktop and mobile without shrinking the touch target',async()=>{
+ const css=await read('reimagined/hqconnect.css');
+ assert.match(css,/\.hqconnect-copy-email\{[^}]*height:36px;min-height:36px/);
+ assert.match(css,/\.hqconnect-copy-email::before\{[^}]*inset:9px 0/);
+ assert.match(css,/\.hqconnect-copy-email\{height:44px;min-height:44px\}/);
+ assert.match(css,/\.hqconnect-copy-email::before\{inset:11px 0\}/);
+ assert.equal(36-9*2,18);
+ assert.equal(44-11*2,22);
+});
