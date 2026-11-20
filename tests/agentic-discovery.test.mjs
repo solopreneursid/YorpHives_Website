@@ -69,7 +69,7 @@ test('Pages review exposes callable utility registry as JSON rather than SPA HTM
  const request=new Request('https://preview.example/api/agent/v1/tools');
  const response=await onRequestGet({request,env:{}});
  assert.equal(response.status,200);
- assert.match(response.headers.get('content-type')||'',/application\\/json/);
+ assert.ok((response.headers.get('content-type')||'').includes('application/json'));
  const registry=await response.json();
  assert.equal(registry.schemaVersion,1);
  assert.equal(registry.tools.length,5);
