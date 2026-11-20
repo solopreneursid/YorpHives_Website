@@ -1,0 +1,24 @@
+/* Browser-local collections for Free Tools and HQventures, responsive and accessible. */
+.space-tabs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:18px 0 15px}
+.space-tabs button{min-height:44px;border:1px solid #cbdacc;border-radius:999px;background:#fffefa;color:#365744;font:750 13px/1.2 inherit;padding:10px 16px;cursor:pointer}
+.space-tabs button[aria-pressed=true]{background:#20553d;border-color:#20553d;color:#fff}
+.space-tabs button:hover{border-color:#4f8767}
+.space-tabs button:focus-visible,.space-actions button:focus-visible{outline:3px solid #72bd80;outline-offset:2px}
+.space-note{margin:6px 0 16px;font-size:12px;color:#657668;line-height:1.6}
+.space-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.space-actions button,.space-explore{min-height:40px;border:1px solid #cddacb;border-radius:9px;background:#f6f9f1;color:#2c603e;padding:8px 12px;font-size:12px;font-weight:750;cursor:pointer}
+.space-actions button:disabled{opacity:.45;cursor:default}
+.space-actions button:hover:not(:disabled){background:#e1f2df}
+.space-empty{padding:26px;background:#fbfcf7;border:1px dashed #bacfbd;border-radius:16px;color:#597060;line-height:1.55}
+.space-empty strong{display:block;font-size:18px;margin-bottom:7px;color:#244d37}
+.space-empty p{margin:0 0 13px}
+.space-item-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.space-item{min-width:0;display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid #dce0d4;border-radius:14px;background:#fffefa}
+.space-item h3{margin:0;font-size:16px;line-height:1.3;color:#193c2a}
+.space-item p{margin:0;color:#738071;line-height:1.5;font-size:12px;flex:1}
+.space-item-link{display:inline-flex;align-items:center;min-height:40px;color:#307248;font-weight:800;font-size:13px}
+.space-item-label{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#528060}
+.directory-space-results{margin-top:22px}
+.directory-space-results[hidden],.directory-list[hidden]{display:none!important}
+@media(max-width:760px){.space-item-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.space-tabs{gap:5px}.space-tabs button{font-size:12px;padding:8px 12px}}
+@media(max-width:480px){.space-item-grid{grid-template-columns:1fr}.space-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.space-tabs button{font-size:11px;min-height:44px;padding:7px 5px;white-space:normal}.space-item{padding:14px}.space-note{font-size:11px}}

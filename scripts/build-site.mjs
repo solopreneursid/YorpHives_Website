@@ -53,7 +53,7 @@ await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
 // One first-party analytics client for the marketing site and published tools.
 await cp(resolve(root,'insights-client.mjs'),resolve(dest,'insights-client.mjs'));
 // Lightweight, first-party motion shared by every public page (including tools).
-for(const file of ['interaction.css','interaction.mjs'])
+for(const file of ['interaction.css','interaction.mjs','personal-space.css'])
  await cp(resolve(root,file),resolve(dest,file));
 
 // Only the analytics API invokes Pages Functions. All static pages and tool
@@ -190,7 +190,7 @@ for(const item of published){
    '<a href="/tools/?saved=1">View saved tools →</a></div>';
   if(!html.includes('</main>'))throw Error('Missing tool main: '+item.url);
   html=html.replace('</main>',save+suggestions+'</main>');
-  html=html.replace('</body>','<script type="module" src="/tools/save-tool.mjs"></script></body>');
+  html=html.replace('</body>','<script type="module" src="/tools/save-tool.mjs"></script><script type="module" src="/tools/visit-tool.mjs"></script></body>');
  }
  // Progressive local browser agents can discover utilities from any public page.
  if(!html.includes('agentic-browser.mjs'))

@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="hero-system.css">
 <link rel="stylesheet" href="surfaces.css">
 <link rel="stylesheet" href="showcase.css">
+<link rel="stylesheet" href="/personal-space.css">
 <link rel="stylesheet" href="/interaction.css">
 <script type="module" src="/interaction.mjs"></script>
 <script type="module" src="studio.js"></script>
@@ -157,7 +158,8 @@
  </div>
  <div class="shell page-content">
   <div class="section-heading"><div><p class="section-kicker">THE PORTFOLIO</p><h2>Public <em>projects.</em></h2></div><span class="count-pill" id="venture-total">Checking approved launches…</span></div>
-  <div class="venture-products" id="venture-products" aria-live="polite"><div class="empty-state"><span class="empty-state-mark">✳</span><div><span class="section-kicker">PUBLIC PORTFOLIO STATUS</span><h3>No approved public launches yet.</h3><p>Products appear here only after research review and founder approval. We won't present a possibility as a launch.</p></div></div></div>
+  <div class="space-tabs" aria-label="HQventures collection"><button type="button" data-productspace-tab="saved" aria-pressed="false">★ My Products</button><button type="button" data-productspace-tab="recent" aria-pressed="false">◷ Recently Viewed</button><button type="button" data-productspace-tab="all" aria-pressed="true">Explore Products</button></div><p class="space-note">Save founder-approved products for easy access, privately in this browser.</p>
+   <div class="venture-products" id="venture-products" aria-live="polite"><div class="empty-state"><span class="empty-state-mark">✳</span><div><span class="section-kicker">PUBLIC PORTFOLIO STATUS</span><h3>No approved public launches yet.</h3><p>Products appear here only after research review and founder approval. We won't present a possibility as a launch.</p></div></div></div>
  </div>
 
  <section class="home-process venture-workflow" id="home-progress">
@@ -189,9 +191,10 @@
 <section class="view" id="tools" aria-labelledby="tools-title" hidden>
  <div class="page-hero page-hero-cream"><div class="shell tools-page-hero"><div><p class="eyebrow eyebrow-dark"><span class="eyebrow-dot"></span> THE FREE TOOL LIBRARY</p><h1 id="tools-title">Find a tool.<br><em>Finish the task.</em></h1><p>Search published tools for writing, PDFs, images, calculations and developer work. Open a tool directly, without creating an account.</p></div><div class="tool-count-card"><strong id="tools-count-big">143</strong><span>TOOLS<br>READY TO USE</span><small>No account. No unnecessary uploads.</small></div></div></div>
  <div class="shell page-content tool-library-content">
-  <div class="tool-search-panel" role="search" aria-label="Search the free tool library"><label for="tool-search">What do you need to do?</label><div class="tool-search-row"><span aria-hidden="true">⌕</span><input id="tool-search" type="search" placeholder="Try word counter, PDF, image resize…" autocomplete="off" spellcheck="false"><button id="tool-search-clear" type="button" hidden>Clear</button></div><p>Search by tool name, description or category.</p></div>
+  <div class="space-tabs" aria-label="Free Tools collection"><button type="button" data-toolspace-tab="saved" aria-pressed="false">★ Toolspace</button><button type="button" data-toolspace-tab="recent" aria-pressed="false">◷ Recently Used</button><button type="button" data-toolspace-tab="all" aria-pressed="true">All Tools</button></div><p class="space-note">Find your everyday tools instantly on this device. No account needed.</p>
+   <div class="tool-search-panel" role="search" aria-label="Search the free tool library"><label for="tool-search">What do you need to do?</label><div class="tool-search-row"><span aria-hidden="true">⌕</span><input id="tool-search" type="search" placeholder="Try word counter, PDF, image resize…" autocomplete="off" spellcheck="false"><button id="tool-search-clear" type="button" hidden>Clear</button></div><p>Search by tool name, description or category.</p></div>
   <div class="tool-category-row"><div class="category-chips" id="tool-categories" aria-label="Filter by category"></div></div>
-  <div class="tool-results-toolbar"><div><strong id="tool-results-count">Loading tools…</strong><span id="tool-results-description">Choose a category or search above.</span></div><div class="tool-result-controls"><button class="saved-toggle" id="saved-toggle" type="button" aria-pressed="false">♡ Saved</button><label class="sort-control">Sort <select id="tool-sort"><option value="name">A–Z</option><option value="recent">Recently updated</option></select></label><button class="reset-filters" id="reset-tool-filters" type="button">Reset</button></div></div>
+  <div class="tool-results-toolbar"><div><strong id="tool-results-count">Loading tools…</strong><span id="tool-results-description">Choose a category or search above.</span></div><div class="tool-result-controls"><label class="sort-control">Sort <select id="tool-sort"><option value="name">A–Z</option><option value="recent">Recently updated</option></select></label><button class="reset-filters" id="reset-tool-filters" type="button">Reset</button></div></div>
   <div class="tool-results-grid" id="tool-results" aria-live="polite"><p class="loading-note">Loading the published tools…</p></div>
   <div class="tool-empty" id="tool-empty" hidden><strong>No tools found.</strong><p>Try a shorter search or choose another category.</p></div>
   <div class="tool-pagination" id="tool-pagination" hidden><button id="tool-prev" type="button">← Previous</button><span id="tool-page-label">1 / 1</span><button id="tool-next" type="button">Next →</button></div>

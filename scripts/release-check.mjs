@@ -193,7 +193,7 @@ if(impact.publication?.status!=='unpublished'||impact.publication?.approvedByFou
  (usage.ranked||[]).length)
  fail('Unverified Impact or usage rankings must remain unpublished.');
 if(!directory.includes('id="directory-search"')||!directory.includes('id="directory-search-status"')||
- !directory.includes('id="directory-saved-only"')||!directory.includes('TOOL_DIRECTORY_START')||
+ !directory.includes('data-directory-space-tab="saved"')||!directory.includes('TOOL_DIRECTORY_START')||
  !directory.includes('TOOL_DIRECTORY_END'))
  fail('The A–Z directory is missing search, saved tools or generated category markers.');
 for(const item of tools)if(!directory.includes('../'+item.url))fail('Missing crawlable directory link: '+item.url);

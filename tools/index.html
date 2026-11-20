@@ -8,6 +8,7 @@
 <title>Free tools A–Z | YorpHives</title>
 <link rel="icon" href="brand-icon.webp" type="image/webp">
 <link rel="stylesheet" href="directory-next.css">
+<link rel="stylesheet" href="/personal-space.css">
 <link rel="stylesheet" href="/interaction.css">
 <script type="module" src="/interaction.mjs"></script>
 <link rel="alternate" type="application/json" title="YorpHives public tool catalogue" href="../catalog.json">
@@ -23,15 +24,18 @@
 <main id="main" class="directory-main">
  <div class="directory-breadcrumb"><a href="../#home">Home</a><span>/</span><span>Free tools</span><span>/</span><strong>All tools</strong></div>
  <section class="directory-hero">
-  <div class="directory-hero-copy"><p class="directory-kicker"><span></span> THE YORPHIVES TOOLBOX</p><h1>One less thing<br>to <em>figure out.</em></h1><p>Find a simple tool for the task in front of you. No account, no unnecessary friction — just useful things that work.</p><div class="directory-benefits"><span>✓ Browser-based</span><span>✓ No sign-up</span><span>✓ Made to be useful</span></div></div>
+  <div class="directory-hero-copy"><p class="directory-kicker"><span></span> THE YORPHIVES TOOLSPACE</p><h1>One less thing<br>to <em>figure out.</em></h1><p>Find a simple tool for the task in front of you. No account, no unnecessary friction — just useful things that work.</p><div class="directory-benefits"><span>✓ Browser-based</span><span>✓ No sign-up</span><span>✓ Made to be useful</span></div></div>
   <div class="directory-hero-art" aria-hidden="true"><div class="directory-art-grid"></div><span class="directory-art-tile tile-a">Aa</span><span class="directory-art-tile tile-b">{ }</span><span class="directory-art-tile tile-c">▦</span><span class="directory-art-spark">✳</span><small><span id="directory-total">143+</span> SMALL SOLUTIONS</small></div>
  </section>
  <section class="directory-finder" role="search" aria-label="Find a free tool">
   <div class="finder-heading"><div><p class="directory-kicker">FIND YOUR NEXT TOOL</p><label for="directory-search">What do you need to do?</label></div><span class="finder-shortcut">SEARCH THE LIBRARY</span></div>
   <div class="directory-search-row"><span aria-hidden="true">⌕</span><input id="directory-search" type="search" placeholder="Try PDF, image resize, word counter…" autocomplete="off" spellcheck="false" aria-describedby="directory-search-hint directory-search-status"><button id="directory-clear" type="button" hidden>Clear</button></div>
-  <div class="directory-finder-bottom"><p id="directory-search-hint">Search by name, description or category. Choose a tool to open its own page.</p><button class="directory-saved-filter" type="button" id="directory-saved-only" aria-pressed="false">♡ Show saved tools</button></div>
+  <div class="directory-finder-bottom"><p id="directory-search-hint">Search by name, description or category. Choose a tool to open its own page.</p></div>
   <p id="directory-search-status" role="status" aria-live="polite" aria-atomic="true">Browse the full collection below.</p>
  </section>
+ <div class="space-tabs directory-space-tabs" aria-label="Your Free Tools collection"><button type="button" data-directory-space-tab="saved" aria-pressed="false">★ Toolspace</button><button type="button" data-directory-space-tab="recent" aria-pressed="false">◷ Recently Used</button><button type="button" data-directory-space-tab="all" aria-pressed="true">All Tools</button></div>
+ <p class="space-note">Your favourite tools stay on this device — no sign-up or extra page.</p>
+ <section class="directory-space-results" id="directory-space-results" aria-live="polite" hidden></section>
  <section class="directory-list" aria-label="Browse all tools by category">
   <div class="directory-list-heading"><div><p class="directory-kicker">THE COMPLETE COLLECTION</p><h2>Pick a <em>category.</em></h2></div><p>Open a category to see every tool inside.</p></div>
   <!-- TOOL_DIRECTORY_START -->

@@ -22,6 +22,8 @@
 
 /interaction.css
   Cache-Control: no-cache, max-age=0, must-revalidate
+/personal-space.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
 /interaction.mjs
   Cache-Control: no-cache, max-age=0, must-revalidate
 /studio.css
