@@ -13,16 +13,16 @@ test('HQventures is the public product-studio name across homepage, directory an
  ]);
  assert.match(html,/<a href="#ventures" data-nav="ventures">HQventures<\/a>/);
  assert.match(html,/id="ventures"/);
- assert.match(html,/HQventures <b>/);
+ assert.match(html,/class="ecosystem-card ecosystem-ventures"/);
  assert.match(html,/HQVENTURES \/ OUR FLAGSHIP STUDIO/);
  assert.match(js,/explore:'ventures'/);
  assert.match(dir,/href="\.\.\/#ventures">HQventures/);
  assert.match(shell,/href="\.\.\/\.\.\/#ventures">HQventures/);
  assert.doesNotMatch(html,/data-nav="builders"|href="#builders"/);
 });
-test('AI-powered studio language keeps founder approval explicit',async()=>{
+test('public studio language keeps founder approval explicit',async()=>{
  const html=await read('reimagined/index.html');
- assert.match(html,/INDEPENDENT · AI-POWERED VENTURE STUDIO/);
+ assert.match(html,/YORPHIVES \/ INDEPENDENT SOFTWARE STUDIO/);
  assert.match(html,/Founder decides/);
  assert.match(html,/Products appear here only after research review and founder approval/);
  assert.match(html,/Nothing launches without approval/);
