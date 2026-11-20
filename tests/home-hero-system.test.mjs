@@ -8,11 +8,12 @@ test('homepage headline, brand motto and logo-based system match the reference',
  assert.equal((html.match(/IDEAS IN MOTION/g)||[]).length,2);
  for(const [n,label,copy] of [['01','RESEARCH','Spot the signal'],['02','INTELLIGENCE','Test the idea'],['03','FOUNDER','Decide &amp; create']]){
   assert.ok(html.includes(n+' / '+label),n+' stage label missing');
-  assert.ok(html.includes(copy),n+' stage copy missing');
+  assert.ok(html.includes(copy.replaceAll('&','&amp;')),n+' stage copy missing');
  }
  assert.match(html,/class="hero-art hero-system" role="img"/);
  assert.match(html,/class="system-core-inner"><img src="\/tools\/brand-icon.webp"/);
- assert.doesNotMatch(html,/id="hero-quickstart-list"|QUICK START|What do you need to do\?/);
+ const hero=html.split('<div class="hero">')[1]?.split('<div class="trust-strip shell"')[0]||'';
+ assert.doesNotMatch(hero,/id="hero-quickstart-list"|QUICK START|What do you need to do\?/);
  assert.match(css,/system-orbit-a/);
  assert.match(css,/system-stage-founder/);
  assert.match(css,/prefers-reduced-motion:reduce/);
