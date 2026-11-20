@@ -1,0 +1,63 @@
+name: YorpHives gated review capacity stages
+on:
+  push:
+    branches:
+      - design/yorphives-hqconnect-unified-20261120
+    paths:
+      - '.github/workflows/yorphives-capacity-stages.yml'
+permissions:
+  contents: read
+concurrency:
+  group: yorphives-gated-review-load
+  cancel-in-progress: true
+jobs:
+  capacity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout review-only benchmark
+        uses: actions/checkout@v4
+      - name: Verify target and limits are review-only
+        run: |
+          grep -q "const ORIGIN='https://073b7c05.yorphives-v1-review.pages.dev'" scripts/benchmarks/yorphives-capacity-stages.js
+          grep -q 'rps:35' scripts/benchmarks/yorphives-capacity-stages.js
+          ! grep -q 'yorphives.com/api' scripts/benchmarks/yorphives-capacity-stages.js
+      - name: Sequential 50 then 100 then 250 virtual sessions, fail closed
+        run: |
+          set -Eeuo pipefail
+          for users in 50 100 250; do
+            echo "=== STARTING CONTROLLED ${users} VU TEST (MAX 35 REQUESTS/SECOND) ==="
+            docker run --rm --user "$(id -u):$(id -g)" \
+              -v "$PWD/scripts/benchmarks:/work" -w /work \
+              grafana/k6:0.54.0 run -e USERS="$users" \
+              --summary-export="/work/review-${users}-vus.json" \
+              /work/yorphives-capacity-stages.js
+            echo "=== PASSED ${users} VUS. NEXT STAGE PERMITTED. ==="
+          done
+      - name: Publish structured stage comparison
+        if: always()
+        run: |
+          node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs=require('node:fs');
+          console.log('### Read-only YorpHives review performance: bounded virtual sessions');
+          console.log('Test cap: 35 RPS. Virtual users are NOT concurrent in-flight HTTP requests.');
+          console.log('| Virtual sessions | Requests | HTTP failure rate | p95 response time | Result |');
+          console.log('|---:|---:|---:|---:|---|');
+          for(const n of [50,100,250]){
+            const path='scripts/benchmarks/review-'+n+'-vus.json';
+            if(!fs.existsSync(path)){console.log('| '+n+' | — | — | — | NOT RUN / STOPPED |');continue}
+            const o=JSON.parse(fs.readFileSync(path,'utf8')),m=o.metrics||{};
+            const num=(k,p)=>m[k]?.values?.[p];
+            const f=num('http_req_failed','rate'),p=num('http_req_duration','p(95)'),req=num('http_reqs','count');
+            const okay=f!=null&&p!=null&&f<.01&&p<1500;
+            console.log('| '+n+' | '+(req??'?')+' | '+(f==null?'?':(100*f).toFixed(2)+'%')+' | '+(p==null?'?':p.toFixed(1)+' ms')+' | '+(okay?'PASS':'CHECK LOGS')+' |');
+          }
+          NODE
+      - name: Save full JSON evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yorphives-gated-review-capacity-results
+          path: scripts/benchmarks/review-*-vus.json
+          if-no-files-found: ignore
+          retention-days: 7
