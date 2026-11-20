@@ -37,7 +37,9 @@ test('hero illustration does not remove Free Tools or build revenue workflows',a
  assert.match(html,/id="hqconnect"/);
  assert.match(html,/id="venture-products"/);
  assert.match(html,/href="#tools"/);
- assert.match(js,/function renderFeaturedTools\(/);
+ assert.match(js,/showcase\.update\(allItems\)/);
+ assert.match(js,/createRotatingShowcase/);
+ assert.match(html,/id="showcase-pause"/);
  assert.match(js,/function renderVentures\(/);
  assert.doesNotMatch(js,/renderQuickstarts|hero-tool-count/);
  assert.match(build,/hero-system\.css/);

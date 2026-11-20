@@ -94,7 +94,7 @@ const makeSlot=(item,index)=>{
 export function createRotatingShowcase(host,pauseButton,{interval=ROTATE_INTERVAL_MS,rng=Math.random}={}){
  if(!host)return {update(){},destroy(){}};
  let pool=[],slots=[],paused=false,inView=true,lastUrlSet=new Set(),firstLoad=true,rotationCursor=0;
- let pendingNew=new Set(),destroyed=false;
+ let pendingNew=new Set(),destroyed=false,tabVisible=!document.hidden;
  const motion=typeof window.matchMedia==='function'
   ?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
  paused=!!motion?.matches;
@@ -106,7 +106,7 @@ export function createRotatingShowcase(host,pauseButton,{interval=ROTATE_INTERVA
  updateButton();
  const togglePause=()=>{paused=!paused;updateButton()};
  pauseButton?.addEventListener('click',togglePause);
- const visibility=()=>{if(document.hidden)return;};
+ const visibility=()=>{tabVisible=!document.hidden};
  document.addEventListener('visibilitychange',visibility);
  const observer=typeof IntersectionObserver!=='undefined'?new IntersectionObserver(entries=>{
   inView=entries[0]?.isIntersecting??true;
@@ -114,7 +114,7 @@ export function createRotatingShowcase(host,pauseButton,{interval=ROTATE_INTERVA
  observer?.observe(host);
  function canRotate(){
   const hoverAllowed=typeof window.matchMedia==='function'&&window.matchMedia('(hover: hover)').matches;
-  return !paused&&!document.hidden&&inView&&!destroyed&&slots.length>=2&&
+  return !paused&&tabVisible&&inView&&!destroyed&&slots.length>=2&&
    !host.contains(document.activeElement)&&!(hoverAllowed&&host.matches(':hover'));
  }
  function paint(items){

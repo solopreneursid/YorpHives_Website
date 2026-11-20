@@ -19,7 +19,7 @@ test("the built root promotes the fresh experience while preview remains noindex
  assert.doesNotMatch(home,/DESIGN PREVIEW|name="robots" content="noindex/);
  assert.match(home,/id="yh-pulse"/);
  assert.match(home,/id="anonymous-analytics-toggle"/);
- for(const asset of ['dist/studio.css','dist/hqconnect.css','dist/studio.js','dist/rotators.css','dist/rotators.js',
+ for(const asset of ['dist/studio.css','dist/hqconnect.css','dist/studio.js','dist/showcase.css','dist/showcase.mjs','dist/rotators.css','dist/rotators.js',
   'dist/catalog-sync.mjs','dist/impact-public.json','dist/usage-public.json','dist/agentic-browser.mjs'])
   assert.ok(await exists(asset),'missing '+asset);
  const headers=await read('dist/_headers');
