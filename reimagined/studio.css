@@ -353,7 +353,7 @@ svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-wi
 }
 @media(max-width:760px){
  html{scroll-padding-top:70px}
- body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+ body{padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
  .shell{width:calc(100% - 36px)}
  .site-header{height:64px;padding-inline:17px;gap:10px}
  .brand img{width:34px;height:34px;border-radius:9px}
@@ -990,8 +990,11 @@ h3{font-size:clamp(1.15rem,1.6vw,1.5rem)}
  .directory-callout{margin-top:22px}
  .footer-main{gap:18px;padding-block:25px 20px}
  .footer-links{gap:11px}
- .mobile-dock{padding:4px;border-radius:14px}
- .mobile-dock a{min-height:50px}
+ /* Compact fixed mobile navigation with a 44px minimum touch area. */
+ .mobile-dock{bottom:calc(5px + env(safe-area-inset-bottom,0px));gap:3px;padding:3px;border-radius:12px}
+ .mobile-dock a{min-height:44px;gap:2px;border-radius:9px}
+ .mobile-dock a>span{font-size:15px;line-height:1}
+ .mobile-dock a small{font-size:9px;line-height:1.1}
 }
 @media(max-width:430px){
  .shell{width:calc(100% - 26px)}
@@ -1010,7 +1013,7 @@ h3{font-size:clamp(1.15rem,1.6vw,1.5rem)}
  #home .quickstart-top{flex-wrap:wrap}
  #home .quickstart-tool{grid-template-columns:1fr;gap:5px;min-height:102px}
  .process-steps{grid-template-columns:1fr}
- .mobile-dock a{min-height:50px}
+ .mobile-dock a{min-height:44px}
 }
 @media(prefers-reduced-motion:reduce){
  .hero-art,.ecosystem-card,.featured-tool-card,.tool-card{transition:none}
