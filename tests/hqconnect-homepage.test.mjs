@@ -91,3 +91,23 @@ test('HQconnect saves Other as its own request type and rejects unsupported valu
  assert.equal(wrong.status,400);
  assert.equal(saved[2],'Other');
 });
+
+test('HQconnect email uses a compact accessible copy action, not a mailto link',async()=>{
+ const [html,css,js]=await Promise.all([
+  read('reimagined/index.html'),read('reimagined/hqconnect.css'),read('reimagined/studio.js')
+ ]);
+ const section=html.split('<section class="hqconnect" id="hqconnect"')[1]?.split('</section>')[0]||'';
+ assert.ok(section,'HQconnect section missing');
+ assert.match(section,/<span id="hqconnect-email" class="hqconnect-email-address">connect@yorphives\.com<\/span>/);
+ assert.match(section,/<button id="hqconnect-copy-email" class="hqconnect-copy-email" type="button" aria-label="Copy connect@yorphives\.com to clipboard">Copy<\/button>/);
+ assert.match(section,/id="hqconnect-copy-status" class="hqconnect-copy-status" role="status" aria-live="polite"/);
+ assert.doesNotMatch(section,/href="mailto:/);
+ assert.match(js,/copyEmailButton\?\.addEventListener\('click',async\(\)=>\{/);
+ assert.match(js,/navigator\.clipboard\?\.writeText\(address\)/);
+ assert.match(js,/document\.execCommand\('copy'\)/);
+ assert.match(js,/Copied ✓/);
+ assert.match(js,/2200/);
+ assert.match(css,/\.hqconnect-copy-email:focus-visible/);
+ assert.match(css,/\.hqconnect-copy-email\{min-height:44px\}/);
+ assert.doesNotMatch(js,/using the email link below/);
+});

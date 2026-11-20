@@ -144,6 +144,14 @@ if(hero<0||discovery<hero||featured<discovery||connect<featured||
  fail('Home must show the three discovery paths immediately after the hero, before featured tools and HQconnect.');
 if(!homepage.includes('<option value="Long-term partnership">Long-term build & maintenance partnership</option><option value="Other">Other</option>'))
  fail('HQconnect Other option must be available in the request form.');
+const contactMarkup=homepage.split('<section class="hqconnect" id="hqconnect"')[1]?.split('</section>')[0]||'';
+if(!contactMarkup.includes('id="hqconnect-copy-email"')||
+ !contactMarkup.includes('id="hqconnect-email"')||
+ !contactMarkup.includes('id="hqconnect-copy-status"')||
+ contactMarkup.includes('href="mailto:')||
+ !js.includes("navigator.clipboard?.writeText(address)")||
+ !js.includes("document.execCommand('copy')"))
+ fail('HQconnect contact email must be a working copy action, not a mailto link.');
 if(!homepage.includes('<section class="hqconnect" id="hqconnect"')||
  !homepage.includes('class="header-cta" href="#hqconnect"')||
  !homepage.includes('id="contact-form"')||

@@ -261,6 +261,43 @@ async function loadActivity(){
  }catch{/* Public activity is optional; the rest of the site remains usable. */}
 }
 
+// Copy the visible address directly rather than invoking the operating system
+// mailto handler. Browser clipboard API first; selection fallback for older browsers.
+const copyEmailButton=$('hqconnect-copy-email');
+const copyEmailAddress=$('hqconnect-email');
+const copyEmailStatus=$('hqconnect-copy-status');
+let copyEmailResetTimer;
+copyEmailButton?.addEventListener('click',async()=>{
+ const address=copyEmailAddress?.textContent?.trim();
+ if(!address)return;
+ let copied=false;
+ try{
+  if(navigator.clipboard?.writeText){
+   await navigator.clipboard.writeText(address);
+   copied=true;
+  }
+ }catch{/* Clipboard permissions may be unavailable; try selecting the address. */}
+ if(!copied){
+  const selection=window.getSelection?.();
+  if(selection&&copyEmailAddress){
+   const range=document.createRange();
+   range.selectNodeContents(copyEmailAddress);
+   selection.removeAllRanges();selection.addRange(range);
+   try{copied=document.execCommand('copy')===true}catch{}
+   if(copied)selection.removeAllRanges();
+  }
+ }
+ window.clearTimeout(copyEmailResetTimer);
+ copyEmailButton.textContent=copied?'Copied ✓':'Copy';
+ copyEmailStatus.textContent=copied?'Email address copied.':'Select the highlighted email address and copy it.';
+ if(copied){
+  copyEmailResetTimer=window.setTimeout(()=>{
+   copyEmailButton.textContent='Copy';
+   copyEmailStatus.textContent='';
+  },2200);
+ }
+});
+
 document.querySelectorAll('[data-interest]').forEach(button=>button.addEventListener('click',()=>{
  const select=$('interest');
  if(select&&[...select.options].some(option=>option.value===button.dataset.interest))select.value=button.dataset.interest;
@@ -291,7 +328,7 @@ requestForm?.addEventListener('submit',async event=>{
   status.textContent='Request received. Reference: '+String(data.reference||'').slice(0,60)+'. We will review it and contact you by email if it is a fit.';
   status.dataset.state='success';
  }catch{
-  status.textContent='Online submission is unavailable. Please send your request to connect@yorphives.com using the email link below.';
+  status.textContent='Online submission is unavailable. Please contact connect@yorphives.com using the email address below.';
   status.dataset.state='error';
  }finally{button.disabled=false}
 });
