@@ -67,6 +67,12 @@ if(!surfaces.includes('--section-gap:10px;')||!surfaces.includes('--card-gap:8px
  !toolCss.includes('body.tool-page{--section-gap:10px;--card-gap:8px}')||
  !(await read('tools/directory-next.css')).includes('body.directory-page{--section-gap:10px;--card-gap:8px}'))
  fail('Compact and uniform section/card spacing rules are missing from one or more site experiences.');
+if(!surfaces.includes('DIMENSIONAL UNIFORM HEADER')||
+ !surfaces.includes('.site-header .desktop-nav a,')||
+ !surfaces.includes('.site-header .header-cta{')||
+ !toolCss.includes('DIMENSIONAL UNIFORM HEADER')||
+ !(await read('tools/directory-next.css')).includes('DIMENSIONAL UNIFORM HEADER'))
+ fail('Headers and compact navigation buttons must share a raised, uniform palette.');
 if(!toolCss.includes('DIMENSIONAL TOOL SURFACES')||
  !directory.includes('directory-next.css')||
  !await exists('tools/directory-next.css')||

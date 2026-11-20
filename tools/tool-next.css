@@ -316,3 +316,48 @@ body.tool-page .related-links,body.tool-page .yh-tool-discover ul{gap:var(--card
  }
  body.tool-page .tool-help{gap:var(--card-gap);margin-top:var(--section-gap)}
 }
+ 
+/* DIMENSIONAL UNIFORM HEADER — direct tools share the four-button palette. */
+body.tool-page .site-header{
+ width:min(1460px,calc(100% - 44px));height:64px;min-height:64px;
+ margin:10px auto 0;padding:0 clamp(15px,2.5vw,30px);top:7px;gap:9px;
+ border:1px solid #c4d4bd;border-radius:17px;
+ background:linear-gradient(160deg,#fffff9f7,#edf4e9f7);
+ box-shadow:0 5px 0 -1px #bacdb4,0 17px 32px -17px #1c3a2754,inset 0 2px 0 #ffffffed;
+}
+body.tool-page .tool-nav{gap:6px}
+body.tool-page .tool-nav a,
+body.tool-page .site-header .header-cta{
+ display:inline-flex;align-items:center;justify-content:center;
+ flex:0 0 auto;width:105px;min-width:105px;height:44px;min-height:44px;
+ padding:0 8px;gap:6px;
+ border:1px solid #c6d7be;border-radius:11px;
+ background:#e7eee2;color:#294330;
+ box-shadow:0 3px 0 -1px #b7cbb2,inset 0 1px 0 #fffffff0;
+ font:750 10px/1.2 Inter,ui-sans-serif,system-ui,sans-serif;
+ text-decoration:none;white-space:nowrap;
+ transition:transform .15s,border-color .15s;
+}
+body.tool-page .tool-nav a::after{content:none}
+body.tool-page .tool-nav a:hover,body.tool-page .site-header .header-cta:hover{
+ transform:translateY(-1px);background:#e7eee2;color:#294330;border-color:#8dae83;
+}
+body.tool-page .tool-nav a[aria-current=page]{
+ background:#e7eee2;color:#294330;border-color:#5e9958;box-shadow:inset 0 0 0 1px #83ad78,0 3px 0 -1px #b7cbb2;
+}
+@media(max-width:950px){
+ body.tool-page .site-header{width:calc(100% - 32px);gap:7px;padding-inline:12px}
+ body.tool-page .tool-nav a,body.tool-page .site-header .header-cta{width:88px;min-width:88px;font-size:9px}
+}
+@media(max-width:760px){
+ body.tool-page .site-header{
+  width:calc(100% - 18px);height:56px;min-height:56px;
+  margin-top:6px;top:5px;padding-inline:14px;border-radius:13px;
+ }
+}
+@media(max-width:390px){
+ body.tool-page .site-header{width:calc(100% - 14px);padding-inline:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.tool-page .tool-nav a,body.tool-page .site-header .header-cta{transition:none}
+}
