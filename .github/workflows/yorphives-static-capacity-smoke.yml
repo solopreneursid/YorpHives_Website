@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Run strictly read-only k6 smoke (peak 10 VUs)
         run: |
-          docker run --rm -v "$PWD/scripts/benchmarks:/work" -w /work grafana/k6:0.54.0 run --summary-export=/work/k6-result.json /work/yorphives-static-smoke.js
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/scripts/benchmarks:/work" -w /work grafana/k6:0.54.0 run --summary-export=/work/k6-result.json /work/yorphives-static-smoke.js
       - name: Summarize measured HTTP results
         if: always()
         run: |
