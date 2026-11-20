@@ -391,3 +391,35 @@ body.tool-page .tool-nav a[aria-current=page]::before{
 @media(max-width:760px){
  body.tool-page .tool-nav,body.tool-page .site-header .header-cta{display:none}
 }
+/* SUPPORT NAVIGATION — identical green raised pill, disabled by default. */
+body.tool-page .site-header .tool-support{
+ position:relative;isolation:isolate;display:inline-flex;
+ flex:none;align-items:center;justify-content:center;
+ width:74px;min-width:74px;height:44px;min-height:44px;
+ padding:0 3px;border:0;border-radius:0;background:transparent;
+ color:#294330;font:750 9px/1.2 Inter,ui-sans-serif,system-ui,sans-serif;
+ white-space:nowrap;opacity:1;cursor:not-allowed;
+}
+body.tool-page .site-header .tool-support::before{
+ content:"";position:absolute;z-index:-1;inset:7px 0;
+ border:1px solid #c6d7be;border-radius:9px;background:#e7eee2;
+ box-shadow:0 2px 0 -1px #b7cbb2,inset 0 1px 0 #ffffffef;
+}
+@media(max-width:760px){
+ body.tool-page .site-header .tool-support{display:none}
+ body.tool-page .mobile-dock{grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
+ body.tool-page .mobile-dock button{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;min-width:0;min-height:44px;height:44px;margin-block:-5px;padding:0;
+  border:0;border-radius:8px;background:transparent;color:#71806d;
+  font:800 9px/1.05 Inter,ui-sans-serif,system-ui,sans-serif;
+  opacity:1;cursor:not-allowed;
+ }
+ body.tool-page .mobile-dock button>span{font-size:13px;line-height:1}
+ body.tool-page .mobile-dock button small,body.tool-page .mobile-dock a small{
+  font-size:8px;line-height:1.05;white-space:nowrap;
+ }
+}
+@media(max-width:350px){
+ body.tool-page .mobile-dock button small,body.tool-page .mobile-dock a small{font-size:7px}
+}

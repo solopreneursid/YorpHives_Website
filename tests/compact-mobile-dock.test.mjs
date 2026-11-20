@@ -18,7 +18,7 @@ test('mobile dock is 30% visually shorter while retaining 44px tap targets',asyn
  assert.match(css,/\.mobile-dock a:focus-visible/);
  assert.match(tool,/body\.tool-page \.mobile-dock a:focus-visible/);
 });
-test('main and direct-tool mobile navigation retains all four routes',async()=>{
+test('main and direct-tool mobile navigation retains four routes and disabled support',async()=>{
  const [html,shell]=await Promise.all([
   read('reimagined/index.html'),
   read('scripts/next-tool-shell.mjs')
@@ -26,6 +26,8 @@ test('main and direct-tool mobile navigation retains all four routes',async()=>{
  const dock=html.split('<nav class="mobile-dock"')[1]?.split('</nav>')[0]||'';
  for(const route of ['#home','#tools','#ventures','#hqconnect'])
   assert.ok(dock.includes('href="'+route+'"'),route);
- for(const route of ['#home','#tools','#ventures','#contact'])
+ for(const route of ['#home','#tools','#ventures','#hqconnect'])
   assert.ok(shell.includes(route),'Tool navigation lost '+route);
+ assert.match(dock,/<button type="button" disabled>.*?Support us/s);
+ assert.match(shell,/<button type="button" disabled>/);
 });

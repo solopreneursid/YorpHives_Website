@@ -10,21 +10,22 @@ export function injectNextToolUI(html,item){
  if(!header)throw Error('Tool navigation header missing: '+item.url);
  const nav='<nav class="tool-nav" aria-label="Main navigation">'+
   '<a href="../../#home">Home</a>'+
-  '<a href="../../#tools" aria-current="page">Free tools</a>'+
   '<a href="../../#ventures">HQventures</a>'+
-  '<a href="../../#partners">Partnerships</a>'+
+  '<a href="../../#tools" aria-current="page">Free tools</a>'+
   '</nav>';
  const updated=header.replace(/<nav\b[^>]*class="tool-nav"[^>]*>[\s\S]*?<\/nav>/i,nav)
   .replace('</header>',
-   '<a class="header-cta" href="../../#contact">Let&#39;s talk <span aria-hidden="true">↗</span></a>'+
+   '<a class="header-cta" href="../../#hqconnect">HQconnect <span aria-hidden="true">↗</span></a>'+
+   '<button class="tool-support" type="button" disabled>Support us</button>'+
    '<a class="tool-header-back" href="../../#tools">← All tools</a></header>');
  if(updated===header||!updated.includes('class="tool-nav"'))throw Error('Tool navigation could not be redesigned: '+item.url);
  html=html.replace(header,updated);
  const dock='<nav class="mobile-dock" aria-label="Quick navigation">'+
   '<a href="../../#home"><span aria-hidden="true">⌂</span><small>Home</small></a>'+
+  '<a href="../../#ventures"><span aria-hidden="true">✳</span><small>HQventures</small></a>'+
   '<a href="../../#tools" aria-current="page"><span aria-hidden="true">▦</span><small>Tools</small></a>'+
-  '<a href="../../#ventures"><span aria-hidden="true">✳</span><small>Explore</small></a>'+
-  '<a href="../../#contact"><span aria-hidden="true">↗</span><small>Contact</small></a>'+
+  '<a href="../../#hqconnect"><span aria-hidden="true">↗</span><small>HQconnect</small></a>'+
+  '<button type="button" disabled><span aria-hidden="true">♡</span><small>Support us</small></button>'+
   '</nav>';
  if(!html.includes('</body>'))throw Error('Tool body is missing: '+item.url);
  return html.replace('</body>',dock+'</body>');

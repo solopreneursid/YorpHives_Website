@@ -17,7 +17,15 @@ test("desktop, mobile menu and mobile dock share the new public destinations",as
   assert.ok(mobile.includes('href="#'+dest+'"'),dest+' mobile');
   assert.ok(dock.includes('href="#'+dest+'"'),dest+' dock');
  }
- for(const nav of [mobile,dock])assert.ok(nav.includes('href="#hqconnect"'));
+ for(const nav of [desktop,mobile,dock]){
+  assert.ok(nav.indexOf('href="#ventures"')<nav.indexOf('href="#tools"'),'HQventures must precede Free Tools');
+ }
+ for(const nav of [mobile,dock]){
+  assert.ok(nav.includes('href="#hqconnect"'));
+  const end=nav.indexOf('href="#hqconnect"');
+  assert.ok(nav.indexOf('Support us',end)>end,'Disabled Support us must follow HQconnect');
+  assert.match(nav,/<button type="button" disabled>/);
+ }
  assert.match(html,/class="header-cta" href="#hqconnect"/);
  assert.doesNotMatch(html,/href="#builders"|data-nav="builders"/);
 });

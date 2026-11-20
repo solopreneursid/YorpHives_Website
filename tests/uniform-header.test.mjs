@@ -2,11 +2,14 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 const read=path=>readFile(new URL('../'+path,import.meta.url),'utf8');
-test('homepage header is a raised panel with four matching compact navigation pills',async()=>{
+test('homepage header has five compact pills including disabled Support us',async()=>{
  const [html,css,js]=await Promise.all([read('reimagined/index.html'),read('reimagined/surfaces.css'),read('reimagined/studio.js')]);
  const nav=html.split('<nav class="desktop-nav"')[1]?.split('</nav>')[0]||'';
  for(const link of ['#home','#tools','#ventures'])assert.ok(nav.includes('href="'+link+'"'),link);
  assert.match(html,/class="header-cta" href="#hqconnect" data-nav="hqconnect"/);
+ assert.match(html,/<button class="kofi-support" id="kofi-support" type="button" disabled>Support us<\/button>/);
+ assert.match(css,/\.site-header \.header-actions \.kofi-support\{/);
+ assert.match(css,/\.mobile-dock\{grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
  assert.match(css,/DIMENSIONAL UNIFORM HEADER/);
  assert.match(css,/\.site-header \.(?:desktop-nav a),\s*\.site-header \.header-cta\{/);
  assert.match(css,/width:78px;min-width:78px;height:44px;min-height:44px/);

@@ -84,7 +84,7 @@ test('release gate protects the new layout and the original tool catalogue',asyn
  assert.doesNotMatch(release,/home-explore|home-use|hero-geometry|renderFeaturedProject/);
 });
 
-test("mobile navigation keeps HQventures prominent while live tool actions come first",async()=>{
+test("mobile navigation prioritizes HQventures before Free Tools",async()=>{
  const [html,css,js]=await Promise.all([
   read('reimagined/index.html'),read('reimagined/studio.css'),read('reimagined/studio.js')
  ]);
@@ -98,7 +98,7 @@ test("mobile navigation keeps HQventures prominent while live tool actions come 
   within('<nav class="mobile-dock"','</nav>')]){
    assert.ok(section.indexOf('href="#tools"')>=0);
    assert.ok(section.indexOf('href="#ventures"')>=0);
-   assert.ok(section.indexOf('href="#tools"')<section.indexOf('href="#ventures"'));
+   assert.ok(section.indexOf('href="#ventures"')<section.indexOf('href="#tools"'));
  }
  const hero=within('<div class="hero">','</div>\n </div>\n\n <section class="home-section shell" aria-labelledby="home-discover-title">');
  assert.doesNotMatch(hero,/class="hero-actions"|class="hero-note"|USEFUL TODAY|OPEN FOR EVERYONE|Browse free tools|Build with us/);

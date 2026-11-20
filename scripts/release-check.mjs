@@ -78,6 +78,21 @@ if(!surfaces.includes('DIMENSIONAL UNIFORM HEADER')||
  !toolCss.includes('DIMENSIONAL UNIFORM HEADER')||
  !(await read('tools/directory-next.css')).includes('DIMENSIONAL UNIFORM HEADER'))
  fail('Headers and compact navigation buttons must share a raised, uniform palette.');
+const topNav=homepage.split('<nav class="desktop-nav"')[1]?.split('</nav>')[0]||'';
+const menuNav=homepage.split('<nav class="mobile-menu"')[1]?.split('</nav>')[0]||'';
+const dockNav=homepage.split('<nav class="mobile-dock"')[1]?.split('</nav>')[0]||'';
+const directoryNav=directory.split('<nav class="directory-nav"')[1]?.split('</nav>')[0]||'';
+for(const block of [topNav,menuNav,dockNav,directoryNav]){
+ const venture=block.indexOf('ventures'),tools=block.indexOf('tools');
+ if(venture<0||tools<0||venture>tools)fail('HQventures navigation must precede Free Tools everywhere.');
+}
+if(!homepage.includes('<button class="kofi-support" id="kofi-support" type="button" disabled>Support us</button>')||
+ !directory.includes('<button class="directory-support" type="button" disabled>Support us</button>')||
+ !homepage.includes('<button type="button" disabled><span aria-hidden="true">♡</span><small>Support us</small></button>')||
+ !toolCss.includes('body.tool-page .site-header .tool-support')||
+ !surfaces.includes('grid-template-columns:repeat(5,minmax(0,1fr))')||
+ /Ko-fi support, coming soon|<small>Coming soon<\/small>/.test(homepage))
+ fail('Disabled Support us control or five-way navigation is missing, reordered or carries outdated status text.');
 if(!toolCss.includes('DIMENSIONAL TOOL SURFACES')||
  !directory.includes('directory-next.css')||
  !await exists('tools/directory-next.css')||
