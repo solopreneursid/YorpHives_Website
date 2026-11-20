@@ -7,12 +7,15 @@ test('compact pass scales home hero, cards and navigation without changing conte
  assert.match(css,/COMPACT STUDIO PASS/);
  assert.match(css,/#home \.hero-layout\{[\s\S]*?min-height:0;padding-block:38px 42px/);
  assert.match(css,/#home \.hero h1\{font-size:clamp\(2\.55rem,4\.2vw,4\.4rem\)/);
- assert.match(css,/#home \.quickstart-tool\{[\s\S]*?min-height:57px/);
+ const orbit=await read('reimagined/hero-system.css');
+ assert.match(orbit,/#home \.hero-system\{/);
+ assert.match(orbit,/#home \.system-stage-founder\{/);
+ assert.match(orbit,/@media\(max-width:430px\)/);
  assert.match(css,/#home \.featured-tool-card\{min-height:143px/);
  assert.match(css,/#home \.ecosystem-card\{min-height:192px/);
  assert.match(css,/#ventures \.venture-hero \.page-hero-layout\{/);
  for(const section of ['home','tools','ventures'])assert.match(html,new RegExp('id="'+section+'"'));
- assert.match(html,/id="hero-quickstart-list"/);
+ assert.match(html,/class="hero-art hero-system"/);
  assert.match(html,/id="hqconnect"/);
 });
 test('compact forms and direct tools retain comfortable mobile targets and responsive rules',async()=>{

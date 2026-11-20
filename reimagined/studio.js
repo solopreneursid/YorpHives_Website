@@ -14,7 +14,6 @@ let allItems=[],tools=[],ventures=[];
 let activeCategory='All',onlySaved=false,page=1,sortMode='name';
 const pageSize=12;
 const featuredToolUrls=['tools/word-counter/','tools/qr-code-generator/','tools/password-generator/','tools/json-formatter/','tools/pdf-merge/','tools/image-resizer/'];
-const quickstartToolUrls=['tools/word-counter/','tools/pdf-merge/','tools/image-resizer/','tools/qr-code-generator/'];
 const icon=name=>{
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
  svg.setAttribute('aria-hidden','true');
@@ -164,26 +163,6 @@ function featuredCard(tool,index){
  link.append(head,category,title,description,action);return link;
 }
 
-/** Only published catalog URLs are allowed into the quick-launch panel.
- * Static first-party links remain usable if a network request fails. */
-function renderQuickstarts(){
- const host=$('hero-quickstart-list');
- if(!host)return;
- const selected=quickstartToolUrls.map(url=>tools.find(tool=>tool.url===url)).filter(Boolean);
- if(selected.length!==quickstartToolUrls.length)return;
- const marks=['Aa','PDF','▧','▦'];
- const cards=selected.map((tool,index)=>{
-  const link=make('a','','quickstart-tool');link.href='/'+tool.url;
-  const symbol=make('span',marks[index],'quickstart-symbol');
-  const detail=make('span');
-  detail.append(make('strong',tool.name),make('small',tool.category||'Free browser tool'));
-  link.append(symbol,detail,make('span','↗','quickstart-arrow'));
-  link.setAttribute('aria-label','Open '+tool.name);
-  return link;
- });
- host.replaceChildren(...cards);
-}
-
 function renderFeaturedTools(){
  const host=$('featured-tools-grid');if(!host)return;
  const selected=featuredToolUrls.map(url=>tools.find(tool=>tool.url===url)).filter(Boolean);
@@ -242,15 +221,14 @@ function applyCatalog(items){
  tools=allItems.filter(publicTool);
  ventures=qualifiedProducts(allItems);
  $('home-tool-count').textContent=number(tools.length);
- $('hero-tool-count').textContent=number(tools.length);
  $('home-venture-count').textContent=number(ventures.length);
  $('tools-count-big').textContent=number(tools.length);
- categoryChips();renderQuickstarts();renderFeaturedTools();renderTools();renderVentures();renderVentureActivity();
+ categoryChips();renderFeaturedTools();renderTools();renderVentures();renderVentureActivity();
 }
 subscribeCatalog(applyCatalog);
 startCatalogMonitoring();
 getCatalog().then(()=>loadActivity()).catch(()=>{
- $('home-tool-count').textContent='—';$('hero-tool-count').textContent='—';$('home-venture-count').textContent='—';$('tools-count-big').textContent='—';
+ $('home-tool-count').textContent='—';$('home-venture-count').textContent='—';$('tools-count-big').textContent='—';
  $('featured-tools-grid').replaceChildren(make('p','The catalogue could not be loaded. Please try again or browse the directory.','loading-note'));
  $('tool-results').replaceChildren();
  $('tool-results-count').textContent='Catalogue unavailable';

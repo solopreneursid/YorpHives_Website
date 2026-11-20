@@ -345,7 +345,7 @@ if(target==='preview'){
 // This routine is also used to render a path-isolated acceptance candidate.
 async function publishReimaginedRoot(prefix=''){
  if(prefix)await mkdir(resolve(dest,prefix),{recursive:true});
- const assets=['studio.css','hqconnect.css','studio.js','rotators.css','rotators.js',
+ const assets=['studio.css','hqconnect.css','hero-system.css','studio.js','rotators.css','rotators.js',
   'catalog-sync.mjs','venture-activity.mjs','impact-public.json','usage-public.json'];
  for(const asset of assets)
   await cp(resolve(root,'reimagined',asset),resolve(dest,prefix+asset));

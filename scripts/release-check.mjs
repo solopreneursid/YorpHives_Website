@@ -43,11 +43,14 @@ if(!js.includes('approvedVentureReleases(allItems)')||!js.includes("item.kind===
  fail('Product updates must be founder-approved and tool updates must remain isolated.');
 if(!await exists('venture-activity.mjs'))fail('HQventures release filter module is missing.');
 if(!homepage.includes('YORPHIVES / AI-POWERED SOFTWARE STUDIO')||
- !homepage.includes('We build software<br><em>that moves you forward.</em>')||
- !homepage.includes('id="hero-quickstart-list"')||
-  !homepage.includes('href="/tools/word-counter/"')||
+ !homepage.includes('The future<br>doesn\'t <em>build</em><br>itself')||
+ !homepage.includes('IDEAS IN MOTION')||
+ !homepage.includes('class="hero-art hero-system"')||
+ !['Spot the signal','Test the idea','Decide &amp; create'].every(s=>homepage.includes(s))||
+  homepage.includes('id="hero-quickstart-list"')||
   !homepage.includes('class="kofi-support" id="kofi-support" type="button" disabled'))
- fail('Product-first homepage, working quick links or safe controls are missing.');
+ fail('Home hero identity, three-stage system illustration or safe controls are missing.');
+if(!await exists('hero-system.css'))fail('Hero system artwork CSS missing.');
 if(!homepage.includes('<section class="hqconnect" id="hqconnect"')||
  !homepage.includes('class="header-cta" href="#hqconnect"')||
  !homepage.includes('id="contact-form"')||

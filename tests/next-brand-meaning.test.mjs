@@ -8,7 +8,7 @@ const read=p=>readFile(resolve(root,p),'utf8');
 
 test("the new homepage leads with a clear independent venture-studio proposition",async()=>{
  const html=await read('reimagined/index.html');
- assert.match(html,/We build software<br><em>that moves you forward\.<\/em>/);
+ assert.match(html,/The future<br>doesn't <em>build<\/em><br>itself/);
  assert.match(html,/Use our free tools\. Explore our products\. Build yours with us\./);
  assert.match(html,/YORPHIVES \/ AI-POWERED SOFTWARE STUDIO/);
  assert.match(html,/class="hero-art"/);
@@ -104,11 +104,15 @@ test("mobile navigation keeps HQventures prominent while live tool actions come 
  assert.match(hero,/href="#tools"/);
  assert.match(hero,/href="#hqconnect"/);
  assert.match(html,/id="home-title"/);
- assert.match(html,/id="hero-quickstart-list"/);
- for(const url of ['/tools/word-counter/','/tools/pdf-merge/','/tools/image-resizer/','/tools/qr-code-generator/'])
-  assert.ok(html.includes('href="'+url+'"'),'Missing functional shortcut '+url);
+ assert.match(html,/class="hero-art hero-system"/);
+ assert.match(html,/Spot the signal/);
+ assert.match(html,/Test the idea/);
+ assert.match(html,/Decide &amp; create/);
+ assert.doesNotMatch(html,/id="hero-quickstart-list"/);
+ assert.match(html,/href="#tools"/);
+ assert.match(html,/id="featured-tools-grid"/);
  assert.ok(html.indexOf('id="featured-title"')<html.indexOf('id="home-progress"'));
  assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
  assert.match(css,/@media\(max-width:760px\)/);
- assert.match(js,/function renderQuickstarts\(/);
+ assert.doesNotMatch(js,/function renderQuickstarts\(/);
 });
