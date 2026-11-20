@@ -51,13 +51,18 @@ if(!homepage.includes('by yorphivesHQ - AI powered venture studio')||
   !homepage.includes('class="kofi-support" id="kofi-support" type="button" disabled'))
  fail('Home hero identity, three-stage system illustration or safe controls are missing.');
 if(!await exists('hero-system.css'))fail('Hero system artwork CSS missing.');
-const heroOnly=homepage.split('<div class="hero">')[1]?.split('<section class="home-section featured-section"')[0]||'';
+const heroOnly=homepage.split('<div class="hero">')[1]?.split('<section class="home-section shell" aria-labelledby="home-discover-title">')[0]||'';
 if(/class="hero-actions"|class="hero-note"|Browse free tools|Build with us|USEFUL TODAY|OPEN FOR EVERYONE/.test(heroOnly))
  fail('Home hero must not include buttons or the retired footer label.');
 if(/class="trust-strip shell"|id="home-tool-count"|id="home-venture-count"|PUBLISHED BROWSER TOOLS|APPROVED PUBLIC VENTURES|Published tools link directly to real pages\./.test(homepage))
  fail('Removed homepage stats strip must stay removed.');
-if(!homepage.includes('<section class="home-section featured-section"'))
- fail('Featured tools must follow the hero without the retired stats strip.');
+const discovery=homepage.indexOf('<section class="home-section shell" aria-labelledby="home-discover-title">');
+const featured=homepage.indexOf('<section class="home-section featured-section" aria-labelledby="featured-title">');
+const hero=homepage.indexOf('<div class="hero">');
+const connect=homepage.indexOf('<section class="hqconnect" id="hqconnect"');
+if(hero<0||discovery<hero||featured<discovery||connect<featured||
+ !homepage.slice(discovery,featured).includes('class="ecosystem-grid"'))
+ fail('Home must show the three discovery paths immediately after the hero, before featured tools and HQconnect.');
 if(!homepage.includes('<section class="hqconnect" id="hqconnect"')||
  !homepage.includes('class="header-cta" href="#hqconnect"')||
  !homepage.includes('id="contact-form"')||
