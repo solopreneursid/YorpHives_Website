@@ -1,7 +1,7 @@
 // A few *read-only* calls to public endpoints, never a backend load test.
 import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
-const BASE='https://073b7c05.yorphives-v1-review.pages.dev';
+const BASE=process.env.YORPHIVES_REVIEW_URL||'https://073b7c05.yorphives-v1-review.pages.dev';
 const checks=[];
 for(const path of ['/api/agent/v1/openapi.json','/api/agent/v1/tools']){
  let value={path},response;
