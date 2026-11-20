@@ -20,7 +20,7 @@ test('homepage headline, brand motto and logo-based system match the reference',
  assert.match(css,/font-family:var\(--sans\)/);
  assert.match(css,/font-weight:800/);
  assert.match(css,/color:#f4f7ed/);
- const heading=html.match(/<h1 id="home-title">([\\s\\S]*?)<\\/h1>/)?.[1]||'';
+ const heading=html.split('<h1 id="home-title">')[1]?.split('</h1>')[0]||'';
  assert.doesNotMatch(heading,/<em|<i|hero-period/);
  assert.doesNotMatch(html,/class="hero-period"/);
  assert.match(css,/system-stage-founder/);
