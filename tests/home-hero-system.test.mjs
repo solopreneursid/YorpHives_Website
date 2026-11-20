@@ -6,6 +6,7 @@ test('homepage headline, brand motto and logo-based system match the reference',
  const [html,css]=await Promise.all([read('reimagined/index.html'),read('reimagined/hero-system.css')]);
  assert.match(html,/<h1 id="home-title">The future<br>doesn't <em>build<\/em><br>itself/);
  assert.equal((html.match(/IDEAS IN MOTION/g)||[]).length,2);
+ assert.match(html,/<p class="eyebrow"><span class="eyebrow-dot"><\/span> by yorphivesHQ - AI powered venture studio<\/p>/);
  for(const [n,label,copy] of [['01','RESEARCH','Spot the signal'],['02','INTELLIGENCE','Test the idea'],['03','FOUNDER','Decide & create']]){
   assert.ok(html.includes(n+' / '+label),n+' stage label missing');
   assert.ok(html.includes(copy.replaceAll('&','&amp;')),n+' stage copy missing');

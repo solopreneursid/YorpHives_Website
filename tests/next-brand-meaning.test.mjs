@@ -10,7 +10,7 @@ test("the new homepage leads with a clear independent venture-studio proposition
  const html=await read('reimagined/index.html');
  assert.match(html,/The future<br>doesn't <em>build<\/em><br>itself/);
  assert.match(html,/Use our free tools\. Explore our products\. Build yours with us\./);
- assert.match(html,/YORPHIVES \/ AI-POWERED SOFTWARE STUDIO/);
+ assert.match(html,/by yorphivesHQ - AI powered venture studio/);
  assert.match(html,/class="hero-art hero-system"/);
  assert.match(html,/class="ecosystem-grid"/);
  assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"/);

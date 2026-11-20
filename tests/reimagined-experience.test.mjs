@@ -17,7 +17,7 @@ test("fresh YorpHives experience has five clear routes and accessible navigation
  assert.match(html,/class="desktop-nav"/);
  assert.match(html,/class="mobile-menu"/);
  assert.match(html,/class="mobile-dock"/);
- assert.match(html,/YORPHIVES \/ AI-POWERED SOFTWARE STUDIO/);
+ assert.match(html,/by yorphivesHQ - AI powered venture studio/);
  for(const id of ['home-title','featured-tools-grid','tool-search','venture-products','contact-form','yh-pulse','yh-pulse-item','kofi-support','anonymous-analytics-toggle'])
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.doesNotMatch(html,/id="builders"|href="#builders"|data-nav="builders"/);
