@@ -13,6 +13,7 @@ let allItems=[],tools=[],ventures=[];
 let activeCategory='All',onlySaved=false,page=1,sortMode='name';
 const pageSize=12;
 const featuredToolUrls=['tools/word-counter/','tools/qr-code-generator/','tools/password-generator/','tools/json-formatter/','tools/pdf-merge/','tools/image-resizer/'];
+const quickstartToolUrls=['tools/word-counter/','tools/pdf-merge/','tools/image-resizer/','tools/qr-code-generator/'];
 const icon=name=>{
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
  svg.setAttribute('aria-hidden','true');
@@ -53,7 +54,7 @@ function route(){
   if(link.dataset.nav===active)link.setAttribute('aria-current','page');
   else link.removeAttribute('aria-current');
  });
- document.title=(active==='home'?'Ideas into ventures':viewNames[active])+' | YorpHives';
+ document.title=(active==='home'?'Free browser tools and HQventures':viewNames[active])+' | YorpHives';
  closeMenu();
  if(active!==previousView){window.scrollTo({top:0,behavior:'auto'});previousView=active}
 }
@@ -157,6 +158,27 @@ function featuredCard(tool,index){
  const title=make('h3',tool.name),description=make('p',tool.description),action=make('span','Open tool →','featured-tool-action');
  link.append(head,category,title,description,action);return link;
 }
+
+/** Only published catalog URLs are allowed into the quick-launch panel.
+ * Static first-party links remain usable if a network request fails. */
+function renderQuickstarts(){
+ const host=$('hero-quickstart-list');
+ if(!host)return;
+ const selected=quickstartToolUrls.map(url=>tools.find(tool=>tool.url===url)).filter(Boolean);
+ if(selected.length!==quickstartToolUrls.length)return;
+ const marks=['Aa','PDF','▧','▦'];
+ const cards=selected.map((tool,index)=>{
+  const link=make('a','','quickstart-tool');link.href='/'+tool.url;
+  const symbol=make('span',marks[index],'quickstart-symbol');
+  const detail=make('span');
+  detail.append(make('strong',tool.name),make('small',tool.category||'Free browser tool'));
+  link.append(symbol,detail,make('span','↗','quickstart-arrow'));
+  link.setAttribute('aria-label','Open '+tool.name);
+  return link;
+ });
+ host.replaceChildren(...cards);
+}
+
 function renderFeaturedTools(){
  const host=$('featured-tools-grid');if(!host)return;
  const selected=featuredToolUrls.map(url=>tools.find(tool=>tool.url===url)).filter(Boolean);
@@ -172,7 +194,7 @@ function renderVentures(){
   const empty=make('div','','empty-state');
   empty.append(make('span','✳','empty-state-mark'));
   const copy=make('div');
-  copy.append(make('span','THE NEXT CHAPTER','section-kicker'),make('h3','Good ideas are being evaluated.'));
+  copy.append(make('span','PUBLIC PORTFOLIO STATUS','section-kicker'),make('h3','No approved public launches yet.'));
   const p=make('p','Products appear here only after research review and founder approval. We will not present a possibility as a launch.');
   copy.append(p);empty.append(copy);host.replaceChildren(empty);return;
  }
@@ -191,7 +213,7 @@ function applyCatalog(items){
  $('hero-tool-count').textContent=number(tools.length);
  $('home-venture-count').textContent=number(ventures.length);
  $('tools-count-big').textContent=number(tools.length);
- categoryChips();renderFeaturedTools();renderTools();renderVentures();
+ categoryChips();renderQuickstarts();renderFeaturedTools();renderTools();renderVentures();
 }
 subscribeCatalog(applyCatalog);
 startCatalogMonitoring();
