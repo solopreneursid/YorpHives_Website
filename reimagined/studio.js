@@ -189,6 +189,7 @@ function renderFeaturedTools(){
 function renderVentures(){
  const total=$('venture-total');
  if(total)total.textContent=number(ventures.length)+' founder-approved public launch'+(ventures.length===1?'':'es');
+ const heroCount=$('venture-hero-count');if(heroCount)heroCount.textContent=number(ventures.length);
  const host=$('venture-products');if(!host)return;
  if(!ventures.length){
   const empty=make('div','','empty-state');
@@ -225,6 +226,7 @@ getCatalog().then(()=>loadActivity()).catch(()=>{
  $('tool-results-description').textContent='Please refresh the page or open the A–Z directory.';
  $('tool-empty').hidden=false;$('tool-pagination').hidden=true;
  $('venture-total').textContent='Approval records unavailable';
+  if($('venture-hero-count'))$('venture-hero-count').textContent='—';
 });
 
 $('tool-search')?.addEventListener('input',()=>{page=1;renderTools()});
