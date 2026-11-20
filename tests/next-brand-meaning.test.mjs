@@ -38,9 +38,10 @@ test("the venture studio separates research signals from founder-approved launch
  assert.ok(policy.includes('founderApproval'));
  assert.ok(policy.includes("founder?.status==='approved'"));
 });
-test('Free Tools has catalogue search, categories, saved filter and pagination',async()=>{
+test('Free Tools has catalogue search, categories, Toolspace and pagination',async()=>{
  const [html,js]=await Promise.all([read('reimagined/index.html'),read('reimagined/studio.js')]);
- for(const id of ['tool-search','tool-categories','tool-results','saved-toggle','tool-prev','tool-next'])
+ assert.match(html,/data-toolspace-tab="saved"/);
+ for(const id of ['tool-search','tool-categories','tool-results','tool-prev','tool-next'])
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(js,/function filteredTools\(/);
  assert.match(js,/function categoryChips\(/);

@@ -168,14 +168,14 @@ function toolCard(tool,index){
    });
    actions.append(button);
   }
-  top.append(actions);
+  article.append(actions);
  }
  const title=make('h3',tool.name),description=make('p',tool.description);
  const foot=make('div','','tool-card-foot');
  foot.append(make('span',tool.category||'Utility'));
  const link=make('a','Open tool');link.href='/'+tool.url;link.append(icon('external'));
  link.addEventListener('click',()=>recordRecent(local(),'tools',tool.url));
- foot.append(link);article.append(top,title,description,foot);return article;
+ foot.append(link);article.prepend(top,title,description);article.append(foot);return article;
 }
 function renderTools(){
  const host=$('tool-results');if(!host)return;
