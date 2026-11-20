@@ -163,3 +163,43 @@ details.directory-section[open] .directory-chevron{transform:rotate(180deg)}
 }
 
 .directory-header .header-kofi:disabled{opacity:1;cursor:not-allowed}
+
+/* COMPACT DIRECTORY PASS / same search, categories and real tool links. */
+.directory-header{height:64px;gap:16px}
+.directory-brand img{width:32px;height:32px}
+.directory-brand>span{font-size:18px}
+.directory-main{width:min(1080px,calc(100% - 52px));padding:17px 0 54px}
+.directory-hero{grid-template-columns:1fr .65fr;gap:5%;padding:28px 0 28px}
+.directory-hero h1{font-size:clamp(2.25rem,4.2vw,4.05rem);margin:11px 0 12px;line-height:1.04}
+.directory-hero-copy>p:not(.directory-kicker){font-size:12px;line-height:1.6}
+.directory-benefits{margin-top:13px}
+.directory-hero-art{min-height:183px;border-radius:15px}
+.directory-art-tile{width:58px;height:58px;border-radius:14px;font-size:16px}
+.directory-finder{padding:16px;border-radius:13px}
+.finder-heading{margin-bottom:9px}
+.finder-heading label{font-size:14px}
+.directory-search-row{min-height:46px;border-radius:10px}
+.directory-search-row input{height:45px}
+.directory-list{margin-top:30px}
+.directory-list-heading{margin-bottom:12px}
+.directory-list-heading h2{font-size:clamp(1.85rem,3vw,2.8rem)}
+details.directory-section{margin-top:7px;border-radius:12px}
+details.directory-section>summary{min-height:50px;padding:10px 14px;font-size:13px}
+.directory-grid{gap:7px;padding:9px}
+.directory-card{min-height:82px;padding:11px;border-radius:9px;gap:5px}
+.directory-bottom-card{margin-top:22px;padding:15px}
+.directory-footer-main{padding:23px 0 18px}
+@media(max-width:760px){
+ .directory-header{height:60px}
+ .directory-main{width:calc(100% - 30px);padding:14px 0 45px}
+ .directory-hero{grid-template-columns:1fr;gap:13px;padding:22px 0}
+ .directory-hero h1{font-size:clamp(2.05rem,7.8vw,3rem)}
+ .directory-hero-art{min-height:125px}
+ .directory-art-tile{width:48px;height:48px;border-radius:11px}
+ .directory-finder{padding:13px}
+ .directory-list{margin-top:24px}
+ .directory-card{min-height:78px;padding:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ .directory-card{transition:none}
+}

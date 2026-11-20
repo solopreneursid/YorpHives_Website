@@ -46,3 +46,52 @@ html{scroll-behavior:smooth}
 @media(max-width:920px){.hqconnect-layout{grid-template-columns:1fr;gap:31px}.hqconnect-heading{padding-top:0}.hqconnect-offers{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:24px}.hqconnect-offer{grid-template-columns:42px minmax(0,1fr);gap:10px}.hqconnect-offer-icon{width:42px;height:42px;border-radius:12px}.offer-arrow{display:none}.hqconnect-form{transform:none}}
 @media(max-width:600px){#hqconnect{scroll-margin-top:72px}.hqconnect{padding:57px 0 72px}.hqconnect-layout{gap:26px}.hqconnect-heading h2{font-size:clamp(2.55rem,11vw,4.2rem)}.hqconnect-heading>p:not(.section-kicker){font-size:13px}.hqconnect-offers,.hqconnect-fields{grid-template-columns:1fr}.hqconnect-offers{gap:11px}.hqconnect-offer{min-height:88px;border-radius:17px}.hqconnect-form{padding:23px 17px 20px;border-radius:19px}.hqconnect-form:before{border-radius:19px 19px 0 0}.hqconnect-form .form-heading strong{font-size:20px}.hqconnect-form input:not([type=checkbox]),.hqconnect-form select{min-height:48px}.hqconnect-form textarea{min-height:135px}.hqconnect-form .form-submit{min-height:55px}.hqconnect-heading .hqconnect-note{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.hqconnect-offer,.hqconnect-form,.ecosystem-card,.featured-tool-card,.tool-card{transition:none!important;transform:none!important}.hqconnect-offer:hover{transform:none!important}}
+
+/* COMPACT HQCONNECT PASS / retained depth without oversized cards. */
+#hqconnect{scroll-margin-top:74px}
+.hqconnect{padding:47px 0 52px}
+.hqconnect-layout{gap:clamp(23px,4vw,50px);grid-template-columns:minmax(0,.94fr) minmax(0,1.06fr)}
+.hqconnect-heading{padding-top:6px}
+.hqconnect-heading h2{font-size:clamp(2.25rem,3.85vw,3.65rem);line-height:1.07;margin:10px 0 13px}
+.hqconnect-heading>p:not(.section-kicker){font-size:12px;line-height:1.64}
+.hqconnect-offers{gap:10px;margin-top:23px}
+.hqconnect-offer{grid-template-columns:40px minmax(0,1fr) 18px;gap:11px;min-height:78px;padding:12px;border-radius:15px;box-shadow:0 9px 0 -5px #a9c59e,0 16px 28px -22px #1a3a2470,inset 0 2px 0 #fff}
+.hqconnect-offer-icon{width:40px;height:40px;border-radius:11px;font-size:23px}
+.hqconnect-offer strong{font-size:14px}
+.hqconnect-offer small{font-size:10px;line-height:1.45;margin-top:4px}
+.hqconnect-heading .hqconnect-note{margin-top:14px;font-size:10px}
+.hqconnect-form{padding:23px;gap:11px;border-radius:18px;box-shadow:0 19px 54px -31px #0b322a77,0 7px 0 -4px #c3d3ba,inset 0 2px 1px #fff}
+.hqconnect-form:before{height:5px;border-radius:18px 18px 0 0}
+.hqconnect-form .form-heading{padding-bottom:11px;margin-bottom:1px}
+.hqconnect-form .form-heading strong{font-size:18px}
+.hqconnect-fields{gap:9px}
+.hqconnect-form label{font-size:10px;gap:5px}
+.hqconnect-form input:not([type=checkbox]),.hqconnect-form select,.hqconnect-form textarea{padding:9px 11px;border-radius:9px;font-size:13px}
+.hqconnect-form input:not([type=checkbox]),.hqconnect-form select{min-height:44px}
+.hqconnect-form textarea{min-height:108px}
+.hqconnect-form .form-submit{min-height:44px;font-size:12px;border-radius:10px;padding-inline:14px}
+.hqconnect-feedback,.hqconnect-fallback{font-size:10px}
+@media(max-width:920px){
+ .hqconnect-layout{grid-template-columns:1fr;gap:22px}
+ .hqconnect-offers{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:16px}
+ .hqconnect-offer{grid-template-columns:36px minmax(0,1fr);min-height:78px}
+ .hqconnect-offer-icon{width:36px;height:36px}
+}
+@media(max-width:600px){
+ #hqconnect{scroll-margin-top:67px}
+ .hqconnect{padding:33px 0 40px}
+ .hqconnect-heading h2{font-size:clamp(2.1rem,8.4vw,2.8rem);margin:8px 0 11px}
+ .hqconnect-heading>p:not(.section-kicker){font-size:12px}
+ .hqconnect-offers{grid-template-columns:1fr;gap:8px}
+ .hqconnect-offer{min-height:70px;padding:10px 12px}
+ .hqconnect-form{padding:16px;gap:10px;border-radius:14px}
+ .hqconnect-form:before{border-radius:14px 14px 0 0}
+ .hqconnect-form .form-heading strong{font-size:17px}
+ .hqconnect-fields{grid-template-columns:1fr;gap:10px}
+ .hqconnect-form input:not([type=checkbox]),.hqconnect-form select{min-height:44px}
+ .hqconnect-form textarea{min-height:110px}
+ .hqconnect-form .form-submit{min-height:46px}
+}
+@media(prefers-reduced-motion:reduce){
+ .hqconnect-form,.hqconnect-offer{transition:none}
+}

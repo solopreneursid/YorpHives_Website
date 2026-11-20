@@ -770,3 +770,248 @@ svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-wi
  #ventures .venture-hero-actions{display:grid;grid-template-columns:1fr}
  #ventures .venture-hero-actions .button{width:100%}
 }
+
+/* COMPACT STUDIO PASS / 2026-11-20
+   A tighter hierarchy across Home, HQventures and Free Tools.
+   Keep touch targets >=44px and preserve user zoom + reduced-motion support. */
+body{font-size:14px;line-height:1.52}
+.shell{width:min(1160px,calc(100% - 64px))}
+h1{font-size:clamp(2.4rem,4.5vw,4.6rem)}
+h2{font-size:clamp(1.9rem,3.3vw,3.35rem)}
+h3{font-size:clamp(1.15rem,1.6vw,1.5rem)}
+.site-header{height:64px;gap:16px}
+.site-header .brand img{width:32px;height:32px}
+.site-header .brand-word{font-size:19px}
+.site-header .desktop-nav{gap:clamp(12px,2vw,28px)}
+.site-header .desktop-nav a{font-size:11px;min-height:42px}
+.header-cta,.button{min-height:44px;padding:10px 15px;gap:9px;font-size:11px}
+.header-cta svg,.button svg{width:15px;height:15px}
+.mobile-menu{top:64px}
+.mobile-menu a{min-height:46px;font-size:13px}
+.section-heading,.section-heading-tight{gap:18px;margin-bottom:19px}
+.section-heading h2{font-size:clamp(2rem,3.1vw,3.25rem)}
+.section-kicker{margin-bottom:8px;font-size:8px;letter-spacing:.14em}
+.section-aside,.section-sub{font-size:11px;line-height:1.5}
+.home-section,.featured-section{padding-block:43px}
+.text-link{font-size:10px}
+#home .hero-layout{
+ grid-template-columns:minmax(0,.98fr) minmax(320px,1.02fr);
+ gap:clamp(22px,3vw,45px);min-height:0;padding-block:38px 42px
+}
+#home .hero-copy{max-width:525px}
+#home .hero h1{font-size:clamp(2.55rem,4.2vw,4.4rem);line-height:1.085;margin:14px 0 12px;letter-spacing:-.055em}
+#home .hero-tagline{font-size:14px;line-height:1.4}
+#home .hero-description{font-size:12px;line-height:1.62;margin-top:9px}
+#home .hero-actions{gap:8px;margin-top:19px}
+#home .hero-actions .button{min-height:44px;padding:10px 14px;font-size:11px}
+#home .hero-note{margin-top:18px;font-size:7px}
+#home .hero-art{max-width:460px;border-radius:16px;box-shadow:0 16px 42px #03170b48,0 2px 6px #03170b20}
+#home .quickstart-top{gap:8px;padding:13px 15px 11px}
+#home .quickstart-eyebrow{font-size:8px}
+#home .quickstart-top h2{font-size:16px;margin-top:4px}
+#home .quickstart-status{font-size:8px;padding:5px 8px}
+#home .hero-quickstart-grid{padding:4px 9px}
+#home .quickstart-tool{grid-template-columns:35px minmax(0,1fr) 18px;gap:10px;min-height:57px;padding:7px 7px;border-radius:8px}
+#home .quickstart-symbol{width:35px;height:35px;border-radius:9px;font-size:11px}
+#home .quickstart-tool:nth-child(3) .quickstart-symbol,#home .quickstart-tool:nth-child(4) .quickstart-symbol{font-size:17px}
+#home .quickstart-tool strong{font-size:12px}
+#home .quickstart-tool small{font-size:10px}
+#home .quickstart-bottom{padding:10px 15px;font-size:10px}
+#home .trust-strip{padding-block:12px}
+#home .trust-strip>div{gap:9px;min-height:34px;padding-inline:14px}
+#home .trust-strip strong{font-size:21px}
+#home .trust-strip .trust-note{font-size:10px}
+#home .section-sub{margin-top:7px;font-size:11px;line-height:1.5}
+#home .featured-section{padding-block:42px 48px}
+#home .featured-tools-grid{gap:9px}
+#home .featured-tool-card{min-height:143px;padding:13px;border-radius:13px}
+.featured-tool-heading{margin-bottom:10px}
+.featured-tool-icon{width:31px;height:31px;border-radius:9px;font-size:12px}
+.featured-tool-card h3{font-size:14px;margin-top:5px}
+.featured-tool-card p{font-size:10px;line-height:1.5;margin-top:6px}
+.featured-tool-action{padding-top:10px;font-size:9px}
+#home .ecosystem-grid{gap:10px}
+#home .ecosystem-card{min-height:192px;padding:16px;border-radius:14px}
+#home .ecosystem-top{font-size:8px}
+#home .ecosystem-bottom{margin-top:20px}
+#home .ecosystem-bottom h3{font-size:18px}
+#home .ecosystem-bottom p{font-size:11px;margin-top:7px;line-height:1.52}
+#home .ecosystem-link{font-size:10px;margin-top:11px}
+#home .home-section{padding-block:43px}
+#home .pulse-section{padding-block:42px 48px}
+.pulse-panel{border-radius:13px}
+.pulse-panel-label{padding:10px 14px;font-size:8px}
+.pulse-item{gap:12px;padding:12px 14px;min-height:58px}
+.pulse-item-number{width:29px;height:29px;border-radius:8px}
+.pulse-item strong,.pulse-title{font-size:12px}
+.pulse-item p{font-size:10px}
+#ventures .venture-hero .page-hero-layout{
+ grid-template-columns:minmax(0,1fr) minmax(240px,285px);
+ min-height:0;gap:clamp(22px,4vw,48px);padding-block:38px
+}
+#ventures .venture-hero h1{font-size:clamp(2.55rem,4.05vw,3.9rem);line-height:1.07;margin:11px 0}
+#ventures .venture-hero .page-hero-layout>div:first-child>p:not(.eyebrow){font-size:12px;line-height:1.6}
+#ventures .venture-hero-actions{margin-top:16px;gap:7px}
+#ventures .venture-hero-actions .button{min-height:44px;font-size:10px;padding:9px 13px}
+#ventures .venture-status-panel{padding:18px;border-radius:14px;box-shadow:0 10px 20px #1d3b210c}
+#ventures .venture-status-label{font-size:8px}
+#ventures .venture-status-panel strong{font-size:20px;margin-top:12px}
+#ventures .venture-status-panel strong span{font-size:31px}
+#ventures .venture-status-panel p{font-size:11px;line-height:1.5;margin-top:8px}
+#ventures .venture-status-panel a{font-size:10px;margin-top:11px}
+.page-hero-layout,.tools-page-hero{min-height:0;gap:4%;padding-block:35px}
+.page-hero h1{font-size:clamp(2.55rem,4vw,3.9rem);margin:12px 0 9px}
+.page-hero-layout>div:first-child>p:not(.eyebrow),.tools-page-hero>div:first-child>p:not(.eyebrow){font-size:12px;line-height:1.6}
+.page-content{padding-block:43px 52px}
+.page-content .section-heading{margin-bottom:18px}
+.count-pill{min-height:31px;font-size:9px;padding:6px 10px}
+.empty-state{gap:13px;padding:19px;border-radius:13px}
+.empty-state h3{font-size:17px}
+.empty-state p{font-size:11px;margin-top:6px}
+.empty-state-mark{width:46px;height:46px;border-radius:13px;font-size:25px}
+.venture-products{gap:10px}
+.venture-item{padding:16px;gap:8px;border-radius:13px}
+.venture-item h3{font-size:17px}
+.venture-item p{font-size:11px}
+.venture-workflow{margin-top:0}
+.process-layout{gap:5%;padding-block:42px}
+.process-copy h2{font-size:clamp(2rem,3.2vw,3.3rem)}
+.process-copy>p:not(.section-kicker){font-size:12px;line-height:1.62;margin-top:11px}
+.process-copy .text-link{margin-top:16px}
+.process-steps{gap:8px}
+.process-steps>div{min-height:94px;padding:12px;border-radius:12px}
+.process-steps strong{font-size:13px;margin-top:7px}
+.process-steps small{font-size:9px;margin-top:3px}
+.process-band-layout{gap:5%;padding-block:43px}
+.process-band h2{font-size:clamp(2rem,3.1vw,3.2rem)}
+.process-band-layout>div:first-child>p:not(.section-kicker){font-size:11px;line-height:1.55;margin-top:10px}
+.process-list{gap:7px}
+.process-list>div{padding:10px;border-radius:10px}
+.process-list b{width:27px;height:27px;border-radius:8px}
+.process-list strong{font-size:11px}
+.tool-count-card{padding:16px;border-radius:14px}
+.tool-count-card strong{font-size:43px}
+.tool-library-content{padding-top:29px}
+.tool-search-panel{padding:15px;border-radius:14px}
+.tool-search-panel>label{font-size:12px;margin-bottom:8px}
+.tool-search-row{min-height:47px;border-radius:10px}
+.tool-search-row input{height:46px;font-size:14px}
+.tool-category-row{margin-top:12px}
+.cat-chip{min-height:38px;font-size:10px}
+.tool-results-toolbar{margin:15px 0 12px}
+.tool-results-grid{gap:9px}
+.tool-card{min-height:152px;padding:13px;border-radius:12px}
+.tool-card h3{font-size:14px;margin-top:9px}
+.tool-card>p{font-size:10px;margin-top:6px}
+.tool-card-foot{padding-top:10px}
+.tool-card-foot>a{display:inline-flex;align-items:center;min-height:34px;font-size:10px}
+.tool-icon{width:32px;height:32px}
+.tool-card-fav{min-width:44px;min-height:44px}
+.directory-callout{margin-top:28px;padding:16px;border-radius:13px}
+.footer-main{padding-block:28px 22px;gap:24px}
+.footer-links{gap:24px}
+.footer-links>div{gap:7px}
+.footer-bottom{padding-block:12px}
+@media(max-width:1050px){
+ .shell{width:min(100% - 44px,1160px)}
+ #home .hero-layout{grid-template-columns:minmax(0,1fr) minmax(300px,1fr);gap:20px;padding-block:32px 36px}
+ #home .hero h1{font-size:clamp(2.35rem,4.7vw,3.85rem)}
+ #home .ecosystem-card{min-height:200px}
+}
+@media(max-width:760px){
+ html{scroll-padding-top:63px}
+ body{font-size:13px}
+ .shell{width:calc(100% - 32px)}
+ .site-header{height:60px;padding-inline:16px}
+ .site-header .brand img{width:30px;height:30px}
+ .site-header .brand-word{font-size:18px}
+ .mobile-menu{top:60px}
+ .mobile-menu a{min-height:46px}
+ .menu-toggle{width:44px;height:44px}
+ #home .hero-layout{grid-template-columns:1fr;gap:17px;min-height:0;padding-block:24px 29px}
+ #home .hero h1{font-size:clamp(2.1rem,8vw,2.9rem);line-height:1.085;margin:12px 0 9px}
+ #home .hero-tagline{font-size:13px;line-height:1.4}
+ #home .hero-description{font-size:12px;line-height:1.54;margin-top:7px}
+ #home .hero-actions{margin-top:15px;gap:7px}
+ #home .hero-actions .button{min-height:44px;padding:10px 12px;font-size:11px}
+ #home .hero-note{margin-top:13px}
+ #home .hero-art{max-width:none;border-radius:13px}
+ #home .quickstart-top{padding:11px 12px}
+ #home .quickstart-top h2{font-size:15px}
+ #home .hero-quickstart-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:9px}
+ #home .quickstart-tool{grid-template-columns:30px minmax(0,1fr);min-height:76px;gap:7px;padding:9px;border:1px solid #e4e9df;border-radius:9px;align-items:center}
+ #home .quickstart-symbol{width:30px;height:30px;font-size:10px}
+ #home .quickstart-tool strong{font-size:11px}
+ #home .quickstart-tool small{font-size:9px}
+ #home .quickstart-bottom{padding:10px 12px;font-size:9px}
+ #home .trust-strip{padding-block:7px}
+ #home .trust-strip>div{min-height:45px;padding:6px 9px}
+ #home .trust-strip strong{font-size:19px}
+ .home-section,#home .home-section,#home .featured-section{padding-block:32px}
+ .section-heading{gap:9px;margin-bottom:14px}
+ .section-heading h2{font-size:clamp(1.85rem,7.2vw,2.55rem)}
+ .section-sub,.section-aside{font-size:11px}
+ #home .featured-tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ #home .featured-tool-card{min-height:138px;padding:11px}
+ .featured-tool-heading{margin-bottom:8px}
+ .featured-tool-card h3{font-size:13px}
+ .featured-tool-card p{font-size:10px}
+ #home .ecosystem-grid{grid-template-columns:1fr;gap:8px}
+ #home .ecosystem-card{min-height:0;padding:14px;border-radius:12px}
+ #home .ecosystem-bottom{margin-top:14px}
+ #home .ecosystem-bottom h3{font-size:16px}
+ #home .ecosystem-bottom p{font-size:11px}
+ #home .ecosystem-link{margin-top:9px}
+ #ventures .venture-hero .page-hero-layout{grid-template-columns:1fr;gap:17px;min-height:0;padding-block:28px}
+ #ventures .venture-hero h1{font-size:clamp(2.15rem,8.3vw,2.95rem)}
+ #ventures .venture-status-panel{padding:15px}
+ #ventures .venture-status-panel strong{font-size:19px}
+ #ventures .venture-status-panel strong span{font-size:27px}
+ .page-hero-layout,.tools-page-hero{grid-template-columns:1fr;gap:12px;padding-block:26px}
+ .page-hero h1{font-size:clamp(2.15rem,8vw,3rem);margin:9px 0}
+ .page-content{padding-block:28px 40px}
+ .process-layout{grid-template-columns:1fr;gap:17px;padding-block:30px}
+ .process-copy h2{font-size:clamp(1.9rem,7vw,2.65rem)}
+ .process-steps>div{min-height:86px;padding:11px}
+ .process-steps strong{font-size:12px}
+ .process-band-layout{grid-template-columns:1fr;gap:17px;padding-block:31px}
+ .process-band h2{font-size:clamp(1.9rem,7vw,2.65rem)}
+ .pulse-section,#home .pulse-section{padding-block:32px}
+ .pulse-item{gap:8px;padding:10px 11px;min-height:51px}
+ .pulse-item-number{width:27px;height:27px}
+ .pulse-title{font-size:11px}
+ .tool-count-card{padding:12px}
+ .tool-count-card strong{font-size:34px}
+ .tool-library-content{padding-top:18px}
+ .tool-results-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .tool-card{min-height:145px;padding:11px}
+ .tool-card-foot{align-items:flex-start;flex-direction:column;gap:4px}
+ .tool-card-foot>a{min-height:34px}
+ .directory-callout{margin-top:22px}
+ .footer-main{gap:18px;padding-block:25px 20px}
+ .footer-links{gap:11px}
+ .mobile-dock{padding:4px;border-radius:14px}
+ .mobile-dock a{min-height:50px}
+}
+@media(max-width:430px){
+ .shell{width:calc(100% - 26px)}
+ #home .hero h1{font-size:clamp(2rem,9.2vw,2.6rem)}
+ #home .quickstart-tool{grid-template-columns:30px minmax(0,1fr);min-height:73px}
+ #home .featured-tools-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #home .featured-tool-card{min-height:147px}
+ .tool-results-grid{grid-template-columns:1fr}
+ .tool-card{min-height:129px}
+ .tool-card-foot{flex-direction:row;align-items:center}
+}
+@media(max-width:350px){
+ .shell{width:calc(100% - 24px)}
+ #home .hero-actions{flex-direction:column;align-items:stretch}
+ #home .hero-actions .button{width:100%}
+ #home .quickstart-top{flex-wrap:wrap}
+ #home .quickstart-tool{grid-template-columns:1fr;gap:5px;min-height:102px}
+ .process-steps{grid-template-columns:1fr}
+ .mobile-dock a{min-height:50px}
+}
+@media(prefers-reduced-motion:reduce){
+ .hero-art,.ecosystem-card,.featured-tool-card,.tool-card{transition:none}
+}

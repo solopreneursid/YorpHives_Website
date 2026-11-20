@@ -202,3 +202,40 @@ body.tool-page [hidden]{display:none!important}
 }
 
 body.tool-page .site-header .header-kofi:disabled{opacity:1;cursor:not-allowed}
+
+/* COMPACT DIRECT-TOOL PASS / preserve tool processing, forms and tap targets. */
+body.tool-page .site-header{height:64px;min-height:64px;gap:16px}
+body.tool-page .site-header .brand img{width:32px;height:32px}
+body.tool-page .site-header .brand-name{font-size:18px}
+body.tool-page .tool-wrap,body.tool-page[data-tui-family] .tool-wrap{
+ width:min(calc(100% - 52px),1080px);max-width:1080px;padding:24px 0 57px
+}
+body.tool-page .breadcrumb{margin-bottom:15px}
+body.tool-page .tool-intro,body.tool-page[data-tui-family] .tool-intro{gap:17px;margin-bottom:16px}
+body.tool-page .tool-intro h1,body.tool-page[data-tui-family] .tool-intro h1{font-size:clamp(2.05rem,3.45vw,3.2rem);margin:7px 0 9px;line-height:1.08}
+body.tool-page .tool-intro>div>p:last-child,body.tool-page[data-tui-family] .tool-intro>div>p:last-child{font-size:12px;line-height:1.6}
+body.tool-page .privacy-badge,body.tool-page[data-tui-family] .privacy-badge{padding:7px 10px}
+body.tool-page .tool-panel,body.tool-page[data-tui-family] .tool-panel{border-radius:14px}
+body.tool-page .panel-head,body.tool-page[data-tui-family] .panel-head{min-height:47px;padding:11px 16px}
+body.tool-page .panel-content,body.tool-page[data-tui-family] .panel-content{padding:18px}
+body.tool-page .tool-fields,body.tool-page[data-tui-family] .tool-fields{gap:12px}
+body.tool-page .tool-field input,body.tool-page .tool-field select,body.tool-page .tool-field textarea,
+body.tool-page[data-tui-family] .tool-field input,body.tool-page[data-tui-family] .tool-field select,body.tool-page[data-tui-family] .tool-field textarea{margin-top:5px;padding:10px 11px}
+body.tool-page .tool-btn{min-height:44px;padding:10px 13px}
+body.tool-page .tool-help{gap:9px;margin-top:14px}
+body.tool-page .tool-help-card{padding:15px;border-radius:12px}
+body.tool-page .tool-help-card h2{font-size:15px;margin-bottom:7px}
+body.tool-page .tool-related{margin-top:20px;padding-top:17px}
+body.tool-page .yh-tool-discover{margin-top:16px;padding:14px}
+@media(max-width:760px){
+ body.tool-page .site-header{height:60px;min-height:60px}
+ body.tool-page .tool-wrap,body.tool-page[data-tui-family] .tool-wrap{width:calc(100% - 30px);padding:19px 0 46px}
+ body.tool-page .breadcrumb{margin-bottom:13px}
+ body.tool-page .tool-intro,body.tool-page[data-tui-family] .tool-intro{gap:10px;margin-bottom:14px}
+ body.tool-page .tool-intro h1,body.tool-page[data-tui-family] .tool-intro h1{font-size:clamp(1.95rem,7.5vw,2.85rem);margin:6px 0 8px}
+ body.tool-page .panel-content,body.tool-page[data-tui-family] .panel-content{padding:14px}
+ body.tool-page .tool-help-card{padding:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.tool-page .tool-btn{transition:none}
+}
