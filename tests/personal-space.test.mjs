@@ -26,6 +26,8 @@ test('Recent tools record unique approved local identifiers, never content',()=>
 test('HQventures saved products are independent from tools and validated',()=>{
  const s=storage(),id=productIdentity({url:'hqventures/my-software/'});
  assert.equal(id,'hqventures/my-software/');
+ assert.equal(productIdentity({id:'my-app',url:'hqventures/app-v2/'}),'products/my-app/');
+ assert.equal(productIdentity({id:'my-app',url:'hqventures/app-v3/'}),'products/my-app/');
  assert.equal(toggleSpace(s,'products',id),true);
  assert.deepEqual(readSpace(s,'products'),[id]);
  assert.deepEqual(readSpace(s,'tools'),[]);

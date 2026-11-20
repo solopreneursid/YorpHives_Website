@@ -9,7 +9,9 @@ const config={
  products:{saved:'yorphives-my-products-saved-v1',recent:'yorphives-my-products-recent-v1',valid:PRODUCT}
 };
 export function productIdentity(item){
- return typeof item?.url==='string'&&PRODUCT.test(item.url)?item.url:'';
+ if(!item||typeof item.url!=='string'||!PRODUCT.test(item.url))return '';
+ const stable=typeof item.id==='string'&&/^[a-z0-9][a-z0-9-]{0,95}$/.test(item.id)?item.id:null;
+ return stable?'products/'+stable+'/':item.url;
 }
 function readList(storage,key,valid){
  try{const value=JSON.parse(storage?.getItem(key)||'[]');

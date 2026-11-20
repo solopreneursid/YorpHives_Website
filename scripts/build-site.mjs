@@ -192,7 +192,11 @@ for(const item of published){
   html=html.replace('</main>',save+suggestions+'</main>');
   html=html.replace('</body>','<script type="module" src="/tools/save-tool.mjs"></script><script type="module" src="/tools/visit-tool.mjs"></script></body>');
  }
- // Progressive local browser agents can discover utilities from any public page.
+ if(item.type==='app'||item.type==='product'){
+   const stable=typeof item.id==='string'&&/^[a-z0-9][a-z0-9-]{0,95}$/.test(item.id)?'products/'+item.id+'/':item.url;
+   html=html.replace('</body>','<script type="module" src="/tools/visit-product.mjs" data-product-id="'+esc(stable)+'"></script></body>');
+  }
+  // Progressive local browser agents can discover utilities from any public page.
  if(!html.includes('agentic-browser.mjs'))
   html=html.replace('</body>','<script type="module" src="/agentic-browser.mjs"></script></body>');
  await write(path,html);
