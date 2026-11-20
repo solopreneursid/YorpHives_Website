@@ -35,10 +35,11 @@ test('the live studio uses the shared catalogue for homepage cards and the searc
  assert.match(studio,/subscribeCatalog\(applyCatalog\)/);
  assert.match(studio,/startCatalogMonitoring\(\)/);
  assert.match(studio,/activeCategory='All'/);
- assert.match(studio,/categoryChips\(\);renderQuickstarts\(\);renderFeaturedTools\(\);renderTools\(\);renderVentures\(\)/);
+ assert.match(studio,/categoryChips\(\);renderFeaturedTools\(\);renderTools\(\);renderVentures\(\);renderVentureActivity\(\)/);
  assert.match(studio,/getCatalog\(\)\.then\(\(\)=>loadActivity\(\)\)/);
  assert.match(home,/id="featured-tools-grid"/);
- assert.match(home,/id="hero-quickstart-list"/);
+ assert.match(home,/class="hero-art hero-system"/);
+ assert.doesNotMatch(home,/id="hero-quickstart-list"/);
  assert.match(home,/id="tool-categories"/);
  assert.match(headers,/\/catalog\.json\n  Cache-Control: no-store/);
  assert.match(build,/publishReimaginedRoot\('release-candidate\/'\)/);
