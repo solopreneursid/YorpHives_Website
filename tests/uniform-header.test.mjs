@@ -13,6 +13,7 @@ test('homepage header is a raised panel with four matching compact navigation pi
  assert.match(css,/background:var\(--nav-face\);color:var\(--nav-ink\)/);
  assert.match(css,/\.site-header \.desktop-nav a\[aria-current=page\],\s*\.site-header \.header-cta\[aria-current=page\]/);
  assert.match(css,/@media\(max-width:760px\)/);
+ assert.match(css,/\.site-header \.desktop-nav,\.site-header \.header-cta\{display:none\}/);
  assert.match(css,/\.site-header \.menu-toggle\{/);
  assert.match(js,/querySelectorAll\('\[data-nav\]'\)/);
 });
@@ -25,5 +26,7 @@ test('tool pages and directory use the same header base colour and accessible na
   assert.match(css,/@media\(max-width:760px\)/);
   assert.match(css,/prefers-reduced-motion:reduce/);
  }
+ assert.match(tool,/body\.tool-page \.tool-nav,body\.tool-page \.site-header \.header-cta\{display:none\}/);
+ assert.match(dir,/\.directory-nav,\.directory-cta\{display:none\}/);
  assert.match(shell,/class="tool-nav"/);
 });

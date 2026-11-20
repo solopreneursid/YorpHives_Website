@@ -350,6 +350,7 @@ body.tool-page .tool-nav a[aria-current=page]{
  body.tool-page .tool-nav a,body.tool-page .site-header .header-cta{width:88px;min-width:88px;font-size:9px}
 }
 @media(max-width:760px){
+ body.tool-page .tool-nav,body.tool-page .site-header .header-cta{display:none}
  body.tool-page .site-header{
   width:calc(100% - 18px);height:56px;min-height:56px;
   margin-top:6px;top:5px;padding-inline:14px;border-radius:13px;

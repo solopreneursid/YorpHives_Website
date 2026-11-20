@@ -317,6 +317,7 @@ details.directory-section{margin-top:var(--card-gap)}
  .directory-nav a,.directory-cta{width:88px;min-width:88px;font-size:9px}
 }
 @media(max-width:760px){
+ .directory-nav,.directory-cta{display:none}
  .directory-header{
   width:calc(100% - 18px);height:56px;margin-top:6px;top:5px;
   padding-inline:14px;border-radius:13px;

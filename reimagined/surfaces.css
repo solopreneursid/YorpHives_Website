@@ -235,6 +235,8 @@ body{
  }
 }
 @media(max-width:760px){
+ /* The full-size desktop CTA is replaced by the four-way mobile navigation. */
+ .site-header .desktop-nav,.site-header .header-cta{display:none}
  .site-header{
   width:calc(100% - 18px);height:56px;margin-top:6px;top:5px;
   padding-inline:14px;border-radius:13px;
