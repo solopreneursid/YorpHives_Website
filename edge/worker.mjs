@@ -54,6 +54,15 @@ export default {
    return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
   }
   if(!env.ASSETS)return json({error:'static-assets-not-configured'},503);
-  return env.ASSETS.fetch(request);
+  const assetResponse=await env.ASSETS.fetch(request);
+  // AdSense site ownership only: no advertising scripts or placements.
+  // Keep public tools and HQventures behavior unchanged.
+  if(request.method==='GET' && (p==='/' || p==='/index.html') &&
+     assetResponse.ok && (assetResponse.headers.get('content-type')||'').includes('text/html')){
+   return new HTMLRewriter().on('head',{
+    element(element){element.append('<meta name="google-adsense-account" content="ca-pub-9864775895222572">',{html:true});}
+   }).transform(assetResponse);
+  }
+  return assetResponse;
  }
 };
