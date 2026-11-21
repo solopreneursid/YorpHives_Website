@@ -69,8 +69,8 @@ for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory())
 // Make the policy visible directly from the Free Tools directory.
 const directoryHtml=await output('tools/index.html');
 if(!directoryHtml.includes('href="/privacy/"')){
- if(!/<\\/footer>/i.test(directoryHtml))throw Error('Directory footer missing');
- await write('tools/index.html',directoryHtml.replace(/<\\/footer>/i,' · <a href="/privacy/">Privacy Policy</a></footer>'));
+ if(!directoryHtml.includes('</footer>'))throw Error('Directory footer missing');
+ await write('tools/index.html',directoryHtml.replace('</footer>',' · <a href="/privacy/">Privacy Policy</a></footer>'));
 }
 // Build YHpulse only from actual published pages and reviewed public release notes.
 // This is static and requires no paid runtime services or background polling.
@@ -194,7 +194,7 @@ for(const item of published){
   }
   const link='<a href="/privacy/" aria-label="Read YorpHives Privacy Policy">Privacy Policy</a>';
   if(!html.includes('href="/privacy/"')){
-   if(/<footer\\b[^>]*>/i.test(html))html=html.replace(/<\\/footer>/i,' · '+link+'</footer>');
+   if(html.includes('<footer'))html=html.replace('</footer>',' · '+link+'</footer>');
    else throw Error('Missing footer for tool: '+item.url);
   }
  }
