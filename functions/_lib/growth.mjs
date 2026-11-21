@@ -28,8 +28,22 @@ async function catalogFor(request,env){
 export function buildGrowthReport({days,views,completions,eligible,generatedAt=new Date().toISOString()}){
  const perDay=new Map(days.map(day=>[day,{day,pageViews:0,completedActions:0}]));
  const byUrl=new Map();
+ const toolViews=new Map();
  for(const row of views){
-  const target=perDay.get(row.day);if(target)target.pageViews+=safeCount(row.views);
+  const target=perDay.get(row.day);
+  if(target)target.pageViews+=safeCount(row.views);
+  // Exact Free Tool routes are collected only after catalog allowlisting.
+  // The original generic "tool" route stays included in sitewide totals,
+  // but cannot be backfilled into per-tool pageviews.
+  const product=eligible.get(row.route);
+  if(target&&product&&row.route.startsWith('tools/')){
+   const current=toolViews.get(row.route)||{...product,pageViews30d:0,pageViews7d:0,previous7d:0};
+   const amount=safeCount(row.views),offset=days.indexOf(row.day);
+   current.pageViews30d+=amount;
+   if(offset>=23)current.pageViews7d+=amount;
+   else if(offset>=16)current.previous7d+=amount;
+   toolViews.set(row.route,current);
+  }
  }
  for(const row of completions){
   const day=perDay.get(row.day),product=eligible.get(row.url);
@@ -54,7 +68,9 @@ export function buildGrowthReport({days,views,completions,eligible,generatedAt=n
   methodology:'Anonymous browser-reported completions; indicative, not independently verified. Dates are UTC.',
   daily,comparison:{recent7dCompletedActions:recent,previous7dCompletedActions:previous,
    recent7dPageViews:totals(23,30,'pageViews'),previous7dPageViews:totals(16,23,'pageViews')},
-  ranked:ranked.slice(0,10),opportunities,signalsAvailable:ranked.length>0,
+  ranked:ranked.slice(0,10),
+  toolPageViews:[...toolViews.values()].sort((a,b)=>b.pageViews7d-a.pageViews7d||a.url.localeCompare(b.url)).slice(0,10),
+  opportunities,signalsAvailable:ranked.length>0||toolViews.size>0,
   revenue:{available:false,amount:null,reason:'No verified revenue source connected'},
   access:'Public aggregates only. HQ may observe and recommend; never change site, deployments, or approvals.'};
 }
