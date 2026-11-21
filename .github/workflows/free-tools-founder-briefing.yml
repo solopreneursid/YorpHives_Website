@@ -1,0 +1,49 @@
+name: YorpHives Free Tools independent supervisor and weekly briefing
+on:
+  schedule:
+    - cron: '31 0,6,12,18 * * *'
+    - cron: '41 4 * * 1'
+  push:
+    branches: [main]
+    paths:
+      - 'ops/free-tools-founder-briefing.mjs'
+      - '.github/workflows/free-tools-founder-briefing.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  issues: write
+concurrency:
+  group: yorphives-free-tools-founder-briefing
+  cancel-in-progress: false
+jobs:
+  supervise:
+    if: github.event_name != 'schedule' || github.event.schedule == '31 0,6,12,18 * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check that main monitoring is still reporting independently
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node ops/free-tools-founder-briefing.mjs --supervise
+  weekly-briefing:
+    if: github.event_name != 'schedule' || github.event.schedule == '41 4 * * 1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Refresh one founder briefing issue from verified public evidence
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node ops/free-tools-founder-briefing.mjs --weekly
