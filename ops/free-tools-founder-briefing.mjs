@@ -26,7 +26,7 @@ const age=Number.isFinite(ageHours)?ageHours.toFixed(1)+' hours':'unknown';
 if(process.argv.includes('--supervise')){
  const existing=named(titleStall);
  if(!validLast){
-  const body=['# Independent Free Tools watchdog supervisor','', '**Attention required:** No completed main monitoring run in the past 18 hours.',
+  const body=['# Independent Free Tools watchdog supervisor','', '@solopreneursid — **attention required:** No completed main monitoring run in the past 18 hours.',
    'Last completion: '+safe(last?.updated_at||'not observed')+'. Age: '+age+'.',
    'Evidence: '+link,'',
    'This does not prove the tools are broken; monitoring reliability is unverified.',
@@ -66,5 +66,14 @@ if(process.argv.includes('--weekly')){
  ].join('\n');
  const old=named(titleDigest);
  if(old)edit(old.number,report);else create(titleDigest,report);
+ // Weekly mention is opt-in via the founder's GitHub notification preferences.
+ // Never mention on push/bootstrap, manual tests, or twice-daily monitoring runs.
+ if(process.env.GITHUB_EVENT_NAME==='schedule'){
+  const newest=old||api('/repos/'+repo+'/issues?state=open&per_page=100').find(x=>x.title===titleDigest);
+  if(newest?.number)cmd(['issue','comment',String(newest.number),'--repo',repo,'--body',
+   '@solopreneursid — Weekly Free Tools summary is ready. '+(incident||stalled?
+    'Critical monitoring needs review.':seo?'SEO improvements available to review.':'No urgent action indicated.')+
+    ' Latest evidence: '+link]);
+ }
  console.log('WEEKLY BRIEFING UPDATED lastStatus='+(last?.conclusion||'unknown')+' critical='+Boolean(incident||stalled)+' seo='+Boolean(seo));
 }
