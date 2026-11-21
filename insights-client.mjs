@@ -35,7 +35,7 @@ async function event(kind,extra){
  }catch{/* Analytics may fail; site operations must never fail. */}
 }
 const route=()=>{
- if(/^\/tools\/[a-z0-9-]+\/$/.test(location.pathname))return 'tool';
+ if(/^\/tools\/[a-z0-9-]+\/$/.test(location.pathname))return location.pathname.slice(1);
  const hash=location.hash.slice(1);
  const alias={explore:'ventures',connect:'contact',ecosystem:'home',opportunities:'builders',membership:'builders'};
  const target=alias[hash]||hash||'home';
