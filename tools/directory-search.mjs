@@ -1,14 +1,7 @@
 // Search is a progressive enhancement of server-rendered, crawlable links.
 // No analytics, cookies, catalog fetch, external services or user-input uploads.
-export function normalizeSearch(value){
- return String(value??'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('en').replace(/[^a-z0-9]+/g,' ').trim();
-}
-export function matchesTool(query,{name='',description='',category=''}={}){
- const terms=normalizeSearch(query).split(' ').filter(Boolean);
- if(!terms.length)return true;
- const searchable=normalizeSearch([name,description,category].join(' '));
- return terms.every(term=>searchable.includes(term));
-}
+import {matchesTool} from './search-match.mjs';
+export {matchesTool,normalizeSearch} from './search-match.mjs';
 import {readSaved,SAVED_KEY} from './save-tool.mjs';
 export function setupDirectorySearch(doc=globalThis.document,win=globalThis.window){
  if(!doc||!win)return;

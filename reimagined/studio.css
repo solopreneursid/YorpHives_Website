@@ -152,7 +152,7 @@ svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-wi
 .ecosystem-bottom{margin-top:auto}
 .card-label{display:inline-block;color:#76846d;font-size:8px;font-weight:850;letter-spacing:.12em}
 .ecosystem-bottom h3{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:28px}
-.ecosystem-bottom h3 b{color:#688b50;font-size:18px}
+.ecosystem-bottom h3 svg{width:18px;height:18px;flex:none;color:#688b50}
 .ecosystem-bottom p{max-width:300px;margin-top:8px;color:#6e7a6b;font-size:12px;line-height:1.65}
 /* Featured tools */
 .featured-section{padding-block:63px 78px;background:#edeee5}
@@ -337,6 +337,9 @@ svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-wi
 .footer-links>div>span{margin-bottom:3px;color:#a9c181;font-size:8px;font-weight:850;letter-spacing:.15em}
 .footer-links a{color:#bdcbb6;font-size:10px}
 .footer-links a:hover{color:var(--lime)}
+.hqconnect-privacy{color:#526853;font-size:11px;line-height:1.5}
+.hqconnect-privacy a,.venture-empty-link{text-decoration:underline;text-underline-offset:3px}
+.venture-empty-link{display:inline-block;margin-top:12px;color:#376b42;font-weight:750}
 .footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:15px;padding-block:15px;border-top:1px solid #ffffff1b;color:#91a18d;font-size:8px;font-weight:800;letter-spacing:.1em}
 .footer-bottom a{color:#d4e3bd}
 .mobile-dock{display:none}

@@ -14,7 +14,9 @@ test('homepage headline, brand motto and logo-based system match the reference',
  assert.match(html,/class="hero-art hero-system" role="img"/);
  assert.match(html,/class="system-core-inner"><img src="\/tools\/brand-icon.webp"/);
  const hero=html.split('<div class="hero">')[1]?.split('<section class="home-section shell" aria-labelledby="home-discover-title">')[0]||'';
- assert.doesNotMatch(hero,/id="hero-quickstart-list"|QUICK START|What do you need to do\?|class="hero-actions"|class="hero-note"|Browse free tools|Build with us|USEFUL TODAY|OPEN FOR EVERYONE/);
+ assert.doesNotMatch(hero,/id="hero-quickstart-list"|QUICK START|What do you need to do\?|class="hero-note"|USEFUL TODAY|OPEN FOR EVERYONE/);
+ assert.match(hero,/<a class="button button-primary" href="#tools">Use free tools/);
+ assert.match(hero,/<a class="button button-quiet" href="#hqconnect">Build with us/);
  assert.match(css,/system-orbit-a/);
  assert.match(css,/#home \.hero h1\{/);
  assert.match(css,/font-family:var\(--sans\)/);

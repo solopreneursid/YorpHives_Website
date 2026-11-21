@@ -20,7 +20,8 @@ body[data-wave1="pdf-compressor"] .panel-content{padding:30px 34px 35px}
 #pdf-compressor-form .cpx-upload-copy strong{font-size:16px;font-weight:850;line-height:1.25;color:#123d2e;overflow-wrap:anywhere}
 #pdf-compressor-form .cpx-upload-copy>span{font-size:12px;line-height:1.4;color:#6a8774}
 #pdf-compressor-form .cpx-browse-action{flex:none;display:flex;align-items:center;gap:15px;border:1px solid #a9d4ba;background:#fff;color:#226948;font-weight:800;font-size:12px;padding:12px 16px;border-radius:10px;box-shadow:0 3px 11px rgba(33,92,56,.045);pointer-events:none}
-#pdf-compressor-form .cpx-browse-action span{font-size:17px}
+#pdf-compressor-form .cpx-browse-action svg{display:block;width:16px;height:16px;flex:none}
+#pdf-compressor-form .cpx-warning{margin:0 0 20px;padding:12px 14px;border:1px solid #d8c58f;border-radius:10px;background:#fff8e6;color:#5a4924;font-size:12px;line-height:1.55}
 #pdf-compressor-form .cpx-privacy{margin:12px 3px 0;color:#6a8573;display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:11px;line-height:1.5}
 #pdf-compressor-form .cpx-privacy span:first-child{color:#22956b;font-size:14px}
 #pdf-compressor-form .cpx-level-section{margin-top:31px}

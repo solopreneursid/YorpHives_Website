@@ -101,7 +101,9 @@ test("mobile navigation prioritizes HQventures before Free Tools",async()=>{
    assert.ok(section.indexOf('href="#ventures"')<section.indexOf('href="#tools"'));
  }
  const hero=within('<div class="hero">','</div>\n </div>\n\n <section class="home-section shell" aria-labelledby="home-discover-title">');
- assert.doesNotMatch(hero,/class="hero-actions"|class="hero-note"|USEFUL TODAY|OPEN FOR EVERYONE|Browse free tools|Build with us/);
+ assert.doesNotMatch(hero,/class="hero-note"|USEFUL TODAY|OPEN FOR EVERYONE/);
+ assert.match(hero,/<a class="button button-primary" href="#tools">Use free tools/);
+ assert.match(hero,/<a class="button button-quiet" href="#hqconnect">Build with us/);
  assert.match(html,/class="header-cta" href="#hqconnect"/);
  assert.match(html,/class="ecosystem-card ecosystem-tools" href="#tools"/);
  assert.match(html,/id="home-title"/);

@@ -31,7 +31,8 @@ for(const [engineName,engine] of Object.entries(engines)){
   let context;
   try{
    const mobile=width<=760;
-   context=await browser.newContext({viewport:{width,height},reducedMotion:'reduce',isMobile:mobile,hasTouch:mobile});
+   context=await browser.newContext({viewport:{width,height},reducedMotion:'reduce',
+    ...(engineName==='firefox'?{}:{isMobile:mobile,hasTouch:mobile})});
    const page=await context.newPage(),errors=[],external=[];
    page.on('pageerror',error=>errors.push(error.message));
    page.on('request',request=>{if(new URL(request.url()).origin!==origin)external.push(request.url())});
@@ -44,15 +45,14 @@ for(const [engineName,engine] of Object.entries(engines)){
     featured:document.querySelectorAll('#featured-tools-grid .featured-tool-card').length,
     nav:document.querySelectorAll('.desktop-nav a').length,
     dock:document.querySelectorAll('.mobile-dock a').length,
-    heading:!!document.querySelector('#home-title'),
-    count:document.querySelector('#home-tool-count')?.textContent
+    heading:!!document.querySelector('#home-title')
    }));
    const label=engineName+'/'+screen;
    if(home.scroll>home.width+2)problems.push(label+' homepage horizontal overflow '+home.scroll+'/'+home.width);
-   if(home.featured!==4)problems.push(label+' expected four featured tools, found '+home.featured);
-   if(home.nav!==4)problems.push(label+' desktop navigation count changed');
+   if(home.featured!==6)problems.push(label+' expected six featured tools, found '+home.featured);
+   if(home.nav!==3)problems.push(label+' desktop navigation count changed');
    if(home.dock!==4)problems.push(label+' four-item mobile navigation missing');
-   if(!home.heading||!home.count||home.count==='—')problems.push(label+' homepage identity or catalogue count missing');
+   if(!home.heading)problems.push(label+' homepage identity missing');
    if(await page.locator('#anonymous-analytics-toggle').count()!==1)problems.push(label+' anonymous analytics opt-out missing');
    if(mobile){
     const dock=await page.evaluate(()=>{
@@ -71,11 +71,15 @@ for(const [engineName,engine] of Object.entries(engines)){
     await page.keyboard.press('Escape');
     if(!(await page.locator('#mobile-menu').isHidden()))problems.push(label+' Escape did not close mobile menu');
    }
-   for(const view of ['tools','ventures','partners','contact']){
+   for(const view of ['tools','ventures']){
     await page.evaluate(id=>{location.hash='#'+id},view);
     await page.waitForFunction(id=>location.hash==='#'+id&&!document.getElementById(id).hidden,view);
     const dimensions=await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
     if(dimensions.scroll>dimensions.width+2)problems.push(label+' '+view+' overflow '+JSON.stringify(dimensions));
+   }
+   for(const alias of ['hqconnect','partners','contact']){
+    await page.evaluate(id=>{location.hash='#'+id},alias);
+    await page.waitForFunction(id=>location.hash==='#'+id&&!document.getElementById('home').hidden&&!document.getElementById('hqconnect').hidden,alias);
    }
    await page.evaluate(()=>{location.hash='#tools'});
    await page.waitForFunction(()=>location.hash==='#tools'&&!document.getElementById('tools').hidden);
