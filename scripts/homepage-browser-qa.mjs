@@ -42,7 +42,7 @@ for(const [engineName,engine] of Object.entries(engines)){
    const home=await page.evaluate(()=>({
     width:document.documentElement.clientWidth,
     scroll:document.documentElement.scrollWidth,
-    featured:document.querySelectorAll('#featured-tools-grid .featured-tool-card').length,
+    featured:document.querySelectorAll('#featured-tools-grid .showcase-slot').length,
     nav:document.querySelectorAll('.desktop-nav a').length,
     dock:document.querySelectorAll('.mobile-dock a').length,
     heading:!!document.querySelector('#home-title')
@@ -57,13 +57,13 @@ for(const [engineName,engine] of Object.entries(engines)){
    if(mobile){
     const dock=await page.evaluate(()=>{
      const node=document.querySelector('.mobile-dock'),box=node.getBoundingClientRect(),style=getComputedStyle(node);
-     const buttons=[...node.querySelectorAll('a')].map(item=>item.getBoundingClientRect());
+     const buttons=[...node.querySelectorAll('a,button')].map(item=>item.getBoundingClientRect());
      return {display:style.display,columns:style.gridTemplateColumns.split(' ').length,
       count:buttons.length,minHeight:Math.min(...buttons.map(item=>item.height)),
       equal:buttons.every(item=>Math.abs(item.width-buttons[0].width)<1.5),
       within:buttons.every(item=>item.left>=box.left&&item.right<=box.right)};
     });
-    if(dock.display==='none'||dock.columns!==4||dock.count!==4||dock.minHeight<44||!dock.equal||!dock.within)
+    if(dock.display==='none'||dock.columns!==5||dock.count!==5||dock.minHeight<44||!dock.equal||!dock.within)
      problems.push(label+' mobile dock layout or touch targets invalid '+JSON.stringify(dock));
     const toggle=page.locator('#menu-toggle');
     await toggle.click();
