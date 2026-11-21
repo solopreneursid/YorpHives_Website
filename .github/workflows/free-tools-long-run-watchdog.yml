@@ -1,5 +1,11 @@
 name: YorpHives Free Tools long-run watchdog
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'ops/adsense-watchdog.mjs'
+      - 'ops/free-tools-seo-audit.mjs'
+      - '.github/workflows/free-tools-long-run-watchdog.yml'
   schedule:
     - cron: '17 3,15 * * *'
   workflow_dispatch:
