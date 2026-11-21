@@ -40,8 +40,35 @@ if(process.argv.includes('--supervise')){
   console.log('SUPERVISOR OK '+age+' last='+last.conclusion);
  }
 }
+async function firstPartyActivity(){
+ try{
+  const res=await fetch('https://yorphives.com/api/insights/growth',{method:'GET',
+   redirect:'error',cache:'no-store',signal:AbortSignal.timeout(6500),
+   headers:{accept:'application/json','user-agent':'YorpHives-ReadOnly-Weekly-Briefing/1.0'}});
+  if(!res.ok||!(res.headers.get('content-type')||'').includes('application/json'))throw Error('Unavailable');
+  if(Number(res.headers.get('content-length')||0)>64000)throw Error('Response too large');
+  const body=await res.text();if(body.length>64000)throw Error('Response too large');
+  const x=JSON.parse(body);
+  const c=x.comparison||{},counts=['recent7dPageViews','previous7dPageViews','recent7dCompletedActions','previous7dCompletedActions'];
+  if(x.schemaVersion!==1||x.available!==true||x.periodDays!==30||
+     !counts.every(k=>Number.isSafeInteger(c[k])&&c[k]>=0)||!Number.isFinite(Date.parse(x.generatedAt||''))||
+     Date.now()-Date.parse(x.generatedAt)>36*3600000)throw Error('Unverified or stale');
+  return ['## First-party usage snapshot',
+   '- Sitewide browser-reported pageviews (7 days): '+c.recent7dPageViews+' (previous 7 days: '+c.previous7dPageViews+')',
+   '- Browser-reported tool completions (7 days): '+c.recent7dCompletedActions+' (previous 7 days: '+c.previous7dCompletedActions+')',
+   '- Tool-level rankings: '+(Array.isArray(x.ranked)?x.ranked.filter(t=>String(t.url||'').startsWith('tools/')).length:0)+' reported entries',
+   '- Verified unique visitors: not connected. Ad impressions: not connected. AdSense earnings: not connected.',
+   '- Evidence: https://yorphives.com/api/insights/growth · Updated '+String(x.generatedAt).slice(0,25),
+   '- Scope: pageviews are **sitewide**, not Free Tools-only; actions are anonymous browser events, not verified humans.',
+   ''].join('\n');
+ }catch{return ['## First-party usage snapshot',
+   '- Not verified for this briefing; no traffic or earnings estimate generated.',
+   '- Read-only source: https://yorphives.com/api/insights/growth',''].join('\n')}
+}
+
 if(process.argv.includes('--weekly')){
  const incident=named(titleIncident),stalled=named(titleStall),seo=named('YorpHives Free Tools SEO review');
+ const usageSummary=await firstPartyActivity();
  const report=['# Free Tools — weekly founder briefing','',
  'Week starting '+new Date(now).toISOString().slice(0,10),'',
  '## Monitoring',
@@ -51,6 +78,7 @@ if(process.argv.includes('--weekly')){
  '- Critical incident issue: '+(incident?incident.html_url:'None currently open'),
  '- Independent monitoring-stall issue: '+(stalled?stalled.html_url:'None currently open'),
  '',
+ usageSummary,
  '## Improvement review',
  '- SEO advisory issue: '+(seo?seo.html_url:'No open SEO issue'),
  '- Review this source report before acting. SEO warnings are not verified traffic or earnings.',
