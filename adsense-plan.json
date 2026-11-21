@@ -18,6 +18,45 @@
       ]
     },
     "placements": [],
-    "note": "No scripts, slots, cookies, or personalized ads are loaded. Founder approval and verified AdSense site readiness required before activation."
+    "note": "No scripts, slots, cookies, or personalized ads are loaded. Founder approval and verified AdSense site readiness required before activation.",
+    "optimization": {
+      "objective": "Maximize compliant long-term page RPM and net ad revenue from Free Tools without harming usability",
+      "activationGate": {
+        "siteApproved": false,
+        "founderApproved": false,
+        "regionConsentConfigured": false,
+        "adsEnabled": false
+      },
+      "rollout": [
+        {
+          "phase": "baseline",
+          "strategy": "Responsive manual units on approved Free Tools pages only; no popups/interstitials; start with one well-separated unit outside each tool workspace."
+        },
+        {
+          "phase": "experiment",
+          "strategy": "Compare placements and density by revenue per 1000 pageviews, Core Web Vitals, and returning use; test Auto Ads only with verified page restrictions and format controls."
+        },
+        {
+          "phase": "scale",
+          "strategy": "Prioritize high-quality organic discovery and genuinely differentiated utilities; continuously review RPM, coverage, country, and invalid-traffic risk."
+        }
+      ],
+      "restrictions": [
+        "Never load ad scripts outside /tools/ and approved /tools/<slug>/ pages",
+        "Never place ads among controls, upload inputs, download buttons, or results",
+        "Never incentivize clicks or artificially inflate impressions",
+        "Never enable ads until Google site is Ready and consent compliance is confirmed",
+        "Maintain clearly visible Privacy Policy and usable mobile layout"
+      ],
+      "metrics": [
+        "pageRPM",
+        "adCoverage",
+        "viewability",
+        "revenueByTool",
+        "revenueByCountry",
+        "organicSearchClicks",
+        "returningVisitors"
+      ]
+    }
   }
 }
