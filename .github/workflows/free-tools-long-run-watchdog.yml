@@ -1,0 +1,54 @@
+name: YorpHives Free Tools long-run watchdog
+on:
+  schedule:
+    - cron: '17 3,15 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: yorphives-free-tools-watchdog
+  cancel-in-progress: false
+jobs:
+  verify-free-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check production site, all tools daily, privacy and ad safety
+        id: audit
+        continue-on-error: true
+        env:
+          YH_FULL_AUDIT: 'true'
+        run: node ops/adsense-watchdog.mjs | tee yorphives-watchdog.log; exit ${PIPESTATUS[0]}
+      - name: Upload inspection evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yorphives-free-tools-watchdog
+          path: yorphives-watchdog.log
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: Record or resolve issue on monitoring outcome
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          OUTCOME: ${{ steps.audit.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          existing=$(gh issue list --state open --search 'YorpHives Free Tools watchdog failure in:title' --json number --jq '.[0].number // empty' || true)
+          if [ "$OUTCOME" != "success" ]; then
+            if [ -z "$existing" ]; then
+              gh issue create --title "YorpHives Free Tools watchdog failure" --body "Automated public-site health check failed. See the newest **YorpHives Free Tools long-run watchdog** Actions run and its `yorphives-free-tools-watchdog` artifact. Checks are read-only: no production files, ad settings, or customer data were modified."
+            else
+              echo "Existing incident issue #$existing; no duplicate issue."
+            fi
+            exit 1
+          elif [ -n "$existing" ]; then
+            gh issue close "$existing" --comment "Automated production checks recovered. The latest watchdog run passed."
+          fi
