@@ -60,6 +60,10 @@
     <h1 id="home-title">The future<br>doesn't build<br>itself.</h1>
     <p class="hero-tagline">Use our free tools. Explore our products. Build yours with us.</p>
     <p class="hero-description">YorpHives is an independent software studio combining useful tools, in-house ventures and tailored product development. Our private YorpHivesHQ researches and evaluates opportunities; the founder approves what gets built and released.</p>
+    <div class="hero-actions" aria-label="Get started">
+     <a class="button button-primary" href="#tools">Use free tools <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+     <a class="button button-quiet" href="#hqconnect">Build with us <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </div>
    </div>
    <div class="hero-art hero-system" role="img" aria-label="The YorpHives system: Research spots the signal, Intelligence tests the idea, and the founder decides and creates.">
     <div class="system-glow" aria-hidden="true"></div>
@@ -82,15 +86,15 @@
   <div class="ecosystem-grid">
    <a class="ecosystem-card ecosystem-ventures" href="#ventures">
     <div class="ecosystem-top"><span>HQVENTURES / THE FLAGSHIP</span><svg><use href="#i-arrow"/></svg></div>
-    <div class="ecosystem-bottom"><span class="card-label">RESEARCH & PRODUCT DEVELOPMENT</span><h3>New software ventures <b>↗</b></h3><p>HQventures evaluates possible products. Public releases are listed only after evidence review and founder approval.</p><span class="ecosystem-link">See portfolio and approval status</span></div>
+    <div class="ecosystem-bottom"><span class="card-label">RESEARCH & PRODUCT DEVELOPMENT</span><h3>New software ventures <svg aria-hidden="true"><use href="#i-external"/></svg></h3><p>HQventures evaluates possible products. Public releases are listed only after evidence review and founder approval.</p><span class="ecosystem-link">See portfolio and approval status</span></div>
    </a>
    <a class="ecosystem-card ecosystem-tools" href="#tools">
     <div class="ecosystem-top"><span>FREE TOOLS / AVAILABLE NOW</span><svg><use href="#i-arrow"/></svg></div>
-    <div class="ecosystem-bottom"><span class="card-label">PUBLISHED & DIRECTLY ACCESSIBLE</span><h3>Browser tool library <b>↗</b></h3><p>Writing, PDFs, images, development, calculations and more. Search by what you need to accomplish.</p><span class="ecosystem-link">Find and open a tool</span></div>
+    <div class="ecosystem-bottom"><span class="card-label">PUBLISHED & DIRECTLY ACCESSIBLE</span><h3>Browser tool library <svg aria-hidden="true"><use href="#i-external"/></svg></h3><p>Writing, PDFs, images, development, calculations and more. Search by what you need to accomplish.</p><span class="ecosystem-link">Find and open a tool</span></div>
    </a>
    <a class="ecosystem-card ecosystem-partners" href="#hqconnect">
     <div class="ecosystem-top"><span>HQCONNECT / BUILD WITH US</span><svg><use href="#i-arrow"/></svg></div>
-    <div class="ecosystem-bottom"><span class="card-label">BUILD · MAINTAIN · EVOLVE</span><h3>HQconnect <b>↗</b></h3><p>Request a custom product or a long-term partnership to build, improve and maintain your software.</p><span class="ecosystem-link">Start your request</span></div>
+    <div class="ecosystem-bottom"><span class="card-label">BUILD · MAINTAIN · EVOLVE</span><h3>HQconnect <svg aria-hidden="true"><use href="#i-external"/></svg></h3><p>Request a custom product or a long-term partnership to build, improve and maintain your software.</p><span class="ecosystem-link">Start your request</span></div>
    </a>
   </div>
  </section>
@@ -126,6 +130,7 @@
     <div class="hqconnect-fields"><label>Preferred timeline <span class="hqconnect-optional">(optional)</span><select name="timeline"><option value="">Not sure yet</option><option>As soon as practical</option><option>1–3 months</option><option>3–6 months</option><option>Flexible</option></select></label>
      <label>Budget range <span class="hqconnect-optional">(optional)</span><select name="budget"><option value="">Prefer to discuss</option><option>Under $1,000</option><option>$1,000–$5,000</option><option>$5,000–$20,000</option><option>$20,000+</option></select></label></div>
     <label class="hqconnect-consent"><input type="checkbox" name="consent" required><span>I agree to be contacted about this enquiry and understand that my details will be used to review it.</span></label>
+    <p class="hqconnect-privacy">Read our <a href="/privacy/">Privacy Policy</a>.</p>
     <div class="hqconnect-trap" aria-hidden="true"><label>Leave blank<input name="website" autocomplete="off" tabindex="-1"></label></div>
     <button class="button button-primary form-submit" type="submit">Send project request <svg><use href="#i-arrow"/></svg></button>
     <p class="hqconnect-feedback" id="hqconnect-feedback" role="status" aria-live="polite">Your details are sent only when you submit this form. No account is required.</p>
@@ -149,7 +154,7 @@
    </div>
    <aside class="venture-status-panel" aria-label="Verified public portfolio status">
     <span class="venture-status-label"><span class="status-led"></span> PUBLIC PORTFOLIO STATUS</span>
-    <strong><span id="venture-hero-count">0</span> publicly launched ventures</strong>
+    <strong><span id="venture-hero-count" hidden></span><span id="venture-hero-label">Checking public launches…</span></strong>
     <p>Only founder-approved, verified launches appear here. Private ideas and research are not public products.</p>
     <a href="#tools">See software available today <svg><use href="#i-arrow"/></svg></a>
    </aside>
@@ -207,7 +212,7 @@
 </main>
 <footer class="site-footer">
  <div class="shell footer-main"><div class="footer-brand"><a class="brand brand-footer" href="#home"><img src="/tools/brand-icon.webp" width="38" height="38" alt=""><span class="brand-word">yorp<span>Hives</span><small>IDEAS IN MOTION</small></span></a><p>Independent thinking.<br>Useful things in motion.</p></div>
-  <div class="footer-links"><div><span>EXPLORE</span><a href="#home">Home</a><a href="#ventures">HQventures</a><a href="#tools">Free tools</a></div><div><span>WORK WITH US</span><a href="#hqconnect">HQconnect</a><a href="#hqconnect">Custom products & partnerships</a><a href="mailto:connect@yorphives.com">Email the studio</a></div><div><span>DISCOVER</span><a href="/tools/">All tools A–Z</a><a href="/catalog.json">Public tool catalogue</a></div></div>
+  <div class="footer-links"><div><span>EXPLORE</span><a href="#home">Home</a><a href="#ventures">HQventures</a><a href="#tools">Free tools</a></div><div><span>WORK WITH US</span><a href="#hqconnect">HQconnect</a><a href="#hqconnect">Custom products & partnerships</a><a href="mailto:connect@yorphives.com">Email the studio</a></div><div><span>DISCOVER</span><a href="/tools/">All tools A–Z</a><a href="/catalog.json">Public tool catalogue</a><a href="/privacy/">Privacy Policy</a></div></div>
  </div>
  <div class="shell footer-bottom"><span>© <span id="year">2026</span> YORPHIVES</span><button type="button" id="anonymous-analytics-toggle" class="analytics-toggle">Anonymous analytics: On (turn off)</button><span>BUILT TO EVOLVE · HUMAN-LED</span><a href="#home">BACK TO TOP ↑</a></div>
 </footer>

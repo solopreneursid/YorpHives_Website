@@ -95,7 +95,7 @@ try{
   assert.ok(layout.scroll<=layout.client+8,JSON.stringify(layout));
  },{mobile:true});
  await check('mobile: marketing landing pages are reachable and readable',async page=>{
-  for(const path of ['/hqventures/','/partnerships/']){
+  for(const path of ['/hqventures/']){
    await open(page,path);
    assert.equal(await page.locator('h1').count(),1);
    assert.ok(await page.locator('h1').isVisible());
@@ -104,6 +104,9 @@ try{
    const layout=await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
    assert.ok(layout.scroll<=layout.width+8,path+' overflow: '+JSON.stringify(layout));
   }
+  await open(page,'/#hqconnect');
+  assert.ok(await page.locator('#hqconnect-title').isVisible());
+  assert.ok(await page.locator('#contact-form').isVisible());
  },{mobile:true});
  assert.deepEqual(writes,[],'Unexpected network writes');
 }finally{await browser.close();}

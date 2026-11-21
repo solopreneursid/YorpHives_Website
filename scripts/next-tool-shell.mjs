@@ -15,7 +15,7 @@ export function injectNextToolUI(html,item){
   '</nav>';
  const updated=header.replace(/<nav\b[^>]*class="tool-nav"[^>]*>[\s\S]*?<\/nav>/i,nav)
   .replace('</header>',
-   '<a class="header-cta" href="../../#hqconnect">HQconnect <span aria-hidden="true">↗</span></a>'+
+   '<a class="header-cta" href="../../#hqconnect">HQconnect <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M7 17 18 6M9 6h9v9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>'+
    '<button class="tool-support" type="button" disabled>Support us</button>'+
    '<a class="tool-header-back" href="../../#tools">← All tools</a></header>');
  if(updated===header||!updated.includes('class="tool-nav"'))throw Error('Tool navigation could not be redesigned: '+item.url);

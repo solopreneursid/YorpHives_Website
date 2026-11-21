@@ -131,8 +131,11 @@ if(!toolCss.includes('DIMENSIONAL TOOL SURFACES')||
  fail('Section surfaces are not applied throughout the direct tool and directory experiences.');
 
 const heroOnly=homepage.split('<div class="hero">')[1]?.split('<section class="home-section shell" aria-labelledby="home-discover-title">')[0]||'';
-if(/class="hero-actions"|class="hero-note"|Browse free tools|Build with us|USEFUL TODAY|OPEN FOR EVERYONE/.test(heroOnly))
- fail('Home hero must not include buttons or the retired footer label.');
+if(/class="hero-note"|USEFUL TODAY|OPEN FOR EVERYONE/.test(heroOnly))
+ fail('Home hero must not include the retired footer label.');
+if(!/<a class="button button-primary" href="#tools">Use free tools/.test(heroOnly)||
+   !/<a class="button button-quiet" href="#hqconnect">Build with us/.test(heroOnly))
+ fail('Home hero must link directly to the free tools and project enquiries.');
 if(/class="trust-strip shell"|id="home-tool-count"|id="home-venture-count"|PUBLISHED BROWSER TOOLS|APPROVED PUBLIC VENTURES|Published tools link directly to real pages\./.test(homepage))
  fail('Removed homepage stats strip must stay removed.');
 const discovery=homepage.indexOf('<section class="home-section shell" aria-labelledby="home-discover-title">');

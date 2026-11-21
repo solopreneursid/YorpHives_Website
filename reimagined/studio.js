@@ -5,6 +5,7 @@ import {approvedVentureReleases} from './venture-activity.mjs';
 import {createRotatingShowcase} from './showcase.mjs';
 import {getCatalog,subscribeCatalog,startCatalogMonitoring} from './catalog-sync.mjs';
 import {readSaved,toggleSaved} from '../tools/save-tool.mjs';
+import {matchesTool} from '../tools/search-match.mjs';
 
 const $=id=>document.getElementById(id);
 const views=[...document.querySelectorAll('main>.view')];
@@ -105,12 +106,12 @@ function categoryChips(){
  $('tool-categories')?.replaceChildren(...buttons);
 }
 function filteredTools(){
- const query=($('tool-search')?.value||'').trim().toLocaleLowerCase('en-US');
+ const query=$('tool-search')?.value||'';
  const saved=onlySaved?savedSet():null;
  const matches=tools.filter(tool=>
   (activeCategory==='All'||(tool.category||'Other')===activeCategory)&&
   (!saved||saved.has(tool.url))&&
-  (!query||[tool.name,tool.description,tool.category||''].some(value=>value.toLocaleLowerCase('en-US').includes(query)))
+  matchesTool(query,tool)
  );
  matches.sort((a,b)=>sortMode==='recent'
   ?String(b.updatedAt||b.date||'').localeCompare(String(a.updatedAt||a.date||''))||a.name.localeCompare(b.name)
@@ -157,8 +158,11 @@ function renderTools(){
 }
 function renderVentures(){
  const total=$('venture-total');
- if(total)total.textContent=number(ventures.length)+' founder-approved public launch'+(ventures.length===1?'':'es');
- const heroCount=$('venture-hero-count');if(heroCount)heroCount.textContent=number(ventures.length);
+ if(total)total.textContent=ventures.length?number(ventures.length)+' founder-approved public launch'+(ventures.length===1?'':'es'):'In development';
+ const heroCount=$('venture-hero-count');
+ const heroLabel=$('venture-hero-label');
+ if(heroCount){heroCount.textContent=number(ventures.length);heroCount.hidden=!ventures.length;}
+ if(heroLabel)heroLabel.textContent=ventures.length?' publicly launched venture'+(ventures.length===1?'':'s'):'Products in development';
  const host=$('venture-products');if(!host)return;
  if(!ventures.length){
   const empty=make('div','','empty-state');
@@ -166,7 +170,8 @@ function renderVentures(){
   const copy=make('div');
   copy.append(make('span','PUBLIC PORTFOLIO STATUS','section-kicker'),make('h3','No approved public launches yet.'));
   const p=make('p','Products appear here only after research review and founder approval. We will not present a possibility as a launch.');
-  copy.append(p);empty.append(copy);host.replaceChildren(empty);return;
+  const link=make('a','Explore our free tools','venture-empty-link');link.href='#tools';
+  copy.append(p,link);empty.append(copy);host.replaceChildren(empty);return;
  }
  const cards=ventures.map(item=>{
   const card=make('article','','venture-item');
@@ -218,7 +223,8 @@ getCatalog().then(()=>loadActivity()).catch(()=>{
  $('tool-results-description').textContent='Please refresh the page or open the A–Z directory.';
  $('tool-empty').hidden=false;$('tool-pagination').hidden=true;
  $('venture-total').textContent='Approval records unavailable';
-  if($('venture-hero-count'))$('venture-hero-count').textContent='—';
+  if($('venture-hero-count'))$('venture-hero-count').hidden=true;
+  if($('venture-hero-label'))$('venture-hero-label').textContent='Portfolio status unavailable';
 });
 
 $('tool-search')?.addEventListener('input',()=>{page=1;renderTools()});

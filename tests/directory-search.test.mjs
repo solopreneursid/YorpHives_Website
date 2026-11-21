@@ -15,6 +15,14 @@ test('directory matching handles names, categories, descriptions and multiple ke
  assert.equal(matchesTool('',tool),true);
  assert.equal(normalizeSearch('  RÉSUMÉ / CV  '),'resume cv');
 });
+test('common tasks find the actual catalog tools regardless of keyword order',async()=>{
+ const catalog=JSON.parse(await readFile(resolve(root,'catalog.json'),'utf8'));
+ const tools=catalog.items.filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
+ for(const [query,expected] of [['compress pdf','tools/pdf-compressor/'],['word counter','tools/word-counter/'],['counter word','tools/word-counter/']]){
+  assert.ok(tools.filter(tool=>matchesTool(query,tool)).some(tool=>tool.url===expected),query+' should find '+expected);
+ }
+ assert.equal(matchesTool('pdf audio',{name:'PDF Compressor',description:'Compress PDF documents',category:'PDF'}),false);
+});
 test('built tool directory remains crawlable and fully linked without JavaScript',async()=>{
  const page=await readFile(resolve(root,'dist/tools/index.html'),'utf8');
  const catalog=JSON.parse(await readFile(resolve(root,'dist/catalog.json'),'utf8'));

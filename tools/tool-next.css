@@ -29,6 +29,7 @@ body.tool-page .site-header .header-cta{
  display:inline-flex;align-items:center;gap:12px;min-height:41px;padding:10px 14px;
  border-radius:999px;background:#172b20;color:#f6f7ec;font-size:10px;font-weight:820;white-space:nowrap
 }
+body.tool-page .site-header .header-cta svg{display:block;width:12px;height:12px;flex:none}
 body.tool-page .site-header .header-kofi{
  display:inline-flex;align-items:center;gap:6px;min-height:37px;padding:5px 9px;
  border:1px solid #dce0d4;border-radius:10px;background:#fffefa;color:#66755f
