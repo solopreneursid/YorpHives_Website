@@ -53,6 +53,17 @@ async function firstPartyActivity(){
   if(x.schemaVersion!==1||x.available!==true||x.periodDays!==30||
      !counts.every(k=>Number.isSafeInteger(c[k])&&c[k]>=0)||!Number.isFinite(Date.parse(x.generatedAt||''))||
      Date.now()-Date.parse(x.generatedAt)>36*3600000)throw Error('Unverified or stale');
+  // This is a measurement-quality hint only: visits can occur without
+  // processing, and privacy choices can suppress anonymous event reporting.
+  // An investigation is warranted only after meaningful per-tool traffic.
+  const trackedViews=Array.isArray(x.toolPageViews)?x.toolPageViews
+   .filter(t=>/^tools\/[a-z0-9-]+\/$/.test(String(t.url||''))&&
+      Number.isSafeInteger(t.pageViews7d)&&t.pageViews7d>=0)
+   .reduce((total,t)=>total+t.pageViews7d,0):0;
+  const qualityNote=trackedViews>=30&&c.recent7dCompletedActions===0?
+   '- Measurement review suggested: '+trackedViews+
+    ' tracked Free Tools pageviews and zero browser-reported completions. Inspect an actual success flow before assuming zero usage.':
+   '- Completion-measurement assessment: insufficient tool-specific evidence to flag a problem. Missing events do not prove zero usage.';
   return ['## First-party usage snapshot',
    '- Sitewide browser-reported pageviews (7 days): '+c.recent7dPageViews+' (previous 7 days: '+c.previous7dPageViews+')',
    '- Browser-reported tool completions (7 days): '+c.recent7dCompletedActions+' (previous 7 days: '+c.previous7dCompletedActions+')',
@@ -65,6 +76,7 @@ async function firstPartyActivity(){
    '- Verified unique visitors: not connected. Ad impressions: not connected. AdSense earnings: not connected.',
    '- Evidence: https://yorphives.com/api/insights/growth · Updated '+String(x.generatedAt).slice(0,25),
    '- Scope: pageviews are **sitewide**, not Free Tools-only; actions are anonymous browser events, not verified humans.',
+   qualityNote,
    ''].join('\n');
  }catch{return ['## First-party usage snapshot',
    '- Not verified for this briefing; no traffic or earnings estimate generated.',
