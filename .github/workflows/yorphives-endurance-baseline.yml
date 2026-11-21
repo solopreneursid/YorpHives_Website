@@ -1,0 +1,69 @@
+name: YorpHives bounded endurance baseline
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/yorphives-endurance-baseline.yml
+permissions:
+  contents: read
+concurrency:
+  group: yorphives-endurance-baseline
+  cancel-in-progress: false
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Read-only two-minute test (2 requests per second max)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request, urllib.error, time, json, statistics, sys, collections, datetime
+          BASE = "https://yorphives.com"
+          ROUTES = ["/", "/api/agent/v1/capabilities", "/api/agent/v1/tools", "/api/insights/public", "/api/insights/growth"]
+          RATE = 2
+          SECONDS = 120
+          failures = 0
+          results = []
+          started = time.monotonic()
+          print("YorpHives READ-ONLY bounded probe: 120 seconds; <=2 RPS; <=240 GETs; 8-second timeout", flush=True)
+          for index in range(SECONDS * RATE):
+              due = started + index / RATE
+              if due > time.monotonic():
+                  time.sleep(due - time.monotonic())
+              route = ROUTES[index % len(ROUTES)]
+              req = urllib.request.Request(BASE + route, headers={"User-Agent":"YorpHives-Owner-Endurance-Check/1.0","Accept":"application/json, text/html;q=0.9"})
+              t0 = time.monotonic()
+              status = None
+              error = None
+              try:
+                  with urllib.request.urlopen(req, timeout=8) as response:
+                      status = response.status
+                      response.read(65536)
+              except urllib.error.HTTPError as exc:
+                  status = exc.code
+              except Exception as exc:
+                  error = type(exc).__name__ + ": " + str(exc)[:120]
+              latency = round((time.monotonic()-t0)*1000, 1)
+              results.append({"route":route,"status":status,"error":error,"ms":latency,"minute":int((t0-started)//60)})
+              if error or (status is not None and (status == 429 or status >= 500)):
+                  failures += 1
+              if failures >= 3:
+                  print("SAFETY ABORT: three 429, 5xx or network errors.", flush=True)
+                  break
+              if (index+1)%40 == 0:
+                  print(f"progress: {index+1} requests; disruptive failures={failures}", flush=True)
+          def percentile(values, frac):
+              if not values: return None
+              values = sorted(values)
+              return values[max(0, int((len(values)*frac + .999999))-1)]
+          def stats(rows):
+              times=[x["ms"] for x in rows]
+              return {"requests":len(rows),"p50_ms":percentile(times,.50),"p95_ms":percentile(times,.95),"p99_ms":percentile(times,.99),"statuses":dict(collections.Counter(str(x["status"]) if x["status"] is not None else "network_error" for x in rows))}
+          output={"date_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),"duration_s":round(time.monotonic()-started,1),"target":BASE,"rate_cap_rps":RATE,"safety_failures":failures,"overall":stats(results),"routes":{p:stats([x for x in results if x["route"]==p]) for p in ROUTES},"minutes":{str(m):stats([x for x in results if x["minute"]==m]) for m in (0,1)},"sample_errors":[x for x in results if x["error"] or x["status"] is not None and x["status"]>=400][:10]}
+          print("YORPHIVES_ENDURANCE_REPORT_BEGIN")
+          print(json.dumps(output,indent=2))
+          print("YORPHIVES_ENDURANCE_REPORT_END")
+          if failures or len(results)<SECONDS*RATE or any(x["status"] is None or x["status"] >= 400 for x in results):
+              sys.exit(1)
+          PY
