@@ -14,7 +14,7 @@ const json=(data,status=200,cache='no-store')=>new Response(JSON.stringify(data)
 });
 const dayNow=()=>new Date().toISOString().slice(0,10);
 const daysAgo=n=>new Date(Date.now()-n*86400000).toISOString().slice(0,10);
-export const validRoute=x=>typeof x==='string'&&ROUTES.has(x);
+export const validRoute=x=>typeof x==='string'&&(ROUTES.has(x)||(/^tools\/[a-z0-9][a-z0-9-]*\/$/.test(x)&&x.length<95));
 export const validTarget=x=>typeof x==='string'&&TOOL_URL.test(x)&&x.length<95;
 export const acceptsRequest=request=>{
  const origin=new URL(request.url).origin;
@@ -55,7 +55,7 @@ export async function collect(ctx){
  const target=data.event==='view'?data.route:data.url;
  if(data.event==='view'?!validRoute(target):!validTarget(target))
   return json({ok:false},422);
- if(data.event==='complete'){
+ if(data.event==='complete'||(data.event==='view'&&target.startsWith('tools/'))){
   try{if(!(await published(request,ctx.env)).has(target))return json({ok:false},422)}
   catch{return json({ok:false},503)}
  }
