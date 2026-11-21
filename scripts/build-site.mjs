@@ -46,7 +46,7 @@ for(const item of published){
 }
 await rm(dest,{recursive:true,force:true});
 await mkdir(dest,{recursive:true});
-for(const file of ['index.html','app.js','style.css','next.css','next-responsive.css','home-experience.css','next.js','catalog.json','product-policy.mjs','_headers','_redirects','robots.txt','llms.txt','ads.txt'])
+for(const file of ['index.html','app.js','style.css','next.css','next-responsive.css','home-experience.css','next.js','catalog.json','product-policy.mjs','_headers','_redirects','robots.txt','llms.txt','ads.txt','adsense-plan.json'])
  await cp(resolve(root,file),resolve(dest,file));
 // Keep private or unqualified catalog candidates out of public static assets.
 await write('catalog.json',JSON.stringify({...catalog,items:published},null,2));
@@ -63,9 +63,15 @@ await write('_routes.json',JSON.stringify({
 },null,2)+'\n');
 
 
-const roots=new Set(['tools',...published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0])]);
+const roots=new Set(['tools','privacy',...published.filter(x=>x.url.includes('/')).map(x=>x.url.split('/')[0])]);
 for(const dir of roots)if(await stat(resolve(root,dir)).then(s=>s.isDirectory()).catch(()=>false))
  await cp(resolve(root,dir),resolve(dest,dir),{recursive:true});
+// Make the policy visible directly from the Free Tools directory.
+const directoryHtml=await output('tools/index.html');
+if(!directoryHtml.includes('href="/privacy/"')){
+ if(!/<\\/footer>/i.test(directoryHtml))throw Error('Directory footer missing');
+ await write('tools/index.html',directoryHtml.replace(/<\\/footer>/i,' · <a href="/privacy/">Privacy Policy</a></footer>'));
+}
 // Build YHpulse only from actual published pages and reviewed public release notes.
 // This is static and requires no paid runtime services or background polling.
 const publicNotes=await loadActivityNotes(root);
@@ -174,6 +180,24 @@ for(const item of published){
   if(path.startsWith('tools/')&&path.endsWith('index.html')&&path!=='tools/index.html'){
    html=html.replace('</body>','<script type="module" src="../../insights-client.mjs"></script></body>');
   };
+
+ // Add accessible privacy information and a concise catalog-grounded summary
+ // to every published Free Tool without modifying processing controls.
+ if(item.type==='tool'&&item.url.startsWith('tools/')&&item.url.endsWith('/')){
+  const summary='<section class="yh-tool-usage-note" aria-label="About this free tool" style="margin:1rem 0;padding:1rem 1.25rem;border-radius:14px;background:rgba(122,173,159,.09);border:1px solid rgba(110,156,148,.22)">'+
+   '<h2 style="margin:0 0 .35rem;font-size:1.1rem">About '+esc(item.name)+'</h2>'+
+   '<p style="margin:0">'+esc(item.description)+'</p></section>';
+  if(!html.includes('yh-tool-usage-note')){
+   if(html.includes('<div class="tool-help">'))html=html.replace('<div class="tool-help">',summary+'<div class="tool-help">');
+   else if(html.includes('</main>'))html=html.replace('</main>',summary+'</main>');
+   else throw Error('No appropriate tool explanation location: '+item.url);
+  }
+  const link='<a href="/privacy/" aria-label="Read YorpHives Privacy Policy">Privacy Policy</a>';
+  if(!html.includes('href="/privacy/"')){
+   if(/<footer\\b[^>]*>/i.test(html))html=html.replace(/<\\/footer>/i,' · '+link+'</footer>');
+   else throw Error('Missing footer for tool: '+item.url);
+  }
+ }
  html=injectToolSuite(html,item);
  html=injectNextToolUI(html,item);
  // Static related links help visitors discover adjacent tools without a recommendation API.
