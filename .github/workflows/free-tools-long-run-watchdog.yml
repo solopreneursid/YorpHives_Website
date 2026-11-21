@@ -44,6 +44,41 @@ jobs:
             yorphives-seo-report.md
           retention-days: 14
           if-no-files-found: warn
+      - name: Maintain one SEO improvement review issue
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [ ! -f yorphives-seo-report.json ]; then
+            echo "SEO evidence absent; do not replace an existing review issue."
+            exit 0
+          fi
+          warnings=$(jq -r '.counts.warnings // 0' yorphives-seo-report.json)
+          existing=$(gh issue list --state open --search 'YorpHives Free Tools SEO review in:title' --json number --jq '.[0].number // empty' || true)
+          if [ "$warnings" -gt 0 ]; then
+            {
+              echo "# Free Tools SEO improvements"
+              echo
+              echo "Advisory review only. Findings are not verified Search Console issues or revenue measurements."
+              echo
+              echo "Warnings: $warnings. Read the complete SEO audit artifact attached to this workflow run:"
+              echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+              echo
+              jq -r '.warnings[:14][] | "- **" + .kind + "**: " + .path + " — " + .detail' yorphives-seo-report.json
+              echo
+              echo "Next action: Review real traffic data and founder-approved fixes. No automatic editing or deployment."
+            } > seo-issue-body.md
+            if [ -z "$existing" ]; then
+              gh issue create --title "YorpHives Free Tools SEO review" --body-file seo-issue-body.md
+            else
+              gh issue edit "$existing" --body-file seo-issue-body.md
+            fi
+          elif [ -n "$existing" ]; then
+            gh issue close "$existing" --comment "Latest automated SEO audit returned no advisory warnings."
+          fi
       - name: Upload inspection evidence
         if: always()
         uses: actions/upload-artifact@v4
