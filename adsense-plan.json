@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "adsense": {
+    "siteReview": "pending",
+    "enabled": false,
+    "publisher": "ca-pub-9864775895222572",
+    "scope": {
+      "include": [
+        "/tools/",
+        "/tools/*"
+      ],
+      "exclude": [
+        "/",
+        "/privacy/",
+        "/api/*",
+        "/hqventures/*",
+        "/contact/*"
+      ]
+    },
+    "placements": [],
+    "note": "No scripts, slots, cookies, or personalized ads are loaded. Founder approval and verified AdSense site readiness required before activation."
+  }
+}
