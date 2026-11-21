@@ -61,6 +61,23 @@ await check('tool_pages_'+batch.length,async()=>{
  }
  assert.deepEqual(errors,[]);
 });
+await check('free_tools_analytics_contract',async()=>{
+ const {body}=await get('/api/insights/growth');
+ const x=JSON.parse(body);
+ assert.equal(x.schemaVersion,1);
+ assert.equal(x.available,true,'First-party growth aggregation unavailable');
+ assert.equal(x.periodDays,30);
+ assert.ok(Array.isArray(x.daily)&&x.daily.length===30);
+ assert.ok(Array.isArray(x.toolPageViews),'Per-tool browser view aggregates must be present');
+ assert.ok(x.toolPageViews.length<=10);
+ for(const row of x.toolPageViews){
+  assert.match(row.url,/^tools\/[a-z0-9-]+\/$/);
+  for(const key of ['pageViews30d','pageViews7d','previous7d'])
+   assert.ok(Number.isSafeInteger(row[key])&&row[key]>=0,row.url+': '+key);
+ }
+ assert.equal(x.revenue?.available,false);
+ assert.equal(x.revenue?.amount,null);
+});
 await check('agent_api_read_only',async()=>{
  const {body}=await get('/api/agent/v1/capabilities');
  const obj=JSON.parse(body);
