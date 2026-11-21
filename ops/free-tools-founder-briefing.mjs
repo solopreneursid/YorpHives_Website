@@ -56,7 +56,12 @@ async function firstPartyActivity(){
   return ['## First-party usage snapshot',
    '- Sitewide browser-reported pageviews (7 days): '+c.recent7dPageViews+' (previous 7 days: '+c.previous7dPageViews+')',
    '- Browser-reported tool completions (7 days): '+c.recent7dCompletedActions+' (previous 7 days: '+c.previous7dCompletedActions+')',
-   '- Tool-level rankings: '+(Array.isArray(x.ranked)?x.ranked.filter(t=>String(t.url||'').startsWith('tools/')).length:0)+' reported entries',
+   '- Tool-level completion rankings: '+(Array.isArray(x.ranked)?x.ranked.filter(t=>String(t.url||'').startsWith('tools/')).length:0)+' reported entries',
+   '- Free Tools with tracked pageviews (7 days): '+(Array.isArray(x.toolPageViews)&&x.toolPageViews.length?
+      x.toolPageViews.filter(t=>/^tools\/[a-z0-9-]+\/$/.test(String(t.url||''))&&
+      Number.isSafeInteger(t.pageViews7d)&&t.pageViews7d>=0).slice(0,5)
+      .map(t=>t.url+': '+t.pageViews7d).join(', '):
+      'Not yet observed individually; historical views cannot be assigned to tools.'),
    '- Verified unique visitors: not connected. Ad impressions: not connected. AdSense earnings: not connected.',
    '- Evidence: https://yorphives.com/api/insights/growth · Updated '+String(x.generatedAt).slice(0,25),
    '- Scope: pageviews are **sitewide**, not Free Tools-only; actions are anonymous browser events, not verified humans.',
