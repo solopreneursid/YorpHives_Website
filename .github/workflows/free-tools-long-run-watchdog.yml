@@ -24,6 +24,20 @@ jobs:
         env:
           YH_FULL_AUDIT: 'true'
         run: node ops/adsense-watchdog.mjs | tee yorphives-watchdog.log; exit ${PIPESTATUS[0]}
+      - name: Audit SEO metadata, canonicals, content and sitemap
+        id: seo
+        continue-on-error: true
+        run: node ops/free-tools-seo-audit.mjs
+      - name: Upload SEO review findings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yorphives-free-tools-seo-audit
+          path: |
+            yorphives-seo-report.json
+            yorphives-seo-report.md
+          retention-days: 14
+          if-no-files-found: warn
       - name: Upload inspection evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -38,13 +52,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
           OUTCOME: ${{ steps.audit.outcome }}
+          SEO_OUTCOME: ${{ steps.seo.outcome }}
         shell: bash
         run: |
           set -euo pipefail
           existing=$(gh issue list --state open --search 'YorpHives Free Tools watchdog failure in:title' --json number --jq '.[0].number // empty' || true)
-          if [ "$OUTCOME" != "success" ]; then
+          if [ "$OUTCOME" != "success" ] || [ "$SEO_OUTCOME" != "success" ]; then
             if [ -z "$existing" ]; then
-              gh issue create --title "YorpHives Free Tools watchdog failure" --body "Automated public-site health check failed. See the newest **YorpHives Free Tools long-run watchdog** Actions run and its `yorphives-free-tools-watchdog` artifact. Checks are read-only: no production files, ad settings, or customer data were modified."
+              gh issue create --title "YorpHives Free Tools watchdog failure" --body "Automated public-site health check failed. See the newest **YorpHives Free Tools long-run watchdog** Actions run and its attached audit artifacts. Checks are read-only: no production files, ad settings, or customer data were modified."
             else
               echo "Existing incident issue #$existing; no duplicate issue."
             fi
