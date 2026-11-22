@@ -21,8 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: '22'
       - name: Check production site, all tools daily, privacy and ad safety
@@ -37,7 +37,7 @@ jobs:
         run: node ops/free-tools-seo-audit.mjs
       - name: Upload SEO review findings
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: yorphives-free-tools-seo-audit
           path: |
@@ -82,7 +82,7 @@ jobs:
           fi
       - name: Upload inspection evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: yorphives-free-tools-watchdog
           path: yorphives-watchdog.log
