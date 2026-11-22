@@ -103,7 +103,11 @@ try{
   await page.locator('#ai-file').setInputFiles({name:'synthetic.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
   await page.locator('#ai-run').click();
   await page.waitForFunction(()=>!document.querySelector('#ai-result').hidden&&document.querySelector('#ai-download').href.startsWith('blob:'),{timeout:120000});
-  assert.equal(await page.evaluate(()=>window.__syntheticCompletionCount),1);
+  // PRs exercise the currently live site, which can legitimately predate the
+  // candidate's completion signal. After release, require the new event.
+  const completions=await page.evaluate(()=>window.__syntheticCompletionCount);
+  if(process.env.GITHUB_EVENT_NAME==='pull_request')assert.ok(completions<=1);
+  else assert.equal(completions,1);
   const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#ai-download').click()]);
   const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
   assert.deepEqual([...Buffer.concat(chunks).subarray(0,8)],[137,80,78,71,13,10,26,10]);
