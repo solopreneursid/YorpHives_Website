@@ -28,7 +28,7 @@ if(process.argv.includes('--supervise')){
   // GitHub cron events can be delayed or dropped. Restore coverage with a
   // bounded workflow_dispatch when the scheduled completion is stale.
   // This does not conceal missed schedules from the founder alert.
-  if(!report.healthy && ['free-tools-long-run-watchdog.yml','free-tools-functional-security.yml'].includes(file)){
+  if(!report.scheduleHealthy && ['free-tools-long-run-watchdog.yml','free-tools-functional-security.yml'].includes(file)){
    try{
     const recent=api('/repos/'+repo+'/actions/workflows/'+file+'/runs?per_page=30').workflow_runs||[];
     const latestDispatch=recent.filter(r=>r.head_branch==='main'&&r.event==='workflow_dispatch'&&
@@ -40,6 +40,18 @@ if(process.argv.includes('--supervise')){
     }else console.log('MONITOR FALLBACK ALREADY REQUESTED '+file);
    }catch(error){console.error('MONITOR FALLBACK UNAVAILABLE '+file+': '+safe(error.message));}
   }
+ const cronTitle=file==='free-tools-long-run-watchdog.yml'?
+   'YorpHives watchdog cron schedule delayed':'YorpHives functional checks cron schedule delayed';
+ const cronIssue=named(cronTitle);
+ if(!report.scheduleHealthy && report.degraded){
+  const note=['# GitHub scheduled run delayed','',
+   '@solopreneursid — a scheduled check was missed, but a recent successful recovery dispatch provides coverage.',
+   'This does not prove a website outage.',
+   'Source workflow: '+file,
+   'Last scheduled completion: '+safe(report.lastScheduled?.updated_at||'not observed'),
+   'Last recovery: '+safe(report.lastFallback?.updated_at||'not observed')].join('\n');
+  if(!cronIssue)create(cronTitle,note);
+ }else if(report.scheduleHealthy&&cronIssue)close(cronIssue.number,'Scheduled monitoring has resumed.');
  const run=report.last,existing=named(title);
   const evidence=run?.html_url||'https://github.com/'+repo+'/actions/workflows/'+file;
   if(!report.healthy){
