@@ -37,7 +37,7 @@ jobs:
         shell: bash
         run: |
           if [ -f site-source/all-tools-browser-report.json ]; then
-            jq -r '"### YorpHives page coverage | Checked: \\(.checked) | Passed: \\(.passed) | Failed: \\(.failed)"' site-source/all-tools-browser-report.json >> "$GITHUB_STEP_SUMMARY"
+            jq -r '"### YorpHives page coverage | Checked: \(.checked) | Passed: \(.passed) | Failed: \(.failed)"' site-source/all-tools-browser-report.json >> "$GITHUB_STEP_SUMMARY"
           else
             echo "All-pages report missing: browser test could not finish." >> "$GITHUB_STEP_SUMMARY"
           fi
