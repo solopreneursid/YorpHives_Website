@@ -24,6 +24,11 @@ test('edge accepts validated human intake into its own D1 binding',async()=>{
  assert.equal(body.ok,true);
  assert.match(body.reference,/^[a-f0-9]{8}$/);
 });
+test('single-character names are accepted, blank names and descriptions are rejected',async()=>{
+ assert.equal((await edge.fetch(req({name:'J'}),env,{})).status,201);
+ assert.equal((await edge.fetch(req({name:'   '}),env,{})).status,400);
+ assert.equal((await edge.fetch(req({message:'                   '}),env,{})).status,400);
+});
 test('edge intake fails closed without database and admission controls',async()=>{
  for(const bindings of [{},{HQCONNECT_DB:DB},{...env,CONTACT_CLIENT_LIMIT:{limit:async()=>{throw Error('unavailable')}}}]){
   const result=await edge.fetch(req(),bindings,{});

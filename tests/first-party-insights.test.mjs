@@ -38,10 +38,10 @@ test('analytics schema never stores sensitive content or identifiers',async()=>{
  for(const forbidden of ['ip_address','user_agent','email','filename','user_input','fingerprint'])
   assert.ok(!sql.includes(forbidden),forbidden);
 });
-test("Cloudflare Functions stay confined to analytics and read-only agent discovery routes",async()=>{
+test("Cloudflare Functions stay confined to explicitly approved API routes",async()=>{
  const [s,intake]=await Promise.all([read('scripts/build-site.mjs'),read('functions/api/hqconnect.js')]);
  assert.ok(s.includes("'_routes.json'"));
- assert.ok(s.includes("include:['/api/insights/*','/api/agent/v1/*','/api/hqconnect']"));
+ assert.ok(s.includes("include:['/api/insights/*','/api/agent/v1/*','/api/hqconnect','/api/monitoring/health']"));
  assert.ok(s.includes("insights-client.mjs"));
  assert.match(intake,/origin!==site/);
  assert.match(intake,/HQCONNECT_DB/);

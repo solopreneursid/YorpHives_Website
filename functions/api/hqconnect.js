@@ -24,7 +24,7 @@ export async function onRequestPost({request,env}){
   project=trim(data.project,120),message=trim(data.message,4000),
   timeline=trim(data.timeline,40),budget=trim(data.budget,50);
  const startedAt=Number(data.startedAt);
- if(!data.consent||name.length<2||name.length>100||!emailOk(email)||
+ if(!data.consent||name.length<1||name.length>100||!emailOk(email)||
   !allowed.has(kind)||project.length>120||message.length<20||message.length>4000||
   !timelines.has(timeline)||!budgets.has(budget))
    return json({ok:false,error:'Check the required fields'},400);

@@ -6,6 +6,7 @@ import {growthReport} from '../functions/_lib/growth.mjs';
 import {agentGet} from '../agentic/discovery.mjs';
 import {invokeAgentTool} from '../agentic/invoke.mjs';
 import {onRequestPost as submitHqconnect} from '../functions/api/hqconnect.js';
+import {onRequestGet as monitoringHealth} from '../functions/api/monitoring/health.js';
 
 // Human-operated first-party enquiry intake. No agent or HQ can use this to
 // publish or mutate site content; absent admission controls fail closed.
@@ -41,6 +42,7 @@ export default {
      response=denied||await submitHqconnect(context);
     }
    }
+   else if(p==='/api/monitoring/health')response=await (request.method==='GET'?monitoringHealth(context):json({error:'method-not-allowed'},405));
    else if(/^\/api\/agent\/v1\/tools\/[^/]+\/invoke$/.test(p))response=await invokeAgentTool(request,env,p);
    else if(p.startsWith('/api/agent/v1/'))response=await agentGet(request,env,p);
    else if(p==='/api/insights/collect')response=await (request.method==='POST'?collect(context):json({error:'method-not-allowed'},405));

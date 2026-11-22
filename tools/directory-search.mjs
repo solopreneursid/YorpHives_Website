@@ -41,7 +41,7 @@ export function setupDirectorySearch(doc=globalThis.document,win=globalThis.wind
    for(const card of group.cards){
     const url=new URL(card.element.getAttribute('href'),win.location.href);
     const route=url.pathname.replace(/^\//,'');
-    const found=(!savedMode||saved.has(route))&&matchesTool(query,{name:card.name,description:card.description,category:group.category});
+    const found=(!savedMode||saved.has(route))&&matchesTool(query,{name:card.name,description:card.description,category:group.category,url:route});
     card.element.hidden=!found;
     if(found)groupVisible++;
    }
