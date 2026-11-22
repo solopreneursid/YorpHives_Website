@@ -1,0 +1,77 @@
+name: YorpHives all-tools browser sweep
+on:
+  schedule:
+    - cron: '27 7 * * 1'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/free-tools-all-pages-browser.yml']
+permissions:
+  contents: read
+concurrency:
+  group: yorphives-all-tools-browser-sweep
+  cancel-in-progress: false
+jobs:
+  sweep:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/yorphives-reimagined-20261116
+          path: site-source
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned browser
+        working-directory: site-source
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Check every published tool page on mobile
+        working-directory: site-source
+        run: node scripts/health-browser-all-tools.mjs
+      - name: Upload all-pages audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-tools-mobile-browser-sweep
+          path: site-source/all-tools-browser-report.json
+          retention-days: 14
+          if-no-files-found: warn
+  report:
+    needs: sweep
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Notify founder only if audit fails
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RESULT: ${{ needs.sweep.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          title='YorpHives all-tools browser sweep failure'
+          issue=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "YorpHives all-tools browser sweep failure") | .number' | head -n 1)
+          if [ "$RESULT" != success ]; then
+            {
+              echo '@solopreneursid — automated all-tool browser testing needs review.'
+              echo
+              echo "Result: $RESULT"
+              echo "Evidence: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+              echo 'The sweep is observational only and performs no form submissions.'
+            } > incident.md
+            if [ -z "$issue" ]; then
+              gh issue create --title "$title" --body-file incident.md
+            else
+              gh issue edit "$issue" --body-file incident.md
+            fi
+            exit 1
+          elif [ -n "$issue" ]; then
+            gh issue close "$issue" --comment "All-tools browser sweep passed: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          fi
