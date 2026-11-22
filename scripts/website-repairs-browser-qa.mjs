@@ -92,6 +92,21 @@ try{
    assert.match(await page.locator('#pdf-compressor-file').getAttribute('aria-describedby'),/pdf-compressor-warning/);
    assert.ok((await warning.boundingBox()).y<(await page.locator('#pdf-compressor-file').boundingBox()).y);
    assert.ok(await page.locator('.tool-support').isDisabled());
+   if(width===390){
+    const pdf=await page.evaluate(async()=>{
+     const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+     const doc=await PDFDocument.create();doc.addPage([200,200]);return Array.from(await doc.save());
+    });
+    await page.locator('#pdf-compressor-file').setInputFiles({name:'synthetic.pdf',mimeType:'application/pdf',buffer:Buffer.from(pdf)});
+    await page.waitForFunction(()=>document.querySelector('#pdf-compressor-status').classList.contains('error')||
+     (!document.querySelector('#pdf-compressor-download').hidden&&document.querySelector('#pdf-compressor-download').href.startsWith('blob:')),null,{timeout:60000});
+    if(await page.locator('#pdf-compressor-status').evaluate(el=>el.classList.contains('error')))
+     throw Error('PDF Compressor: '+await page.locator('#pdf-compressor-status').innerText());
+    const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#pdf-compressor-download').click()]);
+    const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
+    const {PDFDocument}=await import('../tools/vendor/pdf-lib.mjs');
+    assert.equal((await PDFDocument.load(Buffer.concat(chunks))).getPageCount(),1);
+   }
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'horizontal overflow at '+width+'px');
    assert.deepEqual(errors,[]);
    console.log('PASS repaired journeys at '+width+'px');

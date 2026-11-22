@@ -11,8 +11,10 @@ async function copy(from,to){
  await mkdir(dirname(dest),{recursive:true});
  await copyFile(source,dest);
 }
-await copy('pdfjs-dist/build/pdf.mjs','pdfjs/pdf.mjs');
-await copy('pdfjs-dist/build/pdf.worker.mjs','pdfjs/pdf.worker.mjs');
+// PDF.js's supported legacy build includes compatibility helpers in both the
+// page and worker, including Map methods absent from many current browsers.
+await copy('pdfjs-dist/legacy/build/pdf.mjs','pdfjs/pdf.mjs');
+await copy('pdfjs-dist/legacy/build/pdf.worker.mjs','pdfjs/pdf.worker.mjs');
 await copy('tesseract.js/dist/tesseract.esm.min.js','ocr/tesseract.esm.min.js');
 await copy('tesseract.js/dist/worker.min.js','ocr/worker.min.js');
 await copy('@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz','ocr/lang/eng.traineddata.gz');

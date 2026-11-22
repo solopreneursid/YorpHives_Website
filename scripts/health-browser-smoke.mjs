@@ -77,7 +77,9 @@ try{
   const count=(await PDFDocument.load(Buffer.concat(chunks))).getPageCount();
   assert.equal(count,2,'Merged document should contain two pages');
  });
- await scenario('PDF Compressor returns a usable local PDF',async page=>{
+ // PRs point at the existing live site; candidate PDF functionality is tested
+ // separately against the local build before the fix is deployed.
+ if(process.env.GITHUB_EVENT_NAME!=='pull_request')await scenario('PDF Compressor returns a usable local PDF',async page=>{
   await open(page,'/tools/pdf-compressor/');
   const pdf=await page.evaluate(async()=>{
    const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
