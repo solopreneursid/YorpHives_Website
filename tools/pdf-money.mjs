@@ -25,7 +25,7 @@ export function formatMinor(value,places){
  const digits=value.toString().padStart(places+1,'0');
  return places?digits.slice(0,-places)+'.'+digits.slice(-places):digits;
 }
-export function calculateInvoice(lines,taxValue,currency){
+export function calculateInvoice(lines,taxValue,currency,{maxDescription=68,maxQuantity=100000,document='Invoice'}={}){
  if(!/^[A-Za-z]{2,5}$/.test(currency))throw Error('Use a 2–5-letter currency code.');
  let places=2;
  if(currency.length===3){
@@ -35,8 +35,8 @@ export function calculateInvoice(lines,taxValue,currency){
  const tax=decimal(taxValue??0,'tax percentage',100);
  const items=lines.map((line,index)=>{
   const parts=line.split('|').map(x=>x.trim());
-  if(parts.length!==3||!parts[0]||parts[0].length>68)throw Error('Item '+(index+1)+' must use: Description | Quantity | Unit price.');
-  const quantity=decimal(parts[1],'quantity',100000),price=decimal(parts[2],'unit price',10000000);
+  if(parts.length!==3||!parts[0]||parts[0].length>maxDescription)throw Error('Item '+(index+1)+' must use: Description | Quantity | Unit price.');
+  const quantity=decimal(parts[1],'quantity',maxQuantity),price=decimal(parts[2],'unit price',10000000);
   if(quantity.units===0n)throw Error('Quantity must be greater than zero.');
   const minor=roundTo(quantity.units*price.units,quantity.scale+price.scale,places);
   return {label:parts[0],quantity:decimalText(quantity),price:decimalText(price,places),
@@ -45,7 +45,7 @@ export function calculateInvoice(lines,taxValue,currency){
  const subtotal=items.reduce((sum,item)=>sum+item.minor,0n);
  const taxMinor=roundTo(subtotal*tax.units,tax.scale+2,0);
  const total=subtotal+taxMinor;
- if(total>1000000000000n*power(places))throw Error('Invoice exceeds the supported amount.');
+ if(total>1000000000000n*power(places))throw Error(document+' exceeds the supported amount.');
  return {items,subtotal:formatMinor(subtotal,places),tax:formatMinor(taxMinor,places),
   total:formatMinor(total,places),taxPercent:decimalText(tax),currency:currency.toUpperCase(),places};
 }
