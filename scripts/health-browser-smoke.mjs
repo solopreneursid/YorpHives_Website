@@ -117,6 +117,30 @@ try{
   const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
   assert.deepEqual([...Buffer.concat(chunks).subarray(0,8)],[137,80,78,71,13,10,26,10]);
  });
+ // PR checks point at the old live site; the local candidate is exercised by
+ // pdf-integrity-browser-qa. Production monitoring verifies the real release.
+ if(process.env.GITHUB_EVENT_NAME!=='pull_request')await scenario('Invoice preserves text and consistent totals locally',async page=>{
+  await open(page,'/tools/invoice-generator/');
+  await page.locator('[name="business"]').fill('Café भारत हिन्दी');
+  await page.locator('[name="client"]').fill('Synthetic client');
+  await page.locator('[name="currency"]').fill('INR');
+  await page.locator('[name="tax"]').fill('0');
+  const description='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  await page.locator('[name="items"]').fill(description+' | 0.5 | 0.67\nSecond | 0.5 | 0.67');
+  await page.locator('#wave1-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#wave1-download').hidden||document.querySelector('#wave1-status').classList.contains('error'),null,{timeout:60000});
+  if(await page.locator('#wave1-status').evaluate(el=>el.classList.contains('error')))
+   throw Error('Invoice: '+await page.locator('#wave1-status').innerText());
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#wave1-download').click()]);
+  const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
+  const pdfjs=await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const task=pdfjs.getDocument({data:new Uint8Array(Buffer.concat(chunks)),useSystemFonts:true});
+  const doc=await task.promise,items=(await (await doc.getPage(1)).getTextContent()).items.map(x=>x.str).join('');
+  assert.ok(items.includes('Café भारत हिन्दी'));
+  assert.ok(items.replace(/\s/g,'').includes(description));
+  assert.ok(items.includes('Subtotal: INR 0.68')&&items.includes('Amount due: INR 0.68'));
+  await task.destroy();
+ });
  await scenario('Mobile layout stays readable across key pages',async(page,context)=>{
   await page.setViewportSize({width:390,height:844});
   for(const path of ['/','/tools/','/tools/word-counter/','/tools/json-formatter/','/tools/image-resizer/']){

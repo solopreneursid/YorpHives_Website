@@ -29,7 +29,11 @@ function pageIdx(data,count){
  const value=txt(data,'page',6);const n=value?Number(value):count;
  if(!Number.isInteger(n)||n<1||n>count)throw Error('Choose a page from 1 to '+count+'.');return n-1;
 }
-function printText(s){return String(s).replace(/[^\x20-\x7e]/g,'?').slice(0,220);}
+function visibleText(s){
+ const text=String(s);
+ if(/[\x00-\x1f\x7f]/.test(text))throw Error('Remove control characters from the PDF text.');
+ return text;
+}
 async function editPdf(id,files,data){
  const pdf=await loadPdf(files[0]),count=pdf.getPageCount();
  const {PDFDocument,StandardFonts,rgb,degrees}=await pdfLibrary();
@@ -38,7 +42,7 @@ async function editPdf(id,files,data){
   const size=num(data,'size',7,32,12),placement=txt(data,'placement',24)||'bottom-center';
   if(!['bottom-left','bottom-center','bottom-right','top-right'].includes(placement))throw Error('Choose a position.');
   pdf.getPages().forEach((page,i)=>{
-   const label=printText(String(i+1)+' / '+count),w=font.widthOfTextAtSize(label,size),{width,height}=page.getSize();
+   const label=String(i+1)+' / '+count,w=font.widthOfTextAtSize(label,size),{width,height}=page.getSize();
    const x=placement.endsWith('left')?30:placement.endsWith('right')?width-w-30:(width-w)/2;
    const y=placement.startsWith('top')?height-size-25:23;
    page.drawText(label,{x:Math.max(8,x),y:Math.max(8,y),font,size,color:rgb(.22,.31,.27)});
@@ -46,19 +50,29 @@ async function editPdf(id,files,data){
   return result(await pdf.save(),'yorphives-numbered.pdf','Added page numbers to '+count+' pages.');
  }
  if(id==='pdf-watermark'){
-  const label=txt(data,'watermark',90);if(!label)throw Error('Enter watermark text.');
+  const label=visibleText(txt(data,'watermark',90));if(!label)throw Error('Enter watermark text.');
   const opacity=num(data,'opacity',5,90,25)/100,size=num(data,'size',12,90,44);
-  pdf.getPages().forEach(page=>{
-   const {width,height}=page.getSize(),w=font.widthOfTextAtSize(printText(label),size);
-   page.drawText(printText(label),{x:(width-w)/2,y:height/2,font,size,color:rgb(.48,.54,.51),opacity,rotate:degrees(-27)});
-  });
+  const {createPdfTextEngine}=await import('./pdf-text-engine.mjs');
+  const text=await createPdfTextEngine(pdf,[{text:label,font}]);
+  for(const page of pdf.getPages()){
+   const {width,height}=page.getSize(),theta=-27*Math.PI/180,c=Math.cos(theta),s=Math.sin(theta);
+   const natural=text.width(label,size,font),scale=Math.min(1,(width-20)/(natural*c+size*Math.abs(s)),(height-20)/(natural*Math.abs(s)+size*c));
+   const fitted=size*scale;if(!Number.isFinite(fitted)||fitted<4)throw Error('The watermark cannot fit on this PDF page.');
+   const w=text.width(label,fitted,font),x=width/2-c*w/2+s*fitted/2,y=height/2-s*w/2-c*fitted/2;
+   await text.draw(page,label,{x,y,size:fitted,font,color:rgb(.48,.54,.51),colorCss:'#7a8a82',opacity,rotate:degrees(-27),angle:-27});
+  }
   return result(await pdf.save(),'yorphives-pdf-watermarked.pdf','Applied visible watermark to '+count+' pages.');
  }
  if(id==='pdf-visual-signature'){
-  const label=txt(data,'signature',70);if(!label)throw Error('Type the signature text.');
+  const label=visibleText(txt(data,'signature',70));if(!label)throw Error('Type the signature text.');
   const page=pdf.getPage(pageIdx(data,count)),{width,height}=page.getSize();
   const size=num(data,'size',13,45,26),offset=num(data,'bottom',15,200,42);
-  page.drawText(printText(label),{x:Math.max(12,Math.min(width-120,40)),y:Math.min(height-size-15,offset),font,size,color:rgb(.06,.19,.31)});
+  const {createPdfTextEngine}=await import('./pdf-text-engine.mjs');
+  const text=await createPdfTextEngine(pdf,[{text:label,font}]);
+  const maxWidth=width-24,natural=text.width(label,size,font),fitted=size*Math.min(1,maxWidth/natural,(height-24)/size);
+  if(!Number.isFinite(fitted)||fitted<4)throw Error('The signature cannot fit on this PDF page.');
+  const w=text.width(label,fitted,font),x=Math.max(12,Math.min(width-w-12,40)),y=Math.max(12,Math.min(height-fitted-12,offset));
+  await text.draw(page,label,{x,y,size:fitted,font,color:rgb(.06,.19,.31),colorCss:'#0f304f'});
   return result(await pdf.save(),'yorphives-visually-signed.pdf','Added a visual signature to page '+(pageIdx(data,count)+1)+'. This is not a cryptographic digital signature.');
  }
  if(id==='pdf-rearrange-pages'){
@@ -266,36 +280,63 @@ async function barcode(data){
  return result(new Blob([text],{type:'image/svg+xml'}),'yorphives-barcode.svg','Generated '+format+' barcode as a printable SVG.',{image:true});
 }
 async function invoice(data){
- const name=txt(data,'business',80);if(!name)throw Error('Enter your business name.');
- const client=txt(data,'client',80);if(!client)throw Error('Enter the client name.');
- const code=txt(data,'number',36)||'INV-001',currency=txt(data,'currency',8)||'USD';
- if(!/^[A-Za-z]{2,5}$/.test(currency))throw Error('Use a 2–5-letter currency code.');
- const tax=num(data,'tax',0,100,0),lineSource=String(data.items||'');
+ const name=visibleText(txt(data,'business',80));if(!name)throw Error('Enter your business name.');
+ const client=visibleText(txt(data,'client',80));if(!client)throw Error('Enter the client name.');
+ const code=visibleText(txt(data,'number',36)||'INV-001'),currency=txt(data,'currency',8)||'USD';
+ const lineSource=String(data.items||'');
  const lines=lineSource.split(/\r?\n/).filter(x=>x.trim());
  if(!lines.length||lines.length>20)throw Error('Enter 1–20 invoice items, one per line.');
- const items=lines.map(line=>{
-  const parts=line.split('|').map(x=>x.trim());
-  if(parts.length!==3||!parts[0]||parts[0].length>68)throw Error('Each item must use: Description | Quantity | Unit price');
-  const qty=Number(parts[1]),price=Number(parts[2]);
-  if(!Number.isFinite(qty)||qty<=0||qty>100000||!Number.isFinite(price)||price<0||price>10000000)throw Error('Use valid quantities and unit prices.');
-  return {label:printText(parts[0]).slice(0,48),qty,price,total:qty*price};
- });
- const subtotal=items.reduce((s,x)=>s+x.total,0),total=subtotal*(1+tax/100);
- if(total>1e12)throw Error('Invoice exceeds the supported amount.');
+ const {calculateInvoice}=await import('./pdf-money.mjs');
+ const amounts=calculateInvoice(lines,data.tax??0,currency);
+ for(const item of amounts.items)visibleText(item.label);
  const {PDFDocument,StandardFonts,rgb}=await pdfLibrary();
  const pdf=await PDFDocument.create(),font=await pdf.embedFont(StandardFonts.Helvetica),bold=await pdf.embedFont(StandardFonts.HelveticaBold);
- const page=pdf.addPage([595.28,841.89]),color=rgb(.08,.2,.17);
- const text=(s,x,y,size=11,f=font)=>page.drawText(printText(s),{x,y,size,font:f,color});
- text('INVOICE',42,785,27,bold);text(name,42,751,16,bold);
- text('Bill to: '+client,42,712);text('Invoice #: '+code,42,692);
- text('Currency: '+currency+'     Tax: '+tax+'%',42,672);
- let y=623;text('Item',42,y,11,bold);text('Qty',366,y,11,bold);text('Price',420,y,11,bold);text('Total',510,y,11,bold);
- for(const item of items){y-=24;text(item.label,42,y,9);text(String(item.qty),366,y,9);text(item.price.toFixed(2),418,y,9);text(item.total.toFixed(2),507,y,9);}
- y-=40;text('Subtotal: '+currency+' '+subtotal.toFixed(2),334,y,12,bold);
- y-=22;text('Tax: '+currency+' '+(total-subtotal).toFixed(2),334,y,11);
- y-=28;text('Amount due: '+currency+' '+total.toFixed(2),310,y,13,bold);
- text('Created locally by YorpHives. Review before sending.',42,46,8);
- return result(await pdf.save(),'yorphives-invoice.pdf','Generated an invoice for '+currency+' '+total.toFixed(2)+'.');
+ const {createPdfTextEngine}=await import('./pdf-text-engine.mjs');
+ const text=await createPdfTextEngine(pdf,[{text:name,font:bold},{text:'Bill to: '+client,font},
+  {text:'Invoice #: '+code,font},...amounts.items.map(item=>({text:item.label,font}))]);
+ const color=rgb(.08,.2,.17),colorCss='#14332b';let page,y;
+ const draw=(value,x,at,size=11,f=font,isBold=false)=>text.draw(page,value,
+  {x,y:at,size,font:f,color,colorCss,bold:isBold});
+ async function wrapped(value,x,at,maxWidth,size=11,f=font,isBold=false,leading=15){
+  const rows=text.wrap(value,maxWidth,size,f,isBold);
+  for(const row of rows){await draw(row,x,at,size,f,isBold);at-=leading;}
+  return at;
+ }
+ async function right(value,edge,at,maxWidth,size=9,f=font,isBold=false){
+  const w=text.width(value,size,f,isBold);
+  if(w>maxWidth)throw Error('An invoice number is too wide for the PDF. Use smaller values.');
+  await draw(value,edge-w,at,size,f,isBold);
+ }
+ async function startPage(first,table=true){
+  page=pdf.addPage([595.28,841.89]);y=785;
+  await draw(first?'INVOICE':'INVOICE (CONTINUED)',42,y,first?27:18,bold,true);y-=34;
+  if(first){
+   y=await wrapped(name,42,y,510,16,bold,true,20);y-=8;
+   y=await wrapped('Bill to: '+client,42,y,510,11,font,false,15);
+   y=await wrapped('Invoice #: '+code,42,y,510,11,font,false,15);
+   await draw('Currency: '+amounts.currency+'     Tax: '+amounts.taxPercent+'%',42,y,11);y-=33;
+  }else{
+   y=await wrapped('Invoice #: '+code,42,y,510,10,font,false,14);y-=12;
+  }
+  if(table){
+   await draw('Item',42,y,10,bold,true);await right('Qty',375,y,65,10,bold,true);
+   await right('Price',463,y,80,10,bold,true);await right('Total',553,y,80,10,bold,true);y-=24;
+  }
+ }
+ await startPage(true);
+ for(const [index,item] of amounts.items.entries()){
+  const rows=text.wrap(item.label,260,9,font),height=Math.max(1,rows.length)*13+11;
+  // Keep at least the last item with the totals when another page is needed.
+  if(y-height<(index===amounts.items.length-1?155:145))await startPage(false);
+  let at=y;for(const row of rows){await draw(row,42,at,9);at-=13;}
+  await right(item.quantity,375,y,65);await right(item.price,463,y,80);await right(item.total,553,y,80);y-=height;
+ }
+ if(y<155)await startPage(false,false);
+ y-=20;await right('Subtotal: '+amounts.currency+' '+amounts.subtotal,553,y,300,12,bold,true);
+ y-=22;await right('Tax: '+amounts.currency+' '+amounts.tax,553,y,300,11);
+ y-=28;await right('Amount due: '+amounts.currency+' '+amounts.total,553,y,300,13,bold,true);
+ for(const p of pdf.getPages())p.drawText('Created locally by YorpHives. Review before sending.',{x:42,y:35,size:8,font,color});
+ return result(await pdf.save(),'yorphives-invoice.pdf','Generated an invoice for '+amounts.currency+' '+amounts.total+'.');
 }
 export const WAVE1_IDS=Object.freeze([
  'pdf-compressor','pdf-to-images','image-size-target','pdf-page-numbers','pdf-watermark',
