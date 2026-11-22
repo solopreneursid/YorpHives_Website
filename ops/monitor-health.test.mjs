@@ -19,3 +19,16 @@ test('heartbeat must be exact positive evidence, without customer data',()=>{
  for(const [status,payload] of [[503,{ok:false}],[200,{ok:false}],[200,null],[200,{ok:true,name:'unexpected'}]])
   assert.equal(assessHeartbeat(status,payload),false);
 });
+
+test('successful recovery dispatch restores coverage while preserving cron-delay evidence',()=>{
+ const now=Date.now(),hours=n=>new Date(now-n*3600000).toISOString();
+ const scheduled={status:'completed',head_branch:'main',event:'schedule',conclusion:'success',updated_at:hours(20)};
+ const recovered={...scheduled,event:'workflow_dispatch',updated_at:hours(1)};
+ const result=assessWorkflow([scheduled,recovered],18,now);
+ assert.equal(result.healthy,true);
+ assert.equal(result.scheduleHealthy,false);
+ assert.equal(result.degraded,true);
+ assert.equal(result.lastFallback.event,'workflow_dispatch');
+ assert.equal(assessWorkflow([scheduled,{...recovered,conclusion:'failure'}],18,now).healthy,false);
+ assert.equal(assessWorkflow([scheduled,{...recovered,updated_at:hours(19)}],18,now).healthy,false);
+});
