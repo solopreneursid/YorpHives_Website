@@ -37,7 +37,7 @@ async function event(kind,extra){
 const route=()=>{
  if(/^\/tools\/[a-z0-9-]+\/$/.test(location.pathname))return location.pathname.slice(1);
  const hash=location.hash.slice(1);
- const alias={explore:'ventures',connect:'contact',ecosystem:'home',opportunities:'builders',membership:'builders'};
+ const alias={explore:'ventures',connect:'contact',hqconnect:'contact',ecosystem:'home',opportunities:'builders',membership:'builders'};
  const target=alias[hash]||hash||'home';
  return ['home','ventures','builders','impact','tools','partners','contact'].includes(target)?target:'home';
 };

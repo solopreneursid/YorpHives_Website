@@ -11,7 +11,9 @@ const synonyms=[
  ['remove','removal','delete','erase'],
  ['resize','size','dimension'],
  ['background','bg'],
- ['jpg','jpeg']
+ ['jpg','jpeg'],
+ ['split','extract'],
+ ['convert','converter','conversion']
 ];
 const ignored=new Set(['a','an','the','i','my','me','please','to','for','of','in','on','and','how','can','do']);
 function words(value){
@@ -51,11 +53,40 @@ function score(query,{name='',description='',category=''}={}){
  const matched=terms.filter(term=>matchesTerm(term,searchable,fields)).length;
  return {matched,total:terms.length};
 }
+// Explicit directions prevent recommending PDF-to-image when someone asks
+// for the opposite conversion. Only list combinations the tools really support.
+const conversions={
+ 'tools/images-to-pdf/':{from:['image','jpg','png','webp'],to:['pdf']},
+ 'tools/pdf-to-images/':{from:['pdf'],to:['image','jpg','png']},
+ 'tools/pdf-to-text/':{from:['pdf'],to:['text']},
+ 'tools/svg-to-png/':{from:['svg'],to:['png']},
+ 'tools/heic-to-jpg/':{from:['heic','heif'],to:['jpg','png']}
+};
+function format(value){
+ if(['jpg','jpeg'].includes(value))return 'jpg';
+ if(['image','images','photo','photos','picture','pictures'].includes(value))return 'image';
+ return ['pdf','png','webp','svg','heic','heif','text'].includes(value)?value:'';
+}
+function conversionIntent(query){
+ const parts=normalizeSearch(query).split(' '),divider=parts.findIndex(x=>x==='to'||x==='into');
+ if(divider<1)return null;
+ const from=parts.slice(0,divider).map(format).filter(Boolean).at(-1);
+ const to=parts.slice(divider+1).map(format).find(Boolean);
+ return from&&to?{from,to}:null;
+}
 export function matchesTool(query,tool={}){
+ const intent=conversionIntent(query);
+ if(intent){
+  const supported=conversions[tool.url];
+  return Boolean(supported&&supported.from.includes(intent.from)&&supported.to.includes(intent.to));
+ }
  const {matched,total}=score(query,tool);
  return !total||matched===total;
 }
 export function suggestTools(query,items,limit=3){
+ // A reversed converter is misleading; show no suggestions for unsupported
+ // conversion directions instead of presenting unrelated partial matches.
+ if(conversionIntent(query))return [];
  const max=Math.max(0,Math.min(5,Number(limit)||0));
  return items.map(tool=>({tool,...score(query,tool)}))
   .filter(item=>item.total>1&&item.matched>0&&item.matched<item.total)

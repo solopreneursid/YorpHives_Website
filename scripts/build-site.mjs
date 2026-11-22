@@ -59,7 +59,7 @@ for(const file of ['interaction.css','interaction.mjs'])
 // Only the analytics API invokes Pages Functions. All static pages and tool
 // assets bypass function compute and retain free static asset delivery.
 await write('_routes.json',JSON.stringify({
- version:1,include:['/api/insights/*','/api/agent/v1/*','/api/hqconnect'],exclude:[]
+ version:1,include:['/api/insights/*','/api/agent/v1/*','/api/hqconnect','/api/monitoring/health'],exclude:[]
 },null,2)+'\n');
 
 

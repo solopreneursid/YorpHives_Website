@@ -339,11 +339,24 @@ requestForm?.addEventListener('submit',async event=>{
   budget:String(fields.budget||''),consent:fields.consent==='on',
   startedAt:Number(form.dataset.startedAt||0)
  };
+ if(!payload.name||payload.message.length<20){
+  status.textContent=!payload.name?'Please enter your name.':'Please describe your project using at least 20 characters.';
+  status.dataset.state='error';
+  form.elements[!payload.name?'name':'message']?.focus();
+  return;
+ }
  button.disabled=true;status.textContent='Sending your request securely…';
  try{
   const res=await fetch('/api/hqconnect',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload),credentials:'same-origin',cache:'no-store'});
   const data=await res.json().catch(()=>({}));
-  if(!res.ok||!data.ok)throw Error('Your request could not be saved. Please use the email link below.');
+  if(!res.ok||!data.ok){
+   status.textContent=res.status===400?'Please check your name, email and project description, then try again.':
+    res.status===413?'Your request is too long. Please shorten it and try again.':
+    res.status===429?'Too many requests were sent. Please wait a minute and try again.':
+    'Online submission is unavailable. Please contact connect@yorphives.com using the email address below.';
+   status.dataset.state='error';
+   return;
+  }
   form.reset();form.dataset.startedAt=String(Date.now());
   status.textContent='Request received. Reference: '+String(data.reference||'').slice(0,60)+'. We will review it and contact you by email if it is a fit.';
   status.dataset.state='success';

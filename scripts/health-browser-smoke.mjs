@@ -77,6 +77,37 @@ try{
   const count=(await PDFDocument.load(Buffer.concat(chunks))).getPageCount();
   assert.equal(count,2,'Merged document should contain two pages');
  });
+ await scenario('PDF Compressor returns a usable local PDF',async page=>{
+  await open(page,'/tools/pdf-compressor/');
+  const pdf=await page.evaluate(async()=>{
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const doc=await PDFDocument.create();doc.addPage([200,200]);
+   return Array.from(await doc.save());
+  });
+  await page.locator('#pdf-compressor-file').setInputFiles({name:'synthetic.pdf',mimeType:'application/pdf',buffer:Buffer.from(pdf)});
+  await page.waitForFunction(()=>!document.querySelector('#pdf-compressor-download').hidden&&document.querySelector('#pdf-compressor-download').href.startsWith('blob:'),{timeout:45000});
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#pdf-compressor-download').click()]);
+  const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
+  const {PDFDocument}=await import('../tools/vendor/pdf-lib.mjs');
+  assert.equal((await PDFDocument.load(Buffer.concat(chunks))).getPageCount(),1);
+ });
+ await scenario('AI Background Remover produces a local PNG and records one completion',async page=>{
+  await open(page,'/tools/ai-background-remover/');
+  const png=await page.evaluate(()=>{
+   const canvas=document.createElement('canvas');canvas.width=128;canvas.height=128;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,128,128);
+   ctx.fillStyle='#2454aa';ctx.fillRect(24,24,80,80);
+   return canvas.toDataURL('image/png').split(',')[1];
+  });
+  await page.evaluate(()=>{window.__syntheticCompletionCount=0;window.addEventListener('yorphives:tool-completed',()=>window.__syntheticCompletionCount++);});
+  await page.locator('#ai-file').setInputFiles({name:'synthetic.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
+  await page.locator('#ai-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#ai-result').hidden&&document.querySelector('#ai-download').href.startsWith('blob:'),{timeout:120000});
+  assert.equal(await page.evaluate(()=>window.__syntheticCompletionCount),1);
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#ai-download').click()]);
+  const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
+  assert.deepEqual([...Buffer.concat(chunks).subarray(0,8)],[137,80,78,71,13,10,26,10]);
+ });
  await scenario('Mobile layout stays readable across key pages',async(page,context)=>{
   await page.setViewportSize({width:390,height:844});
   for(const path of ['/','/tools/','/tools/word-counter/','/tools/json-formatter/','/tools/image-resizer/']){
