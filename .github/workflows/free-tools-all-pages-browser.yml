@@ -1,4 +1,5 @@
 name: YorpHives all-tools browser sweep
+# Source QA refresh: synthetic document and utility contracts; read-only live inspection.
 on:
   schedule:
     - cron: '27 7 * * 1'
