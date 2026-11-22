@@ -33,7 +33,7 @@ try{
    await page.locator('#home .hero-actions a[href="#tools"]').click();
    await page.locator('#tool-search').waitFor({state:'visible'});
    await page.waitForFunction(()=>document.querySelector('#tools-count-big')?.textContent==='143');
-   for(const [query,name] of [['compress pdf','PDF Compressor'],['pdf compress','PDF Compressor'],['word counter','Word & Character Counter']]){
+   for(const [query,name] of [['compress pdf','PDF Compressor'],['pdf compress','PDF Compressor'],['reduce pdf size','PDF Compressor'],['combine pdfs','Merge PDF Files'],['pdf compresor','PDF Compressor'],['word counter','Word & Character Counter']]){
     await page.locator('#tool-search').fill(query);
     assert.ok(await page.locator('#tool-results .tool-card h3').filter({hasText:name}).first().isVisible(),query+' at '+width+'px');
    }
@@ -42,6 +42,13 @@ try{
    await page.locator('#reset-tool-filters').click();
    assert.equal(await page.locator('#tool-search').inputValue(),'');
    assert.match(await page.locator('#tool-results-count').innerText(),/143 results/);
+   await page.locator('#tool-search').fill('pdf unicorn');
+   assert.ok(await page.locator('#tool-suggestions a').first().isVisible(),'Partial matches should suggest an actual tool');
+   await page.goto(origin+'/tools/');
+   await page.locator('#directory-search').fill('combine pdfs');
+   assert.ok(await page.locator('.directory-card').filter({hasText:'Merge PDF Files'}).isVisible());
+   await page.locator('#directory-search').fill('pdf unicorn');
+   assert.ok(await page.locator('.directory-suggestions a').first().isVisible());
    await page.goto(origin+'/#home');
    await page.locator('#home .hero-actions a[href="#hqconnect"]').click();
    assert.equal(new URL(page.url()).hash,'#hqconnect');

@@ -5,7 +5,7 @@ import {approvedVentureReleases} from './venture-activity.mjs';
 import {createRotatingShowcase} from './showcase.mjs';
 import {getCatalog,subscribeCatalog,startCatalogMonitoring} from './catalog-sync.mjs';
 import {readSaved,toggleSaved} from '../tools/save-tool.mjs';
-import {matchesTool} from '../tools/search-match.mjs';
+import {matchesTool,suggestTools} from '../tools/search-match.mjs';
 
 const $=id=>document.getElementById(id);
 const views=[...document.querySelectorAll('main>.view')];
@@ -150,6 +150,20 @@ function renderTools(){
  $('tool-results-count').textContent=number(matches.length)+' result'+(matches.length===1?'':'s');
  $('tool-results-description').textContent=onlySaved?'Showing your saved tools':activeCategory!=='All'?activeCategory+' tools':'Search, filter or save what you need.';
  $('tool-empty').hidden=matches.length>0;
+ const suggestions=$('tool-suggestions');
+ if(suggestions){
+  const saved=onlySaved?savedSet():null;
+  const candidates=tools.filter(tool=>(activeCategory==='All'||(tool.category||'Other')===activeCategory)&&(!saved||saved.has(tool.url)));
+  const related=matches.length?[]:suggestTools($('tool-search')?.value||'',candidates);
+  suggestions.replaceChildren();
+  if(related.length){
+   const title=make('p','You might find these useful:');
+   const links=make('div','','tool-suggestion-links');
+   for(const tool of related){const link=make('a',tool.name);link.href='/'+tool.url;links.append(link);}
+   suggestions.append(title,links);
+  }
+  suggestions.hidden=!related.length;
+ }
  $('tool-pagination').hidden=matches.length<=pageSize;
  $('tool-page-label').textContent=page+' / '+pages;
  $('tool-prev').disabled=page<=1;$('tool-next').disabled=page>=pages;

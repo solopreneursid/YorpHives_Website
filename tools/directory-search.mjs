@@ -1,6 +1,6 @@
 // Search is a progressive enhancement of server-rendered, crawlable links.
 // No analytics, cookies, catalog fetch, external services or user-input uploads.
-import {matchesTool} from './search-match.mjs';
+import {matchesTool,suggestTools} from './search-match.mjs';
 export {matchesTool,normalizeSearch} from './search-match.mjs';
 import {readSaved,SAVED_KEY} from './save-tool.mjs';
 export function setupDirectorySearch(doc=globalThis.document,win=globalThis.window){
@@ -25,7 +25,7 @@ export function setupDirectorySearch(doc=globalThis.document,win=globalThis.wind
  let savedMode=new URL(win.location.href).searchParams.get('saved')==='1';
  function savedRoutes(){try{return new Set(readSaved(win.localStorage));}catch{return new Set();}}
 
- const empty=doc.createElement('p');
+ const empty=doc.createElement('div');
  empty.className='directory-search-empty';empty.hidden=true;
  empty.textContent='No matching tools. Try a simpler word or browse the categories.';
  list.after(empty);
@@ -54,6 +54,18 @@ export function setupDirectorySearch(doc=globalThis.document,win=globalThis.wind
   empty.hidden=(!query&&!savedMode)||visible>0;
   empty.textContent=savedMode?'No saved tools match. Open any tool and choose “Save this tool”, or show all tools.':
    'No matching tools. Try a simpler word or browse the categories.';
+  if(query&&!visible&&!savedMode){
+   const candidates=entries.flatMap(group=>group.cards.map(card=>({
+    name:card.name,description:card.description,category:group.category,href:card.element.getAttribute('href')
+   })));
+   const related=suggestTools(query,candidates);
+   if(related.length){
+    const label=doc.createElement('p');label.textContent='You might find these useful:';empty.append(label);
+    const links=doc.createElement('div');links.className='directory-suggestions';
+    for(const tool of related){const link=doc.createElement('a');link.href=tool.href;link.textContent=tool.name;links.append(link);}
+    empty.append(links);
+   }
+  }
   if(savedOnly){savedOnly.setAttribute('aria-pressed',String(savedMode));savedOnly.textContent=savedMode?'♥ Showing saved tools':'♡ Show saved tools'}
   status.textContent=savedMode
    ?visible+' saved tool'+(visible===1?'':'s')+(query?' match your search.':'.')

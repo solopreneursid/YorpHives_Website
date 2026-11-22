@@ -27,6 +27,7 @@ if (document.body.dataset.tool === 'json-formatter') {
       output.value = formatJson(input.value, indent);
       copy.disabled = false; download.disabled = false;
       message('json-status', indent === 0 ? 'Valid JSON. Minified successfully.' : 'Valid JSON. Formatted successfully.');
+      window.dispatchEvent(new Event('yorphives:tool-completed'));
     } catch (error) {
       output.value = ''; copy.disabled = true; download.disabled = true;
       message('json-status', `Unable to format: ${error.message}`, true);
@@ -55,6 +56,7 @@ if (document.body.dataset.tool === 'campaign-url-builder') {
       if (!Object.values(values).some(value => value.trim())) throw new Error('Add at least one campaign field.');
       output.value = buildCampaignUrl($('utm-url').value, values); copy.disabled = false;
       message('utm-status', 'Your campaign link is ready.');
+      window.dispatchEvent(new Event('yorphives:tool-completed'));
     } catch (error) { output.value = ''; copy.disabled = true; message('utm-status', error.message, true); }
   });
   copy.addEventListener('click', () => copyFrom(output, 'utm-status'));
@@ -141,6 +143,7 @@ if (document.body.dataset.tool === 'image-resizer') {
         const change = Math.round((1 - blob.size / originalFile.size) * 100);
         $('image-result-meta').textContent = `${w} × ${h} px · ${readableSize(blob.size)}${change > 0 ? ` · ${change}% smaller than the original` : change < 0 ? ` · ${Math.abs(change)}% larger than the original` : ' · about the same size as the original'}`;
         message('image-status', actualType !== requestedType ? 'Your browser used PNG because the selected format is unavailable. Your image is ready.' : 'Your image is ready to download.');
+        window.dispatchEvent(new Event('yorphives:tool-completed'));
       }, requestedType, Number(quality.value) / 100);
     } catch (error) { convert.disabled = false; message('image-status', error.message || 'Could not process this image.', true); }
   });

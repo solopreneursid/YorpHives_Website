@@ -200,9 +200,31 @@ for(const item of published){
  }
  html=injectToolSuite(html,item);
  html=injectNextToolUI(html,item);
+ // Start with hand-picked, task-related links on the most-used entry points.
+ // Every destination is checked against the published catalog below.
+ const curatedRelated={
+  'tools/pdf-merge/':['tools/pdf-rearrange-pages/','tools/pdf-extract-pages/','tools/pdf-compressor/'],
+  'tools/pdf-compressor/':['tools/pdf-merge/','tools/pdf-to-images/','tools/pdf-page-counter/'],
+  'tools/word-counter/':['tools/word-frequency-counter/','tools/text-find-replace/','tools/case-converter/'],
+  'tools/image-resizer/':['tools/image-cropper/','tools/image-size-target/','tools/batch-image-converter/'],
+  'tools/ai-background-remover/':['tools/image-cropper/','tools/batch-image-converter/','tools/image-size-target/']
+ };
  // Static related links help visitors discover adjacent tools without a recommendation API.
  if(item.type==='tool'&&item.url.startsWith('tools/')&&item.url.endsWith('/')){
-  const near=published.filter(x=>x.type==='tool'&&x.url!==item.url&&
+  const curated=curatedRelated[item.url];
+  if(curated){
+   // Replace the old, repetitive links rather than rendering two competing sections.
+   html=html.replace(/<section class="tool-related">[\s\S]*?<\/section>/,'');
+   if(item.url==='tools/pdf-merge/'){
+    html=html.replace('<li>Choose the file or files you want to work with.</li>','<li>Choose the PDF files you want to combine.</li>')
+     .replace('<li>Choose the main action to create your result.</li>','<li>Use the arrows beside the files to arrange them, then choose Process files.</li>');
+   }
+  }
+  const near=curated?curated.map(url=>{
+   const found=published.find(x=>x.type==='tool'&&x.url===url);
+   if(!found||found.url===item.url)throw Error('Invalid curated tool recommendation: '+url);
+   return found;
+  }):published.filter(x=>x.type==='tool'&&x.url!==item.url&&
    (x.category||'Other')===(item.category||'Other')).slice(0,3);
   const suggestions='<section class="yh-tool-discover" aria-label="More useful tools">'+
    '<div class="yh-tool-discover-head"><h2>Keep exploring</h2>'+

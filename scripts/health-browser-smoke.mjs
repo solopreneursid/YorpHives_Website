@@ -7,6 +7,7 @@ const results=[],unexpectedWrites=[];
 async function scenario(name,fn){
  const context=await browser.newContext({baseURL:ORIGIN,serviceWorkers:'block',viewport:{width:1280,height:820}});
  const page=await context.newPage(),errors=[];
+ await context.addInitScript(()=>{localStorage.setItem('yorphives-anonymous-analytics-disabled','1');});
  await context.route('**/api/insights/collect',route=>route.fulfill({status:204,body:''}));
  page.on('pageerror',e=>errors.push(page.url()+': '+(e.stack||e.message).slice(0,350)));
  page.on('request',r=>{if(['POST','PATCH','PUT','DELETE'].includes(r.method())&&!r.url().endsWith('/api/insights/collect'))unexpectedWrites.push(r.method()+' '+r.url());});
@@ -52,6 +53,28 @@ try{
    const a=document.querySelector('#image-download');
    return a&&!a.hidden&&a.getAttribute('href')?.startsWith('blob:');
   },{timeout:20000});
+ });
+ await scenario('PDF Merge combines two local files',async page=>{
+  await open(page,'/tools/pdf-merge/');
+  // Create real, non-personal documents in the browser from the site's pinned PDF library.
+  const pdf=await page.evaluate(async()=>{
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const doc=await PDFDocument.create();doc.addPage([200,200]);
+   return Array.from(await doc.save());
+  });
+  await page.locator('#file-input').setInputFiles([
+   {name:'synthetic-one.pdf',mimeType:'application/pdf',buffer:Buffer.from(pdf)},
+   {name:'synthetic-two.pdf',mimeType:'application/pdf',buffer:Buffer.from(pdf)}
+  ]);
+  await page.waitForFunction(()=>!document.querySelector('#file-run').disabled,{timeout:15000});
+  await page.locator('#file-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#file-download').hidden&&document.querySelector('#file-download').href.startsWith('blob:'),{timeout:20000});
+  const count=await page.evaluate(async()=>{
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const bytes=await (await fetch(document.querySelector('#file-download').href)).arrayBuffer();
+   return (await PDFDocument.load(bytes)).getPageCount();
+  });
+  assert.equal(count,2,'Merged document should contain two pages');
  });
  await scenario('Mobile layout stays readable across key pages',async(page,context)=>{
   await page.setViewportSize({width:390,height:844});
