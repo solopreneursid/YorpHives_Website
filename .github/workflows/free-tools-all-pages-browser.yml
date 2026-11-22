@@ -32,6 +32,15 @@ jobs:
       - name: Check every published tool page on mobile
         working-directory: site-source
         run: node scripts/health-browser-all-tools.mjs
+      - name: Summarize page coverage
+        if: always()
+        shell: bash
+        run: |
+          if [ -f site-source/all-tools-browser-report.json ]; then
+            jq -r '"### YorpHives page coverage | Checked: \\(.checked) | Passed: \\(.passed) | Failed: \\(.failed)"' site-source/all-tools-browser-report.json >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "All-pages report missing: browser test could not finish." >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Upload all-pages audit evidence
         if: always()
         uses: actions/upload-artifact@v6
