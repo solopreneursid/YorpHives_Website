@@ -29,8 +29,9 @@ if(process.argv.includes('--supervise')){
   const evidence=run?.html_url||'https://github.com/'+repo+'/actions/workflows/'+file;
   if(!report.healthy){
    const state=run?'Latest completed run: '+safe(run.conclusion)+' at '+safe(run.updated_at)+'.':'No completed main-branch run was found.';
+   const scheduled='Latest scheduled completion: '+safe(report.lastScheduled?.updated_at||'not observed')+'.';
    const body=['# Monitoring needs attention','', '@solopreneursid — a required Free Tools check is failed, stale, or unavailable.',
-    state,'Expected: a successful completed run within '+maxHours+' hours.','Evidence: '+evidence,'',
+    state,scheduled,'Expected: successful scheduled monitoring within '+maxHours+' hours.','Evidence: '+evidence,'',
     'This does not prove that the tools are broken. Review the workflow and its evidence.',
     'No website, customer data, ad setting, or production configuration was changed.'].join('\n');
    if(!existing)create(title,body);

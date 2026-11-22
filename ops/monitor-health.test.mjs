@@ -8,6 +8,10 @@ test('fresh successful main runs are required; PR and future or failed runs do n
  assert.equal(assessWorkflow([{...run,event:'pull_request'}],18,now).healthy,false);
  assert.equal(assessWorkflow([{...run,updated_at:new Date(now-19*3600000).toISOString()}],18,now).healthy,false);
  assert.equal(assessWorkflow([{...run,updated_at:new Date(now+3600000).toISOString()}],18,now).healthy,false);
+ const oldScheduled={...run,updated_at:new Date(now-19*3600000).toISOString()};
+ const freshPush={...run,event:'push'};
+ assert.equal(assessWorkflow([oldScheduled,freshPush],18,now).healthy,false,'A push must not hide a missed schedule');
+ assert.equal(assessWorkflow([freshPush],18,now).healthy,true,'New workflows have one initial grace window');
  assert.equal(assessWorkflow([],30,now).healthy,false);
 });
 test('heartbeat must be exact positive evidence, without customer data',()=>{
