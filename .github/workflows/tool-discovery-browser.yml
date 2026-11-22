@@ -4,6 +4,7 @@ on:
     paths:
       - 'scripts/tool-discovery-browser-qa.mjs'
       - 'scripts/website-repairs-browser-qa.mjs'
+      - 'scripts/pdf-integrity-browser-qa.mjs'
       - '.github/workflows/tool-discovery-browser.yml'
       - 'tools/**'
       - 'scripts/build-site.mjs'
@@ -34,6 +35,15 @@ jobs:
           sleep 2
           node scripts/tool-discovery-browser-qa.mjs
           node scripts/website-repairs-browser-qa.mjs
+          node scripts/pdf-integrity-browser-qa.mjs
+      - name: Retain synthetic PDF rendering for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-integrity-browser-qa
+          path: pdf-integrity-qa/
+          retention-days: 7
+          if-no-files-found: ignore
       - name: Scope and release safety
         if: always()
         run: |
