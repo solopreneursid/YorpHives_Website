@@ -69,11 +69,12 @@ try{
   await page.waitForFunction(()=>!document.querySelector('#file-run').disabled,{timeout:15000});
   await page.locator('#file-run').click();
   await page.waitForFunction(()=>!document.querySelector('#file-download').hidden&&document.querySelector('#file-download').href.startsWith('blob:'),{timeout:20000});
-  const count=await page.evaluate(async()=>{
-   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
-   const bytes=await (await fetch(document.querySelector('#file-download').href)).arrayBuffer();
-   return (await PDFDocument.load(bytes)).getPageCount();
-  });
+  // Exercise the actual download; fetching blob: from the page is intentionally
+  // blocked by the site's connect-src policy.
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#file-download').click()]);
+  const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
+  const {PDFDocument}=await import('../tools/vendor/pdf-lib.mjs');
+  const count=(await PDFDocument.load(Buffer.concat(chunks))).getPageCount();
   assert.equal(count,2,'Merged document should contain two pages');
  });
  await scenario('Mobile layout stays readable across key pages',async(page,context)=>{
