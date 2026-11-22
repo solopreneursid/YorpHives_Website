@@ -42,7 +42,7 @@ try{
   await page.waitForFunction(()=>!document.querySelector('#utility-run').disabled,{timeout:15000});
   await page.locator('#utility-run').click();
   await page.waitForFunction(()=>!document.querySelector('#utility-result').hidden,{timeout:15000});
-  assert.match(await page.locator('#utility-output').inputValue(),/Words:\\s*2\\b/,'Hindi text must count as two words');
+  assert.match(await page.locator('#utility-output').inputValue(),/Words:\s*2\b/,'Hindi text must count as two words');
  });
  await scenario('Case Converter title cases accented Latin letters',async page=>{
   await open(page,'/tools/case-converter/');
