@@ -1,7 +1,8 @@
 name: Free Tools functional and dependency checks
 on:
   schedule:
-    - cron: '43 5 * * *'
+    # Two separated windows reduce delays; the supervisor checks freshness.
+    - cron: '43 5,17 * * *'
   workflow_dispatch:
   push:
     branches: [main]

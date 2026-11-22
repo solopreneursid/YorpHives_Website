@@ -1,6 +1,7 @@
 // Read-only evidence collection, with GitHub issue-only notifications.
 // Never modifies a website, AdSense, production config, or a repository file.
 import {execFileSync} from 'node:child_process';
+import {assessWorkflow,assessHeartbeat} from './monitor-health.mjs';
 const repo=process.env.GITHUB_REPOSITORY;
 if(repo!=='solopreneursid/YorpHives_Website')throw Error('Unexpected GitHub repository');
 if(!process.env.GH_TOKEN)throw Error('GitHub Actions issue token unavailable');
@@ -9,12 +10,10 @@ const api=(path)=>JSON.parse(cmd(['api','--method','GET',path]));
 const now=Date.now(),hour=3600000;
 const titleIncident='YorpHives Free Tools watchdog failure',titleStall='YorpHives Free Tools monitoring stalled';
 const titleDigest='YorpHives Free Tools weekly briefing';
-const recent=api('/repos/'+repo+'/actions/workflows/free-tools-long-run-watchdog.yml/runs?per_page=10');
-const runs=Array.isArray(recent.workflow_runs)?recent.workflow_runs:[];
-const completed=runs.filter(x=>x.status==='completed'&&Number.isFinite(Date.parse(x.updated_at))).sort((a,b)=>Date.parse(b.updated_at)-Date.parse(a.updated_at));
-const last=completed[0]||null;
-const ageHours=last?(now-Date.parse(last.updated_at))/hour:Infinity;
-const validLast=last&&ageHours>=-0.25&&ageHours<18;
+const recent=api('/repos/'+repo+'/actions/workflows/free-tools-long-run-watchdog.yml/runs?per_page=20');
+const assessment=assessWorkflow(recent.workflow_runs,18,now);
+const {last,ageHours}=assessment;
+const validLast=assessment.healthy;
 const open=api('/repos/'+repo+'/issues?state=open&per_page=100').filter(x=>!x.pull_request);
 const named=title=>open.find(x=>x.title===title);
 const edit=(n,body)=>cmd(['issue','edit',String(n),'--repo',repo,'--body',body]);
@@ -24,20 +23,54 @@ const safe=s=>String(s||'').replace(/[\r\n]/g,' ').slice(0,240);
 const link=last?.html_url||'https://github.com/'+repo+'/actions/workflows/free-tools-long-run-watchdog.yml';
 const age=Number.isFinite(ageHours)?ageHours.toFixed(1)+' hours':'unknown';
 if(process.argv.includes('--supervise')){
- const existing=named(titleStall);
- if(!validLast){
-  const body=['# Independent Free Tools watchdog supervisor','', '@solopreneursid — **attention required:** No completed main monitoring run in the past 18 hours.',
-   'Last completion: '+safe(last?.updated_at||'not observed')+'. Age: '+age+'.',
-   'Evidence: '+link,'',
-   'This does not prove the tools are broken; monitoring reliability is unverified.',
-   'Investigate GitHub Actions schedule and the workflow, then confirm the next completed run.',
-   'No website, ad setting, or production configuration was changed.'].join('\n');
-  if(!existing)create(titleStall,body);
-  else if(!String(existing.body||'').includes(safe(last?.updated_at||'not observed')))edit(existing.number,body);
-  console.log('SUPERVISOR STALLED '+age);process.exitCode=1;
+ async function workflowCheck(title,file,maxHours,known){
+  const report=known||assessWorkflow(api('/repos/'+repo+'/actions/workflows/'+file+'/runs?per_page=20').workflow_runs,maxHours,now);
+  const run=report.last,existing=named(title);
+  const evidence=run?.html_url||'https://github.com/'+repo+'/actions/workflows/'+file;
+  if(!report.healthy){
+   const state=run?'Latest completed run: '+safe(run.conclusion)+' at '+safe(run.updated_at)+'.':'No completed main-branch run was found.';
+   const scheduled='Latest scheduled completion: '+safe(report.lastScheduled?.updated_at||'not observed')+'.';
+   const body=['# Monitoring needs attention','', '@solopreneursid — a required Free Tools check is failed, stale, or unavailable.',
+    state,scheduled,'Expected: successful scheduled monitoring within '+maxHours+' hours.','Evidence: '+evidence,'',
+    'This does not prove that the tools are broken. Review the workflow and its evidence.',
+    'No website, customer data, ad setting, or production configuration was changed.'].join('\n');
+   if(!existing)create(title,body);
+   else if(!String(existing.body||'').includes(state))edit(existing.number,body);
+   console.log('MONITOR ATTENTION '+file);process.exitCode=1;
+  }else{
+   if(existing)close(existing.number,'A recent successful monitoring run is verified: '+evidence);
+   console.log('MONITOR OK '+file);
+  }
+ }
+ await workflowCheck(titleStall,'free-tools-long-run-watchdog.yml',18,assessment);
+ await workflowCheck('YorpHives Free Tools functional monitoring stalled','free-tools-functional-security.yml',30);
+ // This is a deliberately coarse public website signal, not HQ access. It has
+ // no enquiry data, counts, timestamps, addresses, or error details.
+ let current=false;
+ for(let attempt=0;attempt<3&&!current;attempt++){
+  try{
+   const res=await fetch('https://yorphives.com/api/monitoring/health',{
+    method:'GET',redirect:'error',cache:'no-store',signal:AbortSignal.timeout(6500),
+    headers:{accept:'application/json','user-agent':'YorpHives-Operational-Supervisor/1.0'}});
+   if((res.headers.get('content-type')||'').includes('application/json')){
+    const body=await res.text();if(body.length<=64)current=assessHeartbeat(res.status,JSON.parse(body));
+   }
+  }catch{}
+  if(!current&&attempt<2)await new Promise(resolve=>setTimeout(resolve,2500));
+ }
+ const healthTitle='YorpHives enquiry notification checks need attention',existing=named(healthTitle);
+ if(!current){
+  const body=['# Enquiry notification checks need attention','',
+   '@solopreneursid — the generic enquiry-service heartbeat is unavailable, stale, or reporting a problem.',
+   'Open the private HQ inbox to review enquiries and investigate the notification scheduler or sender.',
+   'This alert contains no customer details or counts. Email delivery is never guaranteed by this check.',
+   'Evidence: '+process.env.GITHUB_SERVER_URL+'/'+repo+'/actions/runs/'+process.env.GITHUB_RUN_ID,'',
+   'GitHub issue notifications depend on your GitHub notification settings.'].join('\n');
+  if(!existing)create(healthTitle,body);
+  console.log('ENQUIRY CHECK ATTENTION');process.exitCode=1;
  }else{
-  if(existing)close(existing.number,'Monitoring resumed. Completed workflow evidence: '+link);
-  console.log('SUPERVISOR OK '+age+' last='+last.conclusion);
+  if(existing)close(existing.number,'The coarse enquiry-service heartbeat is current again; email delivery still requires separate confirmation.');
+  console.log('ENQUIRY CHECK CURRENT (delivery unverified)');
  }
 }
 async function firstPartyActivity(){
@@ -91,7 +124,7 @@ if(process.argv.includes('--weekly')){
  '## Monitoring',
  '- Latest completed watchdog: '+(last?safe(last.conclusion)+' at '+safe(last.updated_at):'Not verified'),
  '- Evidence: '+link,
- '- Monitoring freshness: '+(validLast?'Recent completed run verified':'Overdue or unavailable'),
+ '- Monitoring freshness: '+(validLast?'Recent successful run verified':'Failed, overdue or unavailable'),
  '- Critical incident issue: '+(incident?incident.html_url:'None currently open'),
  '- Independent monitoring-stall issue: '+(stalled?stalled.html_url:'None currently open'),
  '',
