@@ -37,7 +37,8 @@ test('conversion searches respect direction and splitting finds page extraction'
   ['png to pdf','tools/images-to-pdf/','tools/pdf-to-images/'],
   ['pdf to jpg converter','tools/pdf-to-images/','tools/images-to-pdf/'],
   ['pdf to text','tools/pdf-to-text/','tools/images-to-pdf/'],
-  ['svg to png','tools/svg-to-png/','tools/heic-to-jpg/']]){
+  ['svg to png','tools/svg-to-png/','tools/heic-to-jpg/'],
+  ['png to jpg','tools/batch-image-converter/','tools/pdf-to-images/']]){
   assert.ok(urls(query).includes(expected),query);
   assert.ok(!urls(query).includes(reversed),query+' must not return the reverse conversion');
  }

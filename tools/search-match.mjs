@@ -60,7 +60,8 @@ const conversions={
  'tools/pdf-to-images/':{from:['pdf'],to:['image','jpg','png']},
  'tools/pdf-to-text/':{from:['pdf'],to:['text']},
  'tools/svg-to-png/':{from:['svg'],to:['png']},
- 'tools/heic-to-jpg/':{from:['heic','heif'],to:['jpg','png']}
+ 'tools/heic-to-jpg/':{from:['heic','heif'],to:['jpg','png']},
+ 'tools/batch-image-converter/':{from:['image','jpg','png','webp'],to:['jpg','png','webp']}
 };
 function format(value){
  if(['jpg','jpeg'].includes(value))return 'jpg';
