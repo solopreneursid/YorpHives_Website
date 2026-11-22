@@ -1,4 +1,5 @@
 name: Free Tools functional and dependency checks
+# Source QA refresh: synthetic document and utility contracts; read-only live inspection.
 on:
   schedule:
     # Two separated windows reduce delays; the supervisor checks freshness.
