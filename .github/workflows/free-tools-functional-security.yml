@@ -20,12 +20,12 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out the production source branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: release/yorphives-reimagined-20261116
           path: site-source
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '22'
       - name: Install pinned browser test runner
@@ -41,12 +41,12 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out the production source branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: release/yorphives-reimagined-20261116
           path: site-source
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '22'
       - name: Install the committed dependency graph without lifecycle scripts
@@ -60,7 +60,7 @@ jobs:
           node scripts/health-dependency-audit.mjs
       - name: Retain advisory evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: free-tools-dependency-audit
           path: site-source/dependency-audit-report.json
