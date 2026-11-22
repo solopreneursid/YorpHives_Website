@@ -1,0 +1,105 @@
+name: Free Tools functional and dependency checks
+on:
+  schedule:
+    - cron: '43 5 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/free-tools-functional-security.yml']
+  pull_request:
+    paths: ['.github/workflows/free-tools-functional-security.yml']
+permissions:
+  contents: read
+concurrency:
+  group: free-tools-functional-security
+  cancel-in-progress: false
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the production source branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/yorphives-reimagined-20261116
+          path: site-source
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned browser test runner
+        working-directory: site-source
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test real live browser-local flows, retrying once on transient failure
+        working-directory: site-source
+        run: node scripts/health-browser-smoke.mjs || node scripts/health-browser-smoke.mjs
+  dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the production source branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/yorphives-reimagined-20261116
+          path: site-source
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install the committed dependency graph without lifecycle scripts
+        working-directory: site-source
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Check high and critical npm advisories; fail closed if the service is unavailable
+        working-directory: site-source
+        shell: bash
+        run: |
+          npm audit --json > dependency-audit-report.json || true
+          node scripts/health-dependency-audit.mjs
+      - name: Retain advisory evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: free-tools-dependency-audit
+          path: site-source/dependency-audit-report.json
+          retention-days: 14
+          if-no-files-found: warn
+  notify:
+    needs: [browser, dependencies]
+    if: always() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Maintain one founder alert with the check results
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          BROWSER_RESULT: ${{ needs.browser.result }}
+          DEPENDENCY_RESULT: ${{ needs.dependencies.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          title='YorpHives Free Tools functional or dependency check failed'
+          existing=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "YorpHives Free Tools functional or dependency check failed") | .number' | head -n 1)
+          if [ "$BROWSER_RESULT" != success ] || [ "$DEPENDENCY_RESULT" != success ]; then
+            {
+              echo '@solopreneursid — a Free Tools check needs attention.'
+              echo
+              echo "- Live browser scenarios: $BROWSER_RESULT"
+              echo "- Production-branch npm dependency check: $DEPENDENCY_RESULT"
+              echo "- Evidence: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+              echo
+              echo 'A failed or unavailable audit is not proof of a vulnerability. Review the run and advisory evidence. Synthetic inputs stay in the browser, analytics is disabled, and no automatic fixes are applied.'
+            } > alert.md
+            if [ -z "$existing" ]; then
+              gh issue create --title "$title" --body-file alert.md
+            else
+              gh issue edit "$existing" --body-file alert.md
+            fi
+            exit 1
+          elif [ -n "$existing" ]; then
+            gh issue close "$existing" --comment "Both checks passed in $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID."
+          fi
