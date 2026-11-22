@@ -85,7 +85,10 @@ try{
    return Array.from(await doc.save());
   });
   await page.locator('#pdf-compressor-file').setInputFiles({name:'synthetic.pdf',mimeType:'application/pdf',buffer:Buffer.from(pdf)});
-  await page.waitForFunction(()=>!document.querySelector('#pdf-compressor-download').hidden&&document.querySelector('#pdf-compressor-download').href.startsWith('blob:'),{timeout:45000});
+  await page.waitForFunction(()=>document.querySelector('#pdf-compressor-status').classList.contains('error')||
+   (!document.querySelector('#pdf-compressor-download').hidden&&document.querySelector('#pdf-compressor-download').href.startsWith('blob:')),null,{timeout:60000});
+  if(await page.locator('#pdf-compressor-status').evaluate(el=>el.classList.contains('error')))
+   throw Error('PDF Compressor: '+await page.locator('#pdf-compressor-status').innerText());
   const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#pdf-compressor-download').click()]);
   const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
   const {PDFDocument}=await import('../tools/vendor/pdf-lib.mjs');
@@ -102,7 +105,7 @@ try{
   await page.evaluate(()=>{window.__syntheticCompletionCount=0;window.addEventListener('yorphives:tool-completed',()=>window.__syntheticCompletionCount++);});
   await page.locator('#ai-file').setInputFiles({name:'synthetic.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
   await page.locator('#ai-run').click();
-  await page.waitForFunction(()=>!document.querySelector('#ai-result').hidden&&document.querySelector('#ai-download').href.startsWith('blob:'),{timeout:120000});
+  await page.waitForFunction(()=>!document.querySelector('#ai-result').hidden&&document.querySelector('#ai-download').href.startsWith('blob:'),null,{timeout:120000});
   // PRs exercise the currently live site, which can legitimately predate the
   // candidate's completion signal. After release, require the new event.
   const completions=await page.evaluate(()=>window.__syntheticCompletionCount);

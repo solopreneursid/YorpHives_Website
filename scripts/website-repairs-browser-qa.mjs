@@ -37,6 +37,7 @@ try{
     await page.locator('#tool-search').fill(query);
     assert.ok(await page.locator('#tool-results .tool-card h3').filter({hasText:name}).first().isVisible(),query+' at '+width+'px');
    }
+   await page.locator('#tool-search').fill('word counter');
    await page.getByRole('button',{name:'Writing',exact:true}).click();
    assert.ok(await page.locator('#tool-results .tool-card h3').filter({hasText:'Word & Character Counter'}).first().isVisible());
    await page.locator('#reset-tool-filters').click();
