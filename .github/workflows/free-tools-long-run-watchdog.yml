@@ -7,7 +7,8 @@ on:
       - 'ops/free-tools-seo-audit.mjs'
       - '.github/workflows/free-tools-long-run-watchdog.yml'
   schedule:
-    - cron: '17 3,15 * * *'
+    # Extra windows reduce the time lost when a scheduled GitHub run is dropped.
+    - cron: '17 3,9,15,21 * * *'
   workflow_dispatch:
 permissions:
   contents: read
