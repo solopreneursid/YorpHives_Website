@@ -71,6 +71,7 @@ if(process.argv.includes('--supervise')){
  }
  await workflowCheck(titleStall,'free-tools-long-run-watchdog.yml',18,assessment);
  await workflowCheck('YorpHives Free Tools functional monitoring stalled','free-tools-functional-security.yml',30);
+ await workflowCheck('YorpHives all-tools browser sweep stalled','free-tools-all-pages-browser.yml',192);
  // This is a deliberately coarse public website signal, not HQ access. It has
  // no enquiry data, counts, timestamps, addresses, or error details.
  let current=false;
