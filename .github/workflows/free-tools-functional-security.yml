@@ -36,6 +36,19 @@ jobs:
       - name: Test real live browser-local flows, retrying once on transient failure
         working-directory: site-source
         run: node scripts/health-browser-smoke.mjs || node scripts/health-browser-smoke.mjs
+  local-tool-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: release/yorphives-reimagined-20261116
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Verify browser-local utility correctness
+        run: node --test scripts/health-local-utility-contracts.test.mjs
   dependencies:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -67,7 +80,7 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
   notify:
-    needs: [browser, dependencies]
+    needs: [browser, dependencies, local-tool-contracts]
     if: always() && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
@@ -80,17 +93,19 @@ jobs:
           GH_REPO: ${{ github.repository }}
           BROWSER_RESULT: ${{ needs.browser.result }}
           DEPENDENCY_RESULT: ${{ needs.dependencies.result }}
+          CONTRACT_RESULT: ${{ needs.local-tool-contracts.result }}
         shell: bash
         run: |
           set -euo pipefail
           title='YorpHives Free Tools functional or dependency check failed'
           existing=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "YorpHives Free Tools functional or dependency check failed") | .number' | head -n 1)
-          if [ "$BROWSER_RESULT" != success ] || [ "$DEPENDENCY_RESULT" != success ]; then
+          if [ "$BROWSER_RESULT" != success ] || [ "$DEPENDENCY_RESULT" != success ] || [ "$CONTRACT_RESULT" != success ]; then
             {
               echo '@solopreneursid — a Free Tools check needs attention.'
               echo
               echo "- Live browser scenarios: $BROWSER_RESULT"
               echo "- Production-branch npm dependency check: $DEPENDENCY_RESULT"
+              echo "- Browser-local utility contract tests: $CONTRACT_RESULT"
               echo "- Evidence: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
               echo
               echo 'A failed or unavailable audit is not proof of a vulnerability. Review the run and advisory evidence. Synthetic inputs stay in the browser, analytics is disabled, and no automatic fixes are applied.'
