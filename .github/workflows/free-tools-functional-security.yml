@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   browser:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Check out the production source branch
