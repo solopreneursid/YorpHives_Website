@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-  actions: read
+  actions: write
   issues: write
 concurrency:
   group: yorphives-free-tools-founder-briefing
