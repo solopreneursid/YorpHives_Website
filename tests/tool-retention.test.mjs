@@ -34,8 +34,14 @@ test('production build contains saved buttons, same-category recommendations, an
   for(const u of related){
    assert.ok(routes.has(u),'Unpublished recommendation: '+u);
    assert.notEqual(u,tool.url);
-   assert.equal(items.find(x=>x.url===u)?.category||'Other',tool.category||'Other');
+   const curated=new Set(['tools/pdf-merge/','tools/pdf-compressor/','tools/word-counter/','tools/image-resizer/','tools/ai-background-remover/']);
+   if(!curated.has(tool.url))assert.equal(items.find(x=>x.url===u)?.category||'Other',tool.category||'Other');
   }
+ }
+ for(const [url,expected] of [['tools/pdf-merge/','tools/pdf-rearrange-pages/'],['tools/pdf-compressor/','tools/pdf-merge/'],['tools/word-counter/','tools/word-frequency-counter/'],['tools/image-resizer/','tools/image-cropper/']]){
+  const html=await readFile(resolve(dir,url,'index.html'),'utf8');
+  assert.ok(html.includes('href="/'+expected+'"'),url);
+  assert.doesNotMatch(html,/<section class="tool-related">/);
  }
  const directory=await readFile(resolve(dir,'tools/index.html'),'utf8');
  assert.match(directory,/id="directory-saved-only"/);

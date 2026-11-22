@@ -4,6 +4,7 @@ import{readFile}from'node:fs/promises';
 import{resolve,dirname}from'node:path';
 import{fileURLToPath}from'node:url';
 import{matchesTool,normalizeSearch}from'../tools/directory-search.mjs';
+import{suggestTools}from'../tools/search-match.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 test('directory matching handles names, categories, descriptions and multiple keywords',()=>{
  const tool={name:'Image Resizer & Compressor',description:'Resize photos privately in your browser',category:'Creator'};
@@ -18,10 +19,14 @@ test('directory matching handles names, categories, descriptions and multiple ke
 test('common tasks find the actual catalog tools regardless of keyword order',async()=>{
  const catalog=JSON.parse(await readFile(resolve(root,'catalog.json'),'utf8'));
  const tools=catalog.items.filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
- for(const [query,expected] of [['compress pdf','tools/pdf-compressor/'],['word counter','tools/word-counter/'],['counter word','tools/word-counter/']]){
+ for(const [query,expected] of [['compress pdf','tools/pdf-compressor/'],['reduce pdf size','tools/pdf-compressor/'],['combine pdfs','tools/pdf-merge/'],['word counter','tools/word-counter/'],['counter word','tools/word-counter/'],['remove bg','tools/ai-background-remover/'],['pdf compresor','tools/pdf-compressor/']]){
   assert.ok(tools.filter(tool=>matchesTool(query,tool)).some(tool=>tool.url===expected),query+' should find '+expected);
  }
  assert.equal(matchesTool('pdf audio',{name:'PDF Compressor',description:'Compress PDF documents',category:'PDF'}),false);
+ const suggestions=suggestTools('pdf unicorn',tools);
+ assert.ok(suggestions.length>0&&suggestions.length<=3);
+ assert.ok(suggestions.every(tool=>tool.category==='PDF'||/pdf/i.test(tool.name+' '+tool.description)));
+ assert.deepEqual(suggestTools('unicorn banana',tools),[]);
 });
 test('built tool directory remains crawlable and fully linked without JavaScript',async()=>{
  const page=await readFile(resolve(root,'dist/tools/index.html'),'utf8');

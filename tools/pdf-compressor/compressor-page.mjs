@@ -66,6 +66,8 @@ async function processLatest(){
     outcome.textContent=original?'This file could not be reduced with the chosen level. The original file is unchanged.':output.summary;
     result.hidden=false;download.hidden=false;
     message(original?'Original PDF ready.':'Your compressed PDF is ready.');
+    // A returned original is useful feedback, but is not a successful compression.
+    if(!original)window.dispatchEvent(new Event('yorphives:tool-completed'));
    }catch(error){
     completed=current;
     if(current===revision)message(error?.message||'Could not compress this PDF.',true);
