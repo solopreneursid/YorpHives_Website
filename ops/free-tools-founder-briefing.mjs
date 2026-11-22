@@ -25,7 +25,22 @@ const age=Number.isFinite(ageHours)?ageHours.toFixed(1)+' hours':'unknown';
 if(process.argv.includes('--supervise')){
  async function workflowCheck(title,file,maxHours,known){
   const report=known||assessWorkflow(api('/repos/'+repo+'/actions/workflows/'+file+'/runs?per_page=20').workflow_runs,maxHours,now);
-  const run=report.last,existing=named(title);
+  // GitHub cron events can be delayed or dropped. Restore coverage with a
+  // bounded workflow_dispatch when the scheduled completion is stale.
+  // This does not conceal missed schedules from the founder alert.
+  if(!report.healthy && ['free-tools-long-run-watchdog.yml','free-tools-functional-security.yml'].includes(file)){
+   try{
+    const recent=api('/repos/'+repo+'/actions/workflows/'+file+'/runs?per_page=30').workflow_runs||[];
+    const latestDispatch=recent.filter(r=>r.head_branch==='main'&&r.event==='workflow_dispatch'&&
+      Number.isFinite(Date.parse(r.created_at))).sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at))[0];
+    const recentlyDispatched=latestDispatch&&now-Date.parse(latestDispatch.created_at)<4*hour;
+    if(!recentlyDispatched){
+     cmd(['api','--method','POST','/repos/'+repo+'/actions/workflows/'+file+'/dispatches','-f','ref=main']);
+     console.log('MONITOR FALLBACK DISPATCHED '+file);
+    }else console.log('MONITOR FALLBACK ALREADY REQUESTED '+file);
+   }catch(error){console.error('MONITOR FALLBACK UNAVAILABLE '+file+': '+safe(error.message));}
+  }
+ const run=report.last,existing=named(title);
   const evidence=run?.html_url||'https://github.com/'+repo+'/actions/workflows/'+file;
   if(!report.healthy){
    const state=run?'Latest completed run: '+safe(run.conclusion)+' at '+safe(run.updated_at)+'.':'No completed main-branch run was found.';
