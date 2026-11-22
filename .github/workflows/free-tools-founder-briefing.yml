@@ -1,12 +1,14 @@
 name: YorpHives Free Tools independent supervisor and weekly briefing
 on:
   schedule:
-    - cron: '31 0,6,12,18 * * *'
+    - cron: '13,43 * * * *'
     - cron: '41 4 * * 1'
   push:
     branches: [main]
     paths:
       - 'ops/free-tools-founder-briefing.mjs'
+      - 'ops/monitor-health.mjs'
+      - 'ops/monitor-health.test.mjs'
       - '.github/workflows/free-tools-founder-briefing.yml'
   workflow_dispatch:
 permissions:
@@ -18,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   supervise:
-    if: github.event_name != 'schedule' || github.event.schedule == '31 0,6,12,18 * * *'
+    if: github.event_name != 'schedule' || github.event.schedule == '13,43 * * * *'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -28,7 +30,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check that main monitoring is still reporting independently
+      - name: Test monitoring decision rules with synthetic evidence
+        run: node --test ops/monitor-health.test.mjs
+      - name: Check website monitoring and the generic enquiry-service heartbeat
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node ops/free-tools-founder-briefing.mjs --supervise
