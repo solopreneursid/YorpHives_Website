@@ -54,6 +54,48 @@ try{
   await page.waitForFunction(()=>!document.querySelector('#utility-result').hidden,{timeout:15000});
   assert.equal((await page.locator('#utility-output').inputValue()).trim(),'Éclair Café');
  });
+ await scenario('File SHA-256 matches the known checksum for synthetic text',async page=>{
+  await open(page,'/tools/file-sha256/');
+  await page.locator('#file-input').setInputFiles({name:'abc.txt',mimeType:'text/plain',buffer:Buffer.from('abc','utf8')});
+  await page.waitForFunction(()=>!document.querySelector('#file-run').disabled,{timeout:15000});
+  await page.locator('#file-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#file-result').hidden,{timeout:20000});
+  assert.match(await page.locator('#file-output').inputValue(),/ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad/);
+ });
+ await scenario('PDF page counter recognizes two synthetic pages',async page=>{
+  await open(page,'/tools/pdf-page-counter/');
+  const pdf=await page.evaluate(async()=>{
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const doc=await PDFDocument.create();doc.addPage([200,200]);doc.addPage([300,400]);
+   return Array.from(await doc.save());
+  });
+  await page.locator('#file-input').setInputFiles({name:'synthetic.pdf',mimeType:'application/pdf',buffer:Buffer.from(pdf)});
+  await page.waitForFunction(()=>!document.querySelector('#file-run').disabled,{timeout:15000});
+  await page.locator('#file-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#file-result').hidden,{timeout:20000});
+  const output=await page.locator('#file-output').inputValue();
+  assert.match(output,/Pages: 2/);
+  assert.match(output,/Page 2: 300 × 400 pt/);
+ });
+ await scenario('PDF Rotate Pages writes a valid rotated PDF',async page=>{
+  await open(page,'/tools/pdf-rotate-pages/');
+  const pdf=await page.evaluate(async()=>{
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const doc=await PDFDocument.create();doc.addPage([200,300]);
+   return Array.from(await doc.save());
+  });
+  await page.locator('#file-input').setInputFiles({name:'synthetic.pdf',mimeType:'application/pdf',buffer:Buffer.from(pdf)});
+  await page.locator('[name="angle"]').selectOption('90');
+  await page.waitForFunction(()=>!document.querySelector('#file-run').disabled,{timeout:15000});
+  await page.locator('#file-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#file-download').hidden&&document.querySelector('#file-download').href.startsWith('blob:'),{timeout:20000});
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#file-download').click()]);
+  const chunks=[];for await(const part of await download.createReadStream())chunks.push(part);
+  const {PDFDocument}=await import('../tools/vendor/pdf-lib.mjs');
+  const out=await PDFDocument.load(Buffer.concat(chunks));
+  assert.equal(out.getPageCount(),1);
+  assert.equal(out.getPage(0).getRotation().angle,90);
+ });
  await scenario('JSON Formatter parses and formats locally',async page=>{
   await open(page,'/tools/json-formatter/');
   await page.locator('#json-input').fill('{"name":"YorpHives","active":true}');
