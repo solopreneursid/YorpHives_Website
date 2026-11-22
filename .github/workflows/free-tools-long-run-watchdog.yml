@@ -9,7 +9,7 @@ on:
   schedule:
     # Extra windows reduce the time lost when a scheduled GitHub run is dropped.
     - cron: '17 3,9,15,21 * * *'
-  # A source release is verified independently; this workflow checks the live site.
+  # Post-production-release verification: check all published tool pages and SEO.
   workflow_dispatch:
 permissions:
   contents: read
