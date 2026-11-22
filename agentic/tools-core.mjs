@@ -58,7 +58,7 @@ export function invokePublicTool(id,input){
  const x=validate(item.inputSchema,input);
  switch(id){
   case 'word_count':{
-   const words=x.text.match(/[\p{L}\p{N}]+(?:['’_-][\p{L}\p{N}]+)*/gu)||[];
+   const words=[...new Intl.Segmenter(undefined,{granularity:'word'}).segment(x.text)].filter(x=>x.isWordLike);
    return {words:words.length,characters:[...x.text].length,lines:x.text===''?0:x.text.split(/\r\n|\n|\r/).length};
   }
   case 'slugify':{
@@ -69,7 +69,8 @@ export function invokePublicTool(id,input){
   case 'case_convert':{
    const result=x.mode==='upper'?x.text.toLocaleUpperCase('en-US'):
     x.mode==='lower'?x.text.toLocaleLowerCase('en-US'):
-    x.text.toLocaleLowerCase('en-US').replace(/\b[\p{L}\p{N}]/gu,t=>t.toLocaleUpperCase('en-US'));
+    Array.from(new Intl.Segmenter(undefined,{granularity:'word'}).segment(x.text.toLocaleLowerCase('en-US')),
+     x=>x.isWordLike?x.segment.replace(/\p{L}/u,t=>t.toLocaleUpperCase('en-US')):x.segment).join('');
    return {text:result};
   }
   case 'percentage':return {result:round(x.value*x.percent/100)};
