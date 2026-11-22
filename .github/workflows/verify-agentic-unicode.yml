@@ -1,0 +1,23 @@
+name: Verify agentic Unicode tool fixes
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/verify-agentic-unicode.yml
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/yorphives-reimagined-20261116
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify deterministic agentic tools
+        run: node --test scripts/agentic-unicode.test.mjs
