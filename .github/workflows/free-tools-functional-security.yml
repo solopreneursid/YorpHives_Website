@@ -34,9 +34,9 @@ jobs:
         run: |
           npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.56.1
           npx playwright install --with-deps chromium
-      - name: Test real live browser-local flows, retrying once on transient failure
+      - name: Test live browser flows, without hiding intermittent failures
         working-directory: site-source
-        run: node scripts/health-browser-smoke.mjs || node scripts/health-browser-smoke.mjs
+        run: node scripts/health-browser-smoke.mjs
   local-tool-contracts:
     runs-on: ubuntu-latest
     timeout-minutes: 5
