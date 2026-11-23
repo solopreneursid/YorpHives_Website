@@ -62,7 +62,7 @@ jobs:
             echo
             echo "Evidence: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
             echo
-            jq -r '"Published tools: "+(.counts.publishedTools|tostring)+"\nBrowser behavior scenarios defined for: "+(.counts.toolsWithBrowserBehaviorScenarios|tostring)+"\nLocal output contracts defined for: "+(.counts.toolsWithLocalContracts|tostring)+"\nNo browser behavior scenario: "+(.counts.toolsWithoutBrowserBehaviorScenarios|tostring)+"\nNo local output contract: "+(.counts.toolsWithoutLocalContracts|tostring)' site-source/free-tools-qa-inventory/inventory.json
+            jq -r '"Published tools: "+(.counts.publishedTools|tostring)+"\nBrowser behavior scenarios defined for: "+(.counts.toolsWithBrowserBehaviorScenarios|tostring)+"\nSynthetic local execution smokes defined for: "+(.counts.toolsWithSyntheticExecutionSmokes|tostring)+"\nLocal output contracts defined for: "+(.counts.toolsWithLocalContracts|tostring)+"\nNo browser behavior scenario: "+(.counts.toolsWithoutBrowserBehaviorScenarios|tostring)+"\nNo local output contract: "+(.counts.toolsWithoutLocalContracts|tostring)' site-source/free-tools-qa-inventory/inventory.json
             echo
             echo 'These numbers count explicit test definitions only; they do not prove tests passed or that a tool is broken.'
             echo 'See the attached JSON and Markdown artifacts for every tool and category.'
