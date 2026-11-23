@@ -28,7 +28,11 @@ const strictPdfTitles=new Map([
  ['PDF page counter reports exact page sizes','pdf-page-counter'],
  ['PDF extract pages retains selected order and valid outputs','pdf-extract-pages'],
  ['PDF remove pages preserves remaining page order','pdf-remove-pages'],
- ['PDF rotate pages changes only selected page','pdf-rotate-pages']
+ ['PDF rotate pages changes only selected page','pdf-rotate-pages'],
+ ['PDF page numbers return a valid three-page PDF','pdf-page-numbers'],
+ ['PDF visible watermark returns a valid three-page PDF','pdf-watermark'],
+ ['PDF visual signature preserves pages but does not claim digital signing','pdf-visual-signature'],
+ ['PDF rearrange pages preserves requested order and page sizes','pdf-rearrange-pages']
 ]);
 const strictPdf=new Map();
 for(const line of tap.split('\n')){
