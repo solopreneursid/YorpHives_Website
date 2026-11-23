@@ -136,6 +136,27 @@ try{
   assert.equal(actual.json[0].code,'00123');
   assert.equal(actual.json[1].comment,'two lines\\ncontinued');
  });
+ await scenario('Image Resizer exports correct PNG dimensions',async page=>{
+  await open(page,'/tools/image-resizer/');
+  const png=await page.evaluate(()=>{
+   const canvas=document.createElement('canvas');canvas.width=2;canvas.height=2;
+   const ctx=canvas.getContext('2d');ctx.clearRect(0,0,2,2);
+   ctx.fillStyle='#e12a35';ctx.fillRect(0,0,1,1);
+   return canvas.toDataURL('image/png').split(',')[1];
+  });
+  await page.locator('#image-file').setInputFiles({name:'synthetic.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
+  await page.waitForFunction(()=>!document.querySelector('#image-width').disabled,{timeout:15000});
+  await page.locator('#image-width').fill('4');
+  await page.locator('#image-format').selectOption('image/png');
+  await page.locator('#image-convert').click();
+  await page.waitForFunction(()=>!document.querySelector('#image-download').hidden&&document.querySelector('#image-download').href.startsWith('blob:'),null,{timeout:20000});
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#image-download').click()]);
+  const chunks=[];for await(const part of await download.createReadStream())chunks.push(part);
+  const out=Buffer.concat(chunks);
+  assert.deepEqual([...out.subarray(0,8)],[137,80,78,71,13,10,26,10]);
+  assert.equal(out.readUInt32BE(16),4);
+  assert.equal(out.readUInt32BE(20),4);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
