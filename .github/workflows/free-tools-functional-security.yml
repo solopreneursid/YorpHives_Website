@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA covers creator assets, campaign URL safety, password checks and SVG processing.
+# QA now includes wave1 PDF metadata editing contracts and creator output integrity.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
