@@ -1,0 +1,111 @@
+name: YorpHives founder-approved production promotion
+on:
+  workflow_dispatch:
+    inputs:
+      readiness_run_id:
+        description: 'Successful release-readiness run ID containing the exact immutable candidate'
+        required: true
+        type: string
+      source_sha:
+        description: 'Exact 40-character source commit SHA'
+        required: true
+        type: string
+      asset_fingerprint:
+        description: 'Exact 64-character release manifest fingerprint'
+        required: true
+        type: string
+      approval_phrase:
+        description: 'Type PUBLISH_YORPHIVES_NOW to explicitly approve the production change'
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+  deployments: write
+concurrency:
+  group: yorphives-production-promotion
+  cancel-in-progress: false
+jobs:
+  production:
+    name: Validate immutable artifact and promote only after founder consent
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: yorphives-production
+    env:
+      SOURCE_SHA: ${{ inputs.source_sha }}
+      FINGERPRINT: ${{ inputs.asset_fingerprint }}
+      READINESS_RUN_ID: ${{ inputs.readiness_run_id }}
+      APPROVAL_PHRASE: ${{ inputs.approval_phrase }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      PRODUCTION_PROJECT: ${{ vars.YORPHIVES_PRODUCTION_PAGES_PROJECT }}
+    steps:
+      - name: Require explicit matching approval and configured production identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "$APPROVAL_PHRASE" = 'PUBLISH_YORPHIVES_NOW' ] || { echo 'Founder approval phrase missing'; exit 1; }
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo 'Exact SHA required'; exit 1; }
+          [[ "$FINGERPRINT" =~ ^[0-9a-f]{64}$ ]] || { echo 'Exact fingerprint required'; exit 1; }
+          [[ "$READINESS_RUN_ID" =~ ^[0-9]{5,16}$ ]] || { echo 'Valid readiness run ID required'; exit 1; }
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] && [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$PRODUCTION_PROJECT" ] ||
+            { echo 'Protected production project/account/token are not configured. No deployment attempted.'; exit 1; }
+      - uses: actions/checkout@v6
+        with:
+          ref: release/yorphives-reimagined-20261116
+          fetch-depth: 0
+          path: source
+          persist-credentials: false
+      - name: Verify approved commit belongs to the release branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd source
+          git fetch origin release/yorphives-reimagined-20261116
+          git cat-file -e "$SOURCE_SHA^{commit}"
+          git merge-base --is-ancestor "$SOURCE_SHA" origin/release/yorphives-reimagined-20261116
+          git checkout --detach "$SOURCE_SHA"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Download only the completed readiness build artifact
+        uses: actions/download-artifact@v6
+        with:
+          name: yorphives-production-candidate
+          run-id: ${{ inputs.readiness_run_id }}
+          github-token: ${{ github.token }}
+          path: artifacts
+      - name: Verify exact packaged files against approved manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s artifacts/yorphives-production-candidate.tar.gz
+          test -s artifacts/candidate-manifest.json
+          mkdir -p candidate-dist
+          tar --no-same-owner --no-same-permissions -xzf artifacts/yorphives-production-candidate.tar.gz -C candidate-dist
+          node source/scripts/release-verify-local.mjs candidate-dist "$SOURCE_SHA" "$FINGERPRINT" production
+          node -e "const fs=require('fs');const a=fs.readFileSync('artifacts/candidate-manifest.json');const b=fs.readFileSync('candidate-dist/.well-known/yorphives-release.json');if(!a.equals(b))process.exit(1)"
+      - name: Confirm this Cloudflare project actually owns yorphives.com
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 30             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"             "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PRODUCTION_PROJECT" > project.json
+          node -e "const p=require('./project.json');if(!p.success||!p.result?.domains?.includes('yorphives.com')){console.error('Project does not directly own yorphives.com; blocked to protect production.');process.exit(1)};const b=p.result.production_branch;if(!b||!p.result.source?.config?.production_branch||b!==p.result.source.config.production_branch)process.exit(2);require('fs').appendFileSync(process.env.GITHUB_ENV,'DEPLOY_BRANCH='+b+'\n')"
+      - name: Deploy exact approved files, never rebuilding during promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.45.0 pages deploy candidate-dist --project-name="$PRODUCTION_PROJECT" --branch="$DEPLOY_BRANCH" --commit-hash="$SOURCE_SHA"
+      - name: Verify live domain serves the identical release and critical assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4 5 6; do
+            if node source/scripts/release-verify.mjs https://yorphives.com "$SOURCE_SHA" "$FINGERPRINT" production; then
+              echo 'APPROVED_PRODUCTION_RELEASE_VERIFIED' >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 20
+          done
+          echo 'CRITICAL: live manifest or assets mismatch. Roll back the Pages deployment; no success claim.' >&2
+          exit 1
