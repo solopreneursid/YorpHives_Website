@@ -1007,6 +1007,56 @@ try{
   assert.equal(actual.mime,'image/png');assert.equal(actual.w,120);assert.equal(actual.h,80);
   assert.ok(actual.size>100);
  });
+ await scenario('Image Publishing Pack creates three correctly named image assets',async page=>{
+  await open(page,'/tools/image-publishing-pack/');
+  const output=await page.evaluate(async()=>{
+   const {makeImagePublishingPack}=await import('/tools/wave7-file-core.mjs');
+   const {default:JSZip}=await import('/tools/vendor/jszip.mjs');const canvas=document.createElement('canvas');canvas.width=80;canvas.height=60;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#1d8a55';ctx.fillRect(0,0,80,60);
+   const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const file=new File([png],'sample.png',{type:'image/png'});
+   const pack=await makeImagePublishingPack(file,{});
+   const zip=await JSZip.loadAsync(await pack.blob.arrayBuffer());
+   const files=Object.keys(zip.files);
+   const webpAsset=await zip.file('square-thumbnail.webp')?.async('uint8array');
+   const jpeg=await zip.file('social-share-image.jpg')?.async('uint8array');
+   return {files,webp:String.fromCharCode(...webpAsset.slice(0,4)),jpeg:[...jpeg.slice(0,2)]};
+  });
+  assert.ok(output.files.includes('website-image.webp')&&output.files.includes('README.txt'));
+  assert.ok(output.files.includes('square-thumbnail.webp')&&output.files.includes('social-share-image.jpg'));
+  assert.equal(output.webp,'RIFF');assert.deepEqual(output.jpeg,[255,216]);
+ });
+ await scenario('Images to PowerPoint exports valid PPTX slide and media',async page=>{
+  await open(page,'/tools/images-to-powerpoint/');
+  const result=await page.evaluate(async()=>{
+   const {processFileTool}=await import('/tools/file-core.mjs');
+   const {default:JSZip}=await import('/tools/vendor/jszip.mjs');const canvas=document.createElement('canvas');canvas.width=80;canvas.height=60;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#1d8a55';ctx.fillRect(0,0,80,60);
+   const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const file=new File([png],'sample.png',{type:'image/png'});
+   const out=await processFileTool('images-to-powerpoint',[file],{});
+   const zip=await JSZip.loadAsync(await out.blob.arrayBuffer());
+   return {mime:out.blob.type,files:Object.keys(zip.files)};
+  });
+  assert.match(result.mime,/presentationml/);
+  assert.ok(result.files.includes('ppt/slides/slide1.xml'));
+  assert.ok(result.files.some(name=>name.startsWith('ppt/media/')));
+ });
+ await scenario('PowerPoint Text Extractor correctly reports an image-only slide',async page=>{
+  await open(page,'/tools/powerpoint-text-extractor/');
+  const result=await page.evaluate(async()=>{
+   const {processFileTool}=await import('/tools/file-core.mjs');const canvas=document.createElement('canvas');canvas.width=80;canvas.height=60;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#1d8a55';ctx.fillRect(0,0,80,60);
+   const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const file=new File([png],'sample.png',{type:'image/png'});
+   const powerpoint=await processFileTool('images-to-powerpoint',[file],{});
+   const pptx=new File([powerpoint.blob],'sample.pptx',{type:powerpoint.blob.type});
+   const out=await processFileTool('powerpoint-text-extractor',[pptx],{});
+   return out.text||await out.blob.text();
+  });
+  assert.match(result,/Slide 1/);
+  assert.match(result,/No extractable text/);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
