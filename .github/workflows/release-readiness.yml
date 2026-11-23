@@ -58,8 +58,6 @@ jobs:
         run: |
           set -euo pipefail
           find scripts tools agentic -type f \( -name '*.mjs' -o -name '*.js' \) ! -path '*/vendor/*' -print0 | xargs -0 -n1 node --check
-          node --check studio.js
-          node --check rotators.js
       - name: Fail release on high or critical dependency advisories
         working-directory: site-source
         run: npm audit --omit=dev --audit-level=high
@@ -67,6 +65,8 @@ jobs:
         working-directory: site-source
         run: |
           node scripts/build-site.mjs --target=production
+          node --check dist/studio.js
+          node --check dist/rotators.js
           node scripts/release-check.mjs dist
           node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('dist/.well-known/yorphives-release.json'));if(m.target!=='production'||m.sourceSha!==process.env.YORPHIVES_SOURCE_SHA||!m.assetFingerprint)process.exit(1);console.log('CANDIDATE',m.sourceSha,m.assetFingerprint)"
           tar --format=posix -czf ../yorphives-production-candidate.tar.gz -C dist .
