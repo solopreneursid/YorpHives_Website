@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA now includes wave1 PDF metadata editing contracts and creator output integrity.
+# QA covers additional image resizing, EXIF stripping, barcode and SVG raster output checks.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
