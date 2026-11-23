@@ -10,6 +10,11 @@ const browserPath=process.argv[2],tapPath=process.argv[3],destination=process.ar
 async function optionalJson(path){try{return JSON.parse(await readFile(path,'utf8'));}catch{return null;}}
 async function optionalText(path){try{return await readFile(path,'utf8');}catch{return '';}}
 const browser=await optionalJson(browserPath),tap=await optionalText(tapPath);
+if(!browser||browser.complete!==true||!Array.isArray(browser.scenarios)||browser.scenarios.length===0){
+ throw Error('Browser results are missing, truncated or incomplete; refusing to publish an invented QA regression.');
+}
+if(!tap.trim())throw Error('Local contract execution evidence is missing; refusing incomplete QA verdict.');
+
 const visit=new Map();
 for(const entry of browser?.scenarios||[]){
  for(const route of entry.routes||[]){
