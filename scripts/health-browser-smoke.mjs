@@ -6,21 +6,47 @@ import {chromium} from 'playwright';
 const ORIGIN='https://yorphives.com';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
 const results=[],unexpectedWrites=[];
+async function writeEvidence(){
+ if(!process.env.YORPHIVES_QA_RESULTS)return;
+ const dest=process.env.YORPHIVES_QA_RESULTS;
+ await mkdir(dirname(dest),{recursive:true});
+ await writeFile(dest,JSON.stringify({
+  schemaVersion:1,generatedAt:new Date().toISOString(),
+  complete:false,scenarios:results,unexpectedWrites
+ },null,2)+'\n');
+}
 async function scenario(name,fn){
+ const timeoutMs=/HEIC|OCR|Scanned PDF|screen recording/i.test(name)?150000:65000;
+ console.log('START '+name,{timeoutMs});
  const context=await browser.newContext({baseURL:ORIGIN,serviceWorkers:'block',viewport:{width:1280,height:820}});
  const page=await context.newPage(),errors=[];
  page.__qaRoutes=[];
+ page.setDefaultTimeout(15000);
+ page.setDefaultNavigationTimeout(30000);
  await context.addInitScript(()=>{localStorage.setItem('yorphives-anonymous-analytics-disabled','1');});
  await context.route('**/api/insights/collect',route=>route.fulfill({status:204,body:''}));
  page.on('pageerror',e=>errors.push(page.url()+': '+(e.stack||e.message).slice(0,350)));
  page.on('request',r=>{if(['POST','PATCH','PUT','DELETE'].includes(r.method())&&!r.url().endsWith('/api/insights/collect'))unexpectedWrites.push(r.method()+' '+r.url());});
+ let timer;
  try{
-  await fn(page,context);
+  await Promise.race([
+   fn(page,context),
+   new Promise((_,reject)=>{timer=setTimeout(()=>{
+    void page.close({runBeforeUnload:false}).catch(()=>{});
+    reject(new Error('Scenario exceeded '+timeoutMs+' ms; browser action interrupted'));
+   },timeoutMs);})
+  ]);
   assert.deepEqual(errors,[],'Browser JavaScript exceptions: '+errors.join(' | '));
   results.push({name,passed:true,routes:[...new Set(page.__qaRoutes)]});
+  console.log('PASS '+name);
  }catch(error){
   results.push({name,passed:false,routes:[...new Set(page.__qaRoutes)],error:String(error?.message||error).slice(0,450)});
- }finally{await context.close()}
+  console.error('FAIL '+name+': '+String(error?.message||error).slice(0,450));
+ }finally{
+  clearTimeout(timer);
+  await writeEvidence();
+  await Promise.race([context.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,5000))]);
+ }
 }
 async function open(page,path){
  if(path.startsWith('/tools/'))page.__qaRoutes.push(path);
@@ -1392,6 +1418,6 @@ console.log('HEALTH BROWSER SMOKE: '+passed+'/'+results.length+' passed; synthet
 if(process.env.YORPHIVES_QA_RESULTS){
  const dest=process.env.YORPHIVES_QA_RESULTS;
  await mkdir(dirname(dest),{recursive:true});
- await writeFile(dest,JSON.stringify({schemaVersion:1,generatedAt:new Date().toISOString(),scenarios:results,unexpectedWrites},null,2)+'\n');
+ await writeFile(dest,JSON.stringify({schemaVersion:1,generatedAt:new Date().toISOString(),complete:true,scenarios:results,unexpectedWrites},null,2)+'\n');
 }
 if(passed!==results.length)process.exitCode=1;
