@@ -1264,6 +1264,12 @@ try{
   const {readFile}=await import('node:fs/promises');
   const source=process.env.YORPHIVES_TEST_HEIC;
   assert.ok(source,'A genuine HEIC test fixture must be generated');
+  // Test the candidate source module against the live, read-only page without deploying it.
+  const candidate=await readFile(new URL('../tools/wave3-core.mjs',import.meta.url),'utf8');
+  await page.route('**/tools/wave3-core.mjs',route=>route.fulfill({
+   status:200,contentType:'text/javascript',body:candidate,
+   headers:{'access-control-allow-origin':'*','cache-control':'no-store'}
+  }));
   await open(page,'/tools/heic-to-jpg/');
   const input=await readFile(source);
   const output=await page.evaluate(async encoded=>{
