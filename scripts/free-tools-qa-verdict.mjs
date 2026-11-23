@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const catalog=JSON.parse(await readFile(resolve(ROOT,'catalog.json'),'utf8'));
 const tools=catalog.items.filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
-const normalize=s=>'/'+String(s).replace(/^\\/+|\\/+$/g,'')+'/';
+const normalize=s=>'/'+String(s).replace(/^\/+|\/+$/g,'')+'/';
 const browserPath=process.argv[2],tapPath=process.argv[3],destination=process.argv[4]||'free-tools-qa-verdict';
 async function optionalJson(path){try{return JSON.parse(await readFile(path,'utf8'));}catch{return null;}}
 async function optionalText(path){try{return await readFile(path,'utf8');}catch{return '';}}
@@ -19,8 +19,8 @@ for(const entry of browser?.scenarios||[]){
  }
 }
 const local=new Map();
-for(const line of tap.split('\\n')){
- const hit=line.match(/^\\s*(not ok|ok)\\s+\\d+\\s+-\\s+utility execution smoke: ([a-z0-9-]+)/);
+for(const line of tap.split('\n')){
+ const hit=line.match(/^\s*(not ok|ok)\s+\d+\s+-\s+utility execution smoke: ([a-z0-9-]+)/);
  if(hit)local.set(hit[2],hit[1]==='ok'?'passed':'failed');
 }
 const rows=tools.map(item=>{
@@ -49,7 +49,7 @@ const report={schemaVersion:1,runId:process.env.GITHUB_RUN_ID||null,generatedAt:
  cautions:['Representative pass is NOT complete verification.','Missing or incomplete test artifacts leave tools unverified.','No production changes or automatic fixes were performed.'],
  evidence:{browser:!!browser,local:tap.length>0},counts,tools:rows};
 const dir=resolve(destination);await mkdir(dir,{recursive:true});
-await writeFile(resolve(dir,'verdict.json'),JSON.stringify(report,null,2)+'\\n');
+await writeFile(resolve(dir,'verdict.json'),JSON.stringify(report,null,2)+'\n');
 const lines=['# YorpHives Free Tools — last CI execution verdict','',
  'Workflow run: '+(report.runId||'unknown'),'', 'Generated: '+report.generatedAt,'',
  '**Representative passing tests are not full functional certification.**','',
@@ -62,5 +62,5 @@ const lines=['# YorpHives Free Tools — last CI execution verdict','',
  '## Failed tools',...rows.filter(x=>x.verdict==='failed').map(x=>'- '+x.name+' ('+x.route+'): '+x.browserScenarios.filter(y=>!y.passed).map(y=>y.error).filter(Boolean).join('; ')),
  '','## Still unverified',...rows.filter(x=>x.verdict==='unverified').map(x=>'- '+x.name+' — '+x.route),
  '','A passing result is only for the exact scenario(s) listed in verdict.json. Input robustness, accessibility and cross-browser coverage still require independent testing.',''];
-await writeFile(resolve(dir,'verdict.md'),lines.join('\\n'));
+await writeFile(resolve(dir,'verdict.md'),lines.join('\n'));
 console.log('FREE_TOOLS_CI_VERDICT '+JSON.stringify(counts));
