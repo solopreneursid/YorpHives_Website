@@ -1,5 +1,5 @@
 name: Free Tools QA coverage inventory
-# Refreshes image watermark and corrupt-input test coverage alongside existing contracts.
+# Refreshes audio output and video-settings coverage separately; all 143 tools remain tracked.
 on:
   workflow_dispatch:
   schedule:
