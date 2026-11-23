@@ -1,10 +1,13 @@
 // Cross-browser, self-hosted preview smoke. This is not a full accessibility audit.
 import assert from 'node:assert/strict';
 import {chromium,firefox,webkit} from 'playwright';
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {dirname} from 'node:path';
 const origin=process.env.YORPHIVES_PREVIEW_ORIGIN||'http://127.0.0.1:4173';
 const routes=['/','/tools/','/tools/word-counter/','/tools/pdf-merge/','/tools/heic-to-jpg/'];
+const catalog=JSON.parse(await readFile(new URL('../catalog.json',import.meta.url),'utf8'));
+const allTools=catalog.items.filter(x=>x.type==='tool'&&x.published!==false).map(x=>'/'+x.url.replace(/^\\/+/, ''));
+if(allTools.length!==143)throw Error('Published tool inventory unexpectedly changed from 143.');
 const results=[];
 for(const [name,engine] of Object.entries({chromium,firefox,webkit})){
  let browser;
@@ -31,6 +34,24 @@ for(const [name,engine] of Object.entries({chromium,firefox,webkit})){
      assert.deepEqual(errors,[],'Browser page exceptions');
      results.push({name:label,passed:true});
     }catch(e){results.push({name:label,passed:false,error:String(e?.message||e).slice(0,360)});}
+   }
+   // All 143 published URLs are checked in Chromium without contacting production.
+   if(name==='chromium'&&width===390){
+    const routeErrors=[];
+    page.on('pageerror',e=>routeErrors.push(e.message));
+    for(const path of allTools){
+     const label='catalog route '+path;
+     try{
+      routeErrors.length=0;
+      const response=await page.goto(origin+path,{waitUntil:'domcontentloaded',timeout:15000});
+      assert.equal(response?.status(),200);
+      await page.locator('h1').first().waitFor({state:'visible',timeout:6000});
+      const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+      assert.ok(overflow<=4,'Mobile viewport overflow '+overflow+'px');
+      assert.deepEqual(routeErrors,[],'Browser module error');
+      results.push({name:label,passed:true});
+     }catch(e){results.push({name:label,passed:false,error:String(e?.message||e).slice(0,360)});}
+    }
    }
    await context.close();
   }
