@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA expansion: image cropping and rotation must produce valid correctly sized PNG downloads.
+# QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
   schedule:
     # Two separated windows reduce delays; the supervisor checks freshness.
