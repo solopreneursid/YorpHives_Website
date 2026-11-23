@@ -521,6 +521,55 @@ try{
    ['','0044','Delhi','two.csv']
   ]);
  });
+ await scenario('PDF Metadata Cleaner clears standard author title and date metadata',async page=>{
+  await open(page,'/tools/pdf-metadata-cleaner/');
+  const source=await page.evaluate(async()=>{
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const pdf=await PDFDocument.create();pdf.addPage([200,250]);
+   pdf.setTitle('Private Test Title');pdf.setAuthor('Synthetic QA Author');
+   pdf.setSubject('Internal test only');pdf.setKeywords(['Synthetic','Private']);
+   return Array.from(await pdf.save());
+  });
+  await page.locator('#wave7-file').setInputFiles({name:'synthetic.pdf',mimeType:'application/pdf',buffer:Buffer.from(source)});
+  await page.locator('#wave7-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#wave7-result').hidden||document.querySelector('#wave7-status').classList.contains('error'),null,{timeout:30000});
+  if(await page.locator('#wave7-status').evaluate(x=>x.classList.contains('error')))
+   throw Error('PDF metadata cleanup failed: '+await page.locator('#wave7-status').innerText());
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#wave7-result a[download]').click()]);
+  const parts=[];for await(const part of await download.createReadStream())parts.push(part);
+  const bytes=Buffer.concat(parts);
+  assert.equal(bytes.toString('ascii',0,5),'%PDF-');
+  const doc=await page.evaluate(async encoded=>{
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const source=Uint8Array.from(atob(encoded),x=>x.charCodeAt(0));
+   const pdf=await PDFDocument.load(source,{updateMetadata:false});
+   return {pages:pdf.getPageCount(),title:pdf.getTitle()||'',author:pdf.getAuthor()||'',
+    subject:pdf.getSubject()||'',keywords:pdf.getKeywords()||''};
+  },bytes.toString('base64'));
+  assert.equal(doc.pages,1);assert.equal(doc.title,'');assert.equal(doc.author,'');
+  assert.equal(doc.subject,'');assert.doesNotMatch(doc.keywords,/Synthetic|Private/);
+ });
+ await scenario('Spreadsheet Merger XLSX export retains IDs as text',async page=>{
+  await open(page,'/tools/spreadsheet-merger/');
+  await page.locator('#wave7-file').setInputFiles([
+   {name:'first.csv',mimeType:'text/csv',buffer:Buffer.from('name,code\nAlice,0012\n')},
+   {name:'second.csv',mimeType:'text/csv',buffer:Buffer.from('name,code\nBob,0044\n')}
+  ]);
+  await page.locator('[name="format"]').selectOption('xlsx');
+  await page.locator('#wave7-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#wave7-result').hidden||document.querySelector('#wave7-status').classList.contains('error'),null,{timeout:30000});
+  if(await page.locator('#wave7-status').evaluate(x=>x.classList.contains('error')))
+   throw Error('Spreadsheet XLSX merge failed: '+await page.locator('#wave7-status').innerText());
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#wave7-result a[download]').click()]);
+  const parts=[];for await(const part of await download.createReadStream())parts.push(part);
+  const bytes=Buffer.concat(parts);
+  assert.equal(bytes.toString('ascii',0,2),'PK');
+  const sheet=await page.evaluate(async encoded=>{
+   const {readXlsx}=await import('/tools/office-files.mjs');
+   return (await readXlsx(Uint8Array.from(atob(encoded),x=>x.charCodeAt(0)),1)).rows;
+  },bytes.toString('base64'));
+  assert.deepEqual(sheet,[['name','code'],['Alice','0012'],['Bob','0044']]);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
