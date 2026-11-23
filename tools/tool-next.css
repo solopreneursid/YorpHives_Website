@@ -121,7 +121,8 @@ body.tool-page .tool-footer a{color:#d8f36a}
 body.tool-page .image-settings{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 body.tool-page .image-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;align-items:start}
 body.tool-page .image-preview img{max-width:100%;max-height:330px;object-fit:contain;border-radius:10px;background:#eef0e8}
-body.tool-page .image-meta,body.tool-page .note{color:#7b8778;font-size:10px;line-height:1.65}
+body.tool-page .image-meta,body.tool-page .note{color:#4d6654;font-size:10px;line-height:1.65}
+body.tool-page .tui-image-subtitle{color:#455f4e!important}
 body.tool-page .file-box,body.tool-page .tui-upload-zone{border:1px dashed #a8c29a!important;border-radius:14px!important;background:#f2f6eb!important;color:#405f3e!important}
 body.tool-page .tui-workspace-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:17px}
 body.tool-page .tui-workspace-number{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:10px;background:#e7efdc;color:#355f31;font-size:10px;font-weight:850}
@@ -418,7 +419,7 @@ body.tool-page .site-header .tool-support::before{
  }
  body.tool-page .mobile-dock button>span{font-size:13px;line-height:1}
  body.tool-page .mobile-dock button small,body.tool-page .mobile-dock a small{
-  font-size:8px;line-height:1.05;white-space:nowrap;
+  font-size:8px;line-height:1.05;white-space:nowrap;color:#425c40;
  }
 }
 @media(max-width:350px){
