@@ -21,7 +21,7 @@
 .wave7-step p{margin:8px 0 0;color:#536d5f;font-size:13px;line-height:1.55}
 .wave7-related{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:16px}
 .wave7-related a{display:block;padding:16px;border:1px solid #cadfd1;border-radius:13px;color:#175f42;font-weight:750;background:#f7fcf9;line-height:1.5}
-.wave7-related a small{display:block;color:#637f6e;font-size:12px;font-weight:400;margin-top:6px}
+.wave7-related a small{display:block;color:#4d6956;font-size:12px;font-weight:400;margin-top:6px}
 .wave7-pw input{min-height:48px;font-size:17px;letter-spacing:.03em}
 .wave7-pw-controls{display:flex;gap:9px;align-items:center}
 .wave7-pw-controls input{flex:1;min-width:0}
