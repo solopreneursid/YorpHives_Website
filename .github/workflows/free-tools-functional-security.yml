@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA includes document/privacy outputs and corrected uppercase color and PPTX MIME assertions.
+# QA captures synthetic local microphone and screen streams plus privacy/document outputs.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
