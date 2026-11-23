@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# Media QA now verifies Video Trimmer exported duration, dimensions, decoder and pixels.
+# Browser QA validates batch PNG ZIP files and merged spreadsheet CSV content.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
