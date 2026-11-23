@@ -1,5 +1,5 @@
 name: Free Tools QA coverage inventory
-# Track broad synthetic utility execution separately from deterministic output assertions.
+# Include PDF metadata, XLSX conversion, ZIP inspection and image-to-PDF browser output scenarios.
 on:
   workflow_dispatch:
   schedule:
