@@ -1411,7 +1411,12 @@ try{
   }
  });
  assert.deepEqual(unexpectedWrites,[],'Unexpected browser write or upload requests');
-}finally{await browser.close()}
+}finally{
+ await Promise.race([
+  browser.close().catch(()=>{}),
+  new Promise(resolve=>setTimeout(()=>{try{browser.process()?.kill('SIGKILL')}catch{}resolve()},10000))
+ ]);
+}
 for(const r of results)console.log((r.passed?'PASS ':'FAIL ')+r.name+(r.error?' — '+r.error:''));
 const passed=results.filter(r=>r.passed).length;
 console.log('HEALTH BROWSER SMOKE: '+passed+'/'+results.length+' passed; synthetic local inputs; analytics blocked.');
