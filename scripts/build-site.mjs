@@ -124,7 +124,7 @@ function injectSiteSupport(html,page){
  const header=html.match(/<header\b[^>]*>[\s\S]*?<\/header>/i)?.[0];
  if(!header)throw Error('Public page lacks navigation header: '+page);
  if(header.includes('header-kofi'))return html;
- const action='<button class="header-kofi tool-kofi" type="button" disabled aria-label="Ko-fi, Support us — donations coming soon" title="Donations are not open yet"><strong>Ko-fi</strong><small>Support us</small><span class="kofi-pending" aria-hidden="true">Soon</span></button>';
+ const action='<button class="header-kofi tool-kofi" type="button" disabled title="Donations are not open yet"><strong>Ko-fi</strong><small>Support us</small><span class="kofi-pending" aria-hidden="true">Soon</span></button>';
  return html.replace(header,header.replace(/<\/header>$/i,action+'</header>'));
 }
 
@@ -200,6 +200,8 @@ for(const item of published){
  }
  html=injectToolSuite(html,item);
  html=injectNextToolUI(html,item);
+ // Keep the visible brand name in the link's accessible name.
+ html=html.replace(/ aria-label="YorpHives home"/g,'');
  // Start with hand-picked, task-related links on the most-used entry points.
  // Every destination is checked against the published catalog below.
  const curatedRelated={
