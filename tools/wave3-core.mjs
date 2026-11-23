@@ -39,10 +39,40 @@ async function convertHeic(files,options={}){
  const format=options.format==='png'?'png':'jpeg',mime=format==='png'?'image/png':'image/jpeg';
  const quality=Number(options.quality??.9);
  if(!Number.isFinite(quality)||quality<.3||quality>1)throw Error('Choose an image quality from 30% to 100%.');
- const convert=await loadHeicEngine();
+ // Native decoding, when available, avoids an unnecessary legacy decoder.
+ // Chrome may not implement HEIC decoding, so retain the bundled local fallback.
+ let native;
+ try{
+  if(typeof createImageBitmap==='function'){
+   const picture=await Promise.race([
+    createImageBitmap(file),
+    new Promise((_,reject)=>setTimeout(()=>reject(Error('Native image decoding timed out.')),5000))
+   ]);
+   try{
+    const canvas=document.createElement('canvas');canvas.width=picture.width;canvas.height=picture.height;
+    const ctx=canvas.getContext('2d');ctx.drawImage(picture,0,0);
+    native=await new Promise(resolve=>canvas.toBlob(resolve,mime,quality));
+    canvas.width=canvas.height=0;
+   }finally{picture.close();}
+  }
+ }catch{native=null;}
+ if(native instanceof Blob&&native.size>0&&native.size<=40*MB)
+  return result(native,'yorphives-converted.'+(format==='png'?'png':'jpg'),'Converted HEIC to '+format.toUpperCase()+' locally using browser decoding.',{image:true});
+ const convert=await Promise.race([
+  loadHeicEngine(),
+  new Promise((_,reject)=>setTimeout(()=>reject(Error('The local HEIC decoder did not load in time.')),15000))
+ ]);
  let blob;
- try{blob=await convert({blob:file,toType:mime,quality});}
- catch{throw Error('This HEIC image could not be decoded on your device. Some HEIF codecs and multi-image containers are unsupported.');}
+ try{
+  const timeout=Math.min(90000,Math.max(30000,Math.ceil(file.size/1048576)*8000));
+  blob=await Promise.race([
+   convert({blob:file,toType:mime,quality}),
+   new Promise((_,reject)=>setTimeout(()=>reject(Error('The local HEIC decoder exceeded its '+Math.round(timeout/1000)+'-second time limit. This photo may use an unsupported codec.')),timeout))
+  ]);
+ }catch(error){
+  if(/time limit/.test(error?.message||''))throw error;
+  throw Error('This HEIC image could not be decoded on your device. Some HEIF codecs and multi-image containers are unsupported.');
+ }
  if(Array.isArray(blob))blob=blob[0]; // Bursts: take first image; do not claim to convert an animation.
  if(!(blob instanceof Blob)||blob.size<1||blob.size>40*MB)throw Error('The converted image is invalid or too large.');
  return result(blob,'yorphives-converted.'+(format==='png'?'png':'jpg'),'Converted HEIC to '+format.toUpperCase()+' locally. Original photo metadata may not be preserved.',{image:true});
