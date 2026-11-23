@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA verifies image publishing ZIP and PPTX export/import alongside local image and Wave2 tools.
+# QA includes PDF-to-text, PDF raster output and QR scanner round-trip.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
