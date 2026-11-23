@@ -1107,6 +1107,80 @@ try{
   });
   assert.equal(out,'https://example.com/qa');
  });
+
+ await scenario('Image Privacy Redactor permanently blacks out selected pixels',async page=>{
+  await open(page,'/tools/image-privacy-redactor/');
+  const output=await page.evaluate(async()=>{
+   const {maskImage}=await import('/tools/image-mask-core.mjs');
+   const canvas=document.createElement('canvas');canvas.width=100;canvas.height=100;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#ed1721';ctx.fillRect(0,0,100,100);
+   const image=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const file=new File([image],'synthetic.png',{type:'image/png'});
+   const result=await maskImage(file,[{x:.2,y:.2,w:.6,h:.6}],{mode:'blackout',format:'png'});
+   const bitmap=await createImageBitmap(result.blob),out=document.createElement('canvas');
+   out.width=bitmap.width;out.height=bitmap.height;const dest=out.getContext('2d');
+   dest.drawImage(bitmap,0,0);
+   const center=Array.from(dest.getImageData(50,50,1,1).data);
+   const corner=Array.from(dest.getImageData(0,0,1,1).data);
+   bitmap.close();
+   return {center,corner,size:result.blob.size};
+  });
+  assert.deepEqual(output.center,[0,0,0,255]);
+  assert.ok(output.corner[0]>170&&output.corner[1]<70&&output.corner[2]<70);
+  assert.ok(output.size>100);
+ });
+ await scenario('Document Scanner produces an image-only one-page PDF',async page=>{
+  await open(page,'/tools/document-scanner/');
+  const details=await page.evaluate(async()=>{
+   const {scanDocument}=await import('/tools/wave6-scanner-core.mjs');
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const canvas=document.createElement('canvas');canvas.width=60;canvas.height=80;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,60,80);
+   ctx.fillStyle='#000';ctx.fillRect(10,10,40,60);
+   const source=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const file=new File([source],'scan.png',{type:'image/png'});
+   const output=await scanDocument(file,{mode:'color',format:'pdf'});
+   const pdf=await PDFDocument.load(await output.blob.arrayBuffer());
+   return {mime:output.blob.type,pages:pdf.getPageCount(),width:Math.round(pdf.getPage(0).getWidth())};
+  });
+  assert.deepEqual(details,{mime:'application/pdf',pages:1,width:595});
+ });
+ await scenario('PDF Comparison exports a pixel comparison ZIP with truthful no-change report',async page=>{
+  await open(page,'/tools/pdf-compare/');
+  const report=await page.evaluate(async()=>{
+   const {comparePdfs}=await import('/tools/pdf-compare-core.mjs');
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const {default:JSZip}=await import('/tools/vendor/jszip.mjs');
+   const doc=await PDFDocument.create();doc.addPage([190,210]);
+   const bytes=await doc.save();
+   const f1=new File([bytes],'before.pdf',{type:'application/pdf'});
+   const f2=new File([bytes],'after.pdf',{type:'application/pdf'});
+   const out=await comparePdfs([f1,f2],{});
+   const zip=await JSZip.loadAsync(await out.blob.arrayBuffer());
+   return {filename:out.filename,readme:await zip.file('README.txt').async('string'),
+    hasImage:!!zip.file('page-1-comparison.png')};
+  });
+  assert.match(report.filename,/\.zip$/);assert.ok(report.hasImage);
+  assert.match(report.readme,/0\.00% rendered pixels differ/);
+ });
+ await scenario('PDF Redaction exports flattened PDF with original selectable text removed',async page=>{
+  await open(page,'/tools/pdf-redaction/');
+  const output=await page.evaluate(async()=>{
+   const {redactPdf}=await import('/tools/pdf-redaction-core.mjs');
+   const {PDFDocument,StandardFonts}=await import('/tools/vendor/pdf-lib.mjs');
+   const doc=await PDFDocument.create(),page=doc.addPage([300,250]);
+   const font=await doc.embedFont(StandardFonts.Helvetica);
+   page.drawText('SECRET-TEST-ONLY',{x:55,y:130,font,size:16});
+   const source=new File([await doc.save()],'private.pdf',{type:'application/pdf'});
+   const edited=await redactPdf(source,[{page:1,x:.1,y:.2,w:.8,h:.6}]);
+   const bytes=new Uint8Array(await edited.blob.arrayBuffer());
+   const pdf=await PDFDocument.load(bytes);
+   return {pages:pdf.getPageCount(),mime:edited.blob.type,
+    containsText:new TextDecoder('latin1').decode(bytes).includes('SECRET-TEST-ONLY')};
+  });
+  assert.equal(output.pages,1);assert.equal(output.mime,'application/pdf');
+  assert.equal(output.containsText,false);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
