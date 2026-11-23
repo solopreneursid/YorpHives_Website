@@ -400,6 +400,55 @@ try{
   const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
   validateWav(Buffer.concat(chunks),.95,1.05);
  });
+ await scenario('Video Trimmer exports a decodable approximately one-second clip',async page=>{
+  const {readFile}=await import('node:fs/promises');
+  assert.ok(process.env.YORPHIVES_TEST_WEBM,'Synthetic WebM fixture is required');
+  await open(page,'/tools/video-trimmer/');
+  const input=await readFile(process.env.YORPHIVES_TEST_WEBM);
+  await page.locator('#video-file').setInputFiles({name:'synthetic.webm',mimeType:'video/webm',buffer:input});
+  await page.waitForFunction(()=>!document.querySelector('#video-run').disabled,null,{timeout:20000});
+  await page.locator('#video-start').fill('0.25');
+  await page.locator('#video-end').fill('1.25');
+  await page.locator('#video-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#video-result').hidden||document.querySelector('#video-status').classList.contains('error'),null,{timeout:45000});
+  if(await page.locator('#video-status').evaluate(el=>el.classList.contains('error')))
+   throw Error('Video Trimmer failed: '+await page.locator('#video-status').innerText());
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#video-download').click()]);
+  const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
+  const bytes=Buffer.concat(chunks);
+  assert.ok(bytes.length>500,'Video output must be more than an empty container');
+  const mime=download.suggestedFilename().endsWith('.mp4')?'video/mp4':'video/webm';
+  if(mime==='video/webm')assert.deepEqual([...bytes.subarray(0,4)],[26,69,223,163],'WebM must have EBML header');
+  const decoded=await page.evaluate(async({encoded,mime})=>{
+   const bytes=Uint8Array.from(atob(encoded),ch=>ch.charCodeAt(0));
+   const url=URL.createObjectURL(new Blob([bytes],{type:mime}));
+   const video=document.createElement('video');video.muted=true;video.preload='auto';video.src=url;
+   try{
+    await new Promise((resolve,reject)=>{
+     const timer=setTimeout(()=>reject(Error('Trimmed video metadata timed out')),15000);
+     video.onloadedmetadata=()=>{clearTimeout(timer);resolve();};
+     video.onerror=()=>{clearTimeout(timer);reject(Error('Trimmed video cannot be decoded'));};
+     video.load();
+    });
+    const {duration,videoWidth,videoHeight}=video;
+    await new Promise((resolve,reject)=>{
+     const timer=setTimeout(()=>reject(Error('Trimmed video frame seeking timed out')),12000);
+     video.onseeked=()=>{clearTimeout(timer);resolve();};
+     video.onerror=()=>{clearTimeout(timer);reject(Error('Trimmed video frame failed'));};
+     video.currentTime=Math.min(.35,duration/2);
+    });
+    const canvas=document.createElement('canvas');canvas.width=videoWidth;canvas.height=videoHeight;
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(video,0,0);
+    const pixels=ctx.getImageData(0,0,videoWidth,videoHeight).data;
+    let content=0;for(let i=0;i<pixels.length;i+=4)if(pixels[i]+pixels[i+1]+pixels[i+2]>50)content++;
+    return {duration,videoWidth,videoHeight,content};
+   }finally{video.pause();video.removeAttribute('src');video.load();URL.revokeObjectURL(url);}
+  },{encoded:bytes.toString('base64'),mime});
+  assert.ok(decoded.duration>=.65&&decoded.duration<=1.65,'Trimmed video duration outside tolerance: '+decoded.duration);
+  assert.equal(decoded.videoWidth,160);
+  assert.equal(decoded.videoHeight,120);
+  assert.ok(decoded.content>100,'Trimmed video must contain nonblank decoded pixels');
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
