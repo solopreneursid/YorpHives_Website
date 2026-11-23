@@ -51,7 +51,16 @@ jobs:
         working-directory: site-source
         env:
           YORPHIVES_TEST_WEBM: .qa-media/video.webm
+          YORPHIVES_QA_RESULTS: .qa-media/browser-results.json
         run: node scripts/health-browser-smoke.mjs
+      - name: Keep browser scenario evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: free-tools-qa-browser-results
+          path: site-source/.qa-media/browser-results.json
+          retention-days: 30
+          if-no-files-found: warn
   local-tool-contracts:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -64,7 +73,19 @@ jobs:
         with:
           node-version: '22'
       - name: Verify browser-local utility, PDF and media contracts
-        run: node --test scripts/health-local-utility-contracts.test.mjs scripts/health-pdf-contracts.test.mjs scripts/health-media-contracts.test.mjs scripts/health-all-utility-smoke.test.mjs
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p qa-results
+          node --test scripts/health-local-utility-contracts.test.mjs scripts/health-pdf-contracts.test.mjs scripts/health-media-contracts.test.mjs scripts/health-all-utility-smoke.test.mjs | tee qa-results/test-tap.txt
+      - name: Retain individual local test results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: free-tools-qa-local-results
+          path: qa-results/test-tap.txt
+          retention-days: 30
+          if-no-files-found: warn
   dependencies:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -103,6 +124,52 @@ jobs:
       contents: read
       issues: write
     steps:
+      - name: Check out source for verdict classifier
+        uses: actions/checkout@v6
+        with:
+          ref: release/yorphives-reimagined-20261116
+          path: site-source
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Retrieve browser evidence
+        uses: actions/download-artifact@v6
+        continue-on-error: true
+        with:
+          name: free-tools-qa-browser-results
+          path: qa-input/browser
+      - name: Retrieve local test evidence
+        uses: actions/download-artifact@v6
+        continue-on-error: true
+        with:
+          name: free-tools-qa-local-results
+          path: qa-input/local
+      - name: Publish run-backed founder QA verdict
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          node site-source/scripts/free-tools-qa-verdict.mjs qa-input/browser/browser-results.json qa-input/local/test-tap.txt qa-verdict
+          cat qa-verdict/verdict.md >> "$GITHUB_STEP_SUMMARY"
+          title='YorpHives Free Tools — Latest Verified QA Results'
+          existing=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "YorpHives Free Tools — Latest Verified QA Results") | .number' | head -n 1)
+          if [ -z "$existing" ]; then
+            gh issue create --title "$title" --body-file qa-verdict/verdict.md
+          else
+            gh issue edit "$existing" --body-file qa-verdict/verdict.md
+          fi
+      - name: Keep full 143-tool last-run verdict
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: free-tools-qa-last-run-verdict
+          path: qa-verdict/
+          retention-days: 30
+          if-no-files-found: warn
       - name: Maintain one founder alert with the check results
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
