@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# Media QA now validates actual WAV downloads from audio merger and trimmer.
+# Media QA now verifies Video Trimmer exported duration, dimensions, decoder and pixels.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
