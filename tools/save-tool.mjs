@@ -25,7 +25,7 @@ export function bindSavedTool(doc=globalThis.document,win=globalThis.window){
   const on=readSaved(storage()).includes(route);
   button.setAttribute('aria-pressed',String(on));
   button.textContent=on?'♥ Saved tool':'♡ Save this tool';
-  button.setAttribute('aria-label',(on?'Remove from saved tools: ':'Save tool: ')+label);
+  button.setAttribute('aria-label',(on?'Saved tool: ':'Save this tool: ')+label);
  }
  button.addEventListener('click',()=>{
   const result=toggleSaved(storage(),route);
