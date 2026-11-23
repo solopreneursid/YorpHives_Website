@@ -38,8 +38,9 @@ export async function verifyRemote({origin,sourceSha,fingerprint,target='product
  inspectRelease(manifest,{target,sourceSha,fingerprint});
  // _headers is a deployment configuration file in Pages and is not publicly served.
  // Verify publicly retrievable assets byte-for-byte.
+ const publicPaths={'index.html':'','tools/index.html':'tools/'};
  for(const name of REQUIRED.filter(x=>x!=='_headers')){
-  const data=await get(name);
+  const data=await get(publicPaths[name]??name);
   if(digest(data)!==manifest.assets[name])throw Error('Live asset mismatch: '+name);
  }
  const sitemap=new TextDecoder().decode(await get('sitemap.xml'));
