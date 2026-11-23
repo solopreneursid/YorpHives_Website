@@ -28,7 +28,7 @@ test('audio normalization boosts quiet samples without clipping',()=>{
  assert.ok(output.appliedGain>1);
  assert.ok(Math.max(...output.channels[0])<=.99);
  assert.ok(output.channels[0][0]<-.9&&output.channels[0][2]>.9);
- assert.equal(original[0],-.2+0.00000000298023223,'Input remains unchanged');
+ assert.ok(Math.abs(original[0]+.2)<1e-6,'Input remains unchanged');
 });
 test('audio volume limiter prevents clipping and keeps stereo channel shapes',()=>{
  const out=scaleAudioChannels([Float32Array.of(.8,-.8),Float32Array.of(.4,-.4)],'3');
