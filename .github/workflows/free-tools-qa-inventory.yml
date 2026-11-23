@@ -1,5 +1,5 @@
 name: Free Tools QA coverage inventory
-# Refreshes browser coverage after real video GIF frame and thumbnail output tests.
+# Refreshes coverage after real audio merger and trimmer WAV output scenarios.
 on:
   workflow_dispatch:
   schedule:
