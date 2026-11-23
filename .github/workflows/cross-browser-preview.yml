@@ -1,4 +1,5 @@
 name: YorpHives weekly cross-browser preview QA
+# Release-hardening verification: run the full 143-page mobile and 3-engine smoke.
 on:
   workflow_dispatch:
   schedule:
