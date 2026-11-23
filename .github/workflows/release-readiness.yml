@@ -148,6 +148,7 @@ jobs:
       - name: Require all mobile route and multi-engine checks to pass
         working-directory: site-source
         env:
+          HOME: /root
           YORPHIVES_PREVIEW_ORIGIN: http://127.0.0.1:4173
           YORPHIVES_COMPAT_RESULTS: .qa-media/cross-browser-results.json
         run: node scripts/release-cross-browser.mjs
