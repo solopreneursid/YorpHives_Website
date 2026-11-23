@@ -20,7 +20,7 @@ await copy('tesseract.js/dist/worker.min.js','ocr/worker.min.js');
 await copy('@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz','ocr/lang/eng.traineddata.gz');
 await copy('jsqr/dist/jsQR.js','qr/jsQR.js');
 await copy('jsbarcode/dist/JsBarcode.all.min.js','barcode/JsBarcode.all.min.js');
-await copy('heic2any/dist/heic2any.min.js','heic/heic2any.min.js');
+await copy('heic-to/dist/iife/heic-to.js','heic/heic-to.js');
 await copy('fix-webm-duration/fix-webm-duration.js','webm/fix-webm-duration.js');
 await copy('svgo/dist/svgo.browser.js','svgo/svgo.browser.js');
 // Pinned MIT ONNX Runtime Web with no CDN usage at runtime.
@@ -40,8 +40,8 @@ for(const [pkg,license] of [['pdfjs-dist','LICENSE'],['tesseract.js','LICENSE'],
  const path=resolve(root,'node_modules',pkg,license);
  if(await stat(path).then(x=>x.isFile()).catch(()=>false))await copy(pkg+'/'+license,'wave1-licenses/'+pkg.replace('/','-')+'-LICENSE.txt');
 }
-const heicLicense=resolve(root,'node_modules/heic2any/LICENSE.md');
-if(await stat(heicLicense).then(x=>x.isFile()).catch(()=>false))await copy('heic2any/LICENSE.md','wave1-licenses/heic2any-LICENSE.md');
+// The LGPL-3.0 decoder is served as a standalone replaceable asset with its upstream notice.
+await copy('heic-to/LICENSE','wave1-licenses/heic-to-LICENSE.txt');
 for(const [pkg,file] of [['svgo','LICENSE'],['gifenc','LICENSE.md']])
  await copy(pkg+'/'+file,'wave1-licenses/'+pkg+'-LICENSE.txt');
 const webmLicense=resolve(root,'node_modules/fix-webm-duration/LICENSE');
