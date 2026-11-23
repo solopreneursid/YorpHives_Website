@@ -199,6 +199,41 @@ try{
   assert.equal(result.readUInt32BE(16),6);
   assert.equal(result.readUInt32BE(20),8);
  });
+ await scenario('Image Watermark adds visible text while retaining transparent corners',async page=>{
+  await open(page,'/tools/image-watermark/');
+  const png=await page.evaluate(()=>{
+   const canvas=document.createElement('canvas');canvas.width=240;canvas.height=120;
+   return canvas.toDataURL('image/png').split(',')[1];
+  });
+  await page.locator('#file-input').setInputFiles({name:'transparent.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
+  await page.locator('[name="watermark"]').fill('TEST');
+  await page.locator('[name="position"]').selectOption('center');
+  await page.locator('[name="color"]').fill('#ff0000');
+  await page.locator('[name="size"]').fill('40');
+  await page.waitForFunction(()=>!document.querySelector('#file-run').disabled,{timeout:15000});
+  await page.locator('#file-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#file-download').hidden&&document.querySelector('#file-download').href.startsWith('blob:'),null,{timeout:20000});
+  const pixels=await page.locator('#file-preview').evaluate(async img=>{
+   await img.decode();
+   const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
+   const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);
+   const d=ctx.getImageData(0,0,c.width,c.height).data;let red=0,visible=0;
+   for(let i=0;i<d.length;i+=4){if(d[i+3]>0)visible++;if(d[i]>150&&d[i+1]<90&&d[i+2]<90&&d[i+3]>20)red++;}
+   return {w:c.width,h:c.height,cornerAlpha:d[3],visible,red};
+  });
+  assert.equal(pixels.w,240);assert.equal(pixels.h,120);
+  assert.equal(pixels.cornerAlpha,0,'Unmarked transparent corner should remain transparent');
+  assert.ok(pixels.visible>25&&pixels.red>25,'Exported watermark must contain visible red text');
+ });
+ await scenario('Image Cropper safely rejects corrupted images',async page=>{
+  await open(page,'/tools/image-cropper/');
+  await page.locator('#file-input').setInputFiles({name:'corrupt.png',mimeType:'image/png',buffer:Buffer.from('this is not an image')});
+  await page.waitForFunction(()=>!document.querySelector('#file-run').disabled,{timeout:15000});
+  await page.locator('#file-run').click();
+  await page.waitForFunction(()=>document.querySelector('#file-status').classList.contains('error'),null,{timeout:20000});
+  assert.match(await page.locator('#file-status').innerText(),/PNG|JPEG|WebP|image|invalid|read/i);
+  assert.equal(await page.locator('#file-download').isHidden(),true,'Damaged input must not yield a download');
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
