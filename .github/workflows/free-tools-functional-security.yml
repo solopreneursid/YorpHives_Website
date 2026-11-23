@@ -1,4 +1,5 @@
 name: Free Tools functional and dependency checks
+# Video QA now decodes PNG thumbnails and checks nonblank frame pixels in addition to GIF frames.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
