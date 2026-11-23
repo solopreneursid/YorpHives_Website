@@ -16,14 +16,15 @@ test('release gate rejects missing revision, incorrect target and tampered finge
 });
 test('remote verifier validates actual served file bytes',async()=>{
  const fake=async url=>{
-  const p=new URL(url).pathname.replace(/^\//,'');
-  const body=p==='.well-known/yorphives-release.json'?JSON.stringify(good):contents[p];
+  const p=new URL(url).pathname.replace(/^\//,'')||'index.html';
+  const key=p==='tools/'?'tools/index.html':p;
+  const body=p==='.well-known/yorphives-release.json'?JSON.stringify(good):contents[key];
   return body===undefined?{status:404}:new Response(body,{status:200});
  };
  const r=await verifyRemote({origin:'https://yorphives.com',sourceSha:sha,fingerprint,fetcher:fake});
  assert.equal(r.sourceSha,sha);
  const broken=async url=>{
-  if(new URL(url).pathname==='/index.html')return new Response('tampered');
+  if(new URL(url).pathname==='/')return new Response('tampered');
   return fake(url);
  };
  await assert.rejects(verifyRemote({origin:'https://yorphives.com',sourceSha:sha,fingerprint,fetcher:broken}),/mismatch/);
