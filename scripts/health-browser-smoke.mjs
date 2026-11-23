@@ -644,6 +644,62 @@ try{
   });
   assert.match(inspection,/alpha\.txt/);assert.match(inspection,/beta\.txt/);
  });
+ await scenario('File Format Inspector identifies a PNG without trusting extension',async page=>{
+  await open(page,'/tools/file-format-inspector/');
+  const result=await page.evaluate(async()=>{
+   const {processFileTool}=await import('/tools/file-core.mjs');
+   const bytes=new Uint8Array([137,80,78,71,13,10,26,10,0,0,0,0]);
+   const file=new File([bytes],'mislabeled.txt',{type:'text/plain'});
+   const out=await processFileTool('file-format-inspector',[file],{});
+   return out.text||await out.blob.text();
+  });
+  assert.match(result,/PNG/i);
+  assert.match(result,/mislabeled\.txt/);
+ });
+ await scenario('Batch File Renamer exports two collision-safe renamed files',async page=>{
+  await open(page,'/tools/batch-file-renamer/');
+  const result=await page.evaluate(async()=>{
+   const {processFileTool}=await import('/tools/file-core.mjs');
+   const {default:JSZip}=await import('/tools/vendor/jszip.mjs');
+   const files=[new File(['alpha'],'first.txt'),new File(['beta'],'second.txt')];
+   const out=await processFileTool('batch-file-renamer',files,{prefix:'qa'});
+   const zip=await JSZip.loadAsync(await out.blob.arrayBuffer());
+   return {names:Object.keys(zip.files).sort(),
+    alpha:await zip.file('qa-01.txt')?.async('string'),
+    beta:await zip.file('qa-02.txt')?.async('string')};
+  });
+  assert.deepEqual(result.names,['qa-01.txt','qa-02.txt']);
+  assert.equal(result.alpha,'alpha');assert.equal(result.beta,'beta');
+ });
+ await scenario('Duplicate File Finder detects identical bytes without deleting originals',async page=>{
+  await open(page,'/tools/duplicate-file-finder/');
+  const result=await page.evaluate(async()=>{
+   const {processFileTool}=await import('/tools/file-core.mjs');
+   const inputs=[new File(['same bytes'],'a.txt'),new File(['same bytes'],'b.txt'),new File(['different'],'c.txt')];
+   const out=await processFileTool('duplicate-file-finder',inputs,{});
+   return out.text||await out.blob.text();
+  });
+  assert.match(result,/Identical content groups: 1/);
+  assert.match(result,/a\.txt/);assert.match(result,/b\.txt/);
+  assert.match(result,/No files were deleted/);
+ });
+ await scenario('Batch Find and Replace rewrites ZIP payloads without changing originals',async page=>{
+  await open(page,'/tools/batch-find-replace/');
+  const result=await page.evaluate(async()=>{
+   const {processFileTool}=await import('/tools/file-core.mjs');
+   const {default:JSZip}=await import('/tools/vendor/jszip.mjs');
+   const a=new File(['red red blue'],'one.txt',{type:'text/plain'});
+   const b=new File(['blue red'],'two.txt',{type:'text/plain'});
+   const original=await a.text();
+   const out=await processFileTool('batch-find-replace',[a,b],{find:'red',replacement:'green'});
+   const zip=await JSZip.loadAsync(await out.blob.arrayBuffer());
+   return {original,one:await zip.file('one.txt')?.async('string'),
+    two:await zip.file('two.txt')?.async('string')};
+  });
+  assert.equal(result.original,'red red blue');
+  assert.equal(result.one,'green green blue');
+  assert.equal(result.two,'blue green');
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
