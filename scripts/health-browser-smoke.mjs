@@ -449,6 +449,74 @@ try{
   assert.equal(decoded.videoHeight,120);
   assert.ok(decoded.content>100,'Trimmed video must contain nonblank decoded pixels');
  });
+ await scenario('Batch Image Converter exports two valid PNG images in ZIP',async page=>{
+  await open(page,'/tools/batch-image-converter/');
+  const source=await page.evaluate(()=>{
+   const c=document.createElement('canvas');c.width=7;c.height=5;
+   const ctx=c.getContext('2d');ctx.fillStyle='#dc4321';ctx.fillRect(0,0,7,5);
+   return c.toDataURL('image/png').split(',')[1];
+  });
+  const png=Buffer.from(source,'base64');
+  await page.locator('#wave7-file').setInputFiles([
+   {name:'image.png',mimeType:'image/png',buffer:png},
+   {name:'image.png',mimeType:'image/png',buffer:png}
+  ]);
+  await page.locator('[name="format"]').selectOption('png');
+  await page.locator('#wave7-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#wave7-result').hidden || document.querySelector('#wave7-status').classList.contains('error'),null,{timeout:30000});
+  if(await page.locator('#wave7-status').evaluate(x=>x.classList.contains('error')))
+   throw Error('Batch image conversion failed: '+await page.locator('#wave7-status').innerText());
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#wave7-result a[download]').click()]);
+  const chunks=[];for await(const c of await download.createReadStream())chunks.push(c);
+  const zipBytes=Buffer.concat(chunks);
+  assert.equal(zipBytes.toString('ascii',0,2),'PK');
+  const validation=await page.evaluate(async encoded=>{
+   const {default:JSZip}=await import('/tools/vendor/jszip.mjs');
+   const archive=await JSZip.loadAsync(Uint8Array.from(atob(encoded),c=>c.charCodeAt(0)));
+   const files=Object.keys(archive.files).filter(name=>name.endsWith('.png')).sort();
+   const details=[];
+   for(const name of files){
+    const bytes=await archive.files[name].async('uint8array');
+    const png=[...bytes.slice(0,8)].join(',');
+    const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+    details.push({name,png,width:view.getUint32(16),height:view.getUint32(20)});
+   }
+   return details;
+  },zipBytes.toString('base64'));
+  assert.equal(validation.length,2,'Batch output must contain both files');
+  assert.notEqual(validation[0].name,validation[1].name,'Duplicate input names must not overwrite each other');
+  for(const entry of validation){
+   assert.equal(entry.png,'137,80,78,71,13,10,26,10');assert.equal(entry.width,7);assert.equal(entry.height,5);
+  }
+ });
+ await scenario('Spreadsheet Merger exports correct joined CSV with source labels',async page=>{
+  await open(page,'/tools/spreadsheet-merger/');
+  const a=Buffer.from('name,code\\nCafé,0012\\n','utf8');
+  const b=Buffer.from('code,city\\n0044,Delhi\\n','utf8');
+  await page.locator('#wave7-file').setInputFiles([
+   {name:'one.csv',mimeType:'text/csv',buffer:a},
+   {name:'two.csv',mimeType:'text/csv',buffer:b}
+  ]);
+  await page.locator('[name="format"]').selectOption('csv');
+  await page.locator('[name="columns"]').selectOption('union');
+  await page.locator('[name="source"]').check();
+  await page.locator('#wave7-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#wave7-result').hidden || document.querySelector('#wave7-status').classList.contains('error'),null,{timeout:30000});
+  if(await page.locator('#wave7-status').evaluate(x=>x.classList.contains('error')))
+   throw Error('Spreadsheet merging failed: '+await page.locator('#wave7-status').innerText());
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#wave7-result a[download]').click()]);
+  const chunks=[];for await(const c of await download.createReadStream())chunks.push(c);
+  const csv=Buffer.concat(chunks).toString('utf8');
+  const parsed=await page.evaluate(async source=>{
+   const {parseCsv}=await import('/tools/utility-core.mjs');
+   return parseCsv(source);
+  },csv);
+  assert.deepEqual(parsed,[
+   ['name','code','city','Source file'],
+   ['Café','0012','','one.csv'],
+   ['','0044','Delhi','two.csv']
+  ]);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
