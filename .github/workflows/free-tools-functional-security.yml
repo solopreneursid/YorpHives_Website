@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA media verification: Float32 limiter tolerance and real WAV browser export.
+# QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
   schedule:
