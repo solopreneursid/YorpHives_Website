@@ -41,6 +41,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
           command -v ffmpeg
           mkdir -p .qa-media
           ffmpeg -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=160x120:rate=8:duration=2' -an -c:v libvpx -b:v 250k -pix_fmt yuv420p .qa-media/video.webm
