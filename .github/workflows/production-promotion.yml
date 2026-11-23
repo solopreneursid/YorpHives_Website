@@ -90,7 +90,7 @@ jobs:
         run: |
           set -euo pipefail
           curl --fail --silent --show-error --max-time 30             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"             "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PRODUCTION_PROJECT" > project.json
-          node -e "const p=require('./project.json');if(!p.success||!p.result?.domains?.includes('yorphives.com')){console.error('Project does not directly own yorphives.com; blocked to protect production.');process.exit(1)};const b=p.result.production_branch;if(!b||!p.result.source?.config?.production_branch||b!==p.result.source.config.production_branch)process.exit(2);require('fs').appendFileSync(process.env.GITHUB_ENV,'DEPLOY_BRANCH='+b+'\n')"
+          node -e "const p=require('./project.json');if(!p.success||!p.result?.domains?.includes('yorphives.com')){console.error('Project does not directly own yorphives.com; blocked to protect production.');process.exit(1)};const b=p.result.production_branch;if(!b||!p.result.source?.config?.production_branch||b!==p.result.source.config.production_branch)process.exit(2);const prior=p.result.canonical_deployment;if(!prior?.id||prior.latest_stage?.status!=='success')throw Error('No known-good production rollback target.');const fs=require('fs');fs.appendFileSync(process.env.GITHUB_ENV,'DEPLOY_BRANCH='+b+'\nPREVIOUS_DEPLOYMENT_ID='+prior.id+'\n');console.log('Rollback target:',prior.id)"
       - name: Deploy exact approved files, never rebuilding during promotion
         shell: bash
         working-directory: source
@@ -110,5 +110,10 @@ jobs:
             fi
             sleep 20
           done
-          echo 'CRITICAL: live manifest or assets mismatch. Roll back the Pages deployment; no success claim.' >&2
+          echo 'CRITICAL: live release mismatch. Restoring last known-good Pages deployment.' >&2
+          curl --fail --silent --show-error --max-time 90 -X POST \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PRODUCTION_PROJECT/deployments/$PREVIOUS_DEPLOYMENT_ID/rollback" > rollback.json
+          node -e "const r=require('./rollback.json');if(!r.success)process.exit(1)"
+          echo "Pages rollback requested to $PREVIOUS_DEPLOYMENT_ID; backend state was not rolled back." >> "$GITHUB_STEP_SUMMARY"
           exit 1
