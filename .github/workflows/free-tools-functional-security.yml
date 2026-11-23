@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA includes CSV cleanup, ZIP extraction, resume, collage and PDF form actions.
+# QA includes creator image pixel art, color picking and memes alongside Wave 2 tools.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
