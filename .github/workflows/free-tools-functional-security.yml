@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# Source QA refresh: synthetic document and utility contracts; read-only live inspection.
+# Phase 2 QA refresh: real PDF output contracts and read-only browser regression coverage.
 on:
   schedule:
     # Two separated windows reduce delays; the supervisor checks freshness.
