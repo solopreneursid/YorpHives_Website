@@ -1266,8 +1266,8 @@ try{
   assert.ok(source,'A genuine HEIC test fixture must be generated');
   // Test the candidate source module against the live, read-only page without deploying it.
   const candidate=await readFile(new URL('../tools/wave3-core.mjs',import.meta.url),'utf8');
-  const decoder=await readFile(new URL('../node_modules/heic-to/dist/iife/heic-to.js',import.meta.url),'utf8');
-  await page.route('**/tools/vendor/heic/heic-to.js',route=>route.fulfill({
+  const decoder=await readFile(new URL('../node_modules/heic-to/dist/csp/heic-to.js',import.meta.url),'utf8');
+  await page.route('**/tools/vendor/heic/heic-to.mjs',route=>route.fulfill({
    status:200,contentType:'text/javascript',body:decoder,
    headers:{'access-control-allow-origin':'*','cache-control':'no-store'}
   }));
