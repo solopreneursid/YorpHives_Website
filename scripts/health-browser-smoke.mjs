@@ -700,6 +700,75 @@ try{
   assert.equal(result.one,'green green blue');
   assert.equal(result.two,'blue green');
  });
+ await scenario('Subtitle Converter creates valid WEBVTT cues',async page=>{
+  await open(page,'/tools/subtitle-converter/');
+  const output=await page.evaluate(async()=>{
+   const {processWave4}=await import('/tools/wave4-core.mjs');
+   const source='1\n00:00:00,000 --> 00:00:01,000\nHello world\n';
+   const out=await processWave4('subtitle-converter',[],{subtitleText:source,format:'vtt'});
+   return {name:out.filename,body:await out.blob.text()};
+  });
+  assert.match(output.name,/\.vtt$/);
+  assert.match(output.body,/WEBVTT/);assert.match(output.body,/Hello world/);
+ });
+ await scenario('Social Preview Builder escapes untrusted HTML',async page=>{
+  await open(page,'/tools/social-preview-builder/');
+  const output=await page.evaluate(async()=>{
+   const {processWave4}=await import('/tools/wave4-core.mjs');
+   const out=await processWave4('social-preview-builder',[],{
+    title:'QA <Title>',description:'A & B',url:'https://example.com/'});
+   return await out.blob.text();
+  });
+  assert.match(output,/QA &lt;Title&gt;/);
+  assert.match(output,/A &amp; B/);
+  assert.doesNotMatch(output,/<Title>/);
+ });
+ await scenario('Quotation Generator exports valid pricing PDF',async page=>{
+  await open(page,'/tools/quotation-generator/');
+  const actual=await page.evaluate(async()=>{
+   const {processWave4}=await import('/tools/wave4-core.mjs');
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const out=await processWave4('quotation-generator',[],{
+    business:'QA Studio',client:'Client',items:'Design | 2 | 50',currency:'USD',tax:'10'});
+   const bytes=new Uint8Array(await out.blob.arrayBuffer());
+   const pdf=await PDFDocument.load(bytes);
+   return {sig:String.fromCharCode(...bytes.slice(0,5)),pages:pdf.getPageCount(),mime:out.blob.type};
+  });
+  assert.equal(actual.sig,'%PDF-');assert.equal(actual.mime,'application/pdf');assert.ok(actual.pages>=1);
+ });
+ await scenario('Certificate Generator exports landscape PDF',async page=>{
+  await open(page,'/tools/certificate-generator/');
+  const actual=await page.evaluate(async()=>{
+   const {processWave4}=await import('/tools/wave4-core.mjs');
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const out=await processWave4('certificate-generator',[],{
+    recipient:'Test Recipient',title:'Achievement',organization:'QA Studio',date:'2026-01-01'});
+   const pdf=await PDFDocument.load(await out.blob.arrayBuffer());
+   const page=pdf.getPages()[0];
+   return {pages:pdf.getPageCount(),w:Math.round(page.getWidth()),h:Math.round(page.getHeight())};
+  });
+  assert.deepEqual(actual,{pages:1,w:842,h:595});
+ });
+ await scenario('Favicon Generator creates valid PNG and ICO assets in ZIP',async page=>{
+  await open(page,'/tools/favicon-generator/');
+  const actual=await page.evaluate(async()=>{
+   const {processWave4}=await import('/tools/wave4-core.mjs');
+   const {default:JSZip}=await import('/tools/vendor/jszip.mjs');
+   const canvas=document.createElement('canvas');canvas.width=32;canvas.height=32;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#148caa';ctx.fillRect(0,0,32,32);
+   const img=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const out=await processWave4('favicon-generator',[new File([img],'synthetic.png',{type:'image/png'})]);
+   const zip=await JSZip.loadAsync(await out.blob.arrayBuffer());
+   const favicon=await zip.file('favicon.ico')?.async('uint8array');
+   const png=await zip.file('favicon-16.png')?.async('uint8array');
+   return {names:Object.keys(zip.files),ico:[...favicon.slice(0,6)],
+    png:[...png.slice(0,8)],width:new DataView(png.buffer,png.byteOffset,png.length).getUint32(16)};
+  });
+  assert.ok(actual.names.includes('favicon.ico')&&actual.names.includes('icon-512.png'));
+  assert.deepEqual(actual.ico,[0,0,1,0,3,0]);
+  assert.deepEqual(actual.png,[137,80,78,71,13,10,26,10]);
+  assert.equal(actual.width,16);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
