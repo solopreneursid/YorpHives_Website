@@ -1,5 +1,5 @@
 name: YorpHives release readiness — no deployment
-# Rebuild candidate with exhaustive live-route postdeployment verification controls.
+# Rebuild approved candidate with final mobile accessibility refinements and route checks.
 on:
   workflow_dispatch:
     inputs:
