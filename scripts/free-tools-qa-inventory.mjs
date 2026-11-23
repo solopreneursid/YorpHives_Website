@@ -12,7 +12,7 @@ const scenarioPattern=/scenario\(\s*(['"`])([^'"`]+)\1\s*,\s*async\s*\(?page(?:\
 const normalize=x=>String(x||'').replace(/^\/+|\/+$/g,'');
 const key=x=>'/'+normalize(x)+'/';
 
-export function inventory(catalog,smokeSource,localSource,pdfSource=''){
+export function inventory(catalog,smokeSource,localSource,pdfSource='',mediaSource=''){
  const items=(catalog.items||[]).filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
  const urls=items.map(x=>key(x.url));
  if(new Set(urls).size!==urls.length)throw Error('Duplicate published tool URL');
@@ -29,15 +29,23 @@ export function inventory(catalog,smokeSource,localSource,pdfSource=''){
  const local=new Set();for(const hit of localSource.matchAll(runPattern))local.add(hit[2]);
  const pdfContractIds=new Set();
  for(const hit of pdfSource.matchAll(/\bprocessFileTool\(\s*(['"\x60])([a-z0-9-]+)\1\s*,/g))pdfContractIds.add(hit[2]);
+ // Audio signal and audio merge have deterministic output tests. Video clips have only settings-validation tests.
+ const mediaOutputIds=new Set();
+ if(mediaSource.includes('scaleAudioChannels('))mediaOutputIds.add('audio-volume-adjuster');
+ if(mediaSource.includes('mergeAudioSamples('))mediaOutputIds.add('audio-merger');
+ const mediaValidationIds=new Set();
+ if(mediaSource.includes('validateVideoSettings('))mediaValidationIds.add('video-to-gif');
+ if(mediaSource.includes('validateVideoTrim('))mediaValidationIds.add('video-trimmer');
  const records=items.map(item=>{
   const url=key(item.url),toolId=item.module?.toolId||normalize(item.url).split('/').at(-1);
   const namedScenarios=[...(browser.get(url)||[])].sort();
-  const localContract=local.has(toolId)||pdfContractIds.has(toolId);
+  const localContract=local.has(toolId)||pdfContractIds.has(toolId)||mediaOutputIds.has(toolId);
   const group=item.module?.url||item.execution||'unknown';
   return {name:item.name,url,category:item.category||'Other',executionGroup:group,toolId,
    checks:{pageAvailability:'defined-in-all-pages-sweep',mobileLayout:'defined-in-all-pages-sweep',
     browserBehavior:namedScenarios.length?'scenario-defined':'missing',
     deterministicOutput:localContract?'contract-defined':'missing',
+    mediaSettingsValidation:mediaValidationIds.has(toolId)?'validation-contract-defined':'not-mapped',
     inputEdgeCases:'not-comprehensively-mapped',
     crossBrowser:'not-comprehensively-mapped'},
    browserScenarios:namedScenarios,
@@ -76,13 +84,14 @@ const markdown=report=>{
  return lines.join('\n');
 };
 async function main(){
- const [catalog,smoke,local,pdf]=await Promise.all([
+ const [catalog,smoke,local,pdf,media]=await Promise.all([
   read('catalog.json').then(JSON.parse),
   read('scripts/health-browser-smoke.mjs'),
   read('scripts/health-local-utility-contracts.test.mjs'),
-  read('scripts/health-pdf-contracts.test.mjs')
+  read('scripts/health-pdf-contracts.test.mjs'),
+  read('scripts/health-media-contracts.test.mjs')
  ]);
- const report=inventory(catalog,smoke,local,pdf);
+ const report=inventory(catalog,smoke,local,pdf,media);
  const dest=resolve(process.cwd(),'free-tools-qa-inventory');
  await mkdir(dest,{recursive:true});
  await Promise.all([
