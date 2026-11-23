@@ -1,5 +1,5 @@
 name: YorpHives accessibility regression audit
-# Retest five final low-contrast specialized mobile tool helper-text defects.
+# Recheck final image-resizer upload hint contrast on all 150 route and viewport checks.
 on:
   workflow_dispatch:
   schedule:
