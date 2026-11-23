@@ -1,10 +1,14 @@
 // Independent local-only WCAG A/AA smoke powered by open-source axe-core.
 import {chromium} from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {dirname} from 'node:path';
 const origin=process.env.YORPHIVES_PREVIEW_ORIGIN||'http://127.0.0.1:4173';
-const routes=['/','/tools/','/tools/word-counter/','/tools/pdf-merge/','/tools/heic-to-jpg/'];
+const representative=['/','/tools/','/tools/word-counter/','/tools/pdf-merge/','/tools/heic-to-jpg/'];
+const catalog=JSON.parse(await readFile(new URL('../catalog.json',import.meta.url),'utf8'));
+const allTools=catalog.items.filter(x=>x.type==='tool'&&x.published!==false)
+ .map(x=>'/'+(x.url.startsWith('/')?x.url.slice(1):x.url));
+if(allTools.length<143)throw Error('Published tool count unexpectedly fell below the verified baseline.');
 const results=[];
 const browser=await chromium.launch({headless:true});
 try{
@@ -12,6 +16,7 @@ try{
   const context=await browser.newContext({viewport:{width,height:820},reducedMotion:'reduce',colorScheme:'light'});
   const page=await context.newPage();
   try{
+   const routes=width===390?[...new Set([...representative,...allTools])]:representative;
    for(const route of routes){
     const record={route,viewport:width,violations:[],passed:false};
     try{
