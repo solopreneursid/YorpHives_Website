@@ -71,7 +71,7 @@ async function convertHeic(files,options={}){
   ]);
  }catch(error){
   if(/time limit/.test(error?.message||''))throw error;
-  const cause=String(error?.message||'The decoder reported an unknown error.').replace(/[\r\n]+/g,' ').slice(0,150);
+  const cause=String(error?.message||error||'The decoder reported an unknown error.').replace(/[\r\n]+/g,' ').slice(0,150);
   throw Error('This HEIC image could not be decoded on your device. Decoder detail: '+cause);
  }
  if(Array.isArray(blob))blob=blob[0]; // Bursts: take first image; do not claim to convert an animation.
