@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA fixture correction: spreadsheet browser scenario now uses real CSV line breaks.
+# QA expansion: image cropping and rotation must produce valid correctly sized PNG downloads.
 on:
   schedule:
     # Two separated windows reduce delays; the supervisor checks freshness.
