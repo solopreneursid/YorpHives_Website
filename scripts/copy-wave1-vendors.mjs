@@ -20,7 +20,8 @@ await copy('tesseract.js/dist/worker.min.js','ocr/worker.min.js');
 await copy('@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz','ocr/lang/eng.traineddata.gz');
 await copy('jsqr/dist/jsQR.js','qr/jsQR.js');
 await copy('jsbarcode/dist/JsBarcode.all.min.js','barcode/JsBarcode.all.min.js');
-await copy('heic-to/dist/iife/heic-to.js','heic/heic-to.js');
+// CSP-compatible standalone ESM, avoiding unsafe-eval and runtime CDN requests.
+await copy('heic-to/dist/csp/heic-to.js','heic/heic-to.mjs');
 await copy('fix-webm-duration/fix-webm-duration.js','webm/fix-webm-duration.js');
 await copy('svgo/dist/svgo.browser.js','svgo/svgo.browser.js');
 // Pinned MIT ONNX Runtime Web with no CDN usage at runtime.
