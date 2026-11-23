@@ -1281,6 +1281,9 @@ try{
    const {processWave3}=await import('/tools/wave3-core.mjs');
    const bytes=Uint8Array.from(atob(encoded),x=>x.charCodeAt(0));
    const file=new File([bytes],'synthetic.heic',{type:'image/heic'});
+   const engine=await import('/tools/vendor/heic/heic-to.mjs');
+   if(typeof engine.isHeic==='function'&&!(await engine.isHeic(file)))
+    throw Error('Generated HEIC is not recognized by the pinned decoder.');
    const result=await processWave3('heic-to-jpg',[file],{format:'jpeg',quality:'.9'});
    const decoded=await createImageBitmap(result.blob);
    try{return {type:result.blob.type,w:decoded.width,h:decoded.height,size:result.blob.size};}
