@@ -12,7 +12,7 @@ const scenarioPattern=/scenario\(\s*(['"`])([^'"`]+)\1\s*,\s*async\s*\(?page(?:\
 const normalize=x=>String(x||'').replace(/^\/+|\/+$/g,'');
 const key=x=>'/'+normalize(x)+'/';
 
-export function inventory(catalog,smokeSource,localSource,pdfSource='',mediaSource=''){
+export function inventory(catalog,smokeSource,localSource,pdfSource='',mediaSource='',utilitySmokeSource=''){
  const items=(catalog.items||[]).filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
  const urls=items.map(x=>key(x.url));
  if(new Set(urls).size!==urls.length)throw Error('Duplicate published tool URL');
@@ -36,6 +36,8 @@ export function inventory(catalog,smokeSource,localSource,pdfSource='',mediaSour
  const mediaValidationIds=new Set();
  if(mediaSource.includes('validateVideoSettings('))mediaValidationIds.add('video-to-gif');
  if(mediaSource.includes('validateVideoTrim('))mediaValidationIds.add('video-trimmer');
+ // Dynamic synthetic-input smoke executions are tracked separately from output contracts.
+ const utilitySmokeEngines=utilitySmokeSource.includes("test('utility execution smoke: '")?new Set(['tools/utility-core.mjs','tools/everyday-core.mjs']):new Set();
  const records=items.map(item=>{
   const url=key(item.url),toolId=item.module?.toolId||normalize(item.url).split('/').at(-1);
   const namedScenarios=[...(browser.get(url)||[])].sort();
@@ -45,6 +47,7 @@ export function inventory(catalog,smokeSource,localSource,pdfSource='',mediaSour
    checks:{pageAvailability:'defined-in-all-pages-sweep',mobileLayout:'defined-in-all-pages-sweep',
     browserBehavior:namedScenarios.length?'scenario-defined':'missing',
     deterministicOutput:localContract?'contract-defined':'missing',
+    syntheticExecution:utilitySmokeEngines.has(group)?'smoke-defined':'not-mapped',
     mediaSettingsValidation:mediaValidationIds.has(toolId)?'validation-contract-defined':'not-mapped',
     inputEdgeCases:'not-comprehensively-mapped',
     crossBrowser:'not-comprehensively-mapped'},
@@ -61,6 +64,7 @@ export function inventory(catalog,smokeSource,localSource,pdfSource='',mediaSour
   pageAvailabilityChecksDefined:records.length,mobileLayoutChecksDefined:records.length,
   toolsWithBrowserBehaviorScenarios:records.filter(x=>x.browserScenarios.length).length,
   toolsWithLocalContracts:records.filter(x=>x.checks.deterministicOutput==='contract-defined').length,
+  toolsWithSyntheticExecutionSmokes:records.filter(x=>x.checks.syntheticExecution==='smoke-defined').length,
   toolsWithoutBrowserBehaviorScenarios:records.filter(x=>!x.browserScenarios.length).length,
   toolsWithoutLocalContracts:records.filter(x=>x.checks.deterministicOutput==='missing').length,
   fullyVerifiedByThisInventory:0};
@@ -84,14 +88,15 @@ const markdown=report=>{
  return lines.join('\n');
 };
 async function main(){
- const [catalog,smoke,local,pdf,media]=await Promise.all([
+ const [catalog,smoke,local,pdf,media,utilitySmoke]=await Promise.all([
   read('catalog.json').then(JSON.parse),
   read('scripts/health-browser-smoke.mjs'),
   read('scripts/health-local-utility-contracts.test.mjs'),
   read('scripts/health-pdf-contracts.test.mjs'),
-  read('scripts/health-media-contracts.test.mjs')
+  read('scripts/health-media-contracts.test.mjs'),
+  read('scripts/health-all-utility-smoke.test.mjs')
  ]);
- const report=inventory(catalog,smoke,local,pdf,media);
+ const report=inventory(catalog,smoke,local,pdf,media,utilitySmoke);
  const dest=resolve(process.cwd(),'free-tools-qa-inventory');
  await mkdir(dest,{recursive:true});
  await Promise.all([
