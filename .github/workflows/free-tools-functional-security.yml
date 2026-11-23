@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA expanded to inspector, renamer, duplicate finder, batch replacement and file exports.
+# QA expanded to all five Wave 4 creator outputs and batch file integrity.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
