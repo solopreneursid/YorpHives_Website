@@ -48,8 +48,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
-      - name: Verify browser-local utility correctness
-        run: node --test scripts/health-local-utility-contracts.test.mjs
+      - name: Verify browser-local utility and PDF output correctness
+        run: node --test scripts/health-local-utility-contracts.test.mjs scripts/health-pdf-contracts.test.mjs
   dependencies:
     runs-on: ubuntu-latest
     timeout-minutes: 10
