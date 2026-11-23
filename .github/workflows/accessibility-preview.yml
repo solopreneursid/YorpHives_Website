@@ -1,4 +1,5 @@
 name: YorpHives accessibility regression audit
+# Use explicit Playwright browser context for axe injections.
 on:
   workflow_dispatch:
   schedule:
