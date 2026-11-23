@@ -51,9 +51,6 @@ jobs:
       - name: Fail release on high or critical dependency advisories
         working-directory: site-source
         run: npm audit --omit=dev --audit-level=high
-      - name: Run source and release identity tests
-        working-directory: site-source
-        run: node --test tests/*.test.mjs
       - name: Build candidate production assets
         working-directory: site-source
         run: |
@@ -62,6 +59,9 @@ jobs:
           node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('dist/.well-known/yorphives-release.json'));if(m.target!=='production'||m.sourceSha!==process.env.YORPHIVES_SOURCE_SHA||!m.assetFingerprint)process.exit(1);console.log('CANDIDATE',m.sourceSha,m.assetFingerprint)"
           tar --format=posix -czf ../yorphives-production-candidate.tar.gz -C dist .
           cp dist/.well-known/yorphives-release.json ../candidate-manifest.json
+      - name: Run source and release identity tests
+        working-directory: site-source
+        run: node --test tests/*.test.mjs
       - name: Build and validate separate noindex preview
         working-directory: site-source
         run: |
