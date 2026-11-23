@@ -570,6 +570,80 @@ try{
   },bytes.toString('base64'));
   assert.deepEqual(sheet,[['name','code'],['Alice','0012'],['Bob','0044']]);
  });
+ await scenario('Excel to CSV preserves sheet text and leading zeroes',async page=>{
+  await open(page,'/tools/xlsx-file-to-csv/');
+  const output=await page.evaluate(async()=>{
+   const {csvToXlsx}=await import('/tools/office-files.mjs');
+   const {processFileTool}=await import('/tools/file-core.mjs');
+   const bytes=await csvToXlsx('name,code\nAlice,0012\nBob,0044');
+   const file=new File([bytes],'synthetic.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+   const out=await processFileTool('xlsx-file-to-csv',[file],{sheet:'1',safe:'on'});
+   return {mime:out.blob.type,text:await out.blob.text()};
+  });
+  assert.match(output.mime,/text\/csv/);
+  assert.deepEqual(output.text.split(/\r?\n/),['name,code','Alice,0012','Bob,0044']);
+ });
+ await scenario('Excel to JSON preserves Unicode and typed string identifiers',async page=>{
+  await open(page,'/tools/xlsx-file-to-json/');
+  const output=await page.evaluate(async()=>{
+   const {csvToXlsx}=await import('/tools/office-files.mjs');
+   const {processFileTool}=await import('/tools/file-core.mjs');
+   const bytes=await csvToXlsx('name,code\nCafé,0012');
+   const file=new File([bytes],'synthetic.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+   const out=await processFileTool('xlsx-file-to-json',[file],{sheet:'1'});
+   return {mime:out.blob.type,json:JSON.parse(await out.blob.text())};
+  });
+  assert.match(output.mime,/application\/json/);
+  assert.equal(output.json[0].name,'Café');
+  assert.equal(output.json[0].code,'0012');
+ });
+ await scenario('Images to PDF produces actual two-page PDF',async page=>{
+  await open(page,'/tools/images-to-pdf/');
+  const info=await page.evaluate(async()=>{
+   const {processFileTool}=await import('/tools/file-core.mjs');
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const canvas=document.createElement('canvas');canvas.width=8;canvas.height=6;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#fa3344';ctx.fillRect(0,0,8,6);
+   const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const f1=new File([png],'one.png',{type:'image/png'});
+   const f2=new File([png],'two.png',{type:'image/png'});
+   const out=await processFileTool('images-to-pdf',[f1,f2]);
+   const bytes=new Uint8Array(await out.blob.arrayBuffer());
+   const doc=await PDFDocument.load(bytes);
+   return {signature:String.fromCharCode(...bytes.slice(0,5)),type:out.blob.type,pages:doc.getPageCount()};
+  });
+  assert.equal(info.signature,'%PDF-');assert.equal(info.type,'application/pdf');assert.equal(info.pages,2);
+ });
+ await scenario('ZIP Creator and Contents Viewer preserve filenames and payloads',async page=>{
+  await open(page,'/tools/zip-file-creator/');
+  const result=await page.evaluate(async()=>{
+   const {processFileTool}=await import('/tools/file-core.mjs');
+   const {default:JSZip}=await import('/tools/vendor/jszip.mjs');
+   const a=new File(['Hello QA'],'alpha.txt',{type:'text/plain'});
+   const b=new File(['Café'], 'beta.txt',{type:'text/plain'});
+   const out=await processFileTool('zip-file-creator',[a,b],{});
+   const bytes=await out.blob.arrayBuffer();
+   const zip=await JSZip.loadAsync(bytes);
+   const names=Object.keys(zip.files);
+   const first=await zip.file('alpha.txt')?.async('string');
+   const second=await zip.file('beta.txt')?.async('string');
+   return {bytes:Array.from(new Uint8Array(bytes).slice(0,2)),names,first,second};
+  });
+  assert.deepEqual(result.bytes,[80,75]);
+  assert.ok(result.names.includes('alpha.txt')&&result.names.includes('beta.txt'));
+  assert.equal(result.first,'Hello QA');assert.equal(result.second,'Café');
+  await open(page,'/tools/zip-contents-viewer/');
+  const inspection=await page.evaluate(async()=>{
+   const {processFileTool}=await import('/tools/file-core.mjs');
+   const {default:JSZip}=await import('/tools/vendor/jszip.mjs');
+   const zip=new JSZip();zip.file('alpha.txt','Hello QA');zip.file('beta.txt','Café');
+   const bytes=await zip.generateAsync({type:'uint8array'});
+   const file=new File([bytes],'synthetic.zip',{type:'application/zip'});
+   const out=await processFileTool('zip-contents-viewer',[file],{});
+   return out.text||await out.blob.text();
+  });
+  assert.match(inspection,/alpha\.txt/);assert.match(inspection,/beta\.txt/);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
