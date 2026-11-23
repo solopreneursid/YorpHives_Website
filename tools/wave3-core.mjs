@@ -20,23 +20,16 @@ export function isHeicHeader(bytes){
 }
 let heicEnginePromise;
 function loadHeicEngine(){
- const ready=globalThis.HeicTo;
- if(typeof ready==='function')return Promise.resolve(ready);
- if(typeof ready?.heicTo==='function')return Promise.resolve(ready.heicTo.bind(ready));
  if(typeof document==='undefined')throw Error('HEIC conversion requires a browser.');
- if(!heicEnginePromise)heicEnginePromise=new Promise((resolve,reject)=>{
-  const script=document.createElement('script');
-  script.src=new URL('./vendor/heic/heic-to.js',import.meta.url).href;
-  script.async=true;
-  script.onload=()=>{
-   const engine=globalThis.HeicTo;
-   const fn=typeof engine==='function'?engine:
-    typeof engine?.heicTo==='function'?engine.heicTo.bind(engine):null;
-   fn?resolve(fn):reject(Error('The local HEIC decoder could not start.'));
-  };
-  script.onerror=()=>reject(Error('The local HEIC decoder is unavailable. Try refreshing this page.'));
-  document.head.append(script);
- }).catch(error=>{heicEnginePromise=null;throw error;});
+ if(!heicEnginePromise)heicEnginePromise=import('./vendor/heic/heic-to.mjs')
+  .then(module=>{
+   if(typeof module.heicTo!=='function')throw Error('The local HEIC decoder could not start.');
+   return module.heicTo;
+  })
+  .catch(error=>{
+   heicEnginePromise=null;
+   throw Error('The local HEIC decoder could not load: '+String(error?.message||'Unsupported browser module.'));
+  });
  return heicEnginePromise;
 }
 async function convertHeic(files,options={}){
