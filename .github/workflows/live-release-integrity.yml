@@ -36,6 +36,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
           OUTCOME: ${{ steps.verify.outcome }}
+          GATE_STATE: ${{ steps.verify.outputs.gate_state }}
         run: |
           set -euo pipefail
           title='YorpHives — Live release integrity attention'
@@ -44,7 +45,12 @@ jobs:
             echo 'Live release manifest and sampled critical pages match.' >> "$GITHUB_STEP_SUMMARY"
             if [ -n "$existing" ]; then gh issue close "$existing" --comment "Release identity and critical served assets verified in run $GITHUB_RUN_ID."; fi
           else
-            printf 'The public release identity or core asset check did not pass. This may mean first activation is pending or a real deployment drift exists. Investigate before releasing.\n\nEvidence: https://github.com/%s/actions/runs/%s\n\nNo production code or configuration was changed by this monitor.\n' "$GH_REPO" "$GITHUB_RUN_ID" > /tmp/yorphives-release-attention.md
+            if [ "$GATE_STATE" = 'not_activated' ]; then
+              message='Release identity is not yet deployed. The currently live site is still on the prior approved build; this is an activation milestone, NOT proof of an outage.'
+            else
+              message='A deployed release identity or critical asset hash did not match. Investigate possible production drift before another release.'
+            fi
+            printf '%s\n\nEvidence: https://github.com/%s/actions/runs/%s\n\nThe monitor did not change production code or configuration.\n' "$message" "$GH_REPO" "$GITHUB_RUN_ID" > /tmp/yorphives-release-attention.md
             if [ -z "$existing" ]; then gh issue create --title "$title" --body-file /tmp/yorphives-release-attention.md; else gh issue edit "$existing" --body-file /tmp/yorphives-release-attention.md; fi
             echo 'Live release identity needs attention; see GitHub issue.' >> "$GITHUB_STEP_SUMMARY"
             exit 1
