@@ -20,7 +20,7 @@ concurrency:
 jobs:
   browser:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - name: Check out the production source branch
         uses: actions/checkout@v6
@@ -157,7 +157,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          if [ ! -s qa-input/browser/browser-results.json ] || [ ! -s qa-input/local/test-tap.txt ]; then
+          if [ ! -s qa-input/browser/browser-results.json ] || [ ! -s qa-input/local/test-tap.txt ] || ! node -e "const r=require('./qa-input/browser/browser-results.json');if(r.complete!==true||!Array.isArray(r.scenarios)||r.scenarios.length<1)process.exit(1)"; then
             echo "One or more test jobs did not provide evidence; preserving the last complete per-tool verdict. See the failure alert for this run." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
