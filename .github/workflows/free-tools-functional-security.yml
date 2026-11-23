@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# Phase 2 QA refresh: real PDF output contracts and read-only browser regression coverage.
+# Phase 2 QA check: PDF contracts corrected; image dimensions and spreadsheet round-trip added.
 on:
   schedule:
     # Two separated windows reduce delays; the supervisor checks freshness.
