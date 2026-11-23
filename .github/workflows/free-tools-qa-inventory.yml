@@ -1,5 +1,5 @@
 name: Free Tools QA coverage inventory
-# Refreshes browser coverage for batch image and spreadsheet merger output checks.
+# Track broad synthetic utility execution separately from deterministic output assertions.
 on:
   workflow_dispatch:
   schedule:
