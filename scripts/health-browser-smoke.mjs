@@ -966,6 +966,47 @@ try{
   });
   assert.deepEqual(out,{pages:1,fields:0});
  });
+ await scenario('Color Picker from Image reads exact red center pixel',async page=>{
+  await open(page,'/tools/image-color-picker/');
+  const actual=await page.evaluate(async()=>{
+   const {pickImageColor}=await import('/tools/wave6-image-core.mjs');const canvas=document.createElement('canvas');canvas.width=120;canvas.height=80;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#ff0000';ctx.fillRect(0,0,120,80);
+   const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const file=new File([png],'synthetic.png',{type:'image/png'});
+   const out=await pickImageColor(file,{x:.5,y:.5});
+   return {color:out.swatch,red:out.values.r,green:out.values.g,blue:out.values.b};
+  });
+  assert.deepEqual(actual,{color:'#ff0000',red:255,green:0,blue:0});
+ });
+ await scenario('Pixel Art Maker exports same-sized valid PNG',async page=>{
+  await open(page,'/tools/pixel-art-maker/');
+  const actual=await page.evaluate(async()=>{
+   const {makePixelArt}=await import('/tools/wave6-image-core.mjs');const canvas=document.createElement('canvas');canvas.width=120;canvas.height=80;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#ff0000';ctx.fillRect(0,0,120,80);
+   const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const file=new File([png],'synthetic.png',{type:'image/png'});
+   const out=await makePixelArt(file,{block:12,colors:8});
+   const bytes=new Uint8Array(await out.blob.arrayBuffer());
+   const v=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+   return {mime:out.blob.type,w:v.getUint32(16),h:v.getUint32(20)};
+  });
+  assert.deepEqual(actual,{mime:'image/png',w:120,h:80});
+ });
+ await scenario('Meme Maker exports valid PNG with original dimensions',async page=>{
+  await open(page,'/tools/meme-maker/');
+  const actual=await page.evaluate(async()=>{
+   const {createMeme}=await import('/tools/wave6-image-core.mjs');const canvas=document.createElement('canvas');canvas.width=120;canvas.height=80;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#ff0000';ctx.fillRect(0,0,120,80);
+   const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const file=new File([png],'synthetic.png',{type:'image/png'});
+   const out=await createMeme(file,{top:'QA TEST',bottom:'LOCAL ONLY',fontSize:1});
+   const bytes=new Uint8Array(await out.blob.arrayBuffer());
+   const v=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+   return {mime:out.blob.type,w:v.getUint32(16),h:v.getUint32(20),size:bytes.length};
+  });
+  assert.equal(actual.mime,'image/png');assert.equal(actual.w,120);assert.equal(actual.h,80);
+  assert.ok(actual.size>100);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
