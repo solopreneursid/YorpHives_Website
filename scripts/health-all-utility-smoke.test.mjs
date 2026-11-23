@@ -30,7 +30,7 @@ const special={
  'meta-tag-generator':{title:'Example Article Title',description:'A sample page for validation.',url:'https://example.com/',image:'https://example.com/image.png'},
  'robots-txt-generator':{paths:'/private/',sitemap:'https://example.com/sitemap.xml'},
  'xml-sitemap-generator':{urls:'https://example.com/\nhttps://example.com/about/'},
- 'business-days-calculator':{start:'2026-01-01',end:'2026-01-31'},
+ 'business-days-calculator':{start:'2026-01-01',end:'2026-01-31',holidays:''},
  'date-calculator':{date:'2026-01-01',days:'30'},
  'password-generator':{lower:'on',upper:'on',numbers:'on',symbols:'on'},
  'average-calculator':{text:'10\n20\n30'},
