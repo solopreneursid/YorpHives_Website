@@ -9,7 +9,8 @@ const results=[];
 const browser=await chromium.launch({headless:true});
 try{
  for(const width of [390,1280]){
-  const page=await browser.newPage({viewport:{width,height:820},reducedMotion:'reduce',colorScheme:'light'});
+  const context=await browser.newContext({viewport:{width,height:820},reducedMotion:'reduce',colorScheme:'light'});
+  const page=await context.newPage();
   try{
    for(const route of routes){
     const record={route,viewport:width,violations:[],passed:false};
@@ -28,7 +29,7 @@ try{
     results.push(record);
     console.log((record.passed?'PASS':'FAIL')+' ACCESSIBILITY '+width+' '+route+' '+(record.error||record.violations.map(x=>x.id).join(',')));
    }
-  }finally{await page.close();}
+  }finally{await context.close();}
  }
 }finally{await browser.close();}
 const verdict={schemaVersion:1,generatedAt:new Date().toISOString(),
