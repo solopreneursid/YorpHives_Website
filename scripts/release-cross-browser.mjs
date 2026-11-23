@@ -20,6 +20,7 @@ for(const [name,engine] of Object.entries({chromium,firefox,webkit})){
    for(const path of routes){
     const label=name+' '+width+'px '+path;
     try{
+     errors.length=0;
      const response=await page.goto(origin+path,{waitUntil:'domcontentloaded',timeout:25000});
      assert.equal(response?.status(),200);
      await page.locator('h1').first().waitFor({state:'visible',timeout:12000});
