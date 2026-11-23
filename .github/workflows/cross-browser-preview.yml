@@ -1,0 +1,77 @@
+name: YorpHives weekly cross-browser preview QA
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '27 4 * * 2'
+  push:
+    branches: [main]
+    paths: ['.github/workflows/cross-browser-preview.yml']
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: yorphives-cross-browser-preview
+  cancel-in-progress: false
+jobs:
+  compatibility:
+    name: Chromium Firefox WebKit and responsive layout
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: release/yorphives-reimagined-20261116
+          path: site-source
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Install pinned dependencies and build isolated noindex preview
+        working-directory: site-source
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          node scripts/build-site.mjs --target=preview
+          node scripts/release-check.mjs dist
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium firefox webkit
+      - name: Serve preview locally with no Cloudflare or external API
+        shell: bash
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory site-source/dist >/tmp/yorphives-preview-server.log 2>&1 &
+          for attempt in $(seq 1 15); do if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/yorphives-preview-server.log
+          exit 1
+      - name: Run six browser and viewport combinations
+        id: smoke
+        working-directory: site-source
+        env:
+          YORPHIVES_PREVIEW_ORIGIN: http://127.0.0.1:4173
+          YORPHIVES_COMPAT_RESULTS: .qa-media/cross-browser-results.json
+        continue-on-error: true
+        run: node scripts/release-cross-browser.mjs
+      - name: Keep per-browser evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: yorphives-cross-browser-results
+          path: site-source/.qa-media/cross-browser-results.json
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Create or resolve cross-browser regression alert
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          OUTCOME: ${{ steps.smoke.outcome }}
+        run: |
+          set -euo pipefail
+          title='YorpHives cross-browser regression alert'
+          existing=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "YorpHives cross-browser regression alert") | .number' | head -n1)
+          if [ "$OUTCOME" = success ]; then
+            if [ -n "$existing" ]; then gh issue close "$existing" --comment "Responsive browser smoke passed in run $GITHUB_RUN_ID."; fi
+          else
+            echo "Chromium/Firefox/WebKit preview smoke failed or did not finish. Review downloadable JSON and logs: https://github.com/$GH_REPO/actions/runs/$GITHUB_RUN_ID. Test failures do not authorize production changes." > /tmp/compat-alert.md
+            if [ -n "$existing" ]; then gh issue edit "$existing" --body-file /tmp/compat-alert.md; else gh issue create --title "$title" --body-file /tmp/compat-alert.md; fi
+            exit 1
+          fi
