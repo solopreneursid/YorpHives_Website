@@ -93,9 +93,12 @@ jobs:
           node -e "const p=require('./project.json');if(!p.success||!p.result?.domains?.includes('yorphives.com')){console.error('Project does not directly own yorphives.com; blocked to protect production.');process.exit(1)};const b=p.result.production_branch;if(!b||!p.result.source?.config?.production_branch||b!==p.result.source.config.production_branch)process.exit(2);require('fs').appendFileSync(process.env.GITHUB_ENV,'DEPLOY_BRANCH='+b+'\n')"
       - name: Deploy exact approved files, never rebuilding during promotion
         shell: bash
+        working-directory: source
         run: |
           set -euo pipefail
-          npx --yes wrangler@4.45.0 pages deploy candidate-dist --project-name="$PRODUCTION_PROJECT" --branch="$DEPLOY_BRANCH" --commit-hash="$SOURCE_SHA"
+          # Run from source so Wrangler picks up the versioned Pages Functions directory.
+          test -d functions
+          npx --yes wrangler@4.45.0 pages deploy ../candidate-dist --project-name="$PRODUCTION_PROJECT" --branch="$DEPLOY_BRANCH" --commit-hash="$SOURCE_SHA"
       - name: Verify live domain serves the identical release and critical assets
         shell: bash
         run: |
