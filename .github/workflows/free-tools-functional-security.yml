@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# Phase 2 QA check: PDF contracts corrected; image dimensions and spreadsheet round-trip added.
+# QA fixture correction: spreadsheet browser scenario now uses real CSV line breaks.
 on:
   schedule:
     # Two separated windows reduce delays; the supervisor checks freshness.
