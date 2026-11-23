@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA now enforces per-scenario watchdogs and complete-artifact gates for HEIC/OCR runs.
+# QA verifies bounded HEIC decoder candidate against live read-only page with synthetic HEIC.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
