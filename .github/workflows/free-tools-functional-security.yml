@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA covers additional image resizing, EXIF stripping, barcode and SVG raster output checks.
+# QA includes CSV cleanup, ZIP extraction, resume, collage and PDF form actions.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
