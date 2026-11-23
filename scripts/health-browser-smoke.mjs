@@ -234,6 +234,32 @@ try{
   assert.match(await page.locator('#file-status').innerText(),/PNG|JPEG|WebP|image|invalid|read/i);
   assert.equal(await page.locator('#file-download').isHidden(),true,'Damaged input must not yield a download');
  });
+ await scenario('Audio Volume Adjuster exports valid audible WAV with correct duration',async page=>{
+  await open(page,'/tools/audio-volume-adjuster/');
+  const sampleRate=8000,sampleCount=8000;
+  const wav=Buffer.alloc(44+sampleCount*2);
+  wav.write('RIFF',0);wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);
+  wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);
+  wav.writeUInt32LE(sampleRate,24);wav.writeUInt32LE(sampleRate*2,28);
+  wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);
+  wav.writeUInt32LE(sampleCount*2,40);
+  for(let i=0;i<sampleCount;i++)wav.writeInt16LE(Math.round(7000*Math.sin(2*Math.PI*440*i/sampleRate)),44+i*2);
+  await page.locator('#wave6-file').setInputFiles({name:'synthetic.wav',mimeType:'audio/wav',buffer:wav});
+  await page.locator('[name="gain"]').selectOption('1.5');
+  await page.locator('#wave6-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#wave6-result').hidden || document.querySelector('#wave6-status').classList.contains('error'),null,{timeout:30000});
+  if(await page.locator('#wave6-status').evaluate(x=>x.classList.contains('error')))
+   throw Error('Audio processing failed: '+await page.locator('#wave6-status').innerText());
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#wave6-result a[download]').click()]);
+  const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
+  const bytes=Buffer.concat(chunks);
+  assert.equal(bytes.toString('ascii',0,4),'RIFF');
+  assert.equal(bytes.toString('ascii',8,12),'WAVE');
+  assert.equal(bytes.readUInt16LE(22),1);
+  assert.equal(bytes.readUInt32LE(24),sampleRate);
+  assert.equal(bytes.readUInt32LE(40),sampleCount*2);
+  assert.ok(bytes.readInt16LE(44+2*2)>wav.readInt16LE(44+2*2),'Volume adjustment must amplify source samples');
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
