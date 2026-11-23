@@ -157,6 +157,48 @@ try{
   assert.equal(out.readUInt32BE(16),4);
   assert.equal(out.readUInt32BE(20),4);
  });
+
+ await scenario('Image Cropper exports exact cropped PNG dimensions',async page=>{
+  await open(page,'/tools/image-cropper/');
+  const png=await page.evaluate(()=>{
+   const canvas=document.createElement('canvas');canvas.width=8;canvas.height=6;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#c42c55';ctx.fillRect(0,0,8,6);
+   return canvas.toDataURL('image/png').split(',')[1];
+  });
+  await page.locator('#file-input').setInputFiles({name:'synthetic.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
+  await page.waitForFunction(()=>!document.querySelector('#file-run').disabled,{timeout:15000});
+  await page.locator('[name="x"]').fill('2');
+  await page.locator('[name="y"]').fill('1');
+  await page.locator('[name="width"]').fill('3');
+  await page.locator('[name="height"]').fill('4');
+  await page.locator('#file-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#file-download').hidden&&document.querySelector('#file-download').href.startsWith('blob:'),null,{timeout:20000});
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#file-download').click()]);
+  const parts=[];for await(const part of await download.createReadStream())parts.push(part);
+  const result=Buffer.concat(parts);
+  assert.deepEqual([...result.subarray(0,8)],[137,80,78,71,13,10,26,10]);
+  assert.equal(result.readUInt32BE(16),3);
+  assert.equal(result.readUInt32BE(20),4);
+ });
+ await scenario('Image Rotate Flip exports PNG with swapped dimensions',async page=>{
+  await open(page,'/tools/image-rotate-flip/');
+  const png=await page.evaluate(()=>{
+   const canvas=document.createElement('canvas');canvas.width=8;canvas.height=6;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#248a70';ctx.fillRect(0,0,8,6);
+   return canvas.toDataURL('image/png').split(',')[1];
+  });
+  await page.locator('#file-input').setInputFiles({name:'synthetic.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
+  await page.locator('[name="angle"]').selectOption('90');
+  await page.waitForFunction(()=>!document.querySelector('#file-run').disabled,{timeout:15000});
+  await page.locator('#file-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#file-download').hidden&&document.querySelector('#file-download').href.startsWith('blob:'),null,{timeout:20000});
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#file-download').click()]);
+  const parts=[];for await(const part of await download.createReadStream())parts.push(part);
+  const result=Buffer.concat(parts);
+  assert.deepEqual([...result.subarray(0,8)],[137,80,78,71,13,10,26,10]);
+  assert.equal(result.readUInt32BE(16),6);
+  assert.equal(result.readUInt32BE(20),8);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
