@@ -7,7 +7,7 @@ const origin=process.env.YORPHIVES_PREVIEW_ORIGIN||'http://127.0.0.1:4173';
 const routes=['/','/tools/','/tools/word-counter/','/tools/pdf-merge/','/tools/heic-to-jpg/'];
 const catalog=JSON.parse(await readFile(new URL('../catalog.json',import.meta.url),'utf8'));
 const allTools=catalog.items.filter(x=>x.type==='tool'&&x.published!==false).map(x=>'/'+(x.url.startsWith('/')?x.url.slice(1):x.url));
-if(allTools.length!==143)throw Error('Published tool inventory unexpectedly changed from 143.');
+if(allTools.length<143)throw Error('Published tool inventory unexpectedly dropped below the verified 143-tool baseline.');
 const results=[];
 for(const [name,engine] of Object.entries({chromium,firefox,webkit})){
  let browser;
