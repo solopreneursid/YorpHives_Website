@@ -1057,6 +1057,56 @@ try{
   assert.match(result,/Slide 1/);
   assert.match(result,/No extractable text/);
  });
+ await scenario('PDF to Text extracts real selectable text',async page=>{
+  await open(page,'/tools/pdf-to-text/');
+  const out=await page.evaluate(async()=>{
+   const {processWave1}=await import('/tools/wave1-core.mjs');const {PDFDocument,StandardFonts,rgb}=await import('/tools/vendor/pdf-lib.mjs');
+   const pdf=await PDFDocument.create(),p=pdf.addPage([240,180]);
+   const font=await pdf.embedFont(StandardFonts.Helvetica);
+   p.drawText('QA searchable text',{x:25,y:90,size:14,font,color:rgb(0,0,0)});
+   const file=new File([await pdf.save()],'synthetic.pdf',{type:'application/pdf'});
+   const result=await processWave1('pdf-to-text',[file],{});
+   return await result.blob.text();
+  });
+  assert.match(out,/QA searchable text/);assert.match(out,/Page 1/);
+ });
+ await scenario('PDF to Images rasterizes real page into valid PNG',async page=>{
+  await open(page,'/tools/pdf-to-images/');
+  const out=await page.evaluate(async()=>{
+   const {processWave1}=await import('/tools/wave1-core.mjs');const {PDFDocument,StandardFonts,rgb}=await import('/tools/vendor/pdf-lib.mjs');
+   const pdf=await PDFDocument.create(),p=pdf.addPage([240,180]);
+   const font=await pdf.embedFont(StandardFonts.Helvetica);
+   p.drawText('QA searchable text',{x:25,y:90,size:14,font,color:rgb(0,0,0)});
+   const file=new File([await pdf.save()],'synthetic.pdf',{type:'application/pdf'});
+   const result=await processWave1('pdf-to-images',[file],{format:'png',scale:'1'});
+   const bytes=new Uint8Array(await result.blob.arrayBuffer());
+   const v=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+   return {mime:result.blob.type,header:[...bytes.slice(0,8)],w:v.getUint32(16),h:v.getUint32(20)};
+  });
+  assert.equal(out.mime,'image/png');
+  assert.deepEqual(out.header,[137,80,78,71,13,10,26,10]);
+  assert.equal(out.w,240);assert.equal(out.h,180);
+ });
+ await scenario('QR Code Scanner decodes locally generated QR payload',async page=>{
+  await open(page,'/tools/qr-code-scanner/');
+  const out=await page.evaluate(async()=>{
+   const {runUtility}=await import('/tools/utility-core.mjs');
+   const {processWave1}=await import('/tools/wave1-core.mjs');
+   const qr=(await runUtility('qr-code-generator',{text:'https://example.com/qa',correction:'M'})).text;
+   const fileSvg=new Blob([qr],{type:'image/svg+xml'}),url=URL.createObjectURL(fileSvg),image=new Image();
+   try{
+    image.src=url;await image.decode();
+    const canvas=document.createElement('canvas');canvas.width=image.naturalWidth*2;canvas.height=image.naturalHeight*2;
+    const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(image,0,0,canvas.width,canvas.height);
+    const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+    const file=new File([png],'synthetic.png',{type:'image/png'});
+    const result=await processWave1('qr-code-scanner',[file],{});
+    return await result.blob.text();
+   }finally{URL.revokeObjectURL(url);}
+  });
+  assert.equal(out,'https://example.com/qa');
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
