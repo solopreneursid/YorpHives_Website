@@ -17,6 +17,8 @@ jobs:
   compatibility:
     name: Chromium Firefox WebKit and responsive layout
     runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
@@ -35,7 +37,8 @@ jobs:
           node scripts/build-site.mjs --target=preview
           node scripts/release-check.mjs dist
           npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.56.1
-          npx playwright install --with-deps chromium firefox webkit
+          test -d /ms-playwright
+          npx playwright --version
       - name: Serve preview locally with no Cloudflare or external API
         shell: bash
         run: |
