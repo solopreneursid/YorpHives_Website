@@ -25,11 +25,23 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
-      - name: Check live release manifest and public asset fingerprints
+      - name: Check live identity, asset hashes and every public tool route
         id: verify
         working-directory: site-source
         continue-on-error: true
-        run: node scripts/release-health.mjs
+        env:
+          YORPHIVES_LIVE_ROUTE_RESULTS: .qa-media/live-route-results.json
+        run: |
+          node scripts/release-health.mjs
+          node scripts/release-live-pages.mjs https://yorphives.com
+      - name: Keep read-only live URL evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: yorphives-live-route-results
+          path: site-source/.qa-media/live-route-results.json
+          if-no-files-found: warn
+          retention-days: 30
       - name: Record result without making website changes
         shell: bash
         env:
