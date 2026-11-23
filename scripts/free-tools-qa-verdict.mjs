@@ -23,14 +23,27 @@ for(const line of tap.split('\n')){
  const hit=line.match(/^\s*(not ok|ok)\s+\d+\s+-\s+utility execution smoke: ([a-z0-9-]+)/);
  if(hit)local.set(hit[2],hit[1]==='ok'?'passed':'failed');
 }
+const strictPdfTitles=new Map([
+ ['PDF merge retains order and dimensions across input files','pdf-merge'],
+ ['PDF page counter reports exact page sizes','pdf-page-counter'],
+ ['PDF extract pages retains selected order and valid outputs','pdf-extract-pages'],
+ ['PDF remove pages preserves remaining page order','pdf-remove-pages'],
+ ['PDF rotate pages changes only selected page','pdf-rotate-pages']
+]);
+const strictPdf=new Map();
+for(const line of tap.split('\n')){
+ const match=line.match(/^\s*(not ok|ok)\s+\d+\s+-\s+(.+)$/);
+ if(match&&strictPdfTitles.has(match[2]))strictPdf.set(strictPdfTitles.get(match[2]),match[1]==='ok'?'passed':'failed');
+}
 const rows=tools.map(item=>{
  const id=item.module?.toolId||String(item.url).split('/').filter(Boolean).at(-1);
  const route=normalize(item.url),scenarios=visit.get(route)||[],smoke=local.get(id)||'not-executed';
  const failures=scenarios.filter(x=>!x.passed);
- const hasPass=scenarios.some(x=>x.passed)||smoke==='passed';
- const verdict=failures.length||smoke==='failed'?'failed':hasPass?'representative-test-passed':'unverified';
+ const pdf=strictPdf.get(id)||'not-executed';
+ const hasPass=scenarios.some(x=>x.passed)||smoke==='passed'||pdf==='passed';
+ const verdict=failures.length||smoke==='failed'||pdf==='failed'?'failed':hasPass?'representative-test-passed':'unverified';
  return {name:item.name,route,category:item.category||'Other',toolId:id,
-  verdict,browserScenarios:scenarios,localExecution:smoke,
+  verdict,browserScenarios:scenarios,localExecution:smoke,strictPdfOutput:pdf,
   scope:verdict==='representative-test-passed'?'A representative scenario passed; other behavior, formats, inputs and browsers are not implied.':null};
 }).sort((a,b)=>a.route.localeCompare(b.route));
 const counts={
