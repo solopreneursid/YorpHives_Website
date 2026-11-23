@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# Expanded QA validates XLSX exports, ZIP contents and image-to-PDF alongside utilities.
+# QA rerun after valid calendar holiday fixture, with XLSX ZIP and image-PDF checks.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
