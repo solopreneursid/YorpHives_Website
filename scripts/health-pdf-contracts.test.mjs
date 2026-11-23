@@ -72,5 +72,5 @@ test('PDF removal refuses to produce an empty document',async()=>{
 });
 
 test('PDF rotation rejects unsupported angles',async()=>{
- await assert.rejects(processFileTool('pdf-rotate-pages',[await sample([[200,300]])],{angle:'45'}),/90, 180, or 270/);
+ await assert.rejects(processFileTool('pdf-rotate-pages',[await sample([[200,300]])],{angle:'45'}),/Enter a valid rotation|90, 180, or 270/);
 });
