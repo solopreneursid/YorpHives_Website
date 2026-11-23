@@ -465,5 +465,12 @@ await publishReimaginedRoot();
 // Preserve the historic path for existing preview bookmarks, without a second UI.
 // This is an alias to the exact same source, not a separate release candidate.
 if(target==='preview')await publishReimaginedRoot('release-candidate/');
+// Bind source revision and build mode to the output served to visitors.
+const {writeReleaseIdentity}=await import('./release-identity.mjs');
+const release=await writeReleaseIdentity({
+ dir:dest,target,
+ sourceSha:process.env.YORPHIVES_SOURCE_SHA||process.env.CF_PAGES_COMMIT_SHA||''
+});
+console.log('BUILD IDENTITY: '+release.target+' '+(release.sourceSha||'unverified')+' '+release.assetFingerprint);
 console.log('DISCOVERY BUILD PASSED: '+published.length+' directly linked public pages; '+canonicalPaths.length+
  ' canonical sitemap URLs; mode='+target+'. Homepage markup preserved.');
