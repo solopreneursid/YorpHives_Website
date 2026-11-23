@@ -338,7 +338,7 @@ svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-wi
 .footer-links{display:grid;grid-template-columns:repeat(3,minmax(100px,1fr));gap:35px}
 .footer-links>div{display:flex;flex-direction:column;gap:10px}
 .footer-links>div>span{margin-bottom:3px;color:#a9c181;font-size:8px;font-weight:850;letter-spacing:.15em}
-.footer-links a{color:#bdcbb6;font-size:10px}
+.footer-links a{display:inline-flex;align-items:center;min-height:28px;color:#bdcbb6;font-size:10px;line-height:1.4}
 .footer-links a:hover{color:var(--lime)}
 .hqconnect-privacy{color:#526853;font-size:11px;line-height:1.5}
 .hqconnect-privacy a,.venture-empty-link{text-decoration:underline;text-underline-offset:3px}
