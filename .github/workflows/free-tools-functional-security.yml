@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA validates CSP-compatible HEIC decoding with pinned libheif and synthetic real HEIC input.
+# HEIC QA diagnostic: validate genuine HEIF header and preserve decoder's codec failure details.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
