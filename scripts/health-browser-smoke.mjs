@@ -1181,6 +1181,59 @@ try{
   assert.equal(output.pages,1);assert.equal(output.mime,'application/pdf');
   assert.equal(output.containsText,false);
  });
+ await scenario('Voice Recorder captures locally generated microphone audio',async page=>{
+  await open(page,'/tools/voice-recorder/');
+  const value=await page.evaluate(async()=>{
+   const {beginVoiceRecording}=await import('/tools/wave7-audio-core.mjs');
+   const AudioCtx=window.AudioContext||window.webkitAudioContext;
+   const ctx=new AudioCtx(),osc=ctx.createOscillator(),dest=ctx.createMediaStreamDestination();
+   osc.frequency.value=440;osc.connect(dest);osc.start();
+   const media=navigator.mediaDevices,previous=media.getUserMedia;
+   Object.defineProperty(media,'getUserMedia',{configurable:true,value:async()=>dest.stream});
+   try{
+    const recording=await beginVoiceRecording();
+    await new Promise(resolve=>setTimeout(resolve,1100));
+    recording.stop();
+    const out=await recording.complete;
+    const bytes=new Uint8Array(await out.blob.arrayBuffer());
+    return {type:out.blob.type,size:bytes.length,filename:out.filename};
+   }finally{
+    Object.defineProperty(media,'getUserMedia',{configurable:true,value:previous});
+    osc.stop();await ctx.close();
+   }
+  });
+  assert.match(value.type,/^audio\/(?:webm|mp4|ogg)$/);
+  assert.ok(value.size>150,'Synthetic microphone output must contain recorded media');
+  assert.match(value.filename,/\.(?:webm|m4a|ogg)$/);
+ });
+ await scenario('Screen Recorder captures a local synthetic canvas display stream',async page=>{
+  await open(page,'/tools/screen-recorder/');
+  const output=await page.evaluate(async()=>{
+   const {beginScreenRecording}=await import('/tools/screen-record-core.mjs');
+   const canvas=document.createElement('canvas');canvas.width=160;canvas.height=120;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#ff3131';ctx.fillRect(0,0,160,120);
+   const stream=canvas.captureStream(15);
+   const media=navigator.mediaDevices,original=media.getDisplayMedia;
+   Object.defineProperty(media,'getDisplayMedia',{configurable:true,value:async()=>stream});
+   try{
+    const session=await beginScreenRecording();
+    for(let i=0;i<9;i++){
+     ctx.fillStyle=i%2?'#3ecc77':'#ff3131';
+     ctx.fillRect(0,0,160,120);
+     await new Promise(resolve=>setTimeout(resolve,130));
+    }
+    session.stop();const saved=await session.complete;
+    const bytes=new Uint8Array(await saved.blob.arrayBuffer());
+    return {size:bytes.length,type:saved.blob.type,header:[...bytes.slice(0,4)]};
+   }finally{
+    Object.defineProperty(media,'getDisplayMedia',{configurable:true,value:original});
+    stream.getTracks().forEach(track=>track.stop());
+   }
+  });
+  assert.ok(output.size>500,'Recorded screen stream cannot be empty');
+  assert.ok(['video/webm','video/mp4'].includes(output.type));
+  if(output.type==='video/webm')assert.deepEqual(output.header,[26,69,223,163]);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
