@@ -64,7 +64,7 @@ jobs:
         with:
           node-version: '22'
       - name: Verify browser-local utility, PDF and media contracts
-        run: node --test scripts/health-local-utility-contracts.test.mjs scripts/health-pdf-contracts.test.mjs scripts/health-media-contracts.test.mjs
+        run: node --test scripts/health-local-utility-contracts.test.mjs scripts/health-pdf-contracts.test.mjs scripts/health-media-contracts.test.mjs scripts/health-all-utility-smoke.test.mjs
   dependencies:
     runs-on: ubuntu-latest
     timeout-minutes: 10
