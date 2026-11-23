@@ -1,5 +1,5 @@
 name: Free Tools QA coverage inventory
-# Refreshes coverage after end-to-end Video Trimmer export and frame-decoding QA.
+# Refreshes browser coverage for batch image and spreadsheet merger output checks.
 on:
   workflow_dispatch:
   schedule:
