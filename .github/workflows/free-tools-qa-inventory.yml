@@ -1,5 +1,5 @@
 name: Free Tools QA coverage inventory
-# Refreshes real audio-volume WAV browser-output evidence alongside existing media contracts.
+# Refreshes browser coverage after real video GIF frame and thumbnail output tests.
 on:
   workflow_dispatch:
   schedule:
