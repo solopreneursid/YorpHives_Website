@@ -491,8 +491,8 @@ try{
  });
  await scenario('Spreadsheet Merger exports correct joined CSV with source labels',async page=>{
   await open(page,'/tools/spreadsheet-merger/');
-  const a=Buffer.from('name,code\\nCafé,0012\\n','utf8');
-  const b=Buffer.from('code,city\\n0044,Delhi\\n','utf8');
+  const a=Buffer.from('name,code\nCafé,0012\n','utf8');
+  const b=Buffer.from('code,city\n0044,Delhi\n','utf8');
   await page.locator('#wave7-file').setInputFiles([
    {name:'one.csv',mimeType:'text/csv',buffer:a},
    {name:'two.csv',mimeType:'text/csv',buffer:b}
