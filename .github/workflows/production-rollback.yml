@@ -1,0 +1,57 @@
+name: YorpHives founder-approved production rollback
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_id:
+        description: 'Previous known-good Cloudflare Pages deployment UUID (not the failed deployment)'
+        required: true
+        type: string
+      approval_phrase:
+        description: 'Type ROLLBACK_YORPHIVES_NOW to authorize recovery'
+        required: true
+        type: string
+permissions:
+  contents: read
+  deployments: write
+concurrency:
+  group: yorphives-production-promotion
+  cancel-in-progress: false
+jobs:
+  rollback:
+    name: Restore an explicitly selected known-good Pages deployment
+    environment: yorphives-production
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      PRODUCTION_PROJECT: ${{ vars.YORPHIVES_PRODUCTION_PAGES_PROJECT }}
+      DEPLOYMENT_ID: ${{ inputs.deployment_id }}
+      APPROVAL_PHRASE: ${{ inputs.approval_phrase }}
+    steps:
+      - name: Fail closed without founder consent and verified project
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "$APPROVAL_PHRASE" = 'ROLLBACK_YORPHIVES_NOW' ] || exit 1
+          [[ "$DEPLOYMENT_ID" =~ ^[0-9a-fA-F-]{36}$ ]] || exit 1
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] && [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$PRODUCTION_PROJECT" ] || exit 1
+          curl --fail --silent --show-error --max-time 30             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"             "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PRODUCTION_PROJECT" > project.json
+          node -e "const p=require('./project.json');if(!p.success||!p.result?.domains?.includes('yorphives.com')){console.error('Wrong Pages project. No rollback attempted.');process.exit(1)}"
+          curl --fail --silent --show-error --max-time 30             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"             "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PRODUCTION_PROJECT/deployments/$DEPLOYMENT_ID" > deployment.json
+          node -e "const d=require('./deployment.json');if(!d.success||d.result?.environment!=='production'||d.result?.latest_stage?.status!=='success'){console.error('Target is not a successful production deployment.');process.exit(1)}"
+      - name: Roll back Pages production to approved deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 60             -X POST             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"             "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PRODUCTION_PROJECT/deployments/$DEPLOYMENT_ID/rollback" > rollback.json
+          node -e "const r=require('./rollback.json');if(!r.success)process.exit(1)"
+      - name: Verify the live homepage and core tools after rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in / /tools/ /tools/word-counter/ /tools/pdf-merge/; do
+            curl --fail --silent --show-error --location --max-time 20 -o /dev/null "https://yorphives.com$route"
+          done
+          echo "Rolled back to deployment $DEPLOYMENT_ID; core HTTP routes healthy." >> "$GITHUB_STEP_SUMMARY"
+          echo "NOTE: Cloudflare Pages rollback does not roll back D1, KV or external state." >> "$GITHUB_STEP_SUMMARY"
