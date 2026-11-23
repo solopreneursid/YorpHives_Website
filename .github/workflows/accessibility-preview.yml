@@ -1,5 +1,5 @@
 name: YorpHives accessibility regression audit
-# Recheck shared brand labels, saved-tool action names, footer tap targets and contrast fixes.
+# Expand mobile WCAG A/AA checks to the entire evolving Free Tools catalogue.
 on:
   workflow_dispatch:
   schedule:
@@ -16,7 +16,7 @@ concurrency:
 jobs:
   accessibility:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v6
         with:
