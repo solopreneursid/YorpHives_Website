@@ -327,6 +327,23 @@ try{
   assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10]);
   assert.equal(bytes.readUInt32BE(16),240);
   assert.equal(bytes.readUInt32BE(20),180);
+  const visual=await page.evaluate(async(encoded)=>{
+   const payload=Uint8Array.from(atob(encoded),x=>x.charCodeAt(0));
+   const file=new Blob([payload],{type:'image/png'}),url=URL.createObjectURL(file),img=new Image();
+   try{
+    img.src=url;await img.decode();
+    const canvas=document.createElement('canvas');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);
+    const values=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    const sampled=new Set();
+    for(let i=0;i<values.length;i+=Math.max(4,Math.floor(values.length/3000/4)*4)){
+     sampled.add(values[i]+','+values[i+1]+','+values[i+2]);
+    }
+    return {decodedWidth:img.naturalWidth,decodedHeight:img.naturalHeight,distinctColors:sampled.size};
+   }finally{URL.revokeObjectURL(url);}
+  },bytes.toString('base64'));
+  assert.equal(visual.decodedWidth,240);assert.equal(visual.decodedHeight,180);
+  assert.ok(visual.distinctColors>3,'Video thumbnail must show actual frame pixels, not a blank image');
  });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
