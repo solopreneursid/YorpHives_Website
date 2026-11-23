@@ -53,7 +53,7 @@ function fixture(item){
  const input={};
  for(const field of item.module.inputs||[]){
   let value=field.default;
-  if(value===undefined){
+  if(value===undefined||(value===''&&['textarea','text'].includes(field.type))){
    if(field.type==='textarea')value='Alpha beta gamma';
    else if(field.type==='number')value='10';
    else if(field.type==='select')value=field.options?.[0]??'';
