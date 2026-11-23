@@ -77,7 +77,7 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p qa-results
-          node --test scripts/health-local-utility-contracts.test.mjs scripts/health-pdf-contracts.test.mjs scripts/health-media-contracts.test.mjs scripts/health-all-utility-smoke.test.mjs | tee qa-results/test-tap.txt
+          node --test scripts/health-local-utility-contracts.test.mjs scripts/health-pdf-contracts.test.mjs scripts/health-media-contracts.test.mjs scripts/health-all-utility-smoke.test.mjs scripts/health-wave1-pdf-contracts.test.mjs | tee qa-results/test-tap.txt
       - name: Retain individual local test results
         if: always()
         uses: actions/upload-artifact@v6
