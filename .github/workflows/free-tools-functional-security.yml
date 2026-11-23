@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA covers actual HEIC decoding, self-hosted OCR, simulated microphone/display streams and privacy.
+# QA now enforces per-scenario watchdogs and complete-artifact gates for HEIC/OCR runs.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
