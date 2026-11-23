@@ -20,14 +20,21 @@ export function isHeicHeader(bytes){
 }
 let heicEnginePromise;
 function loadHeicEngine(){
- if(globalThis.heic2any)return Promise.resolve(globalThis.heic2any);
+ const ready=globalThis.HeicTo;
+ if(typeof ready==='function')return Promise.resolve(ready);
+ if(typeof ready?.heicTo==='function')return Promise.resolve(ready.heicTo.bind(ready));
  if(typeof document==='undefined')throw Error('HEIC conversion requires a browser.');
  if(!heicEnginePromise)heicEnginePromise=new Promise((resolve,reject)=>{
   const script=document.createElement('script');
-  script.src=new URL('./vendor/heic/heic2any.min.js',import.meta.url).href;
+  script.src=new URL('./vendor/heic/heic-to.js',import.meta.url).href;
   script.async=true;
-  script.onload=()=>typeof globalThis.heic2any==='function'?resolve(globalThis.heic2any):reject(Error('The local HEIC engine could not be started.'));
-  script.onerror=()=>reject(Error('The HEIC conversion module is unavailable. Try refreshing this page.'));
+  script.onload=()=>{
+   const engine=globalThis.HeicTo;
+   const fn=typeof engine==='function'?engine:
+    typeof engine?.heicTo==='function'?engine.heicTo.bind(engine):null;
+   fn?resolve(fn):reject(Error('The local HEIC decoder could not start.'));
+  };
+  script.onerror=()=>reject(Error('The local HEIC decoder is unavailable. Try refreshing this page.'));
   document.head.append(script);
  }).catch(error=>{heicEnginePromise=null;throw error;});
  return heicEnginePromise;
@@ -66,7 +73,7 @@ async function convertHeic(files,options={}){
  try{
   const timeout=Math.min(90000,Math.max(30000,Math.ceil(file.size/1048576)*8000));
   blob=await Promise.race([
-   convert({blob:file,toType:mime,quality}),
+   convert({blob:file,type:mime,quality}),
    new Promise((_,reject)=>setTimeout(()=>reject(Error('The local HEIC decoder exceeded its '+Math.round(timeout/1000)+'-second time limit. This photo may use an unsupported codec.')),timeout))
   ]);
  }catch(error){
