@@ -47,7 +47,7 @@ jobs:
           mkdir -p .qa-media
           ffmpeg -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=160x120:rate=8:duration=2' -an -c:v libvpx -b:v 250k -pix_fmt yuv420p .qa-media/video.webm
           test -s .qa-media/video.webm
-          ffmpeg -hide_banner -loglevel error -y -f lavfi -i 'color=c=red:size=64x48:rate=1' -frames:v 1 .qa-media/input.png
+          ffmpeg -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=256x192:rate=1:duration=1' -frames:v 1 .qa-media/input.png
           heif-enc -q 80 -o .qa-media/input.heic .qa-media/input.png
           test -s .qa-media/input.heic
       - name: Test live browser flows, without hiding intermittent failures
