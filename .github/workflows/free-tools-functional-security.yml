@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA includes creator image pixel art, color picking and memes alongside Wave 2 tools.
+# QA verifies image publishing ZIP and PPTX export/import alongside local image and Wave2 tools.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
