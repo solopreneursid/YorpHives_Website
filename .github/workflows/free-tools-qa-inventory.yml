@@ -1,5 +1,5 @@
 name: Free Tools QA coverage inventory
-# Include PDF metadata, XLSX conversion, ZIP inspection and image-to-PDF browser output scenarios.
+# Track creator PDF subtitle social favicon and batch file browser output checks.
 on:
   workflow_dispatch:
   schedule:
