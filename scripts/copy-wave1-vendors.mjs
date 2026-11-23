@@ -1,4 +1,5 @@
-// Copies pinned, permissively licensed browser libraries into local static assets.
+// Copies pinned, open-source browser libraries into same-origin static assets.
+// The standalone HEIC decoder is LGPL-3.0 and its license is preserved alongside the asset.
 // No CDN or external runtime processing is required. Run after copying /tools into dist.
 import {readdir,mkdir,copyFile,stat} from 'node:fs/promises';
 import {resolve,dirname} from 'node:path';
