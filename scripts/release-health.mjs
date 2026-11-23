@@ -8,9 +8,12 @@ if(base.origin!=='https://yorphives.com')throw Error('Only the canonical YorpHiv
 const response=await fetch('https://yorphives.com/.well-known/yorphives-release.json',{
  headers:{'cache-control':'no-cache'},redirect:'error',signal:AbortSignal.timeout(15000)
 });
-if(response.status===404){
- await record('not_activated');
- console.error('RELEASE_GATE_NOT_ACTIVATED: public site lacks a revision manifest. This is not proof that the currently live site is down.');
+const type=response.headers.get('content-type')||'';
+// Cloudflare Pages may serve the homepage (200 text/html) for a missing static JSON path.
+// Distinguish that missing release identity from a present but corrupted JSON manifest.
+if(response.status===404||response.status===200&&!/application\/json/i.test(type)){
+ await record('identity_missing');
+ console.error('RELEASE_IDENTITY_MISSING: no deployed JSON release manifest. The old live site may predate first activation; confirm the active Cloudflare deployment before treating this as drift.');
  process.exitCode=2;
 }else{
  if(!response.ok)throw Error('Live identity endpoint failed: HTTP '+response.status);
