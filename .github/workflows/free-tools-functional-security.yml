@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA expanded to all five Wave 4 creator outputs and batch file integrity.
+# QA covers creator assets, campaign URL safety, password checks and SVG processing.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
