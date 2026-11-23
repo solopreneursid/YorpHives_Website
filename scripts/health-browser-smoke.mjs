@@ -1,5 +1,7 @@
 // Production read-only browser health check. No uploads or synthetic analytics.
 import assert from 'node:assert/strict';
+import {writeFile,mkdir} from 'node:fs/promises';
+import {dirname} from 'node:path';
 import {chromium} from 'playwright';
 const ORIGIN='https://yorphives.com';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
@@ -7,6 +9,7 @@ const results=[],unexpectedWrites=[];
 async function scenario(name,fn){
  const context=await browser.newContext({baseURL:ORIGIN,serviceWorkers:'block',viewport:{width:1280,height:820}});
  const page=await context.newPage(),errors=[];
+ page.__qaRoutes=[];
  await context.addInitScript(()=>{localStorage.setItem('yorphives-anonymous-analytics-disabled','1');});
  await context.route('**/api/insights/collect',route=>route.fulfill({status:204,body:''}));
  page.on('pageerror',e=>errors.push(page.url()+': '+(e.stack||e.message).slice(0,350)));
@@ -14,12 +17,13 @@ async function scenario(name,fn){
  try{
   await fn(page,context);
   assert.deepEqual(errors,[],'Browser JavaScript exceptions: '+errors.join(' | '));
-  results.push({name,passed:true});
+  results.push({name,passed:true,routes:[...new Set(page.__qaRoutes)]});
  }catch(error){
-  results.push({name,passed:false,error:String(error?.message||error).slice(0,450)});
+  results.push({name,passed:false,routes:[...new Set(page.__qaRoutes)],error:String(error?.message||error).slice(0,450)});
  }finally{await context.close()}
 }
 async function open(page,path){
+ if(path.startsWith('/tools/'))page.__qaRoutes.push(path);
  const r=await page.goto(path,{waitUntil:'domcontentloaded',timeout:30000});
  assert.equal(r?.status(),200,path+' not reachable');
  await page.locator('h1').first().waitFor({state:'visible',timeout:15000});
@@ -620,4 +624,9 @@ try{
 for(const r of results)console.log((r.passed?'PASS ':'FAIL ')+r.name+(r.error?' — '+r.error:''));
 const passed=results.filter(r=>r.passed).length;
 console.log('HEALTH BROWSER SMOKE: '+passed+'/'+results.length+' passed; synthetic local inputs; analytics blocked.');
+if(process.env.YORPHIVES_QA_RESULTS){
+ const dest=process.env.YORPHIVES_QA_RESULTS;
+ await mkdir(dirname(dest),{recursive:true});
+ await writeFile(dest,JSON.stringify({schemaVersion:1,generatedAt:new Date().toISOString(),scenarios:results,unexpectedWrites},null,2)+'\n');
+}
 if(passed!==results.length)process.exitCode=1;
