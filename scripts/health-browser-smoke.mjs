@@ -119,7 +119,7 @@ try{
   await open(page,'/tools/csv-file-to-xlsx/');
   const actual=await page.evaluate(async()=>{
    const {csvToXlsx,readXlsx,rowsToCsv,rowsToJson}=await import('/tools/office-files.mjs');
-   const input='name,code,comment\\n"Café भारत",00123,"hello, world"\\n"Zoë",00007,"two lines\\ncontinued"';
+   const input='name,code,comment\n"Café भारत",00123,"hello, world"\n"Zoë",00007,"two lines\ncontinued"';
    const file=await csvToXlsx(input);
    const workbook=await readXlsx(file,1);
    return {size:file.byteLength||file.size||0,count:workbook.count,rows:workbook.rows,
@@ -130,11 +130,11 @@ try{
   assert.deepEqual(actual.rows,[
    ['name','code','comment'],
    ['Café भारत','00123','hello, world'],
-   ['Zoë','00007','two lines\\ncontinued']
+   ['Zoë','00007','two lines\ncontinued']
   ]);
   assert.ok(actual.csv.includes('"hello, world"'));
   assert.equal(actual.json[0].code,'00123');
-  assert.equal(actual.json[1].comment,'two lines\\ncontinued');
+  assert.equal(actual.json[1].comment,'two lines\ncontinued');
  });
  await scenario('Image Resizer exports correct PNG dimensions',async page=>{
   await open(page,'/tools/image-resizer/');
