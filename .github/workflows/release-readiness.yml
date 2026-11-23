@@ -1,5 +1,5 @@
 name: YorpHives release readiness — no deployment
-# Rebuild and package audited accessibility improvements from immutable source revision.
+# Rebuild candidate with exhaustive live-route postdeployment verification controls.
 on:
   workflow_dispatch:
     inputs:
