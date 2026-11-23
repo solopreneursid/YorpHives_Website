@@ -46,7 +46,7 @@ body[data-wave1="pdf-compressor"] .panel-content{padding:30px 34px 35px}
 #pdf-compressor-form .compression-option>input:checked+.compression-option-content .cpx-selected-check{visibility:visible;background:#16875b;border-color:#16875b;color:#fff}
 #pdf-compressor-form .compression-option>input:checked+.compression-option-content .compression-option-badge{background:#bceccc}
 #pdf-compressor-form .compression-option-content>strong{font-size:17px;letter-spacing:-.035em;font-weight:830;color:#193d2e;line-height:1.28;padding:0;margin-bottom:7px}
-#pdf-compressor-form .compression-option-content>small{font-size:12px;line-height:1.5;color:#718879}
+#pdf-compressor-form .compression-option-content>small{font-size:12px;line-height:1.5;color:#4d6755}
 #pdf-compressor-form .cpx-status-bar{border:1px solid #e2ede5;background:#f9fcf9;border-radius:10px;margin-top:23px;padding:12px 15px;display:flex;align-items:center;gap:11px}
 #pdf-compressor-form .cpx-status-icon{display:grid;place-items:center;flex:none;width:21px;height:21px;border-radius:50%;background:#def4e6;color:#237852;font-size:11px;font-weight:850}
 #pdf-compressor-form .tool-status{margin:0;min-height:0;color:#567969;font-size:12px;line-height:1.5}
