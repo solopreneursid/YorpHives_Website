@@ -1,5 +1,5 @@
 name: Free Tools QA coverage inventory
-# Refreshes Phase 2 PDF, image and spreadsheet coverage definitions after new QA scenarios.
+# Refreshes Phase 2 PDF, spreadsheet, crop and rotation browser test coverage.
 on:
   workflow_dispatch:
   schedule:
