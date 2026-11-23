@@ -52,6 +52,14 @@ jobs:
       - name: Install the committed dependency graph
         working-directory: site-source
         run: npm ci --ignore-scripts --no-fund --no-audit
+      - name: Parse all first-party JavaScript modules before release
+        working-directory: site-source
+        shell: bash
+        run: |
+          set -euo pipefail
+          find scripts tools agentic -type f \( -name '*.mjs' -o -name '*.js' \) ! -path '*/vendor/*' -print0 | xargs -0 -n1 node --check
+          node --check studio.js
+          node --check rotators.js
       - name: Fail release on high or critical dependency advisories
         working-directory: site-source
         run: npm audit --omit=dev --audit-level=high
