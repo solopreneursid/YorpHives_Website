@@ -820,6 +820,74 @@ try{
   assert.match(details.text,/<svg/);assert.ok(details.rejected);
   assert.doesNotMatch(details.text,/<script/i);
  });
+ await scenario('Image Metadata Cleaner re-encodes valid PNG pixels',async page=>{
+  await open(page,'/tools/image-metadata-cleaner/');
+  const actual=await page.evaluate(async()=>{
+   const {processWave1}=await import('/tools/wave1-core.mjs');const canvas=document.createElement('canvas');canvas.width=100;canvas.height=80;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#5ea47c';ctx.fillRect(0,0,100,80);
+   const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const file=new File([blob],'synthetic.png',{type:'image/png'});
+   const out=await processWave1('image-metadata-cleaner',[file],{format:'png'});
+   const bytes=new Uint8Array(await out.blob.arrayBuffer());
+   const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+   return {type:out.blob.type,header:[...bytes.slice(0,8)],w:view.getUint32(16),h:view.getUint32(20)};
+  });
+  assert.equal(actual.type,'image/png');
+  assert.deepEqual(actual.header,[137,80,78,71,13,10,26,10]);
+  assert.equal(actual.w,100);assert.equal(actual.h,80);
+ });
+ await scenario('Passport Photo Maker outputs required 600 square PNG',async page=>{
+  await open(page,'/tools/passport-photo-maker/');
+  const actual=await page.evaluate(async()=>{
+   const {processWave1}=await import('/tools/wave1-core.mjs');const canvas=document.createElement('canvas');canvas.width=100;canvas.height=80;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#5ea47c';ctx.fillRect(0,0,100,80);
+   const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const file=new File([blob],'synthetic.png',{type:'image/png'});
+   const out=await processWave1('passport-photo-maker',[file],{size:'2x2',top:'50'});
+   const bytes=new Uint8Array(await out.blob.arrayBuffer());
+   const v=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+   return {mime:out.blob.type,w:v.getUint32(16),h:v.getUint32(20)};
+  });
+  assert.deepEqual(actual,{mime:'image/png',w:600,h:600});
+ });
+ await scenario('Image Size Target produces JPEG within declared KB limit',async page=>{
+  await open(page,'/tools/image-size-target/');
+  const actual=await page.evaluate(async()=>{
+   const {processWave1}=await import('/tools/wave1-core.mjs');const canvas=document.createElement('canvas');canvas.width=100;canvas.height=80;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#5ea47c';ctx.fillRect(0,0,100,80);
+   const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const file=new File([blob],'synthetic.png',{type:'image/png'});
+   const out=await processWave1('image-size-target',[file],{kb:'100',format:'jpeg'});
+   const bytes=new Uint8Array(await out.blob.arrayBuffer());
+   return {mime:out.blob.type,size:bytes.length,jpeg:[...bytes.slice(0,2)]};
+  });
+  assert.equal(actual.mime,'image/jpeg');assert.deepEqual(actual.jpeg,[255,216]);
+  assert.ok(actual.size>100&&actual.size<=100*1024);
+ });
+ await scenario('Barcode Generator produces printable SVG without active content',async page=>{
+  await open(page,'/tools/barcode-generator/');
+  const actual=await page.evaluate(async()=>{
+   const {processWave1}=await import('/tools/wave1-core.mjs');
+   const out=await processWave1('barcode-generator',[],{text:'QA2026',format:'CODE128'});
+   return {mime:out.blob.type,svg:await out.blob.text()};
+  });
+  assert.equal(actual.mime,'image/svg+xml');
+  assert.match(actual.svg,/<svg/);assert.match(actual.svg,/<(?:rect|path)/);
+  assert.doesNotMatch(actual.svg,/<script|onload=/i);
+ });
+ await scenario('SVG to PNG creates safe correctly sized raster output',async page=>{
+  await open(page,'/tools/svg-to-png/');
+  const actual=await page.evaluate(async()=>{
+   const {processWave1}=await import('/tools/wave1-core.mjs');
+   const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 48"><rect width="64" height="48" fill="red"/></svg>';
+   const file=new File([svg],'synthetic.svg',{type:'image/svg+xml'});
+   const out=await processWave1('svg-to-png',[file],{width:'64',height:'48'});
+   const bytes=new Uint8Array(await out.blob.arrayBuffer());
+   const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+   return {type:out.blob.type,w:view.getUint32(16),h:view.getUint32(20)};
+  });
+  assert.deepEqual(actual,{type:'image/png',w:64,h:48});
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
