@@ -1,5 +1,5 @@
 name: Free Tools QA coverage inventory
-# Refreshes audio output and video-settings coverage separately; all 143 tools remain tracked.
+# Refreshes real audio-volume WAV browser-output evidence alongside existing media contracts.
 on:
   workflow_dispatch:
   schedule:
