@@ -1,5 +1,5 @@
 name: Free Tools QA coverage inventory
-# Refresh all 143 published tool mappings including genuine HEIC and local OCR checks.
+# Refresh tool-by-tool QA definitions after complete 143-tool functional, browser and a11y verification.
 on:
   workflow_dispatch:
   schedule:
