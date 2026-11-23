@@ -54,7 +54,7 @@ test('Invalid HEIC cannot trigger external processing or unauthenticated convers
  await assert.rejects(()=>processWave3('audio-trimmer',[],{}),/Choose one/);
 });
 test('All third-party engines are locally bundled in build output',async()=>{
- const file=resolve(root,'dist/tools/vendor/heic/heic2any.min.js');
+ const file=resolve(root,'dist/tools/vendor/heic/heic-to.mjs');
  const metadata=await stat(file);assert.ok(metadata.size>500000);
  const headers=await readFile(resolve(root,'dist/_headers'),'utf8');
  assert.match(headers,/connect-src 'self'/);
