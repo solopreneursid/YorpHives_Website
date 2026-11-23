@@ -13,110 +13,143 @@ const field=(opts,key,max=1500,required=false)=>{
  if(required&&!value)throw Error('Please enter '+key+'.');
  return value;
 };
-function latin(text){
- const value=text.replace(/[\u2010-\u2015]/g,'-').replace(/[\u2022]/g,'*');
- if(/[^\x20-\x7E\n\r]/.test(value))throw Error('The PDF generator currently supports standard Latin text without emojis or non-Latin scripts.');
- return value;
+function printable(value,multiline=false){
+ const text=String(value).replace(/\r\n?/g,'\n').replace(/\t/g,' ');
+ if(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(text))throw Error('Remove control characters from the PDF text.');
+ return multiline?text:text.replace(/\n/g,' ');
 }
-const money=(value,label)=>{
- const n=Number(value);
- if(!Number.isFinite(n)||n<0||n>10000000)throw Error('Enter a valid '+label+' between 0 and 10,000,000.');
- return n;
-};
-function wrap(text,font,size,width){
- const lines=[];
- for(const para of latin(text).split(/\r?\n/)){
-  if(!para.trim()){lines.push('');continue;}
-  let line='';
-  for(const word of para.trim().split(/\s+/)){
-   if(font.widthOfTextAtSize(word,size)>width)throw Error('A long word does not fit in the PDF layout.');
-   const next=line?line+' '+word:word;
-   if(font.widthOfTextAtSize(next,size)>width){lines.push(line);line=word;}else line=next;
-  }
-  lines.push(line);
- }
- return lines;
+function linesOf(text,engine,width,size,font,bold=false){
+ return text.split('\n').flatMap(part=>engine.wrap(part,width,size,font,bold));
+}
+function entriesForFont(text,font){
+ return text.split('\n').map(line=>({text:line,font}));
 }
 async function quotePdf(opts){
- const business=field(opts,'business',90,true),client=field(opts,'client',90,true),reference=field(opts,'reference',45),notes=field(opts,'notes',400);
- const entries=field(opts,'items',1800,true).split('\n').map(x=>x.trim()).filter(Boolean);
+ const business=printable(field(opts,'business',90,true));
+ const client=printable(field(opts,'client',90,true));
+ const reference=printable(field(opts,'reference',45));
+ const notes=printable(field(opts,'notes',4000),true);
+ const entries=field(opts,'items',1800,true).split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
  if(entries.length<1||entries.length>10)throw Error('Enter 1–10 items, one per line.');
  const currency=(field(opts,'currency',3)||'USD').toUpperCase();
  if(!/^[A-Z]{3}$/.test(currency))throw Error('Use a three-letter currency code, such as USD or INR.');
- const tax=money(opts.tax??0,'tax percentage');
- if(tax>100)throw Error('Tax cannot exceed 100%.');
- const parsed=entries.map((text,index)=>{
-  const parts=text.split('|').map(x=>x.trim());
+ for(const [index,entry] of entries.entries()){
+  const parts=entry.split('|').map(x=>x.trim());
   if(parts.length!==3||!parts[0]||parts[0].length>70)throw Error('Item '+(index+1)+': use Description | Quantity | Unit Price.');
-  const qty=money(parts[1],'item quantity'),price=money(parts[2],'unit price');
-  if(qty<=0||qty>10000)throw Error('Item quantity must be greater than zero and at most 10,000.');
-  return {desc:latin(parts[0]),qty,price,total:Math.round(qty*price*100)/100};
- });
- const subtotal=Math.round(parsed.reduce((sum,item)=>sum+item.total,0)*100)/100;
- if(subtotal>1e8)throw Error('Quotation total is too large.');
- const taxAmount=Math.round(subtotal*tax)/100;
- const total=subtotal+taxAmount;
- const doc=await PDFDocument.create(),page=doc.addPage([595,842]);
+  printable(parts[0]);
+ }
+ const {calculateInvoice}=await import('./pdf-money.mjs');
+ const amounts=calculateInvoice(entries,opts.tax??0,currency,{maxDescription:70,maxQuantity:10000,document:'Quotation'});
+ if(Number(amounts.subtotal)>1e8)throw Error('Quotation total is too large.');
+ const doc=await PDFDocument.create();
  const normal=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
+ const {createPdfTextEngine}=await import('./pdf-text-engine.mjs');
+ const engine=await createPdfTextEngine(doc,[...entriesForFont(business,bold),...entriesForFont(client,normal),
+  ...entriesForFont(reference,normal),...entriesForFont(notes,normal),...amounts.items.flatMap(item=>entriesForFont(item.label,normal))]);
  const dark=rgb(.08,.17,.16),green=rgb(.07,.45,.31),muted=rgb(.38,.46,.43),line=rgb(.83,.9,.85),white=rgb(1,1,1);
- const text=(s,x,y,size=10,font=normal,color=dark)=>{
-  const val=latin(String(s));page.drawText(val,{x,y,size,font,color});
- };
- page.drawRectangle({x:0,y:770,width:595,height:72,color:green});
- text('QUOTATION',43,799,24,bold,white);
- text(business,43,750,15,bold);
- text('Prepared for: '+client,43,727,11,normal,muted);
- if(reference)text('Reference: '+reference,43,710,10,normal,muted);
- text('Description',43,663,10,bold,green);
- text('Qty',363,663,10,bold,green);text('Price',424,663,10,bold,green);text('Amount',510,663,10,bold,green);
- page.drawRectangle({x:43,y:653,width:510,height:1,color:line});
- let y=635;
- const right=(val,x,yy)=>{const t=String(val);text(t,x-normal.widthOfTextAtSize(t,10),yy);};
- for(const item of parsed){
-  const parts=wrap(item.desc,normal,10,290);
-  parts.forEach((part,i)=>text(part,43,y-i*13,10));
-  right(item.qty.toString(),388,y);right(item.price.toFixed(2),478,y);right(item.total.toFixed(2),551,y);
-  y-=Math.max(1,parts.length)*13+11;
-  page.drawRectangle({x:43,y:y+7,width:510,height:.6,color:line});
-  if(y<230)throw Error('Your quotation needs shorter descriptions or fewer items.');
+ let page,y;
+ async function draw(value,x,at,size=10,font=normal,color=dark,isBold=false){
+  await engine.draw(page,String(value),{x,y:at,size,font,color,bold:isBold,
+   colorCss:color===white?'#ffffff':color===green?'#12734f':color===muted?'#61756e':'#142b29'});
  }
- y-=30;
- text('Subtotal',374,y,11,bold);right(subtotal.toFixed(2),551,y);y-=25;
- text('Tax ('+tax.toFixed(2)+'%)',374,y,10);right(taxAmount.toFixed(2),551,y);y-=34;
- page.drawRectangle({x:354,y:y-18,width:200,height:43,color:green});
- text('TOTAL',368,y-1,12,bold,white);
- const final=currency+' '+total.toFixed(2);text(final,552-bold.widthOfTextAtSize(final,12),y-1,12,bold,white);
+ async function wrapped(value,x,maxWidth,size,font=normal,color=dark,isBold=false,leading=15){
+  for(const row of linesOf(value,engine,maxWidth,size,font,isBold)){await draw(row,x,y,size,font,color,isBold);y-=leading;}
+ }
+ async function right(value,edge,at,maxWidth,size=10,font=normal,color=dark,isBold=false){
+  const width=engine.width(String(value),size,font,isBold);
+  if(width>maxWidth)throw Error('A quotation amount is too wide for the page. Use smaller values.');
+  await draw(value,edge-width,at,size,font,color,isBold);
+ }
+ async function startPage(first,table=true){
+  if(doc.getPageCount()>=20)throw Error('This quotation needs more than 20 pages. Use fewer line breaks.');
+  page=doc.addPage([595,842]);
+  page.drawRectangle({x:0,y:770,width:595,height:72,color:green});
+  await draw(first?'QUOTATION':'QUOTATION (CONTINUED)',43,799,first?24:18,bold,white,true);
+  y=748;
+  if(first){
+   await wrapped(business,43,508,15,bold,dark,true,19);y-=4;
+   await wrapped('Prepared for: '+client,43,508,11,normal,muted,false,15);
+   if(reference)await wrapped('Reference: '+reference,43,508,10,normal,muted,false,14);
+   y-=17;
+  }else{y-=16;}
+  if(table){
+   await draw('Description',43,y,10,bold,green,true);
+   await right('Qty',359,y,53,10,bold,green,true);
+   await right('Price',457,y,90,10,bold,green,true);
+   await right('Amount',551,y,85,10,bold,green,true);
+   y-=10;page.drawRectangle({x:43,y,width:510,height:1,color:line});y-=18;
+  }
+  await draw('Prepared with YorpHives | Estimates are not tax or legal advice.',43,31,9,normal,muted);
+ }
+ await startPage(true);
+ for(const item of amounts.items){
+  const rows=linesOf(item.label,engine,252,10,normal),height=rows.length*14+11;
+  if(y-height<110)await startPage(false);
+  const top=y;
+  for(const row of rows){await draw(row,43,y);y-=14;}
+  await right(item.quantity,359,top,53);
+  await right(item.price,457,top,90);
+  await right(item.total,551,top,85);
+  y-=11;page.drawRectangle({x:43,y:y+5,width:510,height:.6,color:line});
+ }
+ if(y<180)await startPage(false,false);
+ y-=18;await draw('Subtotal',374,y,11,bold,dark,true);await right(amounts.subtotal,551,y,85);
+ y-=24;await draw('Tax ('+amounts.taxPercent+'%)',374,y);await right(amounts.tax,551,y,85);
+ y-=32;page.drawRectangle({x:354,y:y-17,width:200,height:41,color:green});
+ await draw('TOTAL',368,y-1,12,bold,white,true);
+ await right(currency+' '+amounts.total,552,y-1,137,12,bold,white,true);
+ y-=45;
  if(notes){
-  text('NOTES',43,146,10,bold,green);
-  wrap(notes,normal,10,500).slice(0,5).forEach((x,i)=>text(x,43,124-i*15));
+  if(y<100)await startPage(false,false);
+  await draw('NOTES',43,y,10,bold,green,true);y-=20;
+  for(const row of linesOf(notes,engine,508,10,normal)){
+   if(y<65){await startPage(false,false);await draw('NOTES (CONTINUED)',43,y,10,bold,green,true);y-=20;}
+   await draw(row,43,y);y-=15;
+  }
  }
- text('Prepared with YorpHives | Estimates are not tax or legal advice.',43,31,9,normal,muted);
  return output(new Blob([await doc.save()],{type:'application/pdf'}),'yorphives-quotation.pdf','Created your itemized quotation with subtotal, tax and total.');
 }
 async function certificatePdf(opts){
- const recipient=field(opts,'recipient',95,true),title=field(opts,'title',85,true),organization=field(opts,'organization',100,true);
- const detail=field(opts,'detail',220)||'For outstanding participation and achievement.';
- const date=field(opts,'date',45)||new Date().toISOString().slice(0,10);
- const doc=await PDFDocument.create(),page=doc.addPage([842,595]);
+ const recipient=printable(field(opts,'recipient',95,true)),title=printable(field(opts,'title',85,true));
+ const organization=printable(field(opts,'organization',100,true));
+ const detail=printable(field(opts,'detail',4000)||'For outstanding participation and achievement.',true);
+ const date=printable(field(opts,'date',45)||new Date().toISOString().slice(0,10));
+ const doc=await PDFDocument.create();
  const regular=await doc.embedFont(StandardFonts.TimesRoman),bold=await doc.embedFont(StandardFonts.TimesRomanBold);
+ const {createPdfTextEngine}=await import('./pdf-text-engine.mjs');
+ const engine=await createPdfTextEngine(doc,[...entriesForFont(recipient,bold),...entriesForFont(title,bold),
+  ...entriesForFont(organization,bold),...entriesForFont(detail,regular),...entriesForFont(date,regular)]);
  const ink=rgb(.11,.24,.22),accent=rgb(.05,.46,.32),muted=rgb(.40,.46,.43),gold=rgb(.72,.52,.22);
- page.drawRectangle({x:26,y:26,width:790,height:543,borderWidth:3,borderColor:gold});
- page.drawRectangle({x:40,y:40,width:762,height:515,borderWidth:1,borderColor:accent});
- const center=(s,y,size,font=regular,color=ink)=>{
-  const t=latin(s);const width=font.widthOfTextAtSize(t,size);
-  if(width>720)throw Error('A certificate field is too long for the layout.');
-  page.drawText(t,{x:(842-width)/2,y,size,font,color});
- };
- center('CERTIFICATE OF ACHIEVEMENT',460,26,bold,accent);
- center('PRESENTED TO',403,13,regular,muted);
- center(recipient,342,36,bold,ink);
- page.drawRectangle({x:262,y:316,width:318,height:2,color:gold});
- center(title,275,18,bold,accent);
- const lines=wrap(detail,regular,15,640).slice(0,2);
- lines.forEach((s,i)=>center(s,230-i*24,15));
- center('Issued by '+organization,153,16,bold);
- center('Date: '+date,119,13,regular,muted);
- center('Created with YorpHives | Not an accredited credential',72,10,regular,muted);
+ let page,y;
+ async function center(value,at,size,font=regular,color=ink,isBold=false){
+  const width=engine.width(value,size,font,isBold);
+  if(width>720)throw Error('A certificate field is too wide for the page.');
+  await engine.draw(page,value,{x:(842-width)/2,y:at,size,font,color,bold:isBold,
+   colorCss:color===accent?'#0d7552':color===muted?'#66756e':'#1c3d38'});
+ }
+ async function begin(first){
+  if(doc.getPageCount()>=20)throw Error('This certificate needs more than 20 pages. Use fewer line breaks.');
+  page=doc.addPage([842,595]);
+  page.drawRectangle({x:26,y:26,width:790,height:543,borderWidth:3,borderColor:gold});
+  page.drawRectangle({x:40,y:40,width:762,height:515,borderWidth:1,borderColor:accent});
+  await center(first?'CERTIFICATE OF ACHIEVEMENT':'CERTIFICATE DETAILS (CONTINUED)',510,first?26:20,bold,accent,true);
+  await center('Created with YorpHives | Not an accredited credential',54,9,regular,muted);
+  if(!first){y=470;return;}
+  await center('PRESENTED TO',472,13,regular,muted);y=430;
+  for(const row of linesOf(recipient,engine,720,32,bold,true)){await center(row,y,32,bold,ink,true);y-=38;}
+  page.drawRectangle({x:262,y:y+14,width:318,height:2,color:gold});y-=13;
+  for(const row of linesOf(title,engine,720,18,bold,true)){await center(row,y,18,bold,accent,true);y-=23;}
+  y-=16;
+  const orgRows=linesOf('Issued by '+organization,engine,720,13,bold,true);
+  let orgY=128;for(const row of orgRows){await center(row,orgY,13,bold,ink,true);orgY-=17;}
+  const dateRows=linesOf('Date: '+date,engine,720,12,regular);
+  for(const row of dateRows){await center(row,orgY-2,12,regular,muted);orgY-=15;}
+ }
+ await begin(true);
+ for(const row of linesOf(detail,engine,690,15,regular)){
+  if(y<155)await begin(false);
+  await center(row,y,15,regular,ink);y-=22;
+ }
  return output(new Blob([await doc.save()],{type:'application/pdf'}),'yorphives-certificate.pdf','Created a printable landscape certificate. The template is not an official accreditation.');
 }
 const parseStamp=(part,source)=>{

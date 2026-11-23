@@ -5,6 +5,8 @@ on:
       - 'scripts/tool-discovery-browser-qa.mjs'
       - 'scripts/website-repairs-browser-qa.mjs'
       - 'scripts/pdf-integrity-browser-qa.mjs'
+      - 'scripts/document-integrity-browser-qa.mjs'
+      - 'tests/document-integrity.test.mjs'
       - '.github/workflows/tool-discovery-browser.yml'
       - 'tools/**'
       - 'scripts/build-site.mjs'
@@ -27,6 +29,8 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Build independent production static candidate
         run: node scripts/build-site.mjs --target=production
+      - name: Check document totals, pagination and text integrity
+        run: node --test tests/document-integrity.test.mjs tests/pdf-integrity.test.mjs
       - name: Real Chromium acceptance with local-only test web server
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 --directory dist >/tmp/yorphives-qa-http.log 2>&1 &
@@ -36,6 +40,7 @@ jobs:
           node scripts/tool-discovery-browser-qa.mjs
           node scripts/website-repairs-browser-qa.mjs
           node scripts/pdf-integrity-browser-qa.mjs
+          node scripts/document-integrity-browser-qa.mjs
       - name: Retain synthetic PDF rendering for review
         if: always()
         uses: actions/upload-artifact@v4
