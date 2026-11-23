@@ -115,7 +115,8 @@ jobs:
         run: |
           set -euo pipefail
           for i in 1 2 3 4 5 6; do
-            if node source/scripts/release-verify.mjs https://yorphives.com "$SOURCE_SHA" "$FINGERPRINT" production; then
+            if node source/scripts/release-verify.mjs https://yorphives.com "$SOURCE_SHA" "$FINGERPRINT" production && \
+               YORPHIVES_LIVE_ROUTE_RESULTS=live-route-results.json node source/scripts/release-live-pages.mjs https://yorphives.com; then
               echo 'APPROVED_PRODUCTION_RELEASE_VERIFIED' >> "$GITHUB_STEP_SUMMARY"
               exit 0
             fi
@@ -128,3 +129,11 @@ jobs:
           node -e "const r=require('./rollback.json');if(!r.success)process.exit(1)"
           echo "Pages rollback requested to $PREVIOUS_DEPLOYMENT_ID; backend state was not rolled back." >> "$GITHUB_STEP_SUMMARY"
           exit 1
+      - name: Retain actual live route verification evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: yorphives-postdeployment-route-results
+          path: live-route-results.json
+          retention-days: 30
+          if-no-files-found: warn
