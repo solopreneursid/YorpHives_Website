@@ -1,0 +1,86 @@
+name: YorpHives release readiness — no deployment
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: 'Optional exact 40-character SHA on release/yorphives-reimagined-20261116 (blank = latest)'
+        required: false
+        type: string
+  push:
+    branches: [main]
+    paths: ['.github/workflows/release-readiness.yml']
+permissions:
+  contents: read
+concurrency:
+  group: yorphives-release-readiness
+  cancel-in-progress: false
+jobs:
+  candidate:
+    name: Verify and package immutable candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: release/yorphives-reimagined-20261116
+          path: site-source
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Pin the exact tested source and reject a foreign revision
+        shell: bash
+        env:
+          REQUESTED_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          cd site-source
+          git fetch origin release/yorphives-reimagined-20261116
+          if [ -n "$REQUESTED_SHA" ]; then
+            [[ "$REQUESTED_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo 'Exact lowercase 40-digit source SHA required'; exit 1; }
+            git cat-file -e "$REQUESTED_SHA^{commit}"
+            git merge-base --is-ancestor "$REQUESTED_SHA" origin/release/yorphives-reimagined-20261116
+            git checkout --detach "$REQUESTED_SHA"
+          fi
+          echo "YORPHIVES_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "Source revision: $(git rev-parse HEAD)"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Install the committed dependency graph
+        working-directory: site-source
+        run: npm ci --ignore-scripts --no-fund --no-audit
+      - name: Fail release on high or critical dependency advisories
+        working-directory: site-source
+        run: npm audit --omit=dev --audit-level=high
+      - name: Run source and release identity tests
+        working-directory: site-source
+        run: node --test tests/*.test.mjs
+      - name: Build candidate production assets
+        working-directory: site-source
+        run: |
+          node scripts/build-site.mjs --target=production
+          node scripts/release-check.mjs dist
+          node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('dist/.well-known/yorphives-release.json'));if(m.target!=='production'||m.sourceSha!==process.env.YORPHIVES_SOURCE_SHA||!m.assetFingerprint)process.exit(1);console.log('CANDIDATE',m.sourceSha,m.assetFingerprint)"
+          tar --format=posix -czf ../yorphives-production-candidate.tar.gz -C dist .
+          cp dist/.well-known/yorphives-release.json ../candidate-manifest.json
+      - name: Build and validate separate noindex preview
+        working-directory: site-source
+        run: |
+          node scripts/build-site.mjs --target=preview
+          node scripts/release-check.mjs dist
+          node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('dist/.well-known/yorphives-release.json'));if(m.target!=='preview'||m.sourceSha!==process.env.YORPHIVES_SOURCE_SHA)process.exit(1);const h=fs.readFileSync('dist/_headers','utf8');if(!/noindex/i.test(h))process.exit(2)"
+      - name: Show source and content fingerprint
+        shell: bash
+        run: |
+          node -e "const m=require('./candidate-manifest.json');console.log('Release candidate',m.sourceSha,m.assetFingerprint,'assets:',Object.keys(m.assets).length)"
+          echo '## Release candidate (NOT deployed)' >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit: \`$YORPHIVES_SOURCE_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          node -e "const m=require('./candidate-manifest.json');require('fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY, 'Fingerprint: \`'+m.assetFingerprint+'\`\nAssets: '+Object.keys(m.assets).length+'\n')"
+      - name: Retain exact production build and manifest
+        uses: actions/upload-artifact@v6
+        with:
+          name: yorphives-production-candidate
+          path: |
+            yorphives-production-candidate.tar.gz
+            candidate-manifest.json
+          retention-days: 14
+          if-no-files-found: error
