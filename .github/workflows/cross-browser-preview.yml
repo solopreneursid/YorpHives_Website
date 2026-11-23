@@ -76,3 +76,28 @@ jobs:
             if [ -n "$existing" ]; then gh issue edit "$existing" --body-file /tmp/compat-alert.md; else gh issue create --title "$title" --body-file /tmp/compat-alert.md; fi
             exit 1
           fi
+      - name: Publish evidence-backed compatibility summary
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          OUTCOME: ${{ steps.smoke.outcome }}
+        run: |
+          set -euo pipefail
+          title='YorpHives — Browser and Mobile QA Results'
+          {
+            echo '# YorpHives Chromium, Firefox, WebKit and mobile route checks'
+            echo
+            echo "Workflow status: **$OUTCOME**"
+            echo "Run evidence: https://github.com/$GH_REPO/actions/runs/$GITHUB_RUN_ID"
+            if [ -f site-source/.qa-media/cross-browser-results.json ]; then
+              node -e "const d=require('./site-source/.qa-media/cross-browser-results.json');console.log('Scenarios: '+d.passed+'/'+d.total+' passed, '+d.failed+' failed.');const failures=d.results.filter(x=>!x.passed);for(const f of failures.slice(0,25))console.log('- '+f.name+': '+String(f.error||'').slice(0,200));"
+            else
+              echo 'No complete test artifact was produced. This run does not verify any browser or viewport.'
+            fi
+            echo
+            echo 'These are representative smoke checks, not comprehensive accessibility or device certification.'
+          } > /tmp/yorphives-cross-browser.md
+          existing=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "YorpHives — Browser and Mobile QA Results") | .number' | head -n1)
+          if [ -n "$existing" ]; then gh issue edit "$existing" --body-file /tmp/yorphives-cross-browser.md; else gh issue create --title "$title" --body-file /tmp/yorphives-cross-browser.md; fi
