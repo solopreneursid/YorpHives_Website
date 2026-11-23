@@ -98,7 +98,7 @@ jobs:
           set -euo pipefail
           # Run from source so Wrangler picks up the versioned Pages Functions directory.
           test -d functions
-          npx --yes wrangler@4.45.0 pages deploy ../candidate-dist --project-name="$PRODUCTION_PROJECT" --branch="$DEPLOY_BRANCH" --commit-hash="$SOURCE_SHA"
+          npx --yes wrangler@4.68.0 pages deploy ../candidate-dist --project-name="$PRODUCTION_PROJECT" --branch="$DEPLOY_BRANCH" --commit-hash="$SOURCE_SHA"
       - name: Verify live domain serves the identical release and critical assets
         shell: bash
         run: |
