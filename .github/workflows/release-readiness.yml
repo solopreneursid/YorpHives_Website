@@ -11,12 +11,16 @@ on:
     paths: ['.github/workflows/release-readiness.yml']
 permissions:
   contents: read
+  issues: write
 concurrency:
   group: yorphives-release-readiness
   cancel-in-progress: false
 jobs:
   candidate:
     name: Verify and package immutable candidate
+    outputs:
+      source_sha: ${{ steps.identity.outputs.sha }}
+      fingerprint: ${{ steps.identity.outputs.fingerprint }}
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -69,9 +73,12 @@ jobs:
           node scripts/release-check.mjs dist
           node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('dist/.well-known/yorphives-release.json'));if(m.target!=='preview'||m.sourceSha!==process.env.YORPHIVES_SOURCE_SHA)process.exit(1);const h=fs.readFileSync('dist/_headers','utf8');if(!/noindex/i.test(h))process.exit(2)"
       - name: Show source and content fingerprint
+        id: identity
         shell: bash
         run: |
           node -e "const m=require('./candidate-manifest.json');console.log('Release candidate',m.sourceSha,m.assetFingerprint,'assets:',Object.keys(m.assets).length)"
+          echo "sha=$YORPHIVES_SOURCE_SHA" >> "$GITHUB_OUTPUT"
+          node -e "const m=require('./candidate-manifest.json');require('fs').appendFileSync(process.env.GITHUB_OUTPUT,'fingerprint='+m.assetFingerprint+'\\n')"
           echo '## Release candidate (NOT deployed)' >> "$GITHUB_STEP_SUMMARY"
           echo "Commit: \`$YORPHIVES_SOURCE_SHA\`" >> "$GITHUB_STEP_SUMMARY"
           node -e "const m=require('./candidate-manifest.json');require('fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY, 'Fingerprint: \`'+m.assetFingerprint+'\`\nAssets: '+Object.keys(m.assets).length+'\n')"
@@ -84,3 +91,41 @@ jobs:
             candidate-manifest.json
           retention-days: 14
           if-no-files-found: error
+
+  report:
+    name: Preserve readiness verdict for founder
+    needs: [candidate]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Upsert one release-readiness report
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          STATUS: ${{ needs.candidate.result }}
+          SOURCE_SHA: ${{ needs.candidate.outputs.source_sha }}
+          FINGERPRINT: ${{ needs.candidate.outputs.fingerprint }}
+        run: |
+          set -euo pipefail
+          title='YorpHives — Latest Production Release Readiness'
+          issue=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "YorpHives — Latest Production Release Readiness") | .number' | head -n 1)
+          {
+            echo '# YorpHives production candidate readiness'
+            echo
+            echo "Workflow result: **$STATUS**"
+            echo
+            echo "Evidence: https://github.com/$GH_REPO/actions/runs/$GITHUB_RUN_ID"
+            echo
+            if [ "$STATUS" = success ]; then
+              echo "Source commit: \`$SOURCE_SHA\`"
+              echo "Asset fingerprint: \`$FINGERPRINT\`"
+              echo "Readiness run ID: \`$GITHUB_RUN_ID\`"
+              echo 'A production candidate archive is available in this workflow run for 14 days.'
+              echo '**NOT deployed.** Founder-reviewed promotion and live verification are separate.'
+            else
+              echo 'Not approved for deployment. Inspect failed build, dependency or test steps first.'
+              echo 'The currently live deployment remains unchanged.'
+            fi
+          } > /tmp/yorphives-readiness.md
+          if [ -z "$issue" ]; then gh issue create --title "$title" --body-file /tmp/yorphives-readiness.md; else gh issue edit "$issue" --body-file /tmp/yorphives-readiness.md; fi
