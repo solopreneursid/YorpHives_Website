@@ -1,5 +1,5 @@
 name: YorpHives accessibility regression audit
-# Use explicit Playwright browser context for axe injections.
+# Recheck shared brand labels, saved-tool action names, footer tap targets and contrast fixes.
 on:
   workflow_dispatch:
   schedule:
