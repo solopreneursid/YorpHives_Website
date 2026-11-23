@@ -80,7 +80,7 @@ const cardContent=(link,item,index)=>{
   node('p',item.description,'showcase-description'),
   node('span',item.showcaseKind==='venture'?'Explore product →':'Open tool →','featured-tool-action')
  );
- link.setAttribute('aria-label',(item.showcaseKind==='venture'?'Explore approved venture: ':'Open free tool: ')+item.name);
+ // Use visible link content as its accessible name.
 };
 const makeSlot=(item,index)=>{
  const slot=node('div','','showcase-slot');
