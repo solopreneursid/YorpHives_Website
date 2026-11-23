@@ -1234,6 +1234,25 @@ try{
   assert.ok(['video/webm','video/mp4'].includes(output.type));
   if(output.type==='video/webm')assert.deepEqual(output.header,[26,69,223,163]);
  });
+ await scenario('HEIC to JPG converts a genuine synthetic HEIC image',async page=>{
+  const {readFile}=await import('node:fs/promises');
+  const source=process.env.YORPHIVES_TEST_HEIC;
+  assert.ok(source,'A genuine HEIC test fixture must be generated');
+  await open(page,'/tools/heic-to-jpg/');
+  const input=await readFile(source);
+  const output=await page.evaluate(async encoded=>{
+   const {processWave3}=await import('/tools/wave3-core.mjs');
+   const bytes=Uint8Array.from(atob(encoded),x=>x.charCodeAt(0));
+   const file=new File([bytes],'synthetic.heic',{type:'image/heic'});
+   const result=await processWave3('heic-to-jpg',[file],{format:'jpeg',quality:'.9'});
+   const decoded=await createImageBitmap(result.blob);
+   try{return {type:result.blob.type,w:decoded.width,h:decoded.height,size:result.blob.size};}
+   finally{decoded.close();}
+  },input.toString('base64'));
+  assert.equal(output.type,'image/jpeg');
+  assert.equal(output.w,64);assert.equal(output.h,48);
+  assert.ok(output.size>80);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
