@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA includes PDF-to-text, PDF raster output and QR scanner round-trip.
+# QA includes synthetic document scanning, redaction, PDF comparison and image privacy checks.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
