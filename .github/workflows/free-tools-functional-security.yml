@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA rerun after valid calendar holiday fixture, with XLSX ZIP and image-PDF checks.
+# QA expanded to inspector, renamer, duplicate finder, batch replacement and file exports.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
