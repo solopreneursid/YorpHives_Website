@@ -115,6 +115,27 @@ try{
    return a&&!a.hidden&&a.getAttribute('href')?.startsWith('blob:');
   },{timeout:20000});
  });
+ await scenario('Spreadsheet CSV to XLSX preserves Unicode, commas and leading zeroes',async page=>{
+  await open(page,'/tools/csv-file-to-xlsx/');
+  const actual=await page.evaluate(async()=>{
+   const {csvToXlsx,readXlsx,rowsToCsv,rowsToJson}=await import('/tools/office-files.mjs');
+   const input='name,code,comment\\n"Café भारत",00123,"hello, world"\\n"Zoë",00007,"two lines\\ncontinued"';
+   const file=await csvToXlsx(input);
+   const workbook=await readXlsx(file,1);
+   return {size:file.byteLength||file.size||0,count:workbook.count,rows:workbook.rows,
+    csv:rowsToCsv(workbook.rows,false),json:JSON.parse(rowsToJson(workbook.rows))};
+  });
+  assert.ok(actual.size>100,'XLSX output must contain a nonempty ZIP document');
+  assert.equal(actual.count,1);
+  assert.deepEqual(actual.rows,[
+   ['name','code','comment'],
+   ['Café भारत','00123','hello, world'],
+   ['Zoë','00007','two lines\\ncontinued']
+  ]);
+  assert.ok(actual.csv.includes('"hello, world"'));
+  assert.equal(actual.json[0].code,'00123');
+  assert.equal(actual.json[1].comment,'two lines\\ncontinued');
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
