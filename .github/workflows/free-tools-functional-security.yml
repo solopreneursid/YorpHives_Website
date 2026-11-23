@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# Full utility smoke rerun: empty text catalog defaults now receive valid synthetic fixtures.
+# Expanded QA includes 68 utility smokes, PDF metadata cleaning and XLSX round-trip.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
