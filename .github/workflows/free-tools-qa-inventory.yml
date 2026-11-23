@@ -1,4 +1,5 @@
 name: Free Tools QA coverage inventory
+# Refreshes Phase 2 PDF output-contract definitions after QA source changes.
 on:
   workflow_dispatch:
   schedule:
