@@ -1290,7 +1290,7 @@ try{
    finally{decoded.close();}
   },input.toString('base64'));
   assert.equal(output.type,'image/jpeg');
-  assert.equal(output.w,64);assert.equal(output.h,48);
+  assert.equal(output.w,256);assert.equal(output.h,192);
   assert.ok(output.size>80);
  });
  await scenario('Image OCR reads clear synthetic English lettering locally',async page=>{
