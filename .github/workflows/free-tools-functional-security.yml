@@ -48,7 +48,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
-      - name: Verify browser-local utility and PDF output correctness
+      - name: Verify browser-local utility, PDF and media contracts
         run: node --test scripts/health-local-utility-contracts.test.mjs scripts/health-pdf-contracts.test.mjs scripts/health-media-contracts.test.mjs
   dependencies:
     runs-on: ubuntu-latest
@@ -106,7 +106,7 @@ jobs:
               echo
               echo "- Live browser scenarios: $BROWSER_RESULT"
               echo "- Production-branch npm dependency check: $DEPENDENCY_RESULT"
-              echo "- Browser-local utility contract tests: $CONTRACT_RESULT"
+              echo "- Browser-local utility, PDF and media contracts: $CONTRACT_RESULT"
               echo "- Evidence: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
               echo
               echo 'A failed or unavailable audit is not proof of a vulnerability. Review the run and advisory evidence. Synthetic inputs stay in the browser, analytics is disabled, and no automatic fixes are applied.'
