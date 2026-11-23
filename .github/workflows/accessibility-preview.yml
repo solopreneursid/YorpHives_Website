@@ -1,5 +1,5 @@
 name: YorpHives accessibility regression audit
-# Expand mobile WCAG A/AA checks to the entire evolving Free Tools catalogue.
+# Retest five final low-contrast specialized mobile tool helper-text defects.
 on:
   workflow_dispatch:
   schedule:
