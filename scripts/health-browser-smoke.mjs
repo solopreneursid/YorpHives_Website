@@ -345,6 +345,61 @@ try{
   assert.equal(visual.decodedWidth,240);assert.equal(visual.decodedHeight,180);
   assert.ok(visual.distinctColors>3,'Video thumbnail must show actual frame pixels, not a blank image');
  });
+
+ // Browser-generated test recordings are deterministic and contain no user data.
+ const syntheticWav=(seconds,frequency=440)=>{
+  const rate=8000,count=Math.round(rate*seconds),buf=Buffer.alloc(44+count*2);
+  buf.write('RIFF',0);buf.writeUInt32LE(buf.length-8,4);buf.write('WAVEfmt ',8);
+  buf.writeUInt32LE(16,16);buf.writeUInt16LE(1,20);buf.writeUInt16LE(1,22);
+  buf.writeUInt32LE(rate,24);buf.writeUInt32LE(rate*2,28);buf.writeUInt16LE(2,32);
+  buf.writeUInt16LE(16,34);buf.write('data',36);buf.writeUInt32LE(count*2,40);
+  for(let i=0;i<count;i++)buf.writeInt16LE(Math.round(6500*Math.sin(2*Math.PI*frequency*i/rate)),44+i*2);
+  return buf;
+ };
+ const validateWav=(bytes,minSeconds,maxSeconds)=>{
+  assert.equal(bytes.toString('ascii',0,4),'RIFF');
+  assert.equal(bytes.toString('ascii',8,12),'WAVE');
+  assert.equal(bytes.toString('ascii',36,40),'data');
+  assert.equal(bytes.readUInt16LE(20),1);
+  const channels=bytes.readUInt16LE(22),rate=bytes.readUInt32LE(24),bits=bytes.readUInt16LE(34);
+  assert.ok(channels>=1&&channels<=2);assert.equal(bits,16);
+  assert.ok(rate>=8000&&rate<=192000);
+  const pcmSize=bytes.readUInt32LE(40);
+  assert.equal(bytes.length,pcmSize+44);
+  const duration=pcmSize/(rate*channels*(bits/8));
+  assert.ok(duration>=minSeconds&&duration<=maxSeconds,'Unexpected WAV duration: '+duration);
+  let peak=0;for(let i=44;i<bytes.length;i+=2)peak=Math.max(peak,Math.abs(bytes.readInt16LE(i)));
+  assert.ok(peak>1000,'Exported audio must not be silent');
+  return {duration,rate,channels,peak};
+ };
+ await scenario('Audio Merger exports valid two-second WAV',async page=>{
+  await open(page,'/tools/audio-merger/');
+  await page.locator('#wave7-file').setInputFiles([
+   {name:'first.wav',mimeType:'audio/wav',buffer:syntheticWav(1,440)},
+   {name:'second.wav',mimeType:'audio/wav',buffer:syntheticWav(1,660)}
+  ]);
+  await page.locator('#wave7-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#wave7-result').hidden||document.querySelector('#wave7-status').classList.contains('error'),null,{timeout:30000});
+  if(await page.locator('#wave7-status').evaluate(x=>x.classList.contains('error')))
+   throw Error('Audio Merger failed: '+await page.locator('#wave7-status').innerText());
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#wave7-result a[download]').click()]);
+  const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
+  validateWav(Buffer.concat(chunks),1.9,2.1);
+ });
+ await scenario('Audio Trimmer exports correct one-second WAV',async page=>{
+  await open(page,'/tools/audio-trimmer/');
+  await page.locator('#wave3-file').setInputFiles({name:'source.wav',mimeType:'audio/wav',buffer:syntheticWav(2)});
+  await page.waitForFunction(()=>!document.querySelector('#wave3-run').disabled,null,{timeout:20000});
+  await page.locator('[name="start"]').fill('0.5');
+  await page.locator('[name="end"]').fill('1.5');
+  await page.locator('#wave3-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#wave3-result').hidden||document.querySelector('#wave3-status').classList.contains('error'),null,{timeout:30000});
+  if(await page.locator('#wave3-status').evaluate(x=>x.classList.contains('error')))
+   throw Error('Audio Trimmer failed: '+await page.locator('#wave3-status').innerText());
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#wave3-download').click()]);
+  const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
+  validateWav(Buffer.concat(chunks),.95,1.05);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
