@@ -23,9 +23,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     env:
-      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_ACCOUNT_ID: '69234e51e08d8013980a7ff869746609'
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      PRODUCTION_PROJECT: ${{ vars.YORPHIVES_PRODUCTION_PAGES_PROJECT }}
+      PRODUCTION_PROJECT: yorphives-v1-live
       DEPLOYMENT_ID: ${{ inputs.deployment_id }}
       APPROVAL_PHRASE: ${{ inputs.approval_phrase }}
     steps:
