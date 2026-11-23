@@ -769,6 +769,57 @@ try{
   assert.deepEqual(actual.png,[137,80,78,71,13,10,26,10]);
   assert.equal(actual.width,16);
  });
+ await scenario('Campaign URL Builder preserves existing query while encoding UTM fields',async page=>{
+  await open(page,'/tools/campaign-url-builder/');
+  const url=await page.evaluate(async()=>{
+   const {buildCampaignUrl}=await import('/tools/toolkit.mjs');
+   return buildCampaignUrl('https://example.com/?keep=1',{source:'qa team',medium:'website',campaign:'Launch & test'});
+  });
+  const parsed=new URL(url);
+  assert.equal(parsed.searchParams.get('keep'),'1');
+  assert.equal(parsed.searchParams.get('utm_source'),'qa team');
+  assert.equal(parsed.searchParams.get('utm_campaign'),'Launch & test');
+ });
+ await scenario('Password Analyzer detects known weak phrases without sending secrets',async page=>{
+  await open(page,'/tools/password-strength-analyzer/');
+  const values=await page.evaluate(async()=>{
+   const {assessPassword}=await import('/tools/wave7-business-core.mjs');
+   return {weak:assessPassword('password123'),strong:assessPassword('Breeze-River-Quartz-Copper-72!')};
+  });
+  assert.ok(values.strong.score>values.weak.score);
+  assert.ok(values.weak.hasPatterns||values.weak.score<=1);
+ });
+ await scenario('Business Proposal Generator exports a valid local PDF',async page=>{
+  await open(page,'/tools/business-proposal-generator/');
+  const details=await page.evaluate(async()=>{
+   const {createBusinessProposal}=await import('/tools/wave7-business-core.mjs');
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const out=await createBusinessProposal({
+    company:'QA Studio',client:'Synthetic Client',project:'Website Review',
+    overview:'Review accessibility and file download functionality.',
+    deliverables:'Audit report\nRemediation plan',timeline:'Two weeks',cost:'300',currency:'USD'});
+   const bytes=new Uint8Array(await out.blob.arrayBuffer());
+   const doc=await PDFDocument.load(bytes);
+   return {mime:out.blob.type,signature:String.fromCharCode(...bytes.slice(0,5)),pages:doc.getPageCount()};
+  });
+  assert.equal(details.mime,'application/pdf');assert.equal(details.signature,'%PDF-');
+  assert.ok(details.pages>=1&&details.pages<=10);
+ });
+ await scenario('SVG Optimizer preserves safe shapes and rejects embedded scripts',async page=>{
+  await open(page,'/tools/svg-optimizer/');
+  const details=await page.evaluate(async()=>{
+   const {optimizeSvg}=await import('/tools/wave6-svg-core.mjs');
+   const svg='<svg xmlns="http://www.w3.org/2000/svg" width="60" height="40"><rect width="60" height="40" fill="red"/></svg>';
+   const out=await optimizeSvg(svg);
+   let rejected=false;
+   try{await optimizeSvg('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>');}
+   catch{rejected=true;}
+   return {mime:out.blob.type,text:await out.blob.text(),rejected};
+  });
+  assert.equal(details.mime,'image/svg+xml');
+  assert.match(details.text,/<svg/);assert.ok(details.rejected);
+  assert.doesNotMatch(details.text,/<script/i);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
