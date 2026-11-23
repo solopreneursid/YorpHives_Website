@@ -1,5 +1,5 @@
 name: Free Tools QA coverage inventory
-# Refreshes coverage after real audio merger and trimmer WAV output scenarios.
+# Refreshes coverage after end-to-end Video Trimmer export and frame-decoding QA.
 on:
   workflow_dispatch:
   schedule:
