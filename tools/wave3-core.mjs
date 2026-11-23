@@ -71,7 +71,8 @@ async function convertHeic(files,options={}){
   ]);
  }catch(error){
   if(/time limit/.test(error?.message||''))throw error;
-  throw Error('This HEIC image could not be decoded on your device. Some HEIF codecs and multi-image containers are unsupported.');
+  const cause=String(error?.message||'The decoder reported an unknown error.').replace(/[\r\n]+/g,' ').slice(0,150);
+  throw Error('This HEIC image could not be decoded on your device. Decoder detail: '+cause);
  }
  if(Array.isArray(blob))blob=blob[0]; // Bursts: take first image; do not claim to convert an animation.
  if(!(blob instanceof Blob)||blob.size<1||blob.size>40*MB)throw Error('The converted image is invalid or too large.');
