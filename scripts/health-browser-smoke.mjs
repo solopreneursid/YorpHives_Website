@@ -888,6 +888,84 @@ try{
   });
   assert.deepEqual(actual,{type:'image/png',w:64,h:48});
  });
+ await scenario('CSV Cleaner removes duplicate rows without changing data',async page=>{
+  await open(page,'/tools/csv-cleaner/');
+  const out=await page.evaluate(async()=>{
+  const {processWave2}=await import('/tools/wave2-core.mjs');
+  const file=new File(['name,code\n Alice ,0012\n Alice ,0012\n'],'raw.csv',{type:'text/csv'});
+  const result=await processWave2('csv-cleaner',[file],{});
+  return await result.blob.text();
+ });
+ assert.equal(out,'name,code\r\nAlice,0012\r\n');
+ });
+ await scenario('ZIP Extractor returns original file bytes safely',async page=>{
+  await open(page,'/tools/zip-extractor/');
+  const out=await page.evaluate(async()=>{
+   const {processWave2}=await import('/tools/wave2-core.mjs');
+   const {default:JSZip}=await import('/tools/vendor/jszip.mjs');
+   const zip=new JSZip();zip.file('alpha.txt','Hello');zip.file('beta.txt','World');
+   const file=new File([await zip.generateAsync({type:'uint8array'})],'archive.zip',{type:'application/zip'});
+   const result=await processWave2('zip-extractor',[file],{});
+   const values=await Promise.all(result.downloads.map(async x=>[x.filename,await x.blob.text()]));
+   return values.sort((a,b)=>a[0].localeCompare(b[0]));
+  });
+  assert.deepEqual(out,[['alpha.txt','Hello'],['beta.txt','World']]);
+ });
+ await scenario('Resume Builder produces a valid PDF document',async page=>{
+  await open(page,'/tools/resume-builder/');
+  const out=await page.evaluate(async()=>{
+   const {processWave2}=await import('/tools/wave2-core.mjs');
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const result=await processWave2('resume-builder',[],{fullName:'QA Person',email:'qa@example.com',experience:'Worked on testing web tools.'});
+   const bytes=new Uint8Array(await result.blob.arrayBuffer());
+   const pdf=await PDFDocument.load(bytes);
+   return {signature:String.fromCharCode(...bytes.slice(0,5)),pages:pdf.getPageCount()};
+  });
+  assert.equal(out.signature,'%PDF-');assert.ok(out.pages>=1&&out.pages<=4);
+ });
+ await scenario('Image Collage Maker exports expected two-photo PNG dimensions',async page=>{
+  await open(page,'/tools/image-collage-maker/');
+  const out=await page.evaluate(async()=>{
+   const {processWave2}=await import('/tools/wave2-core.mjs');const canvas=document.createElement('canvas');canvas.width=12;canvas.height=10;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#ab3725';ctx.fillRect(0,0,12,10);
+   const img=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const a=new File([img],'a.png',{type:'image/png'});
+   const b=new File([img],'b.png',{type:'image/png'});
+   const result=await processWave2('image-collage-maker',[a,b],{columns:'2',format:'png'});
+   const bytes=new Uint8Array(await result.blob.arrayBuffer());
+   const v=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+   return {mime:result.blob.type,width:v.getUint32(16),height:v.getUint32(20)};
+  });
+  assert.deepEqual(out,{mime:'image/png',width:1502,height:588});
+ });
+ await scenario('PDF Form Filler saves entered field values correctly',async page=>{
+  await open(page,'/tools/pdf-form-filler/');
+  const out=await page.evaluate(async()=>{
+   const {processWave2}=await import('/tools/wave2-core.mjs');
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');const doc=await PDFDocument.create(),p=doc.addPage([300,300]);
+   const form=doc.getForm(),field=form.createTextField('person');
+   field.setText('Before');field.addToPage(p,{x:30,y:220,width:150,height:25});
+   const file=new File([await doc.save()],'form.pdf',{type:'application/pdf'});
+   const result=await processWave2('pdf-form-filler',[file],{values:{person:'After'}});
+   const output=await PDFDocument.load(await result.blob.arrayBuffer());
+   return {value:output.getForm().getTextField('person').getText(),pages:output.getPageCount()};
+  });
+  assert.deepEqual(out,{value:'After',pages:1});
+ });
+ await scenario('PDF Flatten converts editable form into final PDF',async page=>{
+  await open(page,'/tools/pdf-flatten/');
+  const out=await page.evaluate(async()=>{
+   const {processWave2}=await import('/tools/wave2-core.mjs');
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');const doc=await PDFDocument.create(),p=doc.addPage([300,300]);
+   const form=doc.getForm(),field=form.createTextField('person');
+   field.setText('Before');field.addToPage(p,{x:30,y:220,width:150,height:25});
+   const file=new File([await doc.save()],'form.pdf',{type:'application/pdf'});
+   const result=await processWave2('pdf-flatten',[file],{});
+   const output=await PDFDocument.load(await result.blob.arrayBuffer());
+   return {pages:output.getPageCount(),fields:output.getForm().getFields().length};
+  });
+  assert.deepEqual(out,{pages:1,fields:0});
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
