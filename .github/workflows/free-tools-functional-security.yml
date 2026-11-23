@@ -1,5 +1,5 @@
 name: Free Tools functional and dependency checks
-# QA verifies bounded HEIC decoder candidate against live read-only page with synthetic HEIC.
+# QA validates pinned HEIC decoder 1.5.2 with real HEIC and isolated candidate-script routes.
 # QA media verification: Float32 tolerance and WAV resampling-aware duration assertions.
 # QA expansion: transparency, watermark pixels and corrupted-image handling checked.
 on:
