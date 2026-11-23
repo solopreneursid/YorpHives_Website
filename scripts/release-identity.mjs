@@ -1,5 +1,5 @@
 // Embedded build identity: keeps a source commit tied to the actual published assets.
-import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,readdir} from 'node:fs/promises';
 import {resolve,join,dirname} from 'node:path';
 import {createHash} from 'node:crypto';
 const ROOT=resolve(dirname(new URL(import.meta.url).pathname),'..');
@@ -7,7 +7,21 @@ export async function writeReleaseIdentity({dir=resolve(ROOT,'dist'),target,sour
  if(!['preview','production'].includes(target))throw Error('Invalid release target.');
  const sha=String(sourceSha||'').trim().toLowerCase();
  if(sha&&!/^[a-f0-9]{40}$/.test(sha))throw Error('Source commit must be an exact 40-digit SHA.');
- const names=['index.html','catalog.json','tools/index.html','sitemap.xml','_headers'];
+ const walk=async(rel='')=>{
+  const entries=await readdir(join(dir,rel),{withFileTypes:true});
+  const found=[];
+  for(const e of entries){
+   const name=rel?rel+'/'+e.name:e.name;
+   if(name==='.well-known/yorphives-release.json')continue;
+   if(e.isDirectory())found.push(...await walk(name));
+   else if(e.isFile())found.push(name);
+   else throw Error('Release output must not contain links or special files: '+name);
+  }
+  return found;
+ };
+ const names=(await walk()).sort();
+ for(const required of ['index.html','catalog.json','tools/index.html','sitemap.xml','_headers'])
+  if(!names.includes(required))throw Error('Missing critical release asset: '+required);
  const checks={};
  for(const name of names){
   const bytes=await readFile(join(dir,name));
