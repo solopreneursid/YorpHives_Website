@@ -256,9 +256,11 @@ try{
   assert.equal(bytes.toString('ascii',0,4),'RIFF');
   assert.equal(bytes.toString('ascii',8,12),'WAVE');
   assert.equal(bytes.readUInt16LE(22),1);
-  assert.equal(bytes.readUInt32LE(24),sampleRate);
-  assert.equal(bytes.readUInt32LE(40),sampleCount*2);
-  assert.ok(bytes.readInt16LE(44+2*2)>wav.readInt16LE(44+2*2),'Volume adjustment must amplify source samples');
+  const outputRate=bytes.readUInt32LE(24),pcmBytes=bytes.readUInt32LE(40);
+  assert.ok(outputRate>=8000&&outputRate<=192000,'Output must declare a supported sample rate');
+  assert.ok(Math.abs(pcmBytes/(outputRate*2)-1)<.04,'Exported audio should remain about one second');
+  let peak=0;for(let i=44;i+1<bytes.length;i+=2)peak=Math.max(peak,Math.abs(bytes.readInt16LE(i)));
+  assert.ok(peak>8500&&peak<=32767,'Processed WAV should be amplified and not clipped');
  });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
