@@ -1,0 +1,74 @@
+name: Free Tools QA coverage inventory
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '19 6 * * 1'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/free-tools-qa-inventory.yml'
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: free-tools-qa-coverage-inventory
+  cancel-in-progress: false
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Check out production source
+        uses: actions/checkout@v6
+        with:
+          ref: release/yorphives-reimagined-20261116
+          path: site-source
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Verify coverage classification logic
+        working-directory: site-source
+        run: node --test scripts/free-tools-qa-inventory.test.mjs
+      - name: Inventory all published Free Tools and test-contract gaps
+        working-directory: site-source
+        run: node scripts/free-tools-qa-inventory.mjs
+      - name: Add truthful coverage summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat site-source/free-tools-qa-inventory/inventory.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Retain full tool-by-tool coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: free-tools-qa-coverage-inventory
+          path: site-source/free-tools-qa-inventory/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Update one founder-facing test coverage report
+        if: success() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          title='YorpHives Free Tools QA coverage inventory'
+          existing=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "YorpHives Free Tools QA coverage inventory") | .number' | head -n 1)
+          {
+            echo '# Free Tools test coverage — source definitions, not passing results'
+            echo
+            echo "Evidence: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo
+            jq -r '"Published tools: "+(.counts.publishedTools|tostring)+"\nBrowser behavior scenarios defined for: "+(.counts.toolsWithBrowserBehaviorScenarios|tostring)+"\nLocal output contracts defined for: "+(.counts.toolsWithLocalContracts|tostring)+"\nNo browser behavior scenario: "+(.counts.toolsWithoutBrowserBehaviorScenarios|tostring)+"\nNo local output contract: "+(.counts.toolsWithoutLocalContracts|tostring)' site-source/free-tools-qa-inventory/inventory.json
+            echo
+            echo 'These numbers count explicit test definitions only; they do not prove tests passed or that a tool is broken.'
+            echo 'See the attached JSON and Markdown artifacts for every tool and category.'
+            echo 'HQ may observe and recommend. No automatic code modification or deployment is authorized.'
+          } > inventory-issue.md
+          if [ -z "$existing" ]; then
+            gh issue create --title "$title" --body-file inventory-issue.md
+          else
+            gh issue edit "$existing" --body-file inventory-issue.md
+          fi
