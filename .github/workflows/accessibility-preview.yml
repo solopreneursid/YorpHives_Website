@@ -1,0 +1,85 @@
+name: YorpHives accessibility regression audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * 3'
+  push:
+    branches: [main]
+    paths: ['.github/workflows/accessibility-preview.yml']
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: yorphives-accessibility-preview
+  cancel-in-progress: false
+jobs:
+  accessibility:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: release/yorphives-reimagined-20261116
+          path: site-source
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Build isolated preview and pin open-source browser audit
+        working-directory: site-source
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          node --check scripts/release-accessibility.mjs
+          node scripts/build-site.mjs --target=preview
+          node scripts/release-check.mjs dist
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.56.1 @axe-core/playwright@4.14.0
+          npx playwright install --with-deps chromium
+      - name: Start local static preview
+        shell: bash
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory site-source/dist >/tmp/yorphives-preview-a11y.log 2>&1 &
+          for n in $(seq 1 15); do if curl -fsS http://127.0.0.1:4173/ > /dev/null; then exit 0; fi; sleep 1; done
+          exit 1
+      - name: Run mobile and desktop WCAG axe-core checks
+        id: audit
+        continue-on-error: true
+        working-directory: site-source
+        env:
+          YORPHIVES_PREVIEW_ORIGIN: http://127.0.0.1:4173
+          YORPHIVES_A11Y_RESULTS: .qa-media/accessibility-results.json
+        run: node scripts/release-accessibility.mjs
+      - name: Preserve accessibility evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: yorphives-accessibility-results
+          path: site-source/.qa-media/accessibility-results.json
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Publish evidence-backed accessibility report
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          OUTCOME: ${{ steps.audit.outcome }}
+        run: |
+          set -euo pipefail
+          title='YorpHives — Accessibility QA Results'
+          {
+            echo '# YorpHives WCAG accessibility smoke'
+            echo
+            echo "Run result: **$OUTCOME**"
+            echo "Evidence: https://github.com/$GH_REPO/actions/runs/$GITHUB_RUN_ID"
+            if [ -s site-source/.qa-media/accessibility-results.json ]; then
+              node -e "const r=require('./site-source/.qa-media/accessibility-results.json');console.log('Pages / viewports: '+r.passed+'/'+r.total+' passed; '+r.failed+' failed.');for(const x of r.results.filter(x=>!x.passed)){const issues=x.violations.map(v=>v.id+':'+v.impact).join(',');console.log('- '+x.viewport+'px '+x.route+': '+(x.error||issues||'failed'));}"
+            else
+              echo 'No complete axe-core results artifact; results unverified.'
+            fi
+            echo
+            echo 'Automated axe tests do not replace manual keyboard, assistive-technology or usability testing.'
+            echo 'No production code was modified by the QA run.'
+          } > /tmp/yh-a11y-report.md
+          issue=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "YorpHives — Accessibility QA Results") | .number' | head -n1)
+          if [ -n "$issue" ]; then gh issue edit "$issue" --body-file /tmp/yh-a11y-report.md; else gh issue create --title "$title" --body-file /tmp/yh-a11y-report.md; fi
+          [ "$OUTCOME" = success ]
