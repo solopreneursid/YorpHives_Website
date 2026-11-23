@@ -1253,6 +1253,39 @@ try{
   assert.equal(output.w,64);assert.equal(output.h,48);
   assert.ok(output.size>80);
  });
+ await scenario('Image OCR reads clear synthetic English lettering locally',async page=>{
+  await open(page,'/tools/image-ocr/');
+  const output=await page.evaluate(async()=>{
+   const {processWave1}=await import('/tools/wave1-core.mjs');
+   const canvas=document.createElement('canvas');canvas.width=720;canvas.height=210;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,720,210);
+   ctx.fillStyle='#000';ctx.font='bold 92px Arial';ctx.fillText('HELLO QA',45,142);
+   const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const file=new File([png],'qa-lettering.png',{type:'image/png'});
+   const result=await processWave1('image-ocr',[file],{});
+   return result.text||await result.blob.text();
+  });
+  assert.match(output,/HELLO/i);
+ });
+ await scenario('Scanned PDF OCR exports a valid searchable document',async page=>{
+  await open(page,'/tools/scanned-pdf-to-searchable-pdf/');
+  const output=await page.evaluate(async()=>{
+   const {makeSearchablePdf}=await import('/tools/ocr-pdf-core.mjs');
+   const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+   const canvas=document.createElement('canvas');canvas.width=720;canvas.height=210;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,720,210);
+   ctx.fillStyle='#000';ctx.font='bold 92px Arial';ctx.fillText('HELLO QA',45,142);
+   const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   const doc=await PDFDocument.create(),embed=await doc.embedPng(await png.arrayBuffer());
+   const pg=doc.addPage([720,210]);pg.drawImage(embed,{x:0,y:0,width:720,height:210});
+   const file=new File([await doc.save()],'synthetic-scanned.pdf',{type:'application/pdf'});
+   const result=await makeSearchablePdf(file,{});
+   const parsed=await PDFDocument.load(await result.blob.arrayBuffer());
+   return {type:result.blob.type,pages:parsed.getPageCount(),bytes:result.blob.size};
+  });
+  assert.equal(output.type,'application/pdf');assert.equal(output.pages,1);
+  assert.ok(output.bytes>200);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
