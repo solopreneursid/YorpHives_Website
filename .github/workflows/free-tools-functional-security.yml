@@ -157,6 +157,10 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
+          if [ ! -s qa-input/browser/browser-results.json ] || [ ! -s qa-input/local/test-tap.txt ]; then
+            echo "One or more test jobs did not provide evidence; preserving the last complete per-tool verdict. See the failure alert for this run." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
           node site-source/scripts/free-tools-qa-verdict.mjs qa-input/browser/browser-results.json qa-input/local/test-tap.txt qa-verdict
           cat qa-verdict/verdict.md >> "$GITHUB_STEP_SUMMARY"
           title='YorpHives Free Tools — Latest Verified QA Results'
