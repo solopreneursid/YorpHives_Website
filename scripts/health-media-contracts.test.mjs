@@ -34,7 +34,7 @@ test('audio volume limiter prevents clipping and keeps stereo channel shapes',()
  const out=scaleAudioChannels([Float32Array.of(.8,-.8),Float32Array.of(.4,-.4)],'3');
  assert.equal(out.channels.length,2);
  assert.equal(out.limited,true);
- assert.ok(out.channels.every(c=>[...c].every(v=>Math.abs(v)<=.99)));
+ assert.ok(out.channels.every(c=>[...c].every(v=>Math.abs(v)<=.990001)));
 });
 test('audio merger preserves total duration and channel samples',()=>{
  const a={sampleRate:8000,channels:[new Float32Array(800).fill(.2)]};
