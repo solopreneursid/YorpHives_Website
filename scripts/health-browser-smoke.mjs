@@ -262,6 +262,72 @@ try{
   let peak=0;for(let i=44;i+1<bytes.length;i+=2)peak=Math.max(peak,Math.abs(bytes.readInt16LE(i)));
   assert.ok(peak>8500&&peak<=32767,'Processed WAV should be amplified and not clipped');
  });
+ await scenario('Video to GIF exports actual animated frames',async page=>{
+  const {readFile}=await import('node:fs/promises');
+  const videoFile=process.env.YORPHIVES_TEST_WEBM;
+  assert.ok(videoFile,'Synthetic video fixture must be explicitly generated before browser QA');
+  const video=await readFile(videoFile);
+  await open(page,'/tools/video-to-gif/');
+  await page.locator('#wave6-file').setInputFiles({name:'synthetic.webm',mimeType:'video/webm',buffer:video});
+  await page.locator('[name="start"]').fill('0.25');
+  await page.locator('[name="end"]').fill('1.25');
+  await page.locator('[name="fps"]').selectOption('4');
+  await page.locator('[name="width"]').selectOption('240');
+  await page.locator('#wave6-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#wave6-result').hidden || document.querySelector('#wave6-status').classList.contains('error'),null,{timeout:60000});
+  if(await page.locator('#wave6-status').evaluate(el=>el.classList.contains('error')))
+   throw Error('Video to GIF failed: '+await page.locator('#wave6-status').innerText());
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#wave6-result a[download]').click()]);
+  const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
+  const bytes=Buffer.concat(chunks);
+  assert.equal(bytes.toString('ascii',0,6),'GIF89a');
+  assert.equal(bytes.readUInt16LE(6),240);
+  assert.equal(bytes.readUInt16LE(8),180);
+  assert.ok(bytes.length>100,'GIF output must contain image data');
+  // Traverse GIF's actual block boundaries to count image frames safely.
+  let offset=13,frames=0;
+  if(bytes[10]&128)offset+=3*(2**((bytes[10]&7)+1));
+  const skipBlocks=()=>{
+   while(true){
+    assert.ok(offset<bytes.length,'GIF sub-blocks must terminate within file');
+    const size=bytes[offset++];if(!size)return;
+    offset+=size;assert.ok(offset<=bytes.length,'GIF sub-block exceeds file bounds');
+   }
+  };
+  let ended=false;
+  while(offset<bytes.length){
+   const marker=bytes[offset++];
+   if(marker===0x3b){ended=true;break;}
+   if(marker===0x21){offset++;skipBlocks();continue;}
+   assert.equal(marker,0x2c,'GIF must contain only valid extension and image blocks');
+   assert.ok(offset+9<=bytes.length);
+   const localFlags=bytes[offset+8];offset+=9;
+   if(localFlags&128)offset+=3*(2**((localFlags&7)+1));
+   offset++;skipBlocks();frames++;
+  }
+  assert.ok(ended,'GIF must end with a trailer');
+  assert.equal(frames,4,'A one-second 4fps GIF must contain four frames');
+ });
+ await scenario('Video Thumbnail Extractor returns valid PNG pixels',async page=>{
+  const {readFile}=await import('node:fs/promises');
+  const videoFile=process.env.YORPHIVES_TEST_WEBM;
+  assert.ok(videoFile,'Synthetic video fixture must be provided');
+  await open(page,'/tools/video-thumbnail-extractor/');
+  await page.locator('#wave6-file').setInputFiles({name:'synthetic.webm',mimeType:'video/webm',buffer:await readFile(videoFile)});
+  await page.locator('[name="time"]').fill('0.5');
+  await page.locator('[name="width"]').selectOption('240');
+  await page.locator('[name="format"]').selectOption('png');
+  await page.locator('#wave6-run').click();
+  await page.waitForFunction(()=>!document.querySelector('#wave6-result').hidden || document.querySelector('#wave6-status').classList.contains('error'),null,{timeout:45000});
+  if(await page.locator('#wave6-status').evaluate(el=>el.classList.contains('error')))
+   throw Error('Video frame extraction failed: '+await page.locator('#wave6-status').innerText());
+  const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#wave6-result a[download]').click()]);
+  const chunks=[];for await(const chunk of await download.createReadStream())chunks.push(chunk);
+  const bytes=Buffer.concat(chunks);
+  assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10]);
+  assert.equal(bytes.readUInt32BE(16),240);
+  assert.equal(bytes.readUInt32BE(20),180);
+ });
  await scenario('PDF Merge combines two local files',async page=>{
   await open(page,'/tools/pdf-merge/');
   // Create real, non-personal documents in the browser from the site's pinned PDF library.
