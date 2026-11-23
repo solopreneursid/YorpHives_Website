@@ -1,5 +1,5 @@
 name: Free Tools QA coverage inventory
-# Refresh additional image, Wave2 and PPTX browser functional coverage definitions.
+# Refresh all 143 published tool mappings including genuine HEIC and local OCR checks.
 on:
   workflow_dispatch:
   schedule:
