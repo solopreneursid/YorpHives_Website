@@ -45,6 +45,8 @@ const special={
  'color-converter':{color:'#37b69c'},
  'contrast-checker':{foreground:'#123329',background:'#ffffff'},
  'color-palette':{color:'#37b69c'},
+ 'text-to-hex':{text:'hello',mode:'encode'},
+ 'reverse-text':{text:'Hello World'},
  'html-entities':{text:'<b>hello</b>',mode:'encode'},
  'markdown-to-html':{text:'# Hello\n\n**World**'},
  'uuid-generator':{count:'2'}
