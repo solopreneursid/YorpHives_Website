@@ -124,13 +124,13 @@ body.tool-page .image-preview img{max-width:100%;max-height:330px;object-fit:con
 body.tool-page .image-meta,body.tool-page .note{color:#7b8778;font-size:10px;line-height:1.65}
 body.tool-page .file-box,body.tool-page .tui-upload-zone{border:1px dashed #a8c29a!important;border-radius:14px!important;background:#f2f6eb!important;color:#405f3e!important}
 body.tool-page .tui-workspace-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:17px}
-body.tool-page .tui-workspace-number{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:10px;background:#e7efdc;color:#4c7947;font-size:10px;font-weight:850}
+body.tool-page .tui-workspace-number{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:10px;background:#e7efdc;color:#355f31;font-size:10px;font-weight:850}
 body.tool-page .tui-workspace-title{color:#263b2b;font-size:17px;font-weight:850;letter-spacing:-.035em}
 body.tool-page .tui-workspace-hint{color:#818d7c;font-size:10px;line-height:1.5}
 body.tool-page .tui-upload-zone{min-height:130px;padding:20px!important}
 body.tool-page .tui-upload-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#e0ebd2;color:#4b7c48}
 body.tool-page .tui-upload-title{color:#345333;font-size:13px;font-weight:850}
-body.tool-page .tui-upload-subtitle{color:#83917b;font-size:10px}
+body.tool-page .tui-upload-subtitle{color:#50664c;font-size:10px}
 body.tool-page .tui-result-panel{border:1px solid #dce3d5;border-radius:13px;background:#f7f8f1}
 body.tool-page [hidden]{display:none!important}
 @media(max-width:950px){
