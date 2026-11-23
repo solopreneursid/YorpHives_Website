@@ -1,0 +1,51 @@
+name: YorpHives live release integrity (read-only)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '13 7,19 * * *'
+  push:
+    branches: [main]
+    paths: ['.github/workflows/live-release-integrity.yml']
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: yorphives-live-release-integrity
+  cancel-in-progress: false
+jobs:
+  live-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: release/yorphives-reimagined-20261116
+          path: site-source
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Check live release manifest and public asset fingerprints
+        id: verify
+        working-directory: site-source
+        continue-on-error: true
+        run: node scripts/release-health.mjs
+      - name: Record result without making website changes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          OUTCOME: ${{ steps.verify.outcome }}
+        run: |
+          set -euo pipefail
+          title='YorpHives — Live release integrity attention'
+          existing=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "YorpHives — Live release integrity attention") | .number' | head -n 1)
+          if [ "$OUTCOME" = 'success' ]; then
+            echo 'Live release manifest and sampled critical pages match.' >> "$GITHUB_STEP_SUMMARY"
+            if [ -n "$existing" ]; then gh issue close "$existing" --comment "Release identity and critical served assets verified in run $GITHUB_RUN_ID."; fi
+          else
+            printf 'The public release identity or core asset check did not pass. This may mean first activation is pending or a real deployment drift exists. Investigate before releasing.\n\nEvidence: https://github.com/%s/actions/runs/%s\n\nNo production code or configuration was changed by this monitor.\n' "$GH_REPO" "$GITHUB_RUN_ID" > /tmp/yorphives-release-attention.md
+            if [ -z "$existing" ]; then gh issue create --title "$title" --body-file /tmp/yorphives-release-attention.md; else gh issue edit "$existing" --body-file /tmp/yorphives-release-attention.md; fi
+            echo 'Live release identity needs attention; see GitHub issue.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
