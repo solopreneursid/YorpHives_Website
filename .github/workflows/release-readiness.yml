@@ -101,9 +101,70 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
+
+  quality:
+    name: Block release on browser and accessibility regressions
+    needs: [candidate]
+    runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.candidate.outputs.source_sha }}
+          path: site-source
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Build the exact revision as a locally isolated preview
+        working-directory: site-source
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-fund --no-audit
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.56.1 @axe-core/playwright@4.14.0
+          node --check scripts/release-cross-browser.mjs
+          node --check scripts/release-accessibility.mjs
+          node scripts/build-site.mjs --target=preview
+          node scripts/release-check.mjs dist
+      - name: Start private preview server
+        shell: bash
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory site-source/dist >/tmp/yorphives-release-preview.log 2>&1 &
+          for i in $(seq 1 15); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/yorphives-release-preview.log
+          exit 1
+      - name: Require all 150 WCAG mobile and desktop checks to pass
+        working-directory: site-source
+        env:
+          YORPHIVES_PREVIEW_ORIGIN: http://127.0.0.1:4173
+          YORPHIVES_A11Y_RESULTS: .qa-media/accessibility-results.json
+        run: node scripts/release-accessibility.mjs
+      - name: Require all mobile route and multi-engine checks to pass
+        working-directory: site-source
+        env:
+          YORPHIVES_PREVIEW_ORIGIN: http://127.0.0.1:4173
+          YORPHIVES_COMPAT_RESULTS: .qa-media/cross-browser-results.json
+        run: node scripts/release-cross-browser.mjs
+      - name: Preserve both independent QA outputs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: yorphives-release-browser-evidence
+          path: |
+            site-source/.qa-media/accessibility-results.json
+            site-source/.qa-media/cross-browser-results.json
+          retention-days: 14
+          if-no-files-found: warn
+
   report:
     name: Preserve readiness verdict for founder
-    needs: [candidate]
+    needs: [candidate, quality]
     if: always()
     runs-on: ubuntu-24.04
     steps:
@@ -112,17 +173,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
-          STATUS: ${{ needs.candidate.result }}
+          BUILD_STATUS: ${{ needs.candidate.result }}
+          QUALITY_STATUS: ${{ needs.quality.result }}
           SOURCE_SHA: ${{ needs.candidate.outputs.source_sha }}
           FINGERPRINT: ${{ needs.candidate.outputs.fingerprint }}
         run: |
           set -euo pipefail
+          if [ "$BUILD_STATUS" = success ] && [ "$QUALITY_STATUS" = success ]; then STATUS=success; else STATUS=failure; fi
           title='YorpHives — Latest Production Release Readiness'
           issue=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "YorpHives — Latest Production Release Readiness") | .number' | head -n 1)
           {
             echo '# YorpHives production candidate readiness'
             echo
-            echo "Workflow result: **$STATUS**"
+            echo "Workflow result: **$STATUS** (build: $BUILD_STATUS, browser/accessibility: $QUALITY_STATUS)"
             echo
             echo "Evidence: https://github.com/$GH_REPO/actions/runs/$GITHUB_RUN_ID"
             echo
