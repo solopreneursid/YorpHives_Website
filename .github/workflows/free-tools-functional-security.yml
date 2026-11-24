@@ -180,11 +180,28 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          if [ ! -s qa-input/browser/browser-results.json ] || [ ! -s qa-input/local/test-tap.txt ] || ! node -e "const r=require('./qa-input/browser/browser-results.json');if(r.complete!==true||!Array.isArray(r.scenarios)||r.scenarios.length<1)process.exit(1)"; then
+          if [ ! -s qa-input/browser/browser-results.json ] || [ ! -s qa-input/browser/utility-browser-results.json ] || [ ! -s qa-input/local/test-tap.txt ] || ! node -e "const r=require('./qa-input/browser/browser-results.json');if(r.complete!==true||!Array.isArray(r.scenarios)||r.scenarios.length<1)process.exit(1)"; then
             echo "One or more test jobs did not provide evidence; preserving the last complete per-tool verdict. See the failure alert for this run." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
+          node --input-type=module <<'NODE'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const browserPath='qa-input/browser/browser-results.json';
+          const browser=JSON.parse(readFileSync(browserPath,'utf8'));
+          const utility=JSON.parse(readFileSync('qa-input/browser/utility-browser-results.json','utf8'));
+          const catalog=JSON.parse(readFileSync('site-source/catalog.json','utf8'));
+          const tools=new Map(catalog.items.filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private').map(x=>[x.module?.toolId,x]));
+          if(utility.total!==68||!Array.isArray(utility.results)||utility.results.length!==68||new Set(utility.results.map(x=>x.id)).size!==68)
+            throw Error('Complete isolated-preview utility browser evidence is required.');
+          for(const item of utility.results){
+            const tool=tools.get(item.id);
+            if(!tool||typeof item.passed!=='boolean')throw Error('Invalid utility browser evidence: '+item.id);
+            browser.scenarios.push({name:'Isolated preview utility: '+item.id,passed:item.passed,routes:['/'+tool.url.replace(/^\/+/, '')],error:item.error||null});
+          }
+          writeFileSync(browserPath,JSON.stringify(browser,null,2)+'\n');
+          NODE
           node site-source/scripts/free-tools-qa-verdict.mjs qa-input/browser/browser-results.json qa-input/local/test-tap.txt qa-verdict
+          echo 'The 68 utility browser scenarios run in an isolated preview; the remaining browser scenarios test the live site.' >> qa-verdict/verdict.md
           cat qa-verdict/verdict.md >> "$GITHUB_STEP_SUMMARY"
           title='YorpHives Free Tools — Latest Verified QA Results'
           existing=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "YorpHives Free Tools — Latest Verified QA Results") | .number' | head -n 1)
