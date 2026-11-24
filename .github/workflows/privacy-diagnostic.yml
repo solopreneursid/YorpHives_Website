@@ -34,3 +34,5 @@ jobs:
       - run: node scripts/privacy-diagnostic.mjs
 
 # Rerun with an explicit browser context.
+
+# Verify the corrected contrast.
