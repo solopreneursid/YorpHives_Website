@@ -1,0 +1,40 @@
+name: YorpHives release origin diagnostic — read only
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/release-origin-diagnostics.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - name: Compare canonical and deployment-specific release manifests
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {createHash} from 'node:crypto';
+          const endpoints=[
+            ['live','https://yorphives.com/.well-known/yorphives-release.json'],
+            ['www','https://www.yorphives.com/.well-known/yorphives-release.json'],
+            ['candidate','https://c54e985f.yorphives-v1-live.pages.dev/.well-known/yorphives-release.json'],
+            ['previous','https://ab94a0ad.yorphives-v1-live.pages.dev/.well-known/yorphives-release.json']
+          ];
+          for(const [name,url] of endpoints){
+            try {
+              const response=await fetch(url,{headers:{'cache-control':'no-cache','pragma':'no-cache'},redirect:'manual',signal:AbortSignal.timeout(12000)});
+              const bytes=new Uint8Array(await response.arrayBuffer());
+              const text=new TextDecoder().decode(bytes);
+              const mime=response.headers.get('content-type')||'';
+              const result={name,status:response.status,mime,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),
+                cache:response.headers.get('cf-cache-status'),location:response.headers.get('location')};
+              if(/application\/json/.test(mime)){
+                try{const m=JSON.parse(text);result.manifest={schemaVersion:m.schemaVersion,site:m.site,target:m.target,sourceSha:m.sourceSha,assetFingerprint:m.assetFingerprint,assetCount:Object.keys(m.assets||{}).length};}
+                catch{result.invalidJson=true;}
+              } else result.htmlFallback=/<!doctype html|<html/i.test(text.slice(0,200));
+              console.log('ORIGIN_DIAGNOSTIC '+JSON.stringify(result));
+            }catch(e){console.log('ORIGIN_DIAGNOSTIC '+JSON.stringify({name,error:String(e?.message||e).slice(0,240)}));}
+          }
+          NODE
