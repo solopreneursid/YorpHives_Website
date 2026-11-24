@@ -18,6 +18,8 @@ jobs:
           import {createHash} from 'node:crypto';
           const endpoints=[
             ['live','https://yorphives.com/.well-known/yorphives-release.json'],
+            ['live-query','https://yorphives.com/.well-known/yorphives-release.json?release=f98207dc98a3b109d0f2bb27b524ad3ab809d0e4'],
+            ['live-path','https://yorphives.com/index.html?release=f98207dc98a3b109d0f2bb27b524ad3ab809d0e4'],
             ['www','https://www.yorphives.com/.well-known/yorphives-release.json'],
             ['candidate','https://c54e985f.yorphives-v1-live.pages.dev/.well-known/yorphives-release.json'],
             ['previous','https://ab94a0ad.yorphives-v1-live.pages.dev/.well-known/yorphives-release.json']
