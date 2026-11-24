@@ -43,10 +43,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          [[ "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]] || exit 1
-          [[ "$FINGERPRINT" =~ ^[a-f0-9]{64}$ ]] || exit 1
-          [[ "$READINESS_RUN_ID" =~ ^[0-9]{5,16}$ ]] || exit 1
-          [ "$APPROVAL_PHRASE" = 'PUBLISH_YORPHIVES_NOW' ] || exit 1
+          # GitHub's manual input form can preserve a pasted leading tab.
+          # Remove surrounding whitespace only; embedded whitespace is never accepted.
+          for key in SOURCE_SHA FINGERPRINT READINESS_RUN_ID APPROVAL_PHRASE; do
+            value="${!key}"
+            value="$(printf '%s' "$value" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
+            printf -v "$key" '%s' "$value"
+            printf '%s=%s\n' "$key" "$value" >> "$GITHUB_ENV"
+          done
+          [[ "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]] || { echo 'Invalid source commit SHA'; exit 1; }
+          [[ "$FINGERPRINT" =~ ^[a-f0-9]{64}$ ]] || { echo 'Invalid release fingerprint'; exit 1; }
+          [[ "$READINESS_RUN_ID" =~ ^[0-9]{5,16}$ ]] || { echo 'Invalid readiness run ID'; exit 1; }
+          [ "$APPROVAL_PHRASE" = 'PUBLISH_YORPHIVES_NOW' ] || { echo 'Founder approval phrase invalid'; exit 1; }
           [ -n "$CLOUDFLARE_API_TOKEN" ] || { echo 'Cloudflare Workers write token unavailable'; exit 1; }
           [ "$SOURCE_SHA" = 'f98207dc98a3b109d0f2bb27b524ad3ab809d0e4' ] || { echo 'Source does not match currently approved release'; exit 1; }
           [ "$FINGERPRINT" = 'ee121b41b3ab814870e1829cd27b5d2db75d48689704aa2057daa85543ec96b4' ] || { echo 'Artifact fingerprint not approved'; exit 1; }
