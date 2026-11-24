@@ -27,6 +27,7 @@ jobs:
         with:
           ref: release/yorphives-reimagined-20261116
           path: site-source
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@v6
         with:
@@ -57,12 +58,34 @@ jobs:
           YORPHIVES_TEST_HEIC: .qa-media/input.heic
           YORPHIVES_QA_RESULTS: .qa-media/browser-results.json
         run: node scripts/health-browser-smoke.mjs
+      - name: Build an isolated preview for the full utility catalogue
+        working-directory: site-source
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-site.mjs --target=preview
+          node scripts/release-check.mjs dist
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist >/tmp/yorphives-utility-preview.log 2>&1 &
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4174/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/yorphives-utility-preview.log
+          exit 1
+      - name: Exercise all 68 utilities through real browser controls
+        working-directory: site-source
+        env:
+          YORPHIVES_PREVIEW_ORIGIN: http://127.0.0.1:4174
+          YORPHIVES_UTILITY_RESULTS: .qa-media/utility-browser-results.json
+        run: node scripts/health-utility-browser-qa.mjs
       - name: Keep browser scenario evidence
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: free-tools-qa-browser-results
-          path: site-source/.qa-media/browser-results.json
+          path: |
+            site-source/.qa-media/browser-results.json
+            site-source/.qa-media/utility-browser-results.json
           retention-days: 30
           if-no-files-found: warn
   local-tool-contracts:
@@ -194,7 +217,7 @@ jobs:
             {
               echo '@solopreneursid — a Free Tools check needs attention.'
               echo
-              echo "- Live browser scenarios: $BROWSER_RESULT"
+              echo "- Live and isolated-preview browser scenarios: $BROWSER_RESULT"
               echo "- Production-branch npm dependency check: $DEPENDENCY_RESULT"
               echo "- Browser-local utility, PDF and media contracts: $CONTRACT_RESULT"
               echo "- Evidence: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
