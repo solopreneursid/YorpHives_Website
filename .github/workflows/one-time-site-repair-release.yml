@@ -43,6 +43,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           ref: '4800e2e56e89a4080600e2d74ecb70dda1810310'
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@v6
         with:
