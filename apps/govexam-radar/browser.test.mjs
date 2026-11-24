@@ -617,3 +617,20 @@ test("Phase 7 never claims simulated jobs or email delivery",async()=>{
   assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });
+
+test("GlobalGovJobs branding renders without breaking existing GovRadar bookmarks",async()=>{
+ const context=await browser.newContext({viewport:{width:375,height:812}});
+ const page=await context.newPage();
+ try{
+  await page.addInitScript(()=>{
+   localStorage.setItem("govexam_radar_saved_v2",JSON.stringify(["rrb-je-cbt1-2026"]));
+  });
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  assert.match(await page.title(),/GlobalGovJobs/);
+  assert.match(await page.locator("header h1").first().textContent(),/GlobalGovJobs/);
+  assert.equal(await page.locator("#view-radar").isVisible(),true);
+  await page.evaluate(()=>window.switchTab("saved"));
+  assert.ok((await page.locator("#saved-exams-grid .govradar-opportunity-card").count())>=1);
+  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem("govexam_radar_saved_v2"))),["rrb-je-cbt1-2026"]);
+ }finally{await context.close();}
+});
