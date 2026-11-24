@@ -1,0 +1,34 @@
+name: Temporary privacy accessibility diagnosis
+on:
+  push:
+    branches: ['codex/privacy-a11y-diagnostic-20261124']
+    paths: ['.github/workflows/privacy-diagnostic.yml']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 12
+    env:
+      HOME: /root
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - run: |
+          npm ci --ignore-scripts --no-fund --no-audit
+          npm install --no-save --package-lock=false --ignore-scripts --no-fund --no-audit playwright@1.56.1 @axe-core/playwright@4.14.0
+          node scripts/build-site.mjs --target=preview
+      - run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory dist >/tmp/site.log 2>&1 &
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - run: node scripts/privacy-diagnostic.mjs
