@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {dirname} from 'node:path';
 const origin=process.env.YORPHIVES_PREVIEW_ORIGIN||'http://127.0.0.1:4173';
-const representative=['/','/tools/','/tools/word-counter/','/tools/pdf-merge/','/tools/heic-to-jpg/'];
+const representative=['/','/privacy/','/hqventures/','/tools/','/tools/word-counter/','/tools/pdf-merge/','/tools/heic-to-jpg/'];
 const catalog=JSON.parse(await readFile(new URL('../catalog.json',import.meta.url),'utf8'));
 const allTools=catalog.items.filter(x=>x.type==='tool'&&x.published!==false)
  .map(x=>'/'+(x.url.startsWith('/')?x.url.slice(1):x.url));

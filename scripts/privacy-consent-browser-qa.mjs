@@ -1,11 +1,12 @@
-// Synthetic, local-only consent checks. No production events or user data.
+// Synthetic consent checks. Every analytics request is intercepted, including on the live site.
 import assert from 'node:assert/strict';
 import {chromium,firefox,webkit} from 'playwright';
 import {mkdir} from 'node:fs/promises';
 
 const origin=new URL(process.env.YORPHIVES_PREVIEW_ORIGIN||'http://127.0.0.1:4173');
-if(origin.protocol!=='http:'||!['127.0.0.1','localhost','::1'].includes(origin.hostname))
- throw Error('Consent browser tests require an isolated local preview.');
+const local=origin.protocol==='http:'&&['127.0.0.1','localhost','::1'].includes(origin.hostname);
+const live=origin.origin==='https://yorphives.com'&&process.env.YORPHIVES_LIVE_QA==='1';
+if(!local&&!live)throw Error('Consent browser tests require an isolated preview or explicitly enabled canonical live site.');
 const CHOICE='yorphives-analytics-choice-v2';
 const LEGACY='yorphives-anonymous-analytics-disabled';
 const SESSION='yorphives-analytics-tab-session-v1';
