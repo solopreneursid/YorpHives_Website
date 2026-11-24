@@ -1,0 +1,42 @@
+name: Temporary live privacy verification
+on:
+  push:
+    branches: ['codex/privacy-live-qa-20261124']
+    paths: ['.github/workflows/temporary-live-privacy-qa.yml']
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 15
+    env:
+      HOME: /root
+      YORPHIVES_PREVIEW_ORIGIN: https://yorphives.com
+      YORPHIVES_LIVE_QA: '1'
+      YORPHIVES_PRIVACY_SCREENSHOTS: privacy-evidence
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: '08c982fc025e3836992b9c2b7cde63b3db16927f'
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Install pinned browser tests
+        run: |
+          npm ci --ignore-scripts --no-fund --no-audit
+          npm install --no-save --package-lock=false --ignore-scripts --no-fund --no-audit playwright@1.56.1
+      - name: Verify live consent without sending analytics
+        run: node scripts/privacy-consent-browser-qa.mjs
+      - name: Verify the public report and trigger routine retention
+        run: curl -fsS 'https://yorphives.com/api/insights/public?privacy-verification=1' >/dev/null
+      - name: Preserve privacy screenshots
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: yorphives-live-privacy-screenshots
+          path: privacy-evidence/*.png
+          retention-days: 14
+          if-no-files-found: warn
