@@ -12,24 +12,24 @@ a:focus-visible{outline:3px solid #5a9e62;outline-offset:3px}
 .brand img{width:36px;height:36px;border-radius:9px}
 .brand b{color:#4d8a50}
 .brand small{display:block;margin-top:4px;color:#7e887b;font-size:7px;letter-spacing:.17em}
-.nav{display:flex;align-items:center;gap:22px;font-size:11px;font-weight:760;color:#758071}
+.nav{display:flex;align-items:center;gap:22px;font-size:11px;font-weight:760;color:#526051}
 .nav a{text-decoration:none}
 .nav a:hover,.nav [aria-current=page]{color:#17241d}
 .nav [aria-current=page]{border-bottom:2px solid #5e9851;padding-bottom:6px}
 .hero{position:relative;overflow:hidden;padding:clamp(62px,9vw,112px) 0 65px;background:#e5ebdc}
 .hero:after{position:absolute;inset:0;content:"";pointer-events:none;background:radial-gradient(circle at 88% 15%,#c2d5a1 0,transparent 40%),linear-gradient(90deg,transparent 50%,#ffffff20)}
 .hero>*{position:relative;z-index:1}
-.eyebrow{color:#5b8050;font-size:9px;font-weight:900;letter-spacing:.16em}
+.eyebrow{color:#385b34;font-size:9px;font-weight:900;letter-spacing:.16em}
 .hero h1{max-width:850px;margin:18px 0;font-size:clamp(2.8rem,6vw,5.5rem);line-height:1.02;letter-spacing:-.075em}
 .hero h1 em{font-family:Georgia,"Times New Roman",serif;font-weight:400;color:#638e50}
-.lead{max-width:740px;color:#687866;font-size:clamp(1rem,1.8vw,1.2rem);line-height:1.75}
+.lead{max-width:740px;color:#455a47;font-size:clamp(1rem,1.8vw,1.2rem);line-height:1.75}
 .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:27px}
 .button{display:inline-flex;align-items:center;gap:13px;min-height:45px;padding:12px 16px;border-radius:99px;background:#1b3324;color:#f4f7ea;text-decoration:none;font-size:11px;font-weight:850}
 .button.secondary{border:1px solid #c5d1b9;background:#f8f9f1;color:#476c43}
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;padding:48px 0 80px}
 .card{min-height:185px;padding:22px;border:1px solid #dce0d4;border-radius:17px;background:#fffefa}
 .card h2{margin:20px 0 8px;font-size:19px;letter-spacing:-.04em}
-.card p{color:#788579;font-size:11px;line-height:1.7}
+.card p{color:#4e6050;font-size:11px;line-height:1.7}
 footer{background:#14271d;color:#dfe9d8;padding:24px 0}
 footer .wrap{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-size:9px;color:#a8b99e}
 footer a{color:#d8f36a;text-decoration:none}
