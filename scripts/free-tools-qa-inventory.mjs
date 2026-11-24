@@ -12,7 +12,7 @@ const scenarioPattern=/scenario\(\s*(['"`])([^'"`]+)\1\s*,\s*async\s*\(?page(?:\
 const normalize=x=>String(x||'').replace(/^\/+|\/+$/g,'');
 const key=x=>'/'+normalize(x)+'/';
 
-export function inventory(catalog,smokeSource,localSource,pdfSource='',mediaSource='',utilitySmokeSource='',wave1PdfSource=''){
+export function inventory(catalog,smokeSource,localSource,pdfSource='',mediaSource='',utilitySmokeSource='',wave1PdfSource='',utilityBrowserSource=''){
  const items=(catalog.items||[]).filter(x=>x.type==='tool'&&x.published!==false&&x.visibility!=='private');
  const urls=items.map(x=>key(x.url));
  if(new Set(urls).size!==urls.length)throw Error('Duplicate published tool URL');
@@ -40,9 +40,14 @@ export function inventory(catalog,smokeSource,localSource,pdfSource='',mediaSour
  const utilitySmokeEngines=utilitySmokeSource.includes("test('utility execution smoke: '")?new Set(['tools/utility-core.mjs','tools/everyday-core.mjs']):new Set();
  const wave1OutputIds=new Set();
  for(const hit of wave1PdfSource.matchAll(/\bprocessWave1\(\s*(['"\x60])([a-z0-9-]+)\1\s*,/g))wave1OutputIds.add(hit[2]);
+ const utilityBrowserIds=new Set();
+ const expectations=utilityBrowserSource.split('const expected={')[1]?.split('assert.equal(tools.length')[0]||'';
+ if(utilityBrowserSource.includes("page.locator('#utility-run').click()"))
+  for(const hit of expectations.matchAll(/'([a-z0-9-]+)':/g))utilityBrowserIds.add(hit[1]);
  const records=items.map(item=>{
   const url=key(item.url),toolId=item.module?.toolId||normalize(item.url).split('/').at(-1);
   const namedScenarios=[...(browser.get(url)||[])].sort();
+  if(utilityBrowserIds.has(toolId))namedScenarios.push('synthetic utility browser scenario');
   const localContract=local.has(toolId)||pdfContractIds.has(toolId)||mediaOutputIds.has(toolId)||wave1OutputIds.has(toolId);
   const group=item.module?.url||item.execution||'unknown';
   return {name:item.name,url,category:item.category||'Other',executionGroup:group,toolId,
@@ -90,16 +95,17 @@ const markdown=report=>{
  return lines.join('\n');
 };
 async function main(){
- const [catalog,smoke,local,pdf,media,utilitySmoke,wave1Pdf]=await Promise.all([
+ const [catalog,smoke,local,pdf,media,utilitySmoke,wave1Pdf,utilityBrowser]=await Promise.all([
   read('catalog.json').then(JSON.parse),
   read('scripts/health-browser-smoke.mjs'),
   read('scripts/health-local-utility-contracts.test.mjs'),
   read('scripts/health-pdf-contracts.test.mjs'),
   read('scripts/health-media-contracts.test.mjs'),
   read('scripts/health-all-utility-smoke.test.mjs'),
-  read('scripts/health-wave1-pdf-contracts.test.mjs')
+  read('scripts/health-wave1-pdf-contracts.test.mjs'),
+  read('scripts/health-utility-browser-qa.mjs')
  ]);
- const report=inventory(catalog,smoke,local,pdf,media,utilitySmoke,wave1Pdf);
+ const report=inventory(catalog,smoke,local,pdf,media,utilitySmoke,wave1Pdf,utilityBrowser);
  const dest=resolve(process.cwd(),'free-tools-qa-inventory');
  await mkdir(dest,{recursive:true});
  await Promise.all([

@@ -1,0 +1,75 @@
+name: YorpHives website quality audit
+on:
+  push:
+    branches: ['codex/live-quality-audit-20261124']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 35
+    env:
+      YORPHIVES_PREVIEW_ORIGIN: http://127.0.0.1:4173
+      YORPHIVES_QA_ORIGIN: http://127.0.0.1:4173
+      YORPHIVES_TEST_WEBM: .qa-media/video.webm
+      YORPHIVES_TEST_HEIC: .qa-media/input.heic
+      YORPHIVES_QA_RESULTS: .qa-media/browser-results.json
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Install pinned build and browser tools
+        run: |
+          npm ci --ignore-scripts --no-fund --no-audit
+          npm install --no-save --package-lock=false --ignore-scripts --no-fund --no-audit playwright@1.56.1 @axe-core/playwright@4.14.0 wrangler@4.68.0
+      - name: Create synthetic media fixtures
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq ffmpeg libheif-examples libheif-plugin-x265
+          mkdir -p .qa-media
+          ffmpeg -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=160x120:rate=8:duration=2' -an -c:v libvpx -b:v 250k -pix_fmt yuv420p .qa-media/video.webm
+          ffmpeg -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=256x192:rate=1:duration=1' -frames:v 1 .qa-media/input.png
+          heif-enc -q 80 -o .qa-media/input.heic .qa-media/input.png
+      - name: Build a private local preview and run deterministic tests
+        run: |
+          node scripts/build-site.mjs --target=preview
+          node scripts/release-check.mjs dist
+          node --test tests/*.test.mjs
+          node --test scripts/health-local-utility-contracts.test.mjs scripts/health-all-utility-smoke.test.mjs scripts/health-pdf-contracts.test.mjs scripts/health-wave1-pdf-contracts.test.mjs scripts/health-media-contracts.test.mjs scripts/free-tools-qa-inventory.test.mjs
+          npx wrangler deploy --config edge/live/wrangler.jsonc --dry-run --outdir /tmp/yorphives-worker-dry-run
+      - name: Start local Worker with the candidate headers
+        run: |
+          npx wrangler dev --local --config edge/live/wrangler.jsonc --ip 127.0.0.1 --port 4173 > /tmp/yorphives-local-worker.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/yorphives-local-worker.log
+          exit 1
+      - name: Verify the repairs with a synthetic microphone
+        run: node scripts/live-quality-browser-qa.mjs
+      - name: Exercise all 68 text and calculator tools in a browser
+        run: node scripts/health-utility-browser-qa.mjs
+      - name: Exercise the other tools with synthetic files and media
+        run: node scripts/health-browser-smoke.mjs
+      - name: Check mobile accessibility across the published catalogue
+        env:
+          YORPHIVES_A11Y_RESULTS: .qa-media/accessibility-results.json
+        run: node scripts/release-accessibility.mjs
+      - name: Check major journeys across browser engines
+        env:
+          YORPHIVES_COMPAT_RESULTS: .qa-media/cross-browser-results.json
+        run: node scripts/release-cross-browser.mjs
+      - name: Preserve test evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: website-quality-audit-evidence
+          path: .qa-media/*results.json
+          if-no-files-found: warn
+          retention-days: 14

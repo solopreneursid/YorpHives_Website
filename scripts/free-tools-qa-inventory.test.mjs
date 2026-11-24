@@ -19,3 +19,10 @@ test('rejects duplicate URLs and catalog-size drift',()=>{
  assert.throws(()=>inventory({items:catalog.items.slice(0,142)},'',''),/Expected 143/);
  assert.throws(()=>inventory({items:[...catalog.items.slice(0,142),catalog.items[0]]},'',''),/Duplicate/);
 });
+test('inventory distinguishes defined synthetic browser checks from passing results',()=>{
+ const source="const expected={'item-2':/ok/}; assert.equal(tools.length,1); page.locator('#utility-run').click()";
+ const report=inventory(catalog,'','','','','','',source);
+ assert.equal(report.tools.find(t=>t.url==='/tools/item-2/').checks.browserBehavior,'scenario-defined');
+ assert.equal(report.counts.toolsWithBrowserBehaviorScenarios,1);
+ assert.equal(report.counts.fullyVerifiedByThisInventory,0);
+});

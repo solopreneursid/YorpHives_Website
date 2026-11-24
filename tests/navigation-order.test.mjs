@@ -36,6 +36,6 @@ test("retired Builder hashes return Home and navigation state remains accessible
  assert.ok(js.includes("retiredRoutes=new Set(['builders','opportunities','membership','post'])"));
  assert.match(js,/history\.replaceState/);
  assert.match(js,/explore:'ventures'/);
- assert.match(js,/connectHashes=new Set\(\['hqconnect','contact','connect','partners'\]\)/);
+ assert.match(js,/connectHashes=new Set\(\['hqconnect','contact','connect','partners','suggest-tool'\]\)/);
  assert.match(js,/scrollIntoView/);
 });

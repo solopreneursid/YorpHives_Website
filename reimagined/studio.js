@@ -49,7 +49,7 @@ function route(){
  let hash=location.hash.slice(1);
  try{hash=decodeURIComponent(hash)}catch{hash=''}
  if(retiredRoutes.has(hash)){history.replaceState(history.state,'',location.pathname+location.search+'#home');hash='home'}
- const connectHashes=new Set(['hqconnect','contact','connect','partners']);
+ const connectHashes=new Set(['hqconnect','contact','connect','partners','suggest-tool']);
  const isConnect=connectHashes.has(hash);
  const aliases={explore:'ventures'};
  const active=isConnect?'home':(aliases[hash]|| (Object.hasOwn(viewNames,hash)?hash:'home'));
@@ -60,7 +60,14 @@ function route(){
  });
  document.title=(active==='home'?'Free browser tools and HQventures':viewNames[active])+' | YorpHives';
  closeMenu();
- if(isConnect){requestAnimationFrame(()=>$('hqconnect')?.scrollIntoView({block:'start',behavior:'auto'}))}
+ if(isConnect){
+  // Legacy partnership links and tool suggestions should arrive with the
+  // correct existing inbox category, without creating new database values.
+  const interest=$('interest');
+  if(interest&&hash==='partners')interest.value='Long-term partnership';
+  if(interest&&hash==='suggest-tool')interest.value='Other';
+  requestAnimationFrame(()=>$('hqconnect')?.scrollIntoView({block:'start',behavior:'auto'}));
+ }
  else if(active!==previousView){window.scrollTo({top:0,behavior:'auto'})}
  previousView=active;
 }

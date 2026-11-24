@@ -43,6 +43,7 @@ test('HQconnect direct visits and navigation are attributed to contact',async()=
  assert.deepEqual(direct.map(x=>x.payload.route),['contact']);
  const transition=await simulate({pathname:'/',hash:'#home',nextHash:'#hqconnect'});
  assert.deepEqual(transition.map(x=>x.payload.route),['home','contact']);
+ assert.deepEqual((await simulate({pathname:'/',hash:'#suggest-tool'})).map(x=>x.payload.route),['contact']);
  assert.equal((await simulate({pathname:'/',hash:'#hqconnect',dnt:'1'})).length,0);
 });
 test('privacy preferences suppress all pageview and completion telemetry',async()=>{

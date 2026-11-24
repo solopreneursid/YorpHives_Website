@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import {writeFile,mkdir} from 'node:fs/promises';
 import {dirname} from 'node:path';
 import {chromium} from 'playwright';
-const ORIGIN='https://yorphives.com';
+const origin=new URL(process.env.YORPHIVES_QA_ORIGIN||'https://yorphives.com');
+if(origin.origin!=='https://yorphives.com'&&
+ !(origin.protocol==='http:'&&['127.0.0.1','localhost','::1'].includes(origin.hostname)))
+ throw Error('Browser QA is restricted to YorpHives or a local preview.');
+const ORIGIN=origin.origin;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
 const results=[],unexpectedWrites=[];
 async function writeEvidence(){
@@ -24,6 +28,16 @@ async function scenario(name,fn){
  page.setDefaultTimeout(15000);
  page.setDefaultNavigationTimeout(30000);
  await context.addInitScript(()=>{localStorage.setItem('yorphives-anonymous-analytics-disabled','1');});
+ // A test failure must not send synthetic files or form data anywhere.
+ await context.route('**/*',route=>{
+  const request=route.request();
+  if(!['GET','HEAD'].includes(request.method())){
+   unexpectedWrites.push(request.method()+' '+request.url());
+   return route.abort();
+  }
+  if(new URL(request.url()).origin!==ORIGIN)return route.abort();
+  return route.continue();
+ });
  await context.route('**/api/insights/collect',route=>route.fulfill({status:204,body:''}));
  page.on('pageerror',e=>errors.push(page.url()+': '+(e.stack||e.message).slice(0,350)));
  page.on('request',r=>{if(['POST','PATCH','PUT','DELETE'].includes(r.method())&&!r.url().endsWith('/api/insights/collect'))unexpectedWrites.push(r.method()+' '+r.url());});
@@ -53,6 +67,29 @@ async function open(page,path){
  const r=await page.goto(path,{waitUntil:'domcontentloaded',timeout:30000});
  assert.equal(r?.status(),200,path+' not reachable');
  await page.locator('h1').first().waitFor({state:'visible',timeout:15000});
+}
+async function exercisePdfEditor(page,{family,fields={},widths}){
+ const bytes=await page.evaluate(async()=>{
+  const {PDFDocument}=await import('/tools/vendor/pdf-lib.mjs');
+  const doc=await PDFDocument.create();
+  for(const width of [400,410,420])doc.addPage([width,500]);
+  return Array.from(await doc.save());
+ });
+ const prefix=family==='file'?'file':'wave1';
+ await page.locator('#'+(family==='file'?'file-input':'wave1-file')).setInputFiles({
+  name:'synthetic.pdf',mimeType:'application/pdf',buffer:Buffer.from(bytes)
+ });
+ for(const [name,value] of Object.entries(fields))await page.locator('[name="'+name+'"]').fill(value);
+ await page.waitForFunction(id=>!document.getElementById(id)?.disabled,prefix+'-run',{timeout:15000});
+ await page.locator('#'+prefix+'-run').click();
+ await page.waitForFunction(id=>{
+  const a=document.getElementById(id);return a&&!a.hidden&&a.href.startsWith('blob:');
+ },prefix+'-download',{timeout:30000});
+ const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#'+prefix+'-download').click()]);
+ const parts=[];for await(const part of await download.createReadStream())parts.push(part);
+ const {PDFDocument}=await import('../tools/vendor/pdf-lib.mjs');
+ const pdf=await PDFDocument.load(Buffer.concat(parts));
+ assert.deepEqual(pdf.getPages().map(p=>p.getWidth()),widths);
 }
 try{
  await scenario('Word Counter executes in browser',async page=>{
@@ -125,6 +162,30 @@ try{
   const out=await PDFDocument.load(Buffer.concat(chunks));
   assert.equal(out.getPageCount(),1);
   assert.equal(out.getPage(0).getRotation().angle,90);
+ });
+ await scenario('PDF Extract Pages preserves selected page order',async page=>{
+  await open(page,'/tools/pdf-extract-pages/');
+  await exercisePdfEditor(page,{family:'file',fields:{pages:'3,1'},widths:[420,400]});
+ });
+ await scenario('PDF Remove Pages keeps the remaining pages',async page=>{
+  await open(page,'/tools/pdf-remove-pages/');
+  await exercisePdfEditor(page,{family:'file',fields:{pages:'2'},widths:[400,420]});
+ });
+ await scenario('PDF Page Numbers produces a valid three-page PDF',async page=>{
+  await open(page,'/tools/pdf-page-numbers/');
+  await exercisePdfEditor(page,{family:'wave1',widths:[400,410,420]});
+ });
+ await scenario('PDF Rearrange Pages follows the requested order',async page=>{
+  await open(page,'/tools/pdf-rearrange-pages/');
+  await exercisePdfEditor(page,{family:'wave1',fields:{order:'3,1,2'},widths:[420,400,410]});
+ });
+ await scenario('PDF Visible Signature preserves the original pages',async page=>{
+  await open(page,'/tools/pdf-visual-signature/');
+  await exercisePdfEditor(page,{family:'wave1',fields:{signature:'QA Test'},widths:[400,410,420]});
+ });
+ await scenario('PDF Watermark preserves the original pages',async page=>{
+  await open(page,'/tools/pdf-watermark/');
+  await exercisePdfEditor(page,{family:'wave1',fields:{watermark:'QA'},widths:[400,410,420]});
  });
  await scenario('JSON Formatter parses and formats locally',async page=>{
   await open(page,'/tools/json-formatter/');

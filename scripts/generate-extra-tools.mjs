@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { extraTools } from './extra-tool-specs.mjs';
+import { genericToolTemplate } from './tool-template.mjs';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const root = existsSync(resolve(projectRoot, 'dist/catalog.json')) ? resolve(projectRoot, 'dist') : projectRoot;
@@ -18,7 +19,7 @@ const fieldHtml = field => {
   const value=field.value!==undefined?` value="${esc(field.value)}"`:'';
   return `<label class="tool-field">${label}<input type="${esc(field.kind)}" name="${name}"${placeholder}${value}${limits}></label>`;
 };
-const template = await readFile(resolve(root,'tools/word-counter/index.html'),'utf8');
+const template = genericToolTemplate(await readFile(resolve(root,'tools/word-counter/index.html'),'utf8'));
 const inputBlock=/<div class="utility-inputs">.*?<\/div><div class="tool-buttons">/;
 if(!inputBlock.test(template))throw new Error('The tool page template changed; review the generator before continuing.');
 const catalogPath=resolve(root,'catalog.json');

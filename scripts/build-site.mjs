@@ -114,7 +114,12 @@ function injectHead(html,metadata){
    .replace(/<meta\b[^>]*property=["']og:url["'][^>]*>/gi,'')
    .replace(/<meta\b[^>]*name=["']twitter:card["'][^>]*>/gi,'')
    .replace(/<script\b[^>]*id=["']yorphives-discovery-schema["'][\s\S]*?<\/script>/gi,'');
- return html.replace(/<\/head>/i,metadata+'</head>');
+ // Respect custom artwork if a page has it; otherwise use the existing local
+ // square brand image so a shared tool has a predictable social preview.
+ const socialImage=/<meta\b[^>]*property=["']og:image["']/i.test(html)?'':
+  '<meta property="og:image" content="https://yorphives.com/tools/brand-icon.webp">'+
+  '<meta property="og:image:alt" content="YorpHives brand emblem">';
+ return html.replace(/<\/head>/i,metadata+socialImage+'</head>');
 }
 
 // Add the same navigation action to every direct-entry page, including future

@@ -1,4 +1,5 @@
 import {updateToolDirectory} from './tool-directory.mjs';
+import {genericToolTemplate} from './tool-template.mjs';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 import {dirname,resolve} from 'node:path';
@@ -12,7 +13,7 @@ function field(f){
  const limits=['min','max'].filter(k=>f[k]!==undefined).map(k=>` ${k}="${esc(f[k])}"`).join('');
  return `<label class="tool-field">${esc(f.label)}<input type="${esc(f.kind)}" name="${esc(f.name)}"${f.placeholder?` placeholder="${esc(f.placeholder)}"`:''}${f.value!==undefined?` value="${esc(f.value)}"`:''}${limits}${f.kind==='number'?' step="1"':''}></label>`;
 }
-const template=await readFile(resolve(root,'tools/word-counter/index.html'),'utf8'),catalogPath=resolve(root,'catalog.json'),catalog=JSON.parse(await readFile(catalogPath,'utf8'));
+const template=genericToolTemplate(await readFile(resolve(root,'tools/word-counter/index.html'),'utf8'),{file:true}),catalogPath=resolve(root,'catalog.json'),catalog=JSON.parse(await readFile(catalogPath,'utf8'));
 const ids=new Set(fileTools.map(t=>`tools/${t.id}/`));if(ids.size!==fileTools.length)throw new Error('Duplicate file tool IDs.');const originalItems=catalog.items,generated=[];
 for(const tool of fileTools){
  const fields=tool.fields||[],form=`<form id="file-tool-form"><label class="tool-field">${tool.multiple?'Choose files':'Choose a file'}<input id="file-input" name="files" type="file"${tool.accept?` accept="${esc(tool.accept)}"`:''}${tool.multiple?' multiple':''}></label><p class="file-note">Files are processed on this device and are not uploaded.</p><ol id="file-list" class="file-list" hidden></ol><div class="utility-inputs">${fields.map(field).join('')}</div><div class="tool-buttons"><button class="tool-btn primary" id="file-run" type="submit" disabled>Loading tool…</button><button class="tool-btn" type="reset">Reset</button></div><p class="tool-status" id="file-status" role="status" aria-live="polite"></p><div id="file-result" class="file-result" hidden><img id="file-preview" class="file-preview" alt="Processed image preview" hidden><label class="tool-field" hidden>Result preview (up to 10,000 characters)<textarea class="utility-output" id="file-output" readonly spellcheck="false"></textarea></label><div class="tool-buttons"><a class="tool-btn primary" id="file-download" hidden>Download</a><button class="tool-btn" id="file-copy" type="button" hidden>Copy preview</button></div></div></form>`;

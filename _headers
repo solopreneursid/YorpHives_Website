@@ -7,6 +7,12 @@
   X-Frame-Options: DENY
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
+# Only the voice recorder can request microphone access. The browser still
+# asks the visitor for permission; every other page keeps the global denial.
+/tools/voice-recorder/*
+  ! Permissions-Policy
+  Permissions-Policy: camera=(), microphone=(self), geolocation=()
+
 # Navigation content changes often; do not reuse stale browser snapshots.
 # CSS, images and tool bundles keep their existing caching behavior.
 /

@@ -40,6 +40,9 @@ export default {
     else{
      const denied=await admitContact(request,env);
      response=denied||await submitHqconnect(context);
+     // Log only the service failure and status, never names, email, message,
+     // IP address, request body, or the underlying database exception.
+     if(response.status>=500)console.error(JSON.stringify({event:'hqconnect_intake_failure',status:response.status}));
     }
    }
    else if(p==='/api/monitoring/health')response=await (request.method==='GET'?monitoringHealth(context):json({error:'method-not-allowed'},405));
