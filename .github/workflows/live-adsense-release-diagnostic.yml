@@ -1,0 +1,43 @@
+name: YorpHives live release identity and AdSense rewrite diagnostic
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/live-adsense-release-diagnostic.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Compare original release hashes to the actual Worker responses
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {createHash} from 'node:crypto';
+          const digest=b=>createHash('sha256').update(b).digest('hex');
+          const base='https://yorphives.com';
+          const req=async p=>{
+            const r=await fetch(base+p,{redirect:'manual',headers:{'cache-control':'no-cache'},signal:AbortSignal.timeout(18000)});
+            const b=new Uint8Array(await r.arrayBuffer());
+            return {status:r.status,location:r.headers.get('location'),mime:r.headers.get('content-type'),cache:r.headers.get('cf-cache-status'),body:b,hash:digest(b)};
+          };
+          const m=await req('/.well-known/yorphives-release.json');
+          console.log('MANIFEST_STATUS',m.status,m.mime,m.cache,m.body.length);
+          if(m.status!==200)process.exit(1);
+          const manifest=JSON.parse(new TextDecoder().decode(m.body));
+          console.log('RELEASE_IDENTITY',JSON.stringify({sourceSha:manifest.sourceSha,assetFingerprint:manifest.assetFingerprint,target:manifest.target}));
+          if(manifest.sourceSha!=='f98207dc98a3b109d0f2bb27b524ad3ab809d0e4'||manifest.assetFingerprint!=='ee121b41b3ab814870e1829cd27b5d2db75d48689704aa2057daa85543ec96b4')process.exit(1);
+          for(const [path,key] of [['/','index.html'],['/catalog.json','catalog.json'],['/tools/','tools/index.html'],['/sitemap.xml','sitemap.xml'],['/index.html','index.html']]){
+            const r=await req(path);
+            const result={path,status:r.status,location:r.location,mime:r.mime,cache:r.cache,rawHash:r.hash,expected:manifest.assets[key],exact:r.hash===manifest.assets[key]};
+            if(path==='/'){
+              const html=new TextDecoder().decode(r.body);
+              result.adsTagFound=html.includes('<meta name="google-adsense-account" content="ca-pub-9864775895222572">');
+              const neutral=html.replace('<meta name="google-adsense-account" content="ca-pub-9864775895222572">','');
+              result.afterRemovingAdsenseTag=digest(Buffer.from(neutral,'utf8'));
+              result.normalizedExact=result.afterRemovingAdsenseTag===manifest.assets[key];
+            }
+            console.log('LIVE_HASH_DIAGNOSTIC',JSON.stringify(result));
+          }
+          NODE
