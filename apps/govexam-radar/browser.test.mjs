@@ -651,7 +651,7 @@ test("GlobalGovJobs raised section cards organize jobs first without losing sour
     return {search:y("discovery-search-area"),jobs:y("exam-cards-grid"),
       official:y("gg-official-section"),regions:y("gg-region-section")};
   });
-  assert.ok(order.search<order.jobs&&order.jobs<order.official&&order.official<order.regions,JSON.stringify(order));
+  assert.ok(order.search<order.official&&order.official<order.jobs&&order.jobs<order.regions,JSON.stringify(order));
   await page.locator('[data-gg-section="regions"]').click();
   assert.equal(await page.locator("#regional-source-filters").isVisible(),true);
   await page.locator("#gg-research-details summary").click();
@@ -663,4 +663,54 @@ test("GlobalGovJobs raised section cards organize jobs first without losing sour
   assert.ok(widths.root<=widths.view+2,JSON.stringify(widths));
   assert.deepEqual(errors,[]);
  }finally{await page.close();}
+});
+
+test("Simple experience prioritizes official notices, hides advanced controls and keeps navigation accessible",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:812}});
+ const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+ try{
+  await page.goto(origin,{waitUntil:'domcontentloaded'});
+  await page.locator('#gg-official-slot #govradar-official-jobs').waitFor();
+  assert.equal(await page.locator('#gg-official-section').isVisible(),true);
+  assert.equal(await page.locator('#gg-more-filters').getAttribute('aria-expanded'),'false');
+  assert.equal(await page.locator('#gg-advanced-controls').isVisible(),false);
+  assert.equal(await page.locator('#discovery-country-chips').isVisible(),true);
+  assert.equal(await page.locator('#discovery-region-quick').isVisible(),true);
+  assert.equal(await page.locator('#discovery-stream-chips').isVisible(),true);
+  await page.locator('#gg-more-filters').click();
+  assert.equal(await page.locator('#gg-advanced-controls').isVisible(),true);
+  assert.equal(await page.locator('#discovery-advanced-filters').isVisible(),true);
+  await page.locator('#gg-more-filters').click();
+  assert.equal(await page.locator('#gg-advanced-controls').isVisible(),false);
+  assert.match(await page.locator('#gg-primary-title').textContent(),/Jobs from government websites/);
+  assert.match(await page.locator('#gg-examples-heading').textContent(),/Other job information/);
+  assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
+
+test("Hindi translates simple controls without modifying records or deleting saved jobs",async()=>{
+ const context=await browser.newContext({viewport:{width:375,height:812}});
+ const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+ try{
+  await page.goto(origin,{waitUntil:'domcontentloaded'});
+  await page.locator('#exam-cards-grid .govradar-opportunity-card').first().waitFor();
+  const title=await page.locator('#exam-cards-grid .govradar-card-title').first().textContent();
+  await page.locator('#exam-cards-grid .govradar-save-button').first().click();
+  const count=await page.locator('#exam-cards-grid .govradar-card-title').count();
+  await page.locator('#gg-language').selectOption('hi');
+  assert.match(await page.locator('#discovery-title').textContent(),/सरकारी नौकरी/);
+  assert.match(await page.locator('#gg-primary-title').textContent(),/सरकारी वेबसाइटों/);
+  assert.equal(await page.locator('#exam-cards-grid .govradar-card-title').first().textContent(),title);
+  assert.equal(await page.locator('#exam-cards-grid .govradar-card-title').count(),count);
+  assert.equal(await page.locator('#discovery-title').getAttribute('lang'),'hi');
+  assert.equal(await page.locator('html').getAttribute('lang'),'en');
+  await page.reload({waitUntil:'domcontentloaded'});
+  assert.equal(await page.locator('#gg-language').inputValue(),'hi');
+  assert.match(await page.locator('#discovery-title').textContent(),/सरकारी नौकरी/);
+  await page.evaluate(()=>window.switchTab('saved'));
+  assert.ok(await page.locator('#saved-exams-grid .govradar-opportunity-card').count()>0);
+  await page.locator('#gg-language').selectOption('en');
+  assert.match(await page.locator('#discovery-title').textContent(),/Find government jobs easily/);
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
 });
