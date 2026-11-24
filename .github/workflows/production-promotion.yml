@@ -1,4 +1,4 @@
-name: YorpHives founder-approved production promotion
+name: DEPRECATED — Pages-only fallback promotion (do not use for live)
 on:
   workflow_dispatch:
     inputs:
