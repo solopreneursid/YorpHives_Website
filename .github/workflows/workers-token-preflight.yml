@@ -1,0 +1,36 @@
+name: YorpHives production Worker token read-only verification
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/workers-token-preflight.yml']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    env:
+      CLOUDFLARE_ACCOUNT_ID: '69234e51e08d8013980a7ff869746609'
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      WORKER_NAME: yorphives-edge-static-live
+    steps:
+      - name: Verify restricted token can inspect production Worker without changing it
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -n "$CLOUDFLARE_API_TOKEN" ] || { echo 'Token not present'; exit 1; }
+          for suffix in settings deployments; do
+            status=$(curl --silent --show-error --max-time 20 -o /tmp/cloudflare-"$suffix".json -w '%{http_code}' -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/$WORKER_NAME/$suffix")
+            if [ "$status" != 200 ]; then echo "WORKER_READ_DENIED: $suffix HTTP $status"; exit 1; fi
+            node -e "const a=require('/tmp/cloudflare-'+process.argv[1]+'.json');if(a.success!==true)process.exit(1)" "$suffix"
+          done
+          node - <<'NODE'
+          const s=require('/tmp/cloudflare-settings.json');
+          const d=require('/tmp/cloudflare-deployments.json');
+          const required=['ASSETS','INSIGHTS_DB','HQCONNECT_DB','AGENT_USAGE','AGENT_CLIENT_LIMIT','AGENT_GLOBAL_LIMIT','CONTACT_CLIENT_LIMIT','CONTACT_GLOBAL_LIMIT'];
+          const found=new Set((s.result?.bindings||[]).map(x=>x.name));
+          for(const name of required)if(!found.has(name))throw Error('Production binding missing: '+name);
+          if(!d.result?.deployments?.[0]?.versions?.[0]?.version_id)throw Error('Cannot establish rollback target');
+          console.log('PRODUCTION_WORKER_READ_PREFLIGHT_PASS');
+          NODE
