@@ -8,7 +8,7 @@ test("full original six-tab experience and separate simple interface",async()=>{
     const r=await request("/");assert.equal(r.status,200);
     const html=await r.text();
     for(const id of ["view-radar","view-alerts","view-feeds","view-saved","view-community","view-guide"])assert.ok(html.includes('id="'+id+'"'),id);
-    assert.match(html,/Research Preview/);
+    assert.match(html,/gg-preview-warning/);assert.match(html,/Check the official website before applying/);
     assert.match(r.headers.get("Content-Security-Policy"),/script-src/);
     const lite=await request("/lite");assert.equal(lite.status,200);
     assert.match(lite.headers.get("Content-Security-Policy"),/script-src 'self'/);
