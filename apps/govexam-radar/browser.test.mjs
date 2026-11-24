@@ -150,6 +150,7 @@ test("modals, saved preferences, guide and custom leads",async()=>{
    assert.equal(await page.locator("#email-dispatch-log").count(),0);
    assert.match(await page.locator("#view-alerts").innerText(),/Admit cards, results & updates/i);
    await page.evaluate(()=>window.switchTab("feeds"));
+   await page.locator('#gg-site-check-tools summary').click();
    await page.locator("#custom-title").fill("QA Test Community Outreach Exam");
    await page.locator("#custom-authority").fill("Research Team");
    await page.locator("#custom-region").fill("Test District");
@@ -542,14 +543,14 @@ test("Updates clearly separates unverified prototypes and retains local source-l
   await page.locator("#exam-cards-grid article").first().waitFor();
   await page.evaluate(()=>window.switchTab("alerts"));
   assert.equal(await page.locator("#gr-verified-empty").isVisible(),true);
-  assert.match(await page.locator("#gr-verified-empty").textContent(),/No independently verified/);
+  assert.match(await page.locator("#gr-verified-empty").textContent(),/do not have confirmed admit-card or result updates/);
   assert.equal(await page.locator("#gr-admit-panel").isVisible(),true);
   assert.equal(await page.locator("#gr-result-panel").isVisible(),false);
   assert.equal(await page.locator("#gr-upcoming-panel").isVisible(),false);
   const lead=page.locator("#gr-admit-panel a[data-gr-official-source]").first();
   const rowCount=await lead.count();
   assert.ok(rowCount>0);
-  assert.match(await page.locator("#gr-admit-panel").innerText(),/Prototype · not verified/);
+  assert.match(await page.locator("#gr-admit-panel").innerText(),/Example · not confirmed/);
   await lead.evaluate(a=>a.click());
   assert.equal(await page.locator("#gr-history-list .gr-history-entry").count(),1);
   const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem("govradar-global-official-click-history-v1")));
@@ -581,11 +582,12 @@ test("phone users can discover official portals and navigate quick guide without
   await page.locator('#monitored-portals-grid>div').first().waitFor();
   const original=await page.locator('#monitored-portals-grid>div').count();
   assert.ok(original>4);
-  assert.match(await page.locator('#gr-portal-results').textContent(),/official portal links shown/);
+  assert.match(await page.locator('#gr-portal-results').textContent(),/government websites shown/);
   await page.locator('#gr-portal-query').fill('not-a-real-government-portal-9999');
   assert.equal(await page.locator('#monitored-portals-grid>div:visible').count(),0);
   await page.locator('#gr-portal-query').fill('');
   assert.equal(await page.locator('#monitored-portals-grid>div:visible').count(),original);
+  await page.locator('#gg-site-check-tools summary').click();
   await page.locator('[data-gr-jump="monitored-portals-grid"]').click();
   assert.equal(await page.locator('#monitored-portals-grid').isVisible(),true);
   await page.evaluate(()=>window.switchTab('guide'));
@@ -605,7 +607,7 @@ test("Phase 7 never claims simulated jobs or email delivery",async()=>{
  try{
   await page.goto(origin,{waitUntil:'domcontentloaded'});
   await page.locator('#exam-cards-grid article').first().waitFor();
-  assert.match(await page.locator('#results-summary-text').textContent(),/prototype research leads/);
+  assert.match(await page.locator('#results-summary-text').textContent(),/examples.*not confirmed jobs/);
   await page.evaluate(()=>window.switchTab('feeds'));
   const original=await page.locator('#exam-cards-grid article').count();
   await page.evaluate(()=>window.runFeedSync());
@@ -644,7 +646,7 @@ test("GlobalGovJobs raised section cards organize jobs first without losing sour
   await page.locator("#gg-region-slot #regional-government-directory").waitFor();
   assert.equal(await page.locator("#gg-official-slot #govradar-official-jobs").count(),1);
   assert.equal(await page.locator("#gg-region-slot #regional-government-directory").count(),1);
-  assert.equal(await page.locator(".gg-explore-tiles button").count(),4);
+  assert.equal(await page.locator(".gg-explore-tiles button").count(),3);
   assert.equal(await page.locator("#gg-research-details").evaluate(e=>e.open),false);
   const order=await page.evaluate(()=>{
     const y=id=>document.getElementById(id).getBoundingClientRect().top+scrollY;
@@ -709,6 +711,7 @@ test("Hindi translates simple controls without modifying records or deleting sav
   assert.match(await page.locator('#discovery-title').textContent(),/सरकारी नौकरी/);
   await page.evaluate(()=>window.switchTab('saved'));
   assert.ok(await page.locator('#saved-exams-grid .govradar-opportunity-card').count()>0);
+  await page.evaluate(()=>window.switchTab('radar'));
   await page.locator('#gg-language').selectOption('en');
   assert.match(await page.locator('#discovery-title').textContent(),/Find government jobs easily/);
   assert.deepEqual(errors,[]);
@@ -720,7 +723,7 @@ test("one main search controls both examples and imported notice filters",async(
  const errors=[];page.on("pageerror",e=>errors.push(String(e)));
  try{
   await page.goto(origin,{waitUntil:"domcontentloaded"});
-  await page.locator("#official-notice-filters").waitFor();
+  await page.locator("#official-notice-filters").waitFor({state:"attached"});
   await page.locator("#search-input").fill("Railway");
   await page.locator('[data-quick-country="India"]').click();
   await page.locator('[data-quick-stream="Technical"]').click();
@@ -733,6 +736,49 @@ test("one main search controls both examples and imported notice filters",async(
   assert.equal(await page.locator("#official-notice-search").inputValue(),"");
   assert.equal(await page.locator("#official-notice-country").inputValue(),"");
   assert.equal(await page.locator("#official-notice-stream").inputValue(),"");
+  assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
+
+test("plain-language job search saves official notices and keeps the latest response",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:812}});
+ const errors=[];page.on("pageerror",e=>errors.push(String(e)));
+ const rows=[
+  {id:'test-teacher',title:'Teacher - test data',employer:'Test school',country:'United Kingdom',jurisdiction:'England',region:'London',stream:'Non-technical',closingAt:'2027-01-01',sourceId:'uk-dfe',sourceUrl:'https://teaching-vacancies.service.gov.uk/jobs/test-teacher'},
+  {id:'test-engineer',title:'Engineer - test data',employer:'Test department',country:'Canada',jurisdiction:'Manitoba',region:'Winnipeg',stream:'Technical',closingAt:'2027-02-01',sourceId:'manitoba-jobs',sourceUrl:'https://jobsearch.gov.mb.ca/jow/advancedResult.action?ID=123456'}
+ ];
+ try{
+  await page.route('**/api/notices?*',async route=>{
+   const url=new URL(route.request().url()),q=(url.searchParams.get('q')||'').toLowerCase();
+   const country=url.searchParams.get('country')||'',stream=url.searchParams.get('stream')||'';
+   if(q==='teacher')await new Promise(resolve=>setTimeout(resolve,750));
+   const notices=rows.filter(x=>(!q||x.title.toLowerCase().includes(q))&&(!country||x.country===country)&&(!stream||x.stream===stream));
+   await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({total:notices.length,notices})});
+  });
+  await page.route('**/api/notice-changes?*',route=>route.fulfill({status:200,contentType:'application/json',body:'{"changes":[]}'}));
+  await page.goto(origin,{waitUntil:'domcontentloaded'});
+  await page.locator('#official-notice-grid article').first().waitFor();
+  assert.match(await page.locator('#gg-region-help').innerText(),/only filters the examples/);
+  assert.equal(await page.locator('#official-extra-filters').evaluate(e=>e.open),false);
+  await page.locator('#search-input').fill('teacher');
+  await page.locator('#official-notice-grid').getByText('Teacher - test data').waitFor();
+  assert.match(await page.locator('#official-notice-status').innerText(),/1 notice found/);
+  await page.locator('#official-notice-grid [data-save-notice]').first().click();
+  await page.locator('#nav-mobile-saved').click();
+  assert.match(await page.locator('#saved-official-notices').innerText(),/Teacher - test data/);
+  await page.locator('#nav-mobile-radar').click();
+  await page.locator('#gg-language').selectOption('hi');
+  assert.match(await page.locator('#official-list-title').innerText(),/सरकारी/);
+  await page.locator('#gg-language').selectOption('en');
+  await page.locator('#search-input').fill('teacher');
+  await page.waitForTimeout(500);
+  await page.locator('#search-input').fill('engineer');
+  await page.locator('#official-notice-grid').getByText('Engineer - test data').waitFor();
+  await page.waitForTimeout(400);
+  assert.doesNotMatch(await page.locator('#official-notice-grid').innerText(),/Teacher - test data/);
+  await page.locator('#nav-mobile-feeds').click();
+  assert.ok(await page.locator('#monitored-portals-grid a').count()>0);
+  assert.equal(await page.locator('#gg-site-check-tools').evaluate(e=>e.open),false);
   assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });
