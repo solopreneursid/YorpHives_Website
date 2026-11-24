@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "mode": "research-only",
+  "lastVerified": "2026-11-24",
+  "site": "https://yorphives.com",
+  "rules": {
+    "allowLiveAffiliateLinks": false,
+    "requiresFounderApplication": true,
+    "requiresApproval": true,
+    "requiresIssuedTrackingLink": true,
+    "requiresDisclosure": true,
+    "requiresEditorialReview": true,
+    "searchRel": "sponsored nofollow",
+    "noAutomaticRegistration": true,
+    "noAutomaticProductionWrites": true,
+    "noInferredRevenue": true,
+    "noPaywallToFreeTools": true,
+    "noAdsOutsideFreeTools": true
+  },
+  "candidates": [
+    {
+      "id": "adobe",
+      "program": "Adobe Affiliate Programme",
+      "officialUrl": "https://www.adobe.com/in/affiliates.html",
+      "applicationProvider": "Partnerize",
+      "stage": "not-applied",
+      "priority": 1,
+      "fit": [
+        "tools/pdf-compressor/",
+        "tools/image-resizer/",
+        "tools/images-to-pdf/"
+      ],
+      "commissionNote": "Official programme advertises 85% of first eligible monthly subscription payment; conditions and exclusions require current term check.",
+      "facts": "Official Adobe India page: no programme fee and no minimum audience size; campaign approval is required.",
+      "founderAction": "Review Adobe programme terms, join Partnerize, request Adobe campaign approval. Do not insert tracking links before acceptance.",
+      "trackingUrl": null,
+      "approvedAt": null,
+      "verifiedEarnings": null
+    },
+    {
+      "id": "namecheap",
+      "program": "Namecheap Affiliate Program",
+      "officialUrl": "https://www.namecheap.com/affiliates/",
+      "applicationProvider": "Impact or CJ",
+      "stage": "not-applied",
+      "priority": 2,
+      "fit": [
+        "tools/campaign-url-builder/",
+        "tools/slug-generator/"
+      ],
+      "commissionNote": "First-purchase referral commissions, rates depend on current approved terms.",
+      "facts": "Official Namecheap affiliate policy considers organic presence, relevant content and website domain registration. Approval is discretionary.",
+      "founderAction": "Review current rates, geographic eligibility, website-fit criteria, then apply using Namecheap's official page.",
+      "trackingUrl": null,
+      "approvedAt": null,
+      "verifiedEarnings": null
+    },
+    {
+      "id": "digitalocean",
+      "program": "DigitalOcean Affiliate Program",
+      "officialUrl": "https://www.digitalocean.com/affiliates",
+      "applicationProvider": "Official affiliate network; verify current application destination",
+      "stage": "not-applied",
+      "priority": 3,
+      "fit": [
+        "tools/json-formatter/"
+      ],
+      "commissionNote": "Official page advertises 10% monthly commission for one year for each referred paying customer; confirm full programme conditions.",
+      "facts": "Developer-oriented offer. Current official page has inconsistent network wording; follow its current application link and verify destination before signup.",
+      "founderAction": "Review eligibility, terms and current application network; only pursue if developer demand appears in genuine usage.",
+      "trackingUrl": null,
+      "approvedAt": null,
+      "verifiedEarnings": null
+    }
+  ]
+}
