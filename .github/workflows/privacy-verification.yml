@@ -74,4 +74,5 @@ jobs:
             .qa-media/*results.json
             .qa-media/screenshots/*.png
           retention-days: 14
+          include-hidden-files: true
           if-no-files-found: warn
