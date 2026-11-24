@@ -31,11 +31,11 @@ test("commercial release gate fails closed on Manitoba, India and unknown source
  assert.throws(()=>assertSourceRightsForCommercialRelease(["unknown"]),/unknown_official_source/);
  assert.throws(()=>assertSourceRightsForCommercialRelease([]),/source_set_required/);
 });
-test("UI limits Open Government Licence to UK and explicitly labels Manitoba source-specific review",async()=>{
+test("public UI attributes UK data and does not promote unapproved source feeds",async()=>{
  const code=await readFile(new URL("./official-ui.mjs",import.meta.url),"utf8");
  assert.match(code,/UK DfE listings: contains public sector information licensed under/);
- assert.match(code,/Manitoba: official RSS factual summaries/);
- assert.match(code,/source-specific commercial reuse under review/);
- assert.match(code,/India import disabled/);
+ assert.match(code,/currently come from UK schools/);
+ assert.doesNotMatch(code,/Manitoba: official RSS factual summaries/);
+ assert.doesNotMatch(code,/India · Employment News digest/);
  assert.doesNotMatch(code,/Contains public sector information licensed under the/);
 });

@@ -222,8 +222,9 @@ export async function serveOfficialNotices(db,params,scope="research"){
   if(releaseSourceIds && requestedSource && !releaseSourceIds.includes(requestedSource))
    return json({error:"source_not_approved_for_release_preview",notices:[],sources:[]},403);
   const sourceId=allowedSources.includes(requestedSource)?requestedSource:"";
-  const allowedCountries=["Canada","United Kingdom","India"];
-  const country=allowedCountries.includes(params.get("country"))?params.get("country"):"";
+  // Unknown countries must return no matching rows, not silently broaden the
+  // search to every country when a place has no imported feed yet.
+  const country=plain(params.get("country"),60);
   const jurisdiction=plain(params.get("jurisdiction"),30);
   const levels=["national","province","state","municipal","devolved","public_education"];
   const level=levels.includes(params.get("level"))?params.get("level"):"";
@@ -302,4 +303,27 @@ export async function serveIngestionStatus(db){
     indiaSource:"index_parser_only_not_scheduled_pending_reuse_review"},
    status:"official_feed_imports_not_independently_verified"});
  }catch(e){console.error(JSON.stringify({event:"ingestion_status_read_failed",reason:String(e?.message||e).slice(0,150)}));return json({error:"status_unavailable"},503);}
+}
+
+// This status endpoint is safe to expose alongside the public-preview feed:
+// its SQL reads only explicitly approved sources, including run details and
+// counts. It cannot be widened by request parameters or a new adapter.
+export async function servePublicIngestionStatus(db){
+ if(!db)return json({error:"not_configured"},503);
+ try{
+  const ids=allowedCommercialPreviewSources();
+  const placeholders=ids.map(()=>"?").join(",");
+  const now=Date.now(),cutoff=new Date(now).toISOString();
+  const latest=await db.prepare("SELECT source_id as sourceId,started_at as startedAt,finished_at as finishedAt,state,received,accepted,discarded,error_code as errorCode FROM source_ingest_runs WHERE source_id IN ("+placeholders+") ORDER BY finished_at DESC LIMIT 8").bind(...ids).all();
+  const bySource=await db.prepare("SELECT source_id AS sourceId,country,jurisdiction_name AS jurisdiction,government_tier AS level,employer_type AS employerType,COUNT(*) AS count FROM official_job_notices WHERE source_id IN ("+placeholders+") AND life_status='open' AND closing_at>? AND last_seen_at>=? AND review_state IN ('official_feed_unreviewed','founder_reviewed') GROUP BY source_id,country,jurisdiction_name,government_tier,employer_type").bind(...ids,cutoff,now-14*86400000).all();
+  const recent=await db.prepare("SELECT source_id AS sourceId,MAX(CASE WHEN state='ok' AND details LIKE '%\"origin\":\"scheduled\"%' THEN finished_at ELSE NULL END) AS lastSuccessfulScheduledAt,SUM(CASE WHEN state='ok' AND details LIKE '%\"origin\":\"scheduled\"%' AND finished_at>=? THEN 1 ELSE 0 END) AS recentNativeSuccessCount,MAX(CASE WHEN id NOT LIKE 'bootstrap-%' AND details NOT LIKE '%\"origin\":\"signed_portable_collector\"%' AND (error_code IS NULL OR error_code!='collector_claim_pending') THEN finished_at ELSE NULL END) AS lastNativeAttemptAt FROM source_ingest_runs WHERE source_id IN ("+placeholders+") GROUP BY source_id").bind(now-8*3600000,...ids).all();
+  const sources=ids.map(sourceId=>{
+   const row=(recent.results||[]).find(x=>x.sourceId===sourceId)||{};
+   const last=row.lastSuccessfulScheduledAt||null;
+   const count=Number(row.recentNativeSuccessCount)||0;
+   return {sourceId,scheduledSuccessObserved:!!last,freshSuccess:!!last&&now-last<86400000,recentNativeSuccessCount:count,twoCycleNativeProof:count>=2&&!!last&&now-last<=5*3600000&&row.lastNativeAttemptAt===last,lastSuccessfulScheduledAt:last,lastNativeAttemptAt:row.lastNativeAttemptAt||null};
+  });
+  const rows=bySource.results||[];
+  return json({source:"approved preview sources",openImportedNotices:rows.reduce((n,x)=>n+(Number(x.count)||0),0),bySource:rows,latest:latest.results||[],automation:{observedForAllSources:sources.every(x=>x.scheduledSuccessObserved),healthy:sources.every(x=>x.freshSuccess),twoCycleCronGatePassed:sources.every(x=>x.twoCycleNativeProof),sources},status:"official_feed_imports_not_independently_verified"});
+ }catch(e){console.error(JSON.stringify({event:"public_ingestion_status_failed",reason:String(e?.message||e).slice(0,150)}));return json({error:"status_unavailable"},503);}
 }
