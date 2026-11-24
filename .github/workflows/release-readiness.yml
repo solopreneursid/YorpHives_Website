@@ -140,7 +140,13 @@ jobs:
           done
           cat /tmp/yorphives-release-preview.log
           exit 1
-      - name: Require all 150 WCAG mobile and desktop checks to pass
+      - name: Require optional analytics choice and withdrawal
+        working-directory: site-source
+        env:
+          YORPHIVES_PREVIEW_ORIGIN: http://127.0.0.1:4173
+          YORPHIVES_PRIVACY_SCREENSHOTS: .qa-media/privacy
+        run: node scripts/privacy-consent-browser-qa.mjs
+      - name: Require all 154 WCAG mobile and desktop checks to pass
         working-directory: site-source
         env:
           YORPHIVES_PREVIEW_ORIGIN: http://127.0.0.1:4173
@@ -161,7 +167,9 @@ jobs:
           path: |
             site-source/.qa-media/accessibility-results.json
             site-source/.qa-media/cross-browser-results.json
+            site-source/.qa-media/privacy/*.png
           retention-days: 14
+          include-hidden-files: true
           if-no-files-found: warn
 
   report:
