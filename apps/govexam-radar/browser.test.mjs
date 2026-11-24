@@ -208,9 +208,12 @@ test("actual Cloudflare preview displays official-source cards with responsive l
   const cards=page.locator("#official-notice-grid article");
   await cards.first().waitFor({timeout:25000});
   assert.ok((await cards.count())>=1);
+  await page.locator("#official-extra-filters summary").click();
+  const ukResponse=page.waitForResponse(r=>{const u=new URL(r.url());return u.pathname==="/api/notices"&&u.searchParams.get("country")==="United Kingdom"&&r.ok();},{timeout:15000});
   await page.locator("#official-notice-country").selectOption("United Kingdom");
   await page.locator("#official-notice-filters button[type=submit]").click();
-  await page.waitForFunction(()=>document.querySelector("#official-notice-grid article a[href^='https://teaching-vacancies.service.gov.uk/jobs/']")!==null,{timeout:12000});
+  await ukResponse;
+  await page.waitForFunction(()=>{const links=[...document.querySelectorAll("#official-notice-grid article a")];return links.length>0&&links.every(a=>a.href.startsWith("https://teaching-vacancies.service.gov.uk/jobs/"));},{timeout:12000});
  const href=await cards.first().locator("a[href^='https://teaching-vacancies.service.gov.uk/jobs/']").getAttribute("href");
   assert.ok(href);
   await page.screenshot({path:"govradar-live-official-375.png",fullPage:false});
@@ -265,9 +268,12 @@ test("real Manitoba provincial government jobs display with source and location 
  try{
   await page.goto("https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/",{waitUntil:"domcontentloaded",timeout:30000});
   await page.locator("#official-notice-grid article").first().waitFor({timeout:30000});
+  await page.locator("#official-extra-filters summary").click();
+  const canadaResponse=page.waitForResponse(r=>{const u=new URL(r.url());return u.pathname==="/api/notices"&&u.searchParams.get("country")==="Canada"&&r.ok();},{timeout:15000});
   await page.locator("#official-notice-country").selectOption("Canada");
   await page.locator("#official-notice-filters button[type=submit]").click();
-  await page.waitForFunction(()=>document.querySelector("#official-notice-status")?.textContent.includes("imported official-source"),{timeout:15000});
+  await canadaResponse;
+  await page.waitForFunction(()=>{const links=[...document.querySelectorAll("#official-notice-grid article a")];return links.length>0&&links.every(a=>a.href.startsWith("https://jobsearch.gov.mb.ca/jow/advancedResult.action"));},{timeout:15000});
   assert.ok((await page.locator("#official-notice-grid article").count())>=1);
   const cards=page.locator("#official-notice-grid article");
   assert.match(await cards.first().innerText(),/Manitoba Government|Manitoba/);
