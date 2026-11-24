@@ -4,12 +4,14 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
 const source=readFileSync(new URL('../insights-client.mjs',import.meta.url),'utf8');
-async function simulate({dnt='0',optOut=false,gpc=false,pathname='/tools/word-counter/',hash='',nextHash=''}={}){
+async function simulate({dnt='0',optOut=false,gpc=false,choice='allow',legacy=null,pathname='/tools/word-counter/',hash='',nextHash=''}={}){
  const calls=[],document=new EventTarget(),window=new EventTarget();
- const localStorage={getItem:key=>key==='yorphives-anonymous-analytics-disabled'&&optOut?'1':null,
+ const localStorage={getItem:key=>key==='yorphives-analytics-choice-v2'?(optOut?null:choice==='unset'?null:choice):
+   key==='yorphives-anonymous-analytics-disabled'?(optOut?'1':legacy):null,
   setItem(){}};
- const values=new Map();
- const sessionStorage={getItem:key=>values.get(key)||null,setItem:(key,value)=>values.set(key,value)};
+ const values=new Map();let sessionAccesses=0;
+ const sessionStorage={getItem:key=>{sessionAccesses++;return values.get(key)||null},
+  setItem:(key,value)=>{sessionAccesses++;values.set(key,value)},removeItem:key=>{sessionAccesses++;values.delete(key)}};
  document.getElementById=()=>null;
  const browser={
   document,window,localStorage,sessionStorage,
@@ -25,6 +27,8 @@ async function simulate({dnt='0',optOut=false,gpc=false,pathname='/tools/word-co
  window.dispatchEvent(new Event('yorphives:tool-completed'));
  if(nextHash){browser.location.hash=nextHash;window.dispatchEvent(new Event('hashchange'));}
  await new Promise(resolve=>setTimeout(resolve,0));
+ calls.sessionWrites=values.size;
+ calls.sessionAccesses=sessionAccesses;
  return calls;
 }
 test('genuine client events keep tool inputs out of analytics and track per-tool paths',async()=>{
@@ -47,6 +51,10 @@ test('HQconnect direct visits and navigation are attributed to contact',async()=
  assert.equal((await simulate({pathname:'/',hash:'#hqconnect',dnt:'1'})).length,0);
 });
 test('privacy preferences suppress all pageview and completion telemetry',async()=>{
- for(const setup of [{dnt:'1'},{gpc:true},{optOut:true}])
-  assert.equal((await simulate(setup)).length,0);
+ for(const setup of [{dnt:'1'},{gpc:true},{optOut:true},{choice:'deny'},{choice:'unset'},{choice:'unset',legacy:'0'}]){
+  const calls=await simulate(setup);
+  assert.equal(calls.length,0);
+  assert.equal(calls.sessionWrites,0,'Do not create a session before permission.');
+  assert.equal(calls.sessionAccesses,0,'Do not access analytics session storage before permission.');
+ }
 });

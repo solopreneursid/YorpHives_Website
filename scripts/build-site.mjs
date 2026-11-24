@@ -202,6 +202,10 @@ for(const item of published){
    if(html.includes('<footer'))html=html.replace('</footer>',' · '+link+'</footer>');
    else throw Error('Missing footer for tool: '+item.url);
   }
+  if(!html.includes('id="anonymous-analytics-toggle"')){
+   if(!html.includes('</footer>'))throw Error('Missing analytics choice footer: '+item.url);
+   html=html.replace('</footer>',' · <button type="button" id="anonymous-analytics-toggle" class="yh-analytics-control">Analytics off — change</button></footer>');
+  }
  }
  html=injectToolSuite(html,item);
  html=injectNextToolUI(html,item);

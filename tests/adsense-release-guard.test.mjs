@@ -24,7 +24,8 @@ test('AdSense must remain disabled until founder and compliance approval',()=>{
 test('homepage, privacy, and Free Tools templates never accidentally load advertising',()=>{
  for(const path of ['index.html','privacy/index.html','tools/index.html','tools/word-counter/index.html','tools/image-resizer/index.html','tools/pdf-compressor/index.html','tools/json-formatter/index.html'])
   assert.doesNotMatch(html(path),forbidden,path);
- assert.match(html('privacy/index.html'),/AdSense is currently pending site review/);
+ assert.match(html('privacy/index.html'),/Advertising placements are not currently enabled/);
+ assert.match(html('privacy/index.html'),/before enabling it/);
 });
 
 test('Google seller declaration uses the verified publisher',()=>{

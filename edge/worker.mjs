@@ -33,7 +33,10 @@ export default {
  async fetch(request,env,ctx){
   const url=new URL(request.url),p=url.pathname;
   if(p.startsWith('/api/')){
-   const context={request,env,ctx};
+   // Pages Functions exposes waitUntil on its context; Workers receives it on
+   // the execution context instead. Forward it so scheduled analytics cleanup
+   // continues after the response on the production Worker too.
+   const context={request,env,ctx,waitUntil:ctx?.waitUntil?.bind(ctx)};
    let response;
    if(p==='/api/hqconnect'){
     if(request.method!=='POST')response=json({error:'method-not-allowed'},405,{'allow':'POST'});

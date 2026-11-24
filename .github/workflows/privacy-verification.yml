@@ -1,0 +1,77 @@
+name: YorpHives privacy and consent verification
+on:
+  push:
+    branches: ['codex/privacy-policy-20261124']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 30
+    env:
+      HOME: /root
+      YORPHIVES_PREVIEW_ORIGIN: http://127.0.0.1:4173
+      YORPHIVES_QA_ORIGIN: http://127.0.0.1:4173
+      YORPHIVES_TEST_WEBM: .qa-media/video.webm
+      YORPHIVES_TEST_HEIC: .qa-media/input.heic
+      YORPHIVES_QA_RESULTS: .qa-media/tool-results.json
+      YORPHIVES_PRIVACY_SCREENSHOTS: .qa-media/screenshots
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Install pinned test dependencies
+        run: |
+          npm ci --ignore-scripts --no-fund --no-audit
+          npm install --no-save --package-lock=false --ignore-scripts --no-fund --no-audit playwright@1.56.1 @axe-core/playwright@4.14.0 wrangler@4.68.0
+          apt-get update -qq
+          apt-get install -y -qq ffmpeg libheif-examples libheif-plugin-x265
+          mkdir -p .qa-media
+          ffmpeg -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=160x120:rate=8:duration=2' -an -c:v libvpx -b:v 250k -pix_fmt yuv420p .qa-media/video.webm
+          ffmpeg -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=256x192:rate=1:duration=1' -frames:v 1 .qa-media/input.png
+          heif-enc -q 80 -o .qa-media/input.heic .qa-media/input.png
+      - name: Build and verify the isolated preview
+        run: |
+          node scripts/build-site.mjs --target=preview
+          node scripts/release-check.mjs dist
+          node --test tests/*.test.mjs
+          npx wrangler deploy --config edge/live/wrangler.jsonc --dry-run --outdir /tmp/yorphives-worker-dry-run
+      - name: Start a local preview
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory dist >/tmp/yorphives-privacy-preview.log 2>&1 &
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/yorphives-privacy-preview.log
+          exit 1
+      - name: Verify consent and withdrawal in three browser engines
+        run: node scripts/privacy-consent-browser-qa.mjs
+      - name: Verify the existing tools still work without analytics
+        run: |
+          node scripts/health-browser-smoke.mjs
+          node scripts/health-utility-browser-qa.mjs
+      - name: Check mobile accessibility across the catalogue
+        env:
+          YORPHIVES_A11Y_RESULTS: .qa-media/accessibility-results.json
+        run: node scripts/release-accessibility.mjs
+      - name: Check major routes in three browser engines
+        env:
+          YORPHIVES_COMPAT_RESULTS: .qa-media/cross-browser-results.json
+        run: node scripts/release-cross-browser.mjs
+      - name: Preserve synthetic test evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: yorphives-privacy-verification
+          path: |
+            .qa-media/*results.json
+            .qa-media/screenshots/*.png
+          retention-days: 14
+          if-no-files-found: warn

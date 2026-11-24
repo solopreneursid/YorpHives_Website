@@ -53,7 +53,8 @@ function page(s){
 </section>
 <section class="grid" aria-label="${escapeHtml(s.label)} overview">${cards}</section>
 </main>
-<footer><div class="wrap"><span>YorpHives · Ideas in motion</span><a href="/#hqconnect">HQconnect</a></div></footer>
+<footer><div class="wrap"><span>YorpHives · Ideas in motion</span><a href="/privacy/">Privacy Policy</a><button type="button" id="anonymous-analytics-toggle" class="yh-analytics-control">Analytics off — change</button><a href="/#hqconnect">HQconnect</a></div></footer>
+<script type="module" src="/insights-client.mjs"></script>
 </body></html>
 `;
 }
