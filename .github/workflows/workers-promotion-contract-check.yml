@@ -53,3 +53,28 @@ jobs:
           end
           puts 'WORKERS_RELEASE_WORKFLOW_CONTRACT_PASS'
           RUBY
+      - name: Regression-test pasted tabs and reject invalid consent without deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          ruby -ryaml -e 'w=YAML.load_file(".github/workflows/workers-production-promotion.yml");s=w["jobs"]["production"]["steps"].find{|s| s["name"]=="Verify founder consent, secret and immutable candidate identity"};abort "missing approval gate" unless s;File.write("/tmp/yorphives-founder-input-gate.sh",s["run"])'
+          export SOURCE_SHA='f98207dc98a3b109d0f2bb27b524ad3ab809d0e4'
+          export FINGERPRINT=$'\tee121b41b3ab814870e1829cd27b5d2db75d48689704aa2057daa85543ec96b4'
+          export READINESS_RUN_ID='45201553389'
+          export APPROVAL_PHRASE=$'\tPUBLISH_YORPHIVES_NOW'
+          export CLOUDFLARE_API_TOKEN='mock-not-a-real-token'
+          export GITHUB_ENV
+          GITHUB_ENV="$(mktemp)"
+          bash /tmp/yorphives-founder-input-gate.sh
+          grep -Fx 'FINGERPRINT=ee121b41b3ab814870e1829cd27b5d2db75d48689704aa2057daa85543ec96b4' "$GITHUB_ENV"
+          grep -Fx 'APPROVAL_PHRASE=PUBLISH_YORPHIVES_NOW' "$GITHUB_ENV"
+          if FINGERPRINT='ee121b41b3ab814870e1829cd27b5d2db75d48689704aa2057daa85543ec96b4 invalid' bash /tmp/yorphives-founder-input-gate.sh; then
+            echo 'FAIL: embedded/extra fingerprint text was accepted'; exit 1
+          fi
+          if APPROVAL_PHRASE='NOT_APPROVED' bash /tmp/yorphives-founder-input-gate.sh; then
+            echo 'FAIL: incorrect approval phrase was accepted'; exit 1
+          fi
+          if SOURCE_SHA='0000000000000000000000000000000000000000' bash /tmp/yorphives-founder-input-gate.sh; then
+            echo 'FAIL: incorrect source commit was accepted'; exit 1
+          fi
+          echo 'FOUNDER_INPUT_WHITESPACE_REGRESSION_PASS'
