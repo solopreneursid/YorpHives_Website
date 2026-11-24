@@ -1,0 +1,38 @@
+name: YorpHives production protection diagnostic — read only
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/prod-protection-diagnostic.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  deployments: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Inspect recorded production rules without printing credentials
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GH_REPO/environments" > /tmp/environments.json
+          gh api "repos/$GH_REPO/environments/yorphives-production" > /tmp/environment.json
+          node <<'NODE'
+          const a=require('/tmp/environments.json'), b=require('/tmp/environment.json');
+          const info={environment:b.name,environments:(a.environments||[]).map(x=>x.name),
+            protection_rules:(b.protection_rules||[]).map(r=>({type:r.type,reviewers:(r.reviewers||[]).map(x=>({type:x.type,login:x.reviewer?.login}))})),
+            prevent_self_review:b.prevent_self_review,
+            deployment_branch_policy:b.deployment_branch_policy
+          };
+          console.log('PRODUCTION_APPROVAL_CONFIG '+JSON.stringify(info));
+          const reviewers=(b.protection_rules||[]).filter(x=>x.type==='required_reviewers');
+          if(!reviewers.length)console.log('PROTECTION_DIAGNOSTIC missing_required_reviewers');
+          else if(!reviewers.some(r=>(r.reviewers||[]).some(u=>u.reviewer?.login==='solopreneursid')))
+            console.log('PROTECTION_DIAGNOSTIC founder_not_listed');
+          else console.log('PROTECTION_DIAGNOSTIC founder_reviewer_verified');
+          NODE
