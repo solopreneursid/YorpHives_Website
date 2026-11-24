@@ -1,0 +1,48 @@
+name: YorpHives Workers promotion workflow contract check
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/workers-production-promotion.yml'
+      - '.github/workflows/workers-promotion-contract-check.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Validate protected Workers release workflow without deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          ruby - <<'RUBY'
+          require 'yaml'
+          p=YAML.load_file('.github/workflows/workers-production-promotion.yml')
+          raise 'missing manual dispatch' unless p.dig('on','workflow_dispatch')
+          raise 'automatic trigger forbidden' unless p['on'].keys==['workflow_dispatch']
+          job=p.dig('jobs','production')
+          raise 'missing protected environment' unless job['environment']=='yorphives-production'
+          raw=File.read('.github/workflows/workers-production-promotion.yml')
+          required=[
+            'actions/download-artifact@v6',
+            'scripts/release-verify-local.mjs',
+            'scripts/release-verify.mjs',
+            'scripts/release-live-pages.mjs',
+            'edge/live/wrangler.jsonc',
+            'yorphives-edge-static-live',
+            'PREVIOUS_WORKER_VERSION',
+            'Rollback',
+            "PUBLISH_YORPHIVES_NOW",
+            'workers/scripts/$WORKER_NAME/deployments',
+            'INSIGHTS_DB',
+            'HQCONNECT_DB'
+          ]
+          missing=required.reject{|s| raw.include?(s)}
+          raise "missing release controls: #{missing.join(',')}" unless missing.empty?
+          puts 'WORKERS_RELEASE_WORKFLOW_CONTRACT_PASS'
+          RUBY
