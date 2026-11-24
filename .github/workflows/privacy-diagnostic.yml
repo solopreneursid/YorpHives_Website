@@ -32,3 +32,5 @@ jobs:
           done
           exit 1
       - run: node scripts/privacy-diagnostic.mjs
+
+# Rerun with an explicit browser context.
