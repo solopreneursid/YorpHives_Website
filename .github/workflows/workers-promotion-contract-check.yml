@@ -45,5 +45,11 @@ jobs:
           ]
           missing=required.reject{|s| raw.include?(s)}
           raise "missing release controls: #{missing.join(',')}" unless missing.empty?
+          job['steps'].each_with_index do |step,i|
+            next unless step['run']
+            file="/tmp/yorphives-prod-step-#{i}.sh"
+            File.write(file,step['run'])
+            raise "Invalid bash syntax in step #{i}: #{step['name']}" unless system('bash','-n',file)
+          end
           puts 'WORKERS_RELEASE_WORKFLOW_CONTRACT_PASS'
           RUBY
