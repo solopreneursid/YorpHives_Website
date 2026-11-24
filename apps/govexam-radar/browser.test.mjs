@@ -634,3 +634,33 @@ test("GlobalGovJobs branding renders without breaking existing GovRadar bookmark
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem("govexam_radar_saved_v2"))),["rrb-je-cbt1-2026"]);
  }finally{await context.close();}
 });
+
+test("GlobalGovJobs raised section cards organize jobs first without losing source modules",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:812}});
+ const errors=[];page.on("pageerror",e=>errors.push(String(e)));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#gg-official-slot #govradar-official-jobs").waitFor();
+  await page.locator("#gg-region-slot #regional-government-directory").waitFor();
+  assert.equal(await page.locator("#gg-official-slot #govradar-official-jobs").count(),1);
+  assert.equal(await page.locator("#gg-region-slot #regional-government-directory").count(),1);
+  assert.equal(await page.locator(".gg-explore-tiles button").count(),4);
+  assert.equal(await page.locator("#gg-research-details").evaluate(e=>e.open),false);
+  const order=await page.evaluate(()=>{
+    const y=id=>document.getElementById(id).getBoundingClientRect().top+scrollY;
+    return {search:y("discovery-search-area"),jobs:y("exam-cards-grid"),
+      official:y("gg-official-section"),regions:y("gg-region-section")};
+  });
+  assert.ok(order.search<order.jobs&&order.jobs<order.official&&order.official<order.regions,JSON.stringify(order));
+  await page.locator('[data-gg-section="regions"]').click();
+  assert.equal(await page.locator("#regional-source-filters").isVisible(),true);
+  await page.locator("#gg-research-details summary").click();
+  assert.equal(await page.locator("#gg-research-details").evaluate(e=>e.open),true);
+  assert.equal(await page.locator("#kpi-total-exams").isVisible(),true);
+  await page.locator('[data-gg-section="saved"]').click();
+  assert.equal(await page.locator("#view-saved").isVisible(),true);
+  const widths=await page.evaluate(()=>({view:innerWidth,root:document.documentElement.scrollWidth}));
+  assert.ok(widths.root<=widths.view+2,JSON.stringify(widths));
+  assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
