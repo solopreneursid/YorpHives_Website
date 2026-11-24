@@ -1,0 +1,65 @@
+name: YorpHives Workers release preflight — no deployment
+on:
+  workflow_dispatch:
+    inputs:
+      readiness_run_id:
+        description: 'Green immutable release candidate run ID'
+        required: false
+        default: '45201553389'
+        type: string
+  push:
+    branches: [main]
+    paths: ['.github/workflows/workers-release-preflight.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SOURCE_SHA: f98207dc98a3b109d0f2bb27b524ad3ab809d0e4
+      FINGERPRINT: ee121b41b3ab814870e1829cd27b5d2db75d48689704aa2057daa85543ec96b4
+      READINESS_RUN_ID: ${{ inputs.readiness_run_id || '45201553389' }}
+    steps:
+      - name: Check out exact tested website source
+        uses: actions/checkout@v6
+        with:
+          ref: f98207dc98a3b109d0f2bb27b524ad3ab809d0e4
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Obtain exact approved built files
+        uses: actions/download-artifact@v6
+        with:
+          name: yorphives-production-candidate
+          run-id: ${{ inputs.readiness_run_id || '45201553389' }}
+          github-token: ${{ github.token }}
+          path: candidate
+      - name: Verify immutable assets and live Worker configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s candidate/yorphives-production-candidate.tar.gz
+          mkdir -p dist
+          tar --no-same-owner --no-same-permissions -xzf candidate/yorphives-production-candidate.tar.gz -C dist
+          node scripts/release-verify-local.mjs dist "$SOURCE_SHA" "$FINGERPRINT" production
+          node - <<'NODE'
+          const fs=require('fs');
+          const cfg=JSON.parse(fs.readFileSync('edge/live/wrangler.jsonc','utf8'));
+          const bindings=Object.fromEntries((cfg.d1_databases||[]).map(x=>[x.binding,x.database_id]));
+          const rates=(cfg.ratelimits||[]).map(x=>x.name);
+          if(cfg.name!=='yorphives-edge-static-live'||cfg.assets?.binding!=='ASSETS'||cfg.assets?.directory!=='../../dist'||cfg.main!=='../../edge/worker.mjs'||cfg.workers_dev!==false)throw Error('Worker target mismatch');
+          if(bindings.INSIGHTS_DB!=='e7e3e27c-8cfb-44e1-bcd5-6c3a186ceaa7'||bindings.HQCONNECT_DB!=='4104b276-dff6-460b-94a4-d331dd4b1799')throw Error('Production D1 mismatch');
+          if(['AGENT_CLIENT_LIMIT','AGENT_GLOBAL_LIMIT','CONTACT_CLIENT_LIMIT','CONTACT_GLOBAL_LIMIT'].some(x=>!rates.includes(x)))throw Error('Missing admission control');
+          if((cfg.analytics_engine_datasets||[]).find(x=>x.binding==='AGENT_USAGE')?.dataset!=='yorphives_agent_usage_v1')throw Error('Agent usage analytics binding mismatch');
+          console.log('WORKER_CONFIG_VERIFIED',cfg.name,Object.keys(bindings),rates);
+          NODE
+      - name: Compile Worker and assets locally without deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.68.0 deploy --config edge/live/wrangler.jsonc --dry-run --outdir /tmp/yorphives-worker-dryrun
+          test -d /tmp/yorphives-worker-dryrun
+          echo '## Worker dry run passed; no production change' >> "$GITHUB_STEP_SUMMARY"
