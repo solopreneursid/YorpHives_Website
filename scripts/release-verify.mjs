@@ -6,6 +6,18 @@ const SHA=/^[a-f0-9]{40}$/;
 const HASH=/^[a-f0-9]{64}$/;
 const REQUIRED=['index.html','catalog.json','tools/index.html','sitemap.xml','_headers'];
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
+// The separately routed AdSense ownership Worker appends exactly this tag to
+// the end of the apex homepage's head. It does not alter any other file.
+const ADSENSE_VERIFY_TAG='<meta name="google-adsense-account" content="ca-pub-9864775895222572">';
+function matchesPublicAsset(bytes,name,expected,origin){
+ if(digest(bytes)===expected)return true;
+ if(name!=='index.html'||origin!=='https://yorphives.com')return false;
+ let html;
+ try{html=new TextDecoder('utf-8',{fatal:true}).decode(bytes)}catch{return false}
+ const i=html.lastIndexOf(ADSENSE_VERIFY_TAG);
+ if(i<0||!/^<\/head\s*>/i.test(html.slice(i+ADSENSE_VERIFY_TAG.length)))return false;
+ return digest(Buffer.from(html.slice(0,i)+html.slice(i+ADSENSE_VERIFY_TAG.length),'utf8'))===expected;
+}
 export function inspectRelease(manifest,{target,sourceSha,fingerprint}={}){
  if(manifest?.schemaVersion!==1||manifest?.site!=='YorpHives'||!['preview','production'].includes(manifest.target))
   throw Error('Missing or invalid YorpHives release identity.');
@@ -41,7 +53,7 @@ export async function verifyRemote({origin,sourceSha,fingerprint,target='product
  const publicPaths={'index.html':'','tools/index.html':'tools/'};
  for(const name of REQUIRED.filter(x=>x!=='_headers')){
   const data=await get(publicPaths[name]??name);
-  if(digest(data)!==manifest.assets[name])throw Error('Live asset mismatch: '+name);
+  if(!matchesPublicAsset(data,name,manifest.assets[name],url.origin))throw Error('Live asset mismatch: '+name);
  }
  const sitemap=new TextDecoder().decode(await get('sitemap.xml'));
  if(!sitemap.includes('yorphives.com'))throw Error('Unexpected public sitemap content.');

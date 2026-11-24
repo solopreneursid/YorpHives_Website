@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {inspectRelease,verifyRemote} from '../scripts/release-verify.mjs';
 const sha='a'.repeat(40),hash=x=>createHash('sha256').update(x).digest('hex');
-const contents={'index.html':'<html>ok</html>','catalog.json':'{}','tools/index.html':'<html>tools</html>','sitemap.xml':'https://yorphives.com/','_headers':'security'};
+const contents={'index.html':'<html><head></head><body>ok</body></html>','catalog.json':'{}','tools/index.html':'<html>tools</html>','sitemap.xml':'https://yorphives.com/','_headers':'security'};
 const assets=Object.fromEntries(Object.entries(contents).map(([name,data])=>[name,hash(data)]));
 const fingerprint=hash(Object.entries(assets).sort(([a],[b])=>a.localeCompare(b)).map(([a,b])=>a+':'+b+'\n').join(''));
 const good={schemaVersion:1,site:'YorpHives',target:'production',sourceSha:sha,assetFingerprint:fingerprint,assets};
@@ -29,4 +29,20 @@ test('remote verifier validates actual served file bytes',async()=>{
  };
  await assert.rejects(verifyRemote({origin:'https://yorphives.com',sourceSha:sha,fingerprint,fetcher:broken}),/mismatch/);
  await assert.rejects(verifyRemote({origin:'http://yorphives.com',sourceSha:sha,fingerprint,fetcher:fake}),/HTTPS/);
+});
+test('remote verifier accepts only the exact apex AdSense rewrite and still detects tampering',async()=>{
+ const tag='<meta name="google-adsense-account" content="ca-pub-9864775895222572">';
+ const fetchWithHome=home=>async url=>{
+  const p=new URL(url).pathname.replace(/^\//,'')||'index.html';
+  const key=p==='tools/'?'tools/index.html':p;
+  const body=p==='.well-known/yorphives-release.json'?JSON.stringify(good):key==='index.html'?home:contents[key];
+  return body===undefined?{status:404}:new Response(body,{status:200});
+ };
+ const injected=contents['index.html'].replace('</head>',tag+'</head>');
+ const options={origin:'https://yorphives.com',sourceSha:sha,fingerprint};
+ await verifyRemote({...options,fetcher:fetchWithHome(injected)});
+ await assert.rejects(verifyRemote({...options,fetcher:fetchWithHome(injected.replace('ok','tampered'))}),/mismatch/);
+ await assert.rejects(verifyRemote({...options,fetcher:fetchWithHome(injected.replace('9864775895222572','0000000000000000'))}),/mismatch/);
+ await assert.rejects(verifyRemote({...options,fetcher:fetchWithHome(injected.replace('</head>',tag+'</head>'))}),/mismatch/);
+ await assert.rejects(verifyRemote({...options,origin:'https://example.com',fetcher:fetchWithHome(injected)}),/mismatch/);
 });
