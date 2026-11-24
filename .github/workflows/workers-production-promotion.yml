@@ -6,14 +6,17 @@ on:
         description: 'Successful immutable candidate workflow run'
         required: true
         type: string
+        default: '45201553389'
       source_sha:
         description: 'Exact candidate source commit (40 lowercase hex characters)'
         required: true
         type: string
+        default: 'f98207dc98a3b109d0f2bb27b524ad3ab809d0e4'
       asset_fingerprint:
         description: 'Approved release fingerprint (64 lowercase hex characters)'
         required: true
         type: string
+        default: 'ee121b41b3ab814870e1829cd27b5d2db75d48689704aa2057daa85543ec96b4'
       approval_phrase:
         description: 'Explicitly type PUBLISH_YORPHIVES_NOW'
         required: true
