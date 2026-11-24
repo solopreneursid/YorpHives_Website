@@ -39,8 +39,8 @@ for(const width of [320,375,768,1440]){
      assert.equal(horizontalScroll,0,"unexpected page-level horizontal scroll at "+width+"px: "+JSON.stringify(layout.offenders));
      assert.equal(renderWidth,width,"Screenshot must match actual 320px viewport without padding beyond its bounds");
      if(width<=375){
-       assert.equal(await page.locator(".discovery-modes").isVisible(),true);
-       assert.equal(await page.locator("#discovery-filter-toggle").isVisible(),true);
+       assert.equal(await page.locator("#gg-more-filters").isVisible(),true);
+       assert.equal(await page.locator("#discovery-filter-toggle").isVisible(),false);
        assert.equal(await page.locator("#search-input").isVisible(),true);
        assert.equal(await page.locator("#discovery-advanced-filters").isVisible(),false,"advanced filters start folded on phones");
        assert.equal(await page.locator("nav[aria-label='Mobile Navigation'] button:visible").count(),4);
@@ -406,8 +406,8 @@ test("phone discovery is searchable, browsable, and has accessible filters",asyn
   const search=page.locator("#search-input");
   await search.fill("UPSC");
   assert.ok((await page.locator("#exam-cards-grid article").count())>=1);
-  await page.locator("#discovery-filter-toggle").click();
-  assert.equal(await page.locator("#discovery-filter-toggle").getAttribute("aria-expanded"),"true");
+  await page.locator("#gg-more-filters").click();
+  assert.equal(await page.locator("#gg-more-filters").getAttribute("aria-expanded"),"true");
   assert.equal(await page.locator("#discovery-advanced-filters").isVisible(),true);
   await search.fill("");
   await page.locator('[data-discovery-mode="GLOBAL_MANUAL"]').click();
@@ -428,8 +428,8 @@ test("opportunity cards show truthful source evidence, compact actions and saved
   await page.goto(origin,{waitUntil:"domcontentloaded"});
   const card=page.locator("#exam-cards-grid .govradar-opportunity-card").first();
   await card.waitFor();
-  assert.match(await card.locator(".govradar-card-evidence").textContent(),/Research lead/);
-  assert.match(await card.locator(".govradar-card-caution").textContent(),/not independently verified/);
+  assert.match(await card.locator(".govradar-card-evidence").textContent(),/Example/);
+  assert.match(await card.locator(".govradar-card-caution").textContent(),/Not confirmed/);
   assert.equal(await card.locator(".govradar-details-button").count(),1);
   assert.equal(await card.locator(".govradar-save-button").count(),1);
   assert.equal(await card.locator(".govradar-source-link").count(),1);
