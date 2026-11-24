@@ -32,8 +32,16 @@ jobs:
         env:
           YORPHIVES_LIVE_ROUTE_RESULTS: .qa-media/live-route-results.json
         run: |
+          # Preserve both results: the later route audit must not mask a failed identity check.
+          set +e
           node scripts/release-health.mjs
+          identity_status=$?
           node scripts/release-live-pages.mjs https://yorphives.com
+          routes_status=$?
+          if [ "$identity_status" -ne 0 ] || [ "$routes_status" -ne 0 ]; then
+            echo "Live verification failed (identity=$identity_status, routes=$routes_status)." >&2
+            exit 1
+          fi
       - name: Keep read-only live URL evidence
         if: always()
         uses: actions/upload-artifact@v6
