@@ -1,0 +1,28 @@
+name: YorpHives production asset session preflight
+on:
+  push:
+    branches: ['codex/workers-write-preflight-20261124']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment: yorphives-production
+    steps:
+      - name: Test Workers asset-session permission without uploading or deploying
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo 'TOKEN_NOT_CONFIGURED'; exit 1; }
+          printf '%s' '{"manifest":{"/activity.json":{"hash":"919a822a5c40b397069f12af950f818a","size":4984}}}' > /tmp/asset-session-request.json
+          status=$(curl --silent --show-error --max-time 25 -o /tmp/asset-session-response.json -w '%{http_code}' -X POST -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' --data-binary @/tmp/asset-session-request.json 'https://api.cloudflare.com/client/v4/accounts/69234e51e08d8013980a7ff869746609/workers/scripts/yorphives-edge-static-live/assets-upload-session')
+          echo "ASSET_SESSION_HTTP=$status"
+          if [ "$status" != 200 ]; then
+            node -e "const r=require('/tmp/asset-session-response.json');console.log('CLOUDFLARE_ERRORS',JSON.stringify((r.errors||[]).map(e=>({code:e.code,message:e.message}))))"
+            exit 1
+          fi
+          node -e "const r=require('/tmp/asset-session-response.json');if(!r.success||!r.result?.jwt)process.exit(1);console.log('ASSET_SESSION_WRITE_PREFLIGHT_PASS')"
+          rm -f /tmp/asset-session-response.json
