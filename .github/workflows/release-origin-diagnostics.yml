@@ -1,4 +1,5 @@
 name: YorpHives release origin diagnostic — read only
+# Recheck after selective cache invalidation
 on:
   workflow_dispatch:
   push:
