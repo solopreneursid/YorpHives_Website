@@ -82,6 +82,7 @@ test("official-source interface and saved controls load without invented records
   assert.equal(await page.locator("#inapp-official-alerts").count(),1);
   assert.equal(await page.locator("#inapp-refresh-notices").count(),1);
   assert.equal(await page.locator("#official-notice-grid article").count(),0);
+  await page.locator("#official-extra-filters summary").click();
   await page.locator("#official-notice-search").fill("ICT");
   await page.locator("#official-notice-filters button[type=submit]").click();
   assert.equal(errors.length,0,"JS errors: "+errors.join("; "));
@@ -307,7 +308,7 @@ test("portable bookmark export and import work on mobile without exporting crede
   const downloadPromise=page.waitForEvent("download",{timeout:10000});
   await page.locator("#portable-export").click();
   const download=await downloadPromise;
-  assert.match(download.suggestedFilename(),/GovRadar-bookmarks-.*\.json/);
+  assert.match(download.suggestedFilename(),/GlobalGovJobs-bookmarks-.*\.json/);
   const stream=await download.createReadStream(),chunks=[];
   for await(const chunk of stream)chunks.push(chunk);
   const raw=Buffer.concat(chunks).toString("utf8"),snapshot=JSON.parse(raw);
@@ -414,11 +415,12 @@ test("phone discovery is searchable, browsable, and has accessible filters",asyn
   await page.locator('[data-discovery-mode="GLOBAL_MANUAL"]').click();
   assert.equal(await page.locator('[data-discovery-mode="GLOBAL_MANUAL"]').getAttribute("aria-pressed"),"true");
   assert.equal(await page.locator("#exam-cards-grid article").count(),20,"global mode shows full prototype research inventory, including archived filtering");
-  await page.locator("#discovery-menu-toggle").click();
-  assert.equal(await page.locator("#discovery-menu-toggle").getAttribute("aria-expanded"),"true");
-  await page.locator('[data-discovery-tab="guide"]').click();
-  assert.equal(await page.locator("#view-guide").isVisible(),true);
-  assert.equal(await page.locator("#discovery-more-menu").isVisible(),false);
+  await page.locator("#nav-mobile-feeds").click();
+  assert.equal(await page.locator("#view-feeds").isVisible(),true);
+  await page.locator("#nav-mobile-saved").click();
+  assert.equal(await page.locator("#view-saved").isVisible(),true);
+  await page.locator("#nav-mobile-radar").click();
+  assert.equal(await page.locator("#view-radar").isVisible(),true);
  }finally{await page.close();}
 });
 
@@ -591,7 +593,7 @@ test("phone users can discover official portals and navigate quick guide without
   await page.locator('[data-gr-jump="monitored-portals-grid"]').click();
   assert.equal(await page.locator('#monitored-portals-grid').isVisible(),true);
   await page.evaluate(()=>window.switchTab('guide'));
-  assert.match(await page.locator('#view-guide .gr-secondary-intro').innerText(),/How to use GovRadar/);
+  assert.match(await page.locator('#view-guide .gr-secondary-intro').innerText(),/How to use GlobalGovJobs/);
   await page.locator('[data-gr-guide-tab="saved"]').click();
   assert.equal(await page.locator('#view-saved').isVisible(),true);
   await page.evaluate(()=>window.switchTab('community'));
@@ -761,8 +763,8 @@ test("plain-language job search saves official notices and keeps the latest resp
   assert.match(await page.locator('#gg-region-help').innerText(),/only filters the examples/);
   assert.equal(await page.locator('#official-extra-filters').evaluate(e=>e.open),false);
   await page.locator('#search-input').fill('teacher');
-  await page.locator('#official-notice-grid').getByText('Teacher - test data').waitFor();
-  assert.match(await page.locator('#official-notice-status').innerText(),/1 notice found/);
+  await page.locator('#official-notice-status').getByText('1 notice found.',{exact:false}).waitFor();
+  assert.match(await page.locator('#official-notice-grid').innerText(),/Teacher - test data/);
   await page.locator('#official-notice-grid [data-save-notice]').first().click();
   await page.locator('#nav-mobile-saved').click();
   assert.match(await page.locator('#saved-official-notices').innerText(),/Teacher - test data/);
