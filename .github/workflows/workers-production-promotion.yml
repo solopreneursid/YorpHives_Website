@@ -48,6 +48,9 @@ jobs:
           [[ "$READINESS_RUN_ID" =~ ^[0-9]{5,16}$ ]] || exit 1
           [ "$APPROVAL_PHRASE" = 'PUBLISH_YORPHIVES_NOW' ] || exit 1
           [ -n "$CLOUDFLARE_API_TOKEN" ] || { echo 'Cloudflare Workers write token unavailable'; exit 1; }
+          [ "$SOURCE_SHA" = 'f98207dc98a3b109d0f2bb27b524ad3ab809d0e4' ] || { echo 'Source does not match currently approved release'; exit 1; }
+          [ "$FINGERPRINT" = 'ee121b41b3ab814870e1829cd27b5d2db75d48689704aa2057daa85543ec96b4' ] || { echo 'Artifact fingerprint not approved'; exit 1; }
+          [ "$READINESS_RUN_ID" = '45201553389' ] || { echo 'Unreviewed candidate run'; exit 1; }
       - name: Verify official passing readiness run and protected founder reviewer
         shell: bash
         env:
@@ -111,6 +114,20 @@ jobs:
           if(['AGENT_CLIENT_LIMIT','AGENT_GLOBAL_LIMIT','CONTACT_CLIENT_LIMIT','CONTACT_GLOBAL_LIMIT'].some(v=>!limits.includes(v)))throw Error('Rate limit binding missing');
           if((c.analytics_engine_datasets||[]).find(x=>x.binding==='AGENT_USAGE')?.dataset!=='yorphives_agent_usage_v1')throw Error('Analytics binding mismatch');
           NODE
+      - name: Require token access to the actual live Worker before any upload
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 30 \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/$WORKER_NAME/settings" > current-worker-settings.json
+          node - <<'NODE'
+          const s=require('./current-worker-settings.json');
+          if(!s.success)throw Error('Token cannot read current production Worker settings');
+          const names=new Set((s.result?.bindings||[]).map(x=>x.name));
+          for(const n of ['ASSETS','INSIGHTS_DB','HQCONNECT_DB','AGENT_USAGE','AGENT_CLIENT_LIMIT','AGENT_GLOBAL_LIMIT','CONTACT_CLIENT_LIMIT','CONTACT_GLOBAL_LIMIT'])
+            if(!names.has(n))throw Error('Existing production binding is missing: '+n);
+          NODE
       - name: Snapshot active Worker version for automatic rollback
         id: snapshot
         shell: bash
@@ -142,7 +159,7 @@ jobs:
             if node source/scripts/release-verify.mjs https://yorphives.com "$SOURCE_SHA" "$FINGERPRINT" production && \
               YORPHIVES_LIVE_ROUTE_RESULTS=live-route-results.json node source/scripts/release-live-pages.mjs https://yorphives.com && \
               curl --fail --silent --show-error --max-time 20 https://yorphives.com/api/monitoring/health > health.json && \
-              node -e "const h=require('./health.json');if(!h||typeof h!=='object')process.exit(1)"; then
+              node -e "const h=require('./health.json');if(h?.ok!==true)process.exit(1)"; then
               echo 'ACTUAL_WORKER_PRODUCTION_VERIFIED' >> "$GITHUB_STEP_SUMMARY"
               exit 0
             fi
@@ -164,7 +181,22 @@ jobs:
             --data-binary @rollback-body.json \
             "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/$WORKER_NAME/deployments" > rollback-response.json
           node -e "const r=require('./rollback-response.json');if(!r.success)process.exit(1)"
-          echo "Rollback requested to previous Worker version $PREVIOUS_WORKER_VERSION" >> "$GITHUB_STEP_SUMMARY"
+          verified=0
+          for attempt in 1 2 3 4 5 6; do
+            curl --fail --silent --show-error --max-time 20 \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/$WORKER_NAME/deployments" > rollback-state.json
+            if node - <<'NODE'
+          const d=require('./rollback-state.json');
+          const v=d.result?.deployments?.[0]?.versions;
+          if(!d.success||v?.length!==1||v[0].version_id!==process.env.PREVIOUS_WORKER_VERSION||v[0].percentage!==100)process.exit(1);
+          NODE
+            then verified=1; break; fi
+            sleep 5
+          done
+          [ "$verified" -eq 1 ] || { echo 'CRITICAL: Worker rollback not confirmed by deployment API'; exit 1; }
+          curl --fail --silent --show-error --max-time 20 https://yorphives.com/api/agent/v1/capabilities > /dev/null
+          echo "Previous Worker version restored and deployment state verified: $PREVIOUS_WORKER_VERSION" >> "$GITHUB_STEP_SUMMARY"
           exit 1
       - name: Retain post-release route evidence
         if: always()
