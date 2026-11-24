@@ -56,6 +56,7 @@ test('India and Bihar filter actual notices and the official directory without e
  try{
   await page.goto(origin,{waitUntil:'domcontentloaded'});await page.locator('#regional-country option[value="India"]').waitFor({state:'attached'});
   await page.locator('[data-quick-country="India"]').click();
+  assert.equal(await page.locator('#official-notice-grid article').count(),0,'old country results must disappear immediately');
   await page.locator('#discovery-region-quick').selectOption('IN-BR');
   await page.waitForFunction(()=>document.querySelector('#regional-subdivision')?.value==='IN-BR');
   await page.waitForFunction(()=>document.querySelector('#official-notice-status')?.textContent.includes('0 notices'));
