@@ -1,5 +1,5 @@
 name: YorpHives release readiness — no deployment
-# Rebuild approved candidate with final mobile accessibility refinements and route checks.
+# Build and verify the release branch without publishing it; retain full Git history for stable activity content.
 on:
   workflow_dispatch:
     inputs:
@@ -88,7 +88,7 @@ jobs:
           node -e "const m=require('./candidate-manifest.json');console.log('Release candidate',m.sourceSha,m.assetFingerprint,'assets:',Object.keys(m.assets).length)"
           echo "sha=$YORPHIVES_SOURCE_SHA" >> "$GITHUB_OUTPUT"
           node -e "const m=require('./candidate-manifest.json');require('fs').appendFileSync(process.env.GITHUB_OUTPUT,'fingerprint='+m.assetFingerprint+'\\n')"
-          echo '## Release candidate (NOT deployed)' >> "$GITHUB_STEP_SUMMARY"
+          echo '## Release candidate (readiness only)' >> "$GITHUB_STEP_SUMMARY"
           echo "Commit: \`$YORPHIVES_SOURCE_SHA\`" >> "$GITHUB_STEP_SUMMARY"
           node -e "const m=require('./candidate-manifest.json');require('fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY, 'Fingerprint: \`'+m.assetFingerprint+'\`\nAssets: '+Object.keys(m.assets).length+'\n')"
       - name: Retain exact production build and manifest
@@ -114,6 +114,7 @@ jobs:
         with:
           ref: ${{ needs.candidate.outputs.source_sha }}
           path: site-source
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@v6
         with:
@@ -195,7 +196,7 @@ jobs:
               echo "Asset fingerprint: \`$FINGERPRINT\`"
               echo "Readiness run ID: \`$GITHUB_RUN_ID\`"
               echo 'A production candidate archive is available in this workflow run for 14 days.'
-              echo '**NOT deployed.** Founder-reviewed promotion and live verification are separate.'
+              echo 'This readiness run does not deploy; compare the live release identity to determine what is currently published.'
             else
               echo 'Not approved for deployment. Inspect failed build, dependency or test steps first.'
               echo 'The currently live deployment remains unchanged.'
