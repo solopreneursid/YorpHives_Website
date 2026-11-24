@@ -1,0 +1,118 @@
+name: YorpHives approved Worker candidate staging — no live deployment
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/workers-stage-approved-candidate.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  stage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: '69234e51e08d8013980a7ff869746609'
+      SOURCE_SHA: 'f98207dc98a3b109d0f2bb27b524ad3ab809d0e4'
+      FINGERPRINT: 'ee121b41b3ab814870e1829cd27b5d2db75d48689704aa2057daa85543ec96b4'
+      READINESS_RUN_ID: '45201553389'
+      WORKER_NAME: 'yorphives-edge-static-live'
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Verify previous explicit founder dispatch and exact successful readiness
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GH_REPO/actions/runs/45304323744" > /tmp/founder-run.json
+          gh api "repos/$GH_REPO/actions/runs/$READINESS_RUN_ID" > /tmp/readiness-run.json
+          node - <<'NODE'
+          const founder=require('/tmp/founder-run.json'),ready=require('/tmp/readiness-run.json');
+          if(founder.event!=='workflow_dispatch'||founder.actor?.login!=='solopreneursid'||founder.path!=='.github/workflows/workers-production-promotion.yml')
+            throw Error('Missing valid prior founder-initiated release request');
+          if(ready.status!=='completed'||ready.conclusion!=='success'||ready.path!=='.github/workflows/release-readiness.yml')
+            throw Error('Missing successful official candidate');
+          console.log('FOUNDER_DISPATCH_PROVENANCE_PASS',founder.id);
+          NODE
+      - uses: actions/checkout@v6
+        with:
+          ref: f98207dc98a3b109d0f2bb27b524ad3ab809d0e4
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v6
+        with:
+          name: yorphives-production-candidate
+          run-id: 45201553389
+          github-token: ${{ github.token }}
+          path: candidate
+      - name: Verify exact artifact, production Worker target and record active deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s candidate/yorphives-production-candidate.tar.gz
+          test -s candidate/candidate-manifest.json
+          mkdir -p dist
+          tar --no-same-owner --no-same-permissions -xzf candidate/yorphives-production-candidate.tar.gz -C dist
+          cmp candidate/candidate-manifest.json dist/.well-known/yorphives-release.json
+          node scripts/release-verify-local.mjs dist "$SOURCE_SHA" "$FINGERPRINT" production
+          node - <<'NODE'
+          const fs=require('fs');
+          const cfg=JSON.parse(fs.readFileSync('edge/live/wrangler.jsonc','utf8'));
+          if(cfg.name!=='yorphives-edge-static-live'||cfg.workers_dev!==false||cfg.assets?.directory!=='../../dist')throw Error('Worker target mismatch');
+          const db=Object.fromEntries((cfg.d1_databases||[]).map(x=>[x.binding,x.database_id]));
+          if(db.INSIGHTS_DB!=='e7e3e27c-8cfb-44e1-bcd5-6c3a186ceaa7'||db.HQCONNECT_DB!=='4104b276-dff6-460b-94a4-d331dd4b1799')throw Error('Database binding mismatch');
+          NODE
+          test -n "$CLOUDFLARE_API_TOKEN"
+          curl --fail --silent --show-error --max-time 20 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/$WORKER_NAME/deployments" > /tmp/deploy-before.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=require('/tmp/deploy-before.json');
+          const version=d.result?.deployments?.[0]?.versions?.[0];
+          if(!d.success||!version?.version_id||version.percentage!==100)throw Error('No known-good active Worker version');
+          fs.appendFileSync(process.env.GITHUB_ENV,'ACTIVE_WORKER_VERSION='+version.version_id+'\n');
+          NODE
+      - name: Upload an inactive Worker version ONLY, never deploy to production
+        shell: bash
+        run: |
+          set -euo pipefail
+          export WRANGLER_OUTPUT_FILE_PATH=/tmp/yorphives-wrangler-stage.jsonl
+          npx --yes wrangler@4.68.0 versions upload --config edge/live/wrangler.jsonc --preview-alias yorphives-rc-nov24
+          test -s "$WRANGLER_OUTPUT_FILE_PATH"
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=fs.readFileSync('/tmp/yorphives-wrangler-stage.jsonl','utf8').trim().split('\n').map(x=>JSON.parse(x));
+          const v=x.find(y=>y.type==='version-upload');
+          if(!v?.version_id)throw Error('Cloudflare did not return an uploaded Worker version ID');
+          console.log('INACTIVE_WORKER_VERSION_UPLOAD_PASS '+JSON.stringify({version_id:v.version_id,preview_url:v.preview_url||null,preview_alias_url:v.preview_alias_url||null}));
+          fs.appendFileSync(process.env.GITHUB_ENV,'PREVIEW_URL='+(v.preview_alias_url||v.preview_url||'')+'\n');
+          NODE
+      - name: Confirm production stayed on prior Worker version and inspect preview if enabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 20 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/$WORKER_NAME/deployments" > /tmp/deploy-after.json
+          node - <<'NODE'
+          const d=require('/tmp/deploy-after.json');
+          const v=d.result?.deployments?.[0]?.versions;
+          if(!d.success||v?.length!==1||v[0].version_id!==process.env.ACTIVE_WORKER_VERSION||v[0].percentage!==100)throw Error('CRITICAL: production Worker version unexpectedly changed during staging');
+          console.log('PRODUCTION_UNCHANGED_CONFIRMED '+v[0].version_id);
+          NODE
+          if [ -n "$PREVIEW_URL" ]; then
+            node - <<'NODE'
+          const preview=process.env.PREVIEW_URL;
+          console.log('WORKER_PREVIEW_URL',preview);
+          const url=new URL('/.well-known/yorphives-release.json',preview);
+          const r=await fetch(url,{signal:AbortSignal.timeout(15000)});
+          if(r.status!==200)throw Error('Preview did not serve the release manifest, HTTP '+r.status);
+          const m=await r.json();
+          if(m.sourceSha!==process.env.SOURCE_SHA||m.assetFingerprint!==process.env.FINGERPRINT)throw Error('Preview manifest differs from approved artifact');
+          console.log('INACTIVE_PREVIEW_MANIFEST_VERIFIED');
+          NODE
+          else
+            echo 'INACTIVE_VERSION_UPLOADED_NO_PREVIEW_URL: Live Worker unchanged.'
+          fi
