@@ -24,7 +24,7 @@ export async function serveNoticeChanges(db,params,scope="research"){
    where.push("r.source_id IN ("+allowed.map(()=>"?").join(",")+")","r.source_id=j.source_id");
    args.push(...allowed);
   }
-  if(["United Kingdom","Canada"].includes(country)){where.push("j.country=?");args.push(country);}
+  if(country){where.push("j.country=?");args.push(country);}
   const result=await db.prepare("SELECT r.notice_id as noticeId,r.source_id as sourceId,r.observed_at as observedAt,r.old_title as previousTitle,r.new_title as title,r.old_closing_at as previousClosingAt,r.new_closing_at as closingAt,j.country,j.jurisdiction_name as jurisdiction,j.source_page as sourceUrl FROM notice_revisions r JOIN official_job_notices j ON j.id=r.notice_id WHERE "+where.join(" AND ")+" ORDER BY r.observed_at DESC LIMIT ?").bind(...args,limit).all();
   return reply({changes:(result.results||[]).map(x=>({...x,deadlineChanged:x.previousClosingAt!==x.closingAt,titleChanged:x.previousTitle!==x.title})),notice:"Changes are observed from successive official feed responses. An unobserved or missing listing is NOT automatically labelled withdrawn."});
  }catch(e){console.error(JSON.stringify({event:"notice_revision_query_failed",error:String(e?.message||e)}));return reply({error:"query_unavailable",changes:[]},503);}

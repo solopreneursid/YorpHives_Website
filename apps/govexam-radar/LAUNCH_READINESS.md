@@ -10,6 +10,7 @@ This is a staging preview, not an authorization to publish. It links to official
 - Current admit-card and result pages are links to the authority, not automatically checked updates. There are no email alerts or push notifications.
 - Community creation, public posts and moderation API calls are paused. Existing users can still use authenticated export and deletion endpoints; the contact address is available for requests. Reopen only after moderation staffing, abuse handling, privacy and recovery are implemented and verified.
 - Browser-local bookmarks and older saved examples remain on the user's device. Old examples are clearly labelled and are excluded from search results. The source database and its research records are not deleted by this release.
+- The low-data page uses the same approved notices API and government website directory, with English and Hindi controls. It does not change saved items on the device.
 - The preview sends `X-Robots-Tag: noindex, nofollow` and its robots file disallows crawling. A separately reviewed production deployment needs deliberate domain, indexing, sitemap, canonical URL and privacy settings; never copy staging restrictions blindly into production.
 
 ## Verification

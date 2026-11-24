@@ -69,6 +69,23 @@ test('India and Bihar filter actual notices and the official directory without e
   assert.equal(await page.locator('#discovery-region-quick').inputValue(),'ALL');
  }finally{await page.close();}
 });
+for(const width of [320,768]){
+ test(`low-data page filters notices and government websites at ${width}px`,async()=>{
+  const page=await browser.newPage({viewport:{width,height:820}}),errors=[];page.on('pageerror',error=>errors.push(String(error)));
+  try{
+   await page.goto(origin+'/lite',{waitUntil:'domcontentloaded'});
+   await page.locator('#jobs .card').first().waitFor();
+   assert.match(await page.locator('#jobs').innerText(),/Teacher - test data/);
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),true);
+   await page.locator('#country').selectOption('India');await page.locator('#region').selectOption('IN-BR');
+   await page.waitForFunction(()=>document.querySelector('#job-status')?.textContent.includes('0 notices'));
+   assert.match(await page.locator('#sites').innerText(),/Bihar Public Service Commission/);
+   assert.equal(await page.locator('#jobs .card').count(),0);
+   await page.locator('#language').selectOption('hi');assert.match(await page.locator('#title').innerText(),/सरकारी नौकरी/);
+   assert.deepEqual(errors,[]);
+  }finally{await page.close();}
+ });
+}
 test('latest search response wins and UK notices can be saved on this device',async()=>{
  const page=await browser.newPage({viewport:{width:375,height:820}});
  try{

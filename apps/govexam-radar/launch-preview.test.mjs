@@ -41,6 +41,7 @@ test('every public listing and change query enforces source rights in the databa
   assert.equal((await get(db,'/api/notices?source=manitoba-jobs&scope=research')).status,403);
   const changes=await (await get(db,'/api/notice-changes?scope=research')).json();
   assert.deepEqual(changes.changes.map(x=>x.noticeId),['uk-good']);
+  assert.deepEqual((await (await get(db,'/api/notice-changes?country=India')).json()).changes,[]);
   const status=await (await get(db,'/api/ingestion-status')).json();
   assert.equal(status.openImportedNotices,1);assert.deepEqual(status.bySource.map(x=>x.sourceId),['uk-dfe-teaching-vacancies']);
   assert.ok(status.latest.every(x=>x.sourceId==='uk-dfe-teaching-vacancies'));
@@ -60,6 +61,7 @@ test('paused community blocks new public interactions while retaining authentica
   assert.equal((await get(db,'/api/community/delete-account','POST')).status,401);
   const catalog=await (await get(db,'/api/catalog')).json();assert.deepEqual(catalog.leads,[]);
   for(const path of ['/','/lite']){const html=await (await get(db,path)).text();assert.match(html,/href="\/privacy"/);assert.match(html,/href="\/terms"/);}
+  const lite=await (await get(db,'/lite')).text();assert.match(lite,/id="jobs"/);assert.match(lite,/src="\/lite\.js"/);assert.doesNotMatch(lite,/Explore leads from the prototype/);
   for(const path of ['/privacy','/terms']){const r=await get(db,path);assert.equal(r.status,200);assert.match(await r.text(),/connect@yorphives\.com/);}
  }finally{sqlite.close();}
 });
