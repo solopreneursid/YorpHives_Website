@@ -16,7 +16,7 @@ document.body.append(output);
   if(before.available!==true)throw Error('Public report not available');
   const id=crypto.randomUUID();
   const submit=async body=>{
-   const r=await fetch('/api/insights/collect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:id,...body})});
+   const r=await fetch('/api/insights/collect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:id,consent:'analytics-v2',...body})});
    if(!r.ok)throw Error('POST failed '+r.status+' '+(await r.text()).slice(0,100));
    return r.json();
   };

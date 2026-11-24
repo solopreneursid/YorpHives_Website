@@ -91,7 +91,7 @@ function createChoice(){
 }
 async function event(kind,extra){
  if(!analyticsEnabled())return;
- const payload={sessionId:sessionId(),event:kind,...extra};
+ const payload={sessionId:sessionId(),event:kind,consent:'analytics-v2',...extra};
  try{
   await fetch(API,{method:'POST',mode:'same-origin',credentials:'omit',keepalive:true,
    headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});

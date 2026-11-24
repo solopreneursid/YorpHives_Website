@@ -6,7 +6,7 @@ document.body.append(pre);
 const sessionId=crypto.randomUUID();
 const send=async obj=>{
  const r=await fetch('/api/insights/collect',{method:'POST',credentials:'omit',
-  headers:{'Content-Type':'application/json'},body:JSON.stringify({...obj,sessionId})});
+  headers:{'Content-Type':'application/json'},body:JSON.stringify({...obj,sessionId,consent:'analytics-v2'})});
  return{status:r.status,data:r.status===204?null:await r.json()};
 };
 try{

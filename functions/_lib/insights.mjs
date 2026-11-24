@@ -50,6 +50,9 @@ export async function collect(ctx){
  let data;
  try{const raw=await request.text();if(raw.length>400)return json({ok:false},413);data=JSON.parse(raw);}
  catch{return json({ok:false},400)}
+ // Discard events from older cached clients that did not require an opt-in.
+ // This marker is a compatibility guard, not proof of a person's consent.
+ if(data?.consent!=='analytics-v2')return new Response(null,{status:204,headers:{'Cache-Control':'no-store'}});
  if(!SESSION.test(data?.sessionId)||!['view','complete'].includes(data?.event))
   return json({ok:false},422);
  const target=data.event==='view'?data.route:data.url;

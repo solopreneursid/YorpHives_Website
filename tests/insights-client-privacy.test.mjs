@@ -39,7 +39,8 @@ test('genuine client events keep tool inputs out of analytics and track per-tool
  assert.equal(calls[1].payload.url,'tools/word-counter/');
  assert.ok(calls.every(x=>x.url==='/api/insights/collect'));
  assert.ok(calls.every(x=>Object.keys(x.payload).sort().join(',')===
-  (x.payload.event==='view'?'event,route,sessionId':'event,sessionId,url')));
+  (x.payload.event==='view'?'consent,event,route,sessionId':'consent,event,sessionId,url')));
+ assert.ok(calls.every(x=>x.payload.consent==='analytics-v2'));
  assert.ok(calls.every(x=>x.credentials==='omit'));
 });
 test('HQconnect direct visits and navigation are attributed to contact',async()=>{

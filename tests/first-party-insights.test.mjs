@@ -26,6 +26,28 @@ test('no database means fail closed, never fabricate metrics',async()=>{
  const r=await publicReport({request,env:{}});assert.equal(r.status,503);
  assert.equal((await r.json()).available,false);
 });
+test('legacy clients without the opt-in protocol cannot write analytics',async()=>{
+ let touched=false;
+ const request=new Request('https://yorphives.com/api/insights/collect',{method:'POST',
+  headers:{origin:'https://yorphives.com','content-type':'application/json'},
+  body:JSON.stringify({sessionId:'00000000-0000-4000-8000-000000000001',event:'view',route:'home'})});
+ const response=await collect({request,env:{INSIGHTS_DB:{prepare(){touched=true;throw Error('must not write')}}}});
+ assert.equal(response.status,204);
+ assert.equal(touched,false);
+});
+test('a consent-aware client can still record an approved page view',async()=>{
+ const writes=[];
+ const db={prepare(sql){return {bind(...args){return {run:async()=>{
+  writes.push({sql,args});return {meta:{changes:1}};
+ }}}}}};
+ const request=new Request('https://yorphives.com/api/insights/collect',{method:'POST',
+  headers:{origin:'https://yorphives.com','content-type':'application/json'},
+  body:JSON.stringify({sessionId:'00000000-0000-4000-8000-000000000001',event:'view',route:'home',consent:'analytics-v2'})});
+ const response=await collect({request,env:{INSIGHTS_DB:db}});
+ assert.equal(response.status,200);
+ assert.equal((await response.json()).counted,true);
+ assert.ok(writes.some(x=>x.sql.includes('daily_pageviews')));
+});
 test('browser session digests are not raw UUIDs',async()=>{
  const id='00000000-0000-4000-8000-000000000001';
  const hash=await digest('session|'+id);
