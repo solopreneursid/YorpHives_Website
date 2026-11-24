@@ -157,6 +157,10 @@ jobs:
         continue-on-error: true
         run: node apps/govexam-radar/probe-ssb.mjs
 
+      - name: Read-only ISRO access and robots probe
+        continue-on-error: true
+        run: node apps/govexam-radar/probe-isro.mjs
+
       - name: Verify independent UK-only Worker and data-isolated staging deployment
         run: |
           node --input-type=module <<'NODE'
