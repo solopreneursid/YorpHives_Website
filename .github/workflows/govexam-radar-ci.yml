@@ -60,6 +60,25 @@ jobs:
           curl --fail --show-error --silent --max-time 25 https://hqventures-govexam-radar.solopreneursid-proy.workers.dev/full.css | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{if(s.length<20000||!s.includes(".bg-indigo-600"))process.exit(1);console.log("Self-hosted production CSS verified",s.length);})'
           curl --fail --show-error --silent --max-time 25 https://hqventures-govexam-radar.solopreneursid-proy.workers.dev/ | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{if(!s.includes("Research Preview")||!s.includes("/enhance.js"))process.exit(1);console.log("Six-tab full release HTML verified");})'
 
+      - name: Verify simplified staging preview
+        run: |
+          node --input-type=module <<'NODE'
+          const base='https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev';
+          const [page,script,api]=await Promise.all([
+            fetch(base+'/?v=plain-ui-20261125'),
+            fetch(base+'/official.js?v=plain-ui-20261125'),
+            fetch(base+'/api/notices?limit=1')
+          ]);
+          if(!page.ok||!script.ok||!api.ok)throw Error('preview_http_failure');
+          const html=await page.text(),js=await script.text(),notices=await api.json();
+          for(const text of ['Find government jobs easily.','Job websites','gg-region-help','gg-language'])
+            if(!html.includes(text))throw Error('preview_page_missing_'+text);
+          for(const text of ['Government job notices','We have not checked each job','No notices found'])
+            if(!js.includes(text))throw Error('preview_script_missing_'+text);
+          if(!Array.isArray(notices.notices))throw Error('preview_notices_unavailable');
+          console.log('Simplified preview and official-notice API verified');
+          NODE
+
       - name: Verify Phase 1 source metadata and UI on isolated Cloudflare preview
         run: |
           curl --fail --show-error --silent --max-time 25 'https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev/api/notices?country=India' | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const d=JSON.parse(s);if(d.filters?.country!=="India"||!Array.isArray(d.notices)||!d.sources?.some(x=>x.id==="india-employment-news"&&x.employerType==="government_recruitment_digest"))process.exit(1);console.log("India official summary API and source classification verified");})'
