@@ -21,7 +21,7 @@ The prior verified release was source `4800e2e56e89a4080600e2d74ecb70dda1810310`
 
 **Automatic Cloudflare deployment is paused:** Workers Builds may still build and test the production branch, but its deploy command is currently an informational `echo` and must not be changed back to an unreviewed `wrangler deploy`. This preserves the Git integration and settings while preventing a branch push from replacing the verified Worker. The Pages fallback remains untouched.
 
-The standard `yorphives-production` GitHub environment currently has no saved required-reviewer rule. The protected promotion workflow deliberately refuses releases until that control is restored. The refreshed official readiness run `45413794425` is in progress; verify that it succeeds before updating the promotion workflow's release pins. The previous readiness run `45352696214` describes the prior source and must not be treated as the current candidate.
+The standard `yorphives-production` GitHub environment currently has no saved required-reviewer rule. The protected promotion workflow deliberately refuses releases until that control is restored. The green official readiness run `45413794425` verified and packaged this exact source. The promotion workflow pins that run and artifact; update its pins only after a future successful readiness run. The previous readiness run `45352696214` describes the prior source.
 
 ## Correct deployment procedure
 
