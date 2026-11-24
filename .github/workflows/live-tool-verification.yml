@@ -1,0 +1,85 @@
+name: YorpHives live website repair verification
+on:
+  push:
+    branches: ['codex/live-tool-verification-20261124']
+permissions:
+  contents: read
+jobs:
+  live-read-only-browser-verification:
+    runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 25
+    env:
+      YORPHIVES_TEST_WEBM: .qa-media/video.webm
+      YORPHIVES_TEST_HEIC: .qa-media/input.heic
+      YORPHIVES_QA_RESULTS: .qa-media/live-browser-results.json
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: '4800e2e56e89a4080600e2d74ecb70dda1810310'
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Install pinned browser test dependencies
+        run: |
+          npm ci --ignore-scripts --no-fund --no-audit
+          npm install --no-save --package-lock=false --ignore-scripts --no-fund --no-audit playwright@1.56.1
+          apt-get update -qq
+          apt-get install -y -qq ffmpeg libheif-examples libheif-plugin-x265
+          mkdir -p .qa-media
+          ffmpeg -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=160x120:rate=8:duration=2' -an -c:v libvpx -b:v 250k -pix_fmt yuv420p .qa-media/video.webm
+          ffmpeg -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=256x192:rate=1:duration=1' -frames:v 1 .qa-media/input.png
+          heif-enc -q 80 -o .qa-media/input.heic .qa-media/input.png
+      - name: Confirm the exact repaired release is live
+        run: node scripts/release-verify.mjs https://yorphives.com 4800e2e56e89a4080600e2d74ecb70dda1810310 112cde8382a413b97052f6336ddc6ceaaa47720748a8ee3fff819c93c84fef64 production
+      - name: Verify live tools using synthetic local files and blocked writes
+        run: node scripts/health-browser-smoke.mjs
+      - name: Verify live enquiries and recording with a synthetic microphone
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const origin='https://yorphives.com';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream']});
+          const context=await browser.newContext({baseURL:origin,serviceWorkers:'block'});
+          await context.addInitScript(()=>localStorage.setItem('yorphives-anonymous-analytics-disabled','1'));
+          await context.route('**/*',route=>{
+            const request=route.request();
+            return ['GET','HEAD'].includes(request.method())&&new URL(request.url()).origin===origin?route.continue():route.abort();
+          });
+          const page=await context.newPage();
+          try{
+            const home=await page.goto('/',{waitUntil:'domcontentloaded'});
+            assert.match(home.headers()['permissions-policy']||'',/microphone=\(\)/);
+            await page.goto('/tools/');
+            await page.getByRole('link',{name:'Suggest a tool ↗'}).click();
+            await page.waitForURL('**/#suggest-tool');
+            assert.equal(await page.locator('#interest').inputValue(),'Other');
+            await page.goto('/tools/');
+            await page.getByRole('link',{name:'Partnerships',exact:true}).click();
+            await page.waitForURL('**/#partners');
+            assert.equal(await page.locator('#interest').inputValue(),'Long-term partnership');
+            const response=await page.goto('/tools/voice-recorder/',{waitUntil:'domcontentloaded'});
+            const policy=response.headers()['permissions-policy']||'';
+            assert.match(policy,/microphone=\(self\)/);
+            assert.doesNotMatch(policy,/microphone=\(\)/);
+            assert.equal(await page.evaluate(()=>document.permissionsPolicy?.allowsFeature('microphone')??document.featurePolicy?.allowsFeature('microphone')??null),true);
+            await page.locator('#wave7-start').click();
+            await page.waitForFunction(()=>!document.getElementById('wave7-stop')?.disabled,undefined,{timeout:10000});
+            await page.waitForTimeout(1200);
+            await page.locator('#wave7-stop').click();
+            await page.waitForFunction(()=>document.querySelector('a[download]')?.href.startsWith('blob:'),undefined,{timeout:15000});
+            console.log('LIVE_SYNTHETIC_MICROPHONE_AND_ENQUIRY_CHECKS_PASS');
+          }finally{await context.close();await browser.close()}
+          NODE
+      - name: Retain browser verification evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: yorphives-live-tool-verification
+          path: .qa-media/live-browser-results.json
+          if-no-files-found: warn
+          retention-days: 14
