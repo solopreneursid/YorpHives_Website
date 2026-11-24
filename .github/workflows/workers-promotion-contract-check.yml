@@ -37,7 +37,7 @@ jobs:
             'edge/live/wrangler.jsonc',
             'yorphives-edge-static-live',
             'PREVIOUS_WORKER_VERSION',
-            'Rollback',
+            'rollback-response.json',
             "PUBLISH_YORPHIVES_NOW",
             'workers/scripts/$WORKER_NAME/deployments',
             'INSIGHTS_DB',
