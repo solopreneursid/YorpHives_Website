@@ -8,18 +8,20 @@ The previous Pages-only production promotion uploaded an intact artifact but its
 
 ## Current live release (verified 2026-11-24)
 
-- Source SHA: `4800e2e56e89a4080600e2d74ecb70dda1810310`
-- Asset fingerprint: `112cde8382a413b97052f6336ddc6ceaaa47720748a8ee3fff819c93c84fef64`
-- Active Worker version: `23b5c772-7d54-46e6-9480-cdb40c8f87e5`
-- Full candidate audit: GitHub Actions run `45317496299`; live synthetic-browser verification: run `45350974093`.
-- Current green official readiness run: `45352696214`; its candidate artifact is retained for 14 days.
+- Source SHA: `08c982fc025e3836992b9c2b7cde63b3db16927f`
+- Asset fingerprint: `c50f9a82fbff79d8130238af50594ff7ae738d6d16dc367b68616aed5977431b`
+- Active Worker version: `04c14ac9-9152-494b-8bcf-c6a097716938`
+- Full privacy, tool, browser and accessibility audit: GitHub Actions run `45411737136`.
+- Pinned publication and live route verification: run `45412890285`.
+- Live consent verification with synthetic, intercepted analytics: run `45413115307`.
 - The source branch `release/yorphives-reimagined-20261116` points to the same website revision.
+- The privacy notice and worldwide analytics opt-in are active. The analytics retention routine was verified on 2026-11-24.
 
-The founder directly requested this repair and a one-time pinned release workflow published it in run `45318479240`. A subsequently discovered Cloudflare Workers Builds trigger automatically redeployed a shallow-history build without a source SHA after the source branch was updated. The exact tested Worker version above was restored; the separate live integrity monitor now correctly fails if either its manifest or route check fails.
+The prior verified release was source `4800e2e56e89a4080600e2d74ecb70dda1810310`, fingerprint `112cde8382a413b97052f6336ddc6ceaaa47720748a8ee3fff819c93c84fef64`, Worker version `23b5c772-7d54-46e6-9480-cdb40c8f87e5`.
 
 **Automatic Cloudflare deployment is paused:** Workers Builds may still build and test the production branch, but its deploy command is currently an informational `echo` and must not be changed back to an unreviewed `wrangler deploy`. This preserves the Git integration and settings while preventing a branch push from replacing the verified Worker. The Pages fallback remains untouched.
 
-The standard `yorphives-production` GitHub environment currently has no saved required-reviewer rule. The protected promotion workflow deliberately refuses releases until that control is restored. Its current pins identify the green readiness run above; future releases must update those pins from a new successful readiness run and use a founder-authorized release path.
+The standard `yorphives-production` GitHub environment currently has no saved required-reviewer rule. The protected promotion workflow deliberately refuses releases until that control is restored. The refreshed official readiness run `45413794425` is in progress; verify that it succeeds before updating the promotion workflow's release pins. The previous readiness run `45352696214` describes the prior source and must not be treated as the current candidate.
 
 ## Correct deployment procedure
 

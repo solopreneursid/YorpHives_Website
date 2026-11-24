@@ -58,17 +58,20 @@ jobs:
         run: |
           set -euo pipefail
           ruby -ryaml -e 'w=YAML.load_file(".github/workflows/workers-production-promotion.yml");s=w["jobs"]["production"]["steps"].find{|s| s["name"]=="Verify founder consent, secret and immutable candidate identity"};abort "missing approval gate" unless s;File.write("/tmp/yorphives-founder-input-gate.sh",s["run"])'
-          export SOURCE_SHA='f98207dc98a3b109d0f2bb27b524ad3ab809d0e4'
-          export FINGERPRINT=$'\tee121b41b3ab814870e1829cd27b5d2db75d48689704aa2057daa85543ec96b4'
-          export READINESS_RUN_ID='45201553389'
+          mapfile -t approved < <(ruby -ryaml -e 'w=YAML.load_file(".github/workflows/workers-production-promotion.yml");i=(w["on"] || w[true]).dig("workflow_dispatch","inputs");abort "missing release defaults" unless i;puts i.dig("source_sha","default"),i.dig("asset_fingerprint","default"),i.dig("readiness_run_id","default")')
+          [ "${#approved[@]}" -eq 3 ] || { echo 'Missing release pins'; exit 1; }
+          [[ "${approved[0]}" =~ ^[a-f0-9]{40}$ && "${approved[1]}" =~ ^[a-f0-9]{64}$ && "${approved[2]}" =~ ^[0-9]{5,16}$ ]] || { echo 'Malformed release pins'; exit 1; }
+          export SOURCE_SHA="${approved[0]}"
+          export FINGERPRINT=$'\t'"${approved[1]}"
+          export READINESS_RUN_ID="${approved[2]}"
           export APPROVAL_PHRASE=$'\tPUBLISH_YORPHIVES_NOW'
           export CLOUDFLARE_API_TOKEN='mock-not-a-real-token'
           export GITHUB_ENV
           GITHUB_ENV="$(mktemp)"
           bash /tmp/yorphives-founder-input-gate.sh
-          grep -Fx 'FINGERPRINT=ee121b41b3ab814870e1829cd27b5d2db75d48689704aa2057daa85543ec96b4' "$GITHUB_ENV"
+          grep -Fx "FINGERPRINT=${approved[1]}" "$GITHUB_ENV"
           grep -Fx 'APPROVAL_PHRASE=PUBLISH_YORPHIVES_NOW' "$GITHUB_ENV"
-          if FINGERPRINT='ee121b41b3ab814870e1829cd27b5d2db75d48689704aa2057daa85543ec96b4 invalid' bash /tmp/yorphives-founder-input-gate.sh; then
+          if FINGERPRINT="${approved[1]} invalid" bash /tmp/yorphives-founder-input-gate.sh; then
             echo 'FAIL: embedded/extra fingerprint text was accepted'; exit 1
           fi
           if APPROVAL_PHRASE='NOT_APPROVED' bash /tmp/yorphives-founder-input-gate.sh; then
@@ -76,5 +79,8 @@ jobs:
           fi
           if SOURCE_SHA='0000000000000000000000000000000000000000' bash /tmp/yorphives-founder-input-gate.sh; then
             echo 'FAIL: incorrect source commit was accepted'; exit 1
+          fi
+          if READINESS_RUN_ID='99999' bash /tmp/yorphives-founder-input-gate.sh; then
+            echo 'FAIL: incorrect readiness run was accepted'; exit 1
           fi
           echo 'FOUNDER_INPUT_WHITESPACE_REGRESSION_PASS'
