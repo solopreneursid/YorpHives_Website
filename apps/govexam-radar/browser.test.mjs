@@ -714,3 +714,25 @@ test("Hindi translates simple controls without modifying records or deleting sav
   assert.deepEqual(errors,[]);
  }finally{await context.close();}
 });
+
+test("one main search controls both examples and imported notice filters",async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:812}});
+ const errors=[];page.on("pageerror",e=>errors.push(String(e)));
+ try{
+  await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.locator("#official-notice-filters").waitFor();
+  await page.locator("#search-input").fill("Railway");
+  await page.locator('[data-quick-country="India"]').click();
+  await page.locator('[data-quick-stream="Technical"]').click();
+  await page.waitForTimeout(600);
+  assert.equal(await page.locator("#official-notice-search").inputValue(),"Railway");
+  assert.equal(await page.locator("#official-notice-country").inputValue(),"India");
+  assert.equal(await page.locator("#official-notice-stream").inputValue(),"Technical");
+  await page.locator("#discovery-clear-quick").click();
+  await page.waitForTimeout(550);
+  assert.equal(await page.locator("#official-notice-search").inputValue(),"");
+  assert.equal(await page.locator("#official-notice-country").inputValue(),"");
+  assert.equal(await page.locator("#official-notice-stream").inputValue(),"");
+  assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
