@@ -1,0 +1,24 @@
+name: Stop superseded website quality run
+on:
+  push:
+    branches: ['codex/stop-superseded-quality-20261124']
+permissions:
+  contents: read
+  actions: write
+jobs:
+  cancel-our-obsolete-run:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Stop the superseded run so the corrected check can start
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GH_REPO/actions/runs/45351728880" > /tmp/old-run.json
+          state=$(node -e "const r=require('/tmp/old-run.json');if(r.head_sha!=='7043f4fb7ec0803c8305b5a90a3f230df5654c8d'||r.path!=='.github/workflows/free-tools-functional-security.yml')process.exit(2);console.log(r.status)")
+          if [ "$state" = completed ]; then echo 'The superseded run has already finished.'; exit 0; fi
+          gh api --method POST "repos/$GH_REPO/actions/runs/45351728880/cancel"
+          echo 'Stopped the superseded test run; the corrected run can now start.'
