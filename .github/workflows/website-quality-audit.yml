@@ -61,8 +61,19 @@ jobs:
         env:
           YORPHIVES_A11Y_RESULTS: .qa-media/accessibility-results.json
         run: node scripts/release-accessibility.mjs
+      - name: Start the isolated static preview for browser compatibility
+        run: |
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist >/tmp/yorphives-static-preview.log 2>&1 &
+          for i in $(seq 1 15); do
+            if curl -fsS http://127.0.0.1:4174/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/yorphives-static-preview.log
+          exit 1
       - name: Check major journeys across browser engines
         env:
+          HOME: /root
+          YORPHIVES_PREVIEW_ORIGIN: http://127.0.0.1:4174
           YORPHIVES_COMPAT_RESULTS: .qa-media/cross-browser-results.json
         run: node scripts/release-cross-browser.mjs
       - name: Preserve test evidence
