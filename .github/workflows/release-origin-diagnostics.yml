@@ -23,7 +23,10 @@ jobs:
             ['live-path','https://yorphives.com/index.html?release=f98207dc98a3b109d0f2bb27b524ad3ab809d0e4'],
             ['www','https://www.yorphives.com/.well-known/yorphives-release.json'],
             ['candidate','https://c54e985f.yorphives-v1-live.pages.dev/.well-known/yorphives-release.json'],
-            ['previous','https://ab94a0ad.yorphives-v1-live.pages.dev/.well-known/yorphives-release.json']
+            ['previous','https://ab94a0ad.yorphives-v1-live.pages.dev/.well-known/yorphives-release.json'],
+            ['health','https://yorphives.com/api/monitoring/health'],
+            ['capabilities','https://yorphives.com/api/agent/v1/capabilities'],
+            ['ads','https://yorphives.com/ads.txt']
           ];
           for(const [name,url] of endpoints){
             try {
