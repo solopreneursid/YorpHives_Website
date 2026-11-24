@@ -23,8 +23,9 @@ jobs:
           ruby - <<'RUBY'
           require 'yaml'
           p=YAML.load_file('.github/workflows/workers-production-promotion.yml')
-          raise 'missing manual dispatch' unless p.dig('on','workflow_dispatch')
-          raise 'automatic trigger forbidden' unless p['on'].keys==['workflow_dispatch']
+          triggers=p['on'] || p[true]
+          raise 'missing manual dispatch' unless triggers.is_a?(Hash) && triggers.key?('workflow_dispatch')
+          raise 'automatic trigger forbidden' unless triggers.keys==['workflow_dispatch']
           job=p.dig('jobs','production')
           raise 'missing protected environment' unless job['environment']=='yorphives-production'
           raw=File.read('.github/workflows/workers-production-promotion.yml')
