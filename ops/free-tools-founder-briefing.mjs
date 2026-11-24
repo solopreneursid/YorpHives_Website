@@ -161,6 +161,12 @@ if(process.argv.includes('--weekly')){
  '- SEO advisory issue: '+(seo?seo.html_url:'No open SEO issue'),
  '- Review this source report before acting. SEO warnings are not verified traffic or earnings.',
  '',
+ '## Affiliate pilot (manual applications)',
+ '- Founder application queue: https://github.com/solopreneursid/YorpHives_Website/issues/106',
+ '- Shortlist: Adobe (PDF/image relevance), Namecheap (domains), DigitalOcean (developer tools).',
+ '- Applications, approvals, tracking links and commission earnings: not verified. No live affiliate offers.',
+ '- The founder reviews each programme before applying; successful enrolment is not assumed.',
+ '',
  '## Action',
  incident||stalled?'Investigate the monitoring incident before making revenue or content changes.':
  seo?'Review top SEO opportunities using real search/visitor evidence; do not bulk-edit tools.':
