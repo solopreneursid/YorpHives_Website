@@ -76,6 +76,7 @@ for(const width of [320,768]){
    await page.goto(origin+'/lite',{waitUntil:'domcontentloaded'});
    await page.locator('#jobs .card').first().waitFor();
    assert.match(await page.locator('#jobs').innerText(),/Teacher - test data/);
+   assert.match(await page.locator('#jobs').innerText(),/Last found in feed/);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),true);
    await page.locator('#country').selectOption('India');await page.locator('#region').selectOption('IN-BR');
    await page.waitForFunction(()=>document.querySelector('#job-status')?.textContent.includes('0 notices'));
@@ -86,6 +87,15 @@ for(const width of [320,768]){
   }finally{await page.close();}
  });
 }
+test('low-data directory remains usable if the jobs feed fails',async()=>{
+ const page=await browser.newPage({viewport:{width:375,height:820}});
+ try{
+  await page.route('**/api/notices?*',route=>route.fulfill({status:503,contentType:'application/json',body:'{}'}));
+  await page.goto(origin+'/lite',{waitUntil:'domcontentloaded'});await page.locator('#sites .card').first().waitFor();
+  await page.waitForFunction(()=>document.querySelector('#job-status')?.textContent.includes('Could not load'));
+  assert.ok(await page.locator('#sites .card').count()>0);
+ }finally{await page.close();}
+});
 test('latest search response wins and UK notices can be saved on this device',async()=>{
  const page=await browser.newPage({viewport:{width:375,height:820}});
  try{
