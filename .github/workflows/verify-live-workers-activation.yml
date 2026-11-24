@@ -19,6 +19,12 @@ jobs:
       - uses: actions/checkout@v6
         with:
           ref: f98207dc98a3b109d0f2bb27b524ad3ab809d0e4
+          path: source
+          persist-credentials: false
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          path: control
           persist-credentials: false
       - uses: actions/setup-node@v6
         with:
@@ -28,7 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in 1 2 3 4 5 6 7 8; do
-            if node scripts/release-verify.mjs https://yorphives.com "$SOURCE_SHA" "$FINGERPRINT" production; then
+            if node control/scripts/release-verify-worker-live.mjs https://yorphives.com "$SOURCE_SHA" "$FINGERPRINT" production; then
               echo 'APPROVED_LIVE_RELEASE_FINGERPRINT_PASS' >> "$GITHUB_STEP_SUMMARY"
               exit 0
             fi
@@ -40,7 +46,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          YORPHIVES_LIVE_ROUTE_RESULTS=live-route-results.json node scripts/release-live-pages.mjs https://yorphives.com
+          YORPHIVES_LIVE_ROUTE_RESULTS=live-route-results.json node source/scripts/release-live-pages.mjs https://yorphives.com
       - name: Verify live Worker APIs, SEO and AdSense routes
         shell: bash
         run: |
