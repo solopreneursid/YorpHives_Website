@@ -153,6 +153,10 @@ jobs:
         continue-on-error: true
         run: node apps/govexam-radar/probe-india.mjs
 
+      - name: Read-only SSB access and robots probe
+        continue-on-error: true
+        run: node apps/govexam-radar/probe-ssb.mjs
+
       - name: Verify independent UK-only Worker and data-isolated staging deployment
         run: |
           node --input-type=module <<'NODE'
