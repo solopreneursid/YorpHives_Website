@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 const root=new URL('../../',import.meta.url);
 const read=p=>readFileSync(new URL(p,root),'utf8');
@@ -40,3 +41,11 @@ write('webmanifest.txt',"{\"id\":\"/\",\"name\":\"TaxPulse Global Preview\",\"sh
    write('browser-'+name+'.mjs.txt',readFileSync(new URL(name+'.mjs',bundle),'utf8'));
  }
  write('browser-scenarios.mjs.txt',read('engine/scenarios.mjs'));
+
+for(const name of ['taxable-income','proof']){
+  const content=read('engine/'+name+'.mjs');
+  write(name+'.mjs',content);write('browser-'+name+'.mjs.txt',content);
+}
+const fingerprintInputs=['country','primitives','us-filing-statuses','IN','US','GB','taxable-income','proof'].map(name=>[name,readFileSync(new URL(name+'.mjs',bundle),'utf8')]);
+const fingerprint=createHash('sha256').update(JSON.stringify(fingerprintInputs)).digest('hex');
+write('browser-fingerprint.mjs.txt','export default '+JSON.stringify(fingerprint)+';\n');
