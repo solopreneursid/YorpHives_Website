@@ -127,6 +127,14 @@
 <button class="primary" type="submit">Compare job offers</button></form>
 <p id="offers-error" class="error" role="alert"></p>
 <div id="offers-result" hidden tabindex="-1" aria-live="polite"><h3 id="offers-winner"></h3><div class="results"><div><span>Offer 1: monthly money left</span><strong id="offers-first"></strong></div><div><span>Offer 2: monthly money left</span><strong id="offers-second"></strong></div><div><span>Annual difference</span><strong id="offers-diff"></strong></div></div><dl id="offers-breakdown" class="breakdown"></dl><p id="offers-warning" class="notice"></p><button id="offers-download" type="button" class="secondary">Download comparison report</button></div></section>
+<section id="salary-negotiation" class="card" aria-labelledby="negotiation-title">
+<h2 id="negotiation-title">How much of a pay rise do I need?</h2>
+<p>Enter your current salary and confirm your country and conditions in the salary calculator above. Then tell us how much extra money you want each month.</p>
+<form id="negotiation-form"><label for="negotiation-increase">Extra money wanted each month (local currency)<input id="negotiation-increase" type="number" min="0.01" max="1000000000" step="0.01" inputmode="decimal" required></label>
+<label for="negotiation-confirm"><input id="negotiation-confirm" type="checkbox" required> The same tax conditions and any contribution wages, basic salary or assessed taxable income stay unchanged.</label>
+<button type="submit" class="primary">Find my pay rise</button></form>
+<p id="negotiation-error" role="alert" class="error"></p>
+<div id="negotiation-result" hidden tabindex="-1" aria-live="polite"><h3>Estimated salary to ask for</h3><div class="results"><div><span>New yearly salary before deductions</span><strong id="negotiation-gross"></strong></div><div><span>Extra money each month</span><strong id="negotiation-net"></strong></div><div><span>Yearly gross pay increase</span><strong id="negotiation-raise"></strong></div></div><p id="negotiation-warning" class="notice"></p><button type="button" class="secondary" id="negotiation-download">Download pay rise report</button></div></section>
 <section id="employee-contributions" class="card" aria-labelledby="contrib-title">
 <h2 id="contrib-title">Employee contributions and levies</h2><p>Estimate selected deductions or levies separately from income tax. Use made-up examples only.</p>
 <form id="contrib-form"><div class="fields">
