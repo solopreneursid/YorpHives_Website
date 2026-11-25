@@ -14,7 +14,7 @@ test('generated Worker routes and validation',async()=>{
  assert.equal((await call('/assets/country-rules.js')).status,200);
  const vaultAsset=await call('/assets/browser-vault.mjs');assert.equal(vaultAsset.status,200);assert.match(vaultAsset.headers.get('content-type'),/application\/javascript/);assert.match(await vaultAsset.text(),/openEncryptedVault/);
  const cryptoAsset=await call('/assets/secure-records.mjs');assert.equal(cryptoAsset.status,200);assert.match(await cryptoAsset.text(),/AES-256-GCM/);
- const catalog=await (await call('/v1/catalog')).json();assert.equal(catalog.countries.length,3);
+ const catalog=await (await call('/v1/catalog')).json();assert.equal(catalog.countries.length,3);assert.deepEqual(catalog.filingStatusOptions.US,['single','mfj','hoh','mfs']);assert.match(catalog.countries.find(c=>c.code==='IN').taxYearLabel,/2026-27/);
  assert.equal((await (await call('/openapi.json')).json()).openapi,'3.1.0');
  const payload={country:'GB',taxYear:'2026',module:'pit',parameters:{grossSalary:130000}};
  const post=(body,headers={})=>call('/v1/country/calculate',{method:'POST',headers:{'content-type':'application/json',...headers},body});
@@ -22,6 +22,9 @@ test('generated Worker routes and validation',async()=>{
  assert.equal((await post(JSON.stringify(payload),{origin:'https://other.example'})).status,403);
  assert.equal((await post('{}',{'content-type':'text/plain'})).status,415);
  assert.equal((await post('x'.repeat(17000))).status,400);
+ const indiaInput={country:'IN',taxYear:'2026',module:'pit',parameters:{grossSalary:1285000,residentIndividual:true}};
+ const india=await post(JSON.stringify(indiaInput));assert.equal(india.status,200);const indiaResult=(await india.json()).result;assert.ok(Math.abs(indiaResult.incomeTax-10400)<0.005);assert.ok(Math.abs(indiaResult.marginalReliefApplied-51500)<0.005);
+ assert.equal((await post(JSON.stringify({...indiaInput,parameters:{grossSalary:1285000}}))).status,400);
  assert.equal((await post(JSON.stringify({...payload,country:'DE'}))).status,400);
  assert.equal((await call('/missing')).status,404);
  assert.equal((await call('/v1/country/calculate')).status,405);
