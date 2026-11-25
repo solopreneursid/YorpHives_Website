@@ -104,7 +104,7 @@ test('paused community blocks new public interactions while retaining authentica
   assert.equal((await get(db,'/api/community/delete-account','POST')).status,401);
   const catalog=await (await get(db,'/api/catalog')).json();assert.deepEqual(catalog.leads,[]);
   for(const path of ['/','/lite']){const html=await (await get(db,path)).text();assert.match(html,/href="\/privacy"/);assert.match(html,/href="\/terms"/);}
-  const lite=await (await get(db,'/lite')).text();assert.match(lite,/id="jobs"/);assert.match(lite,/src="\/lite\.js\?v=2\.7\.1"/);assert.doesNotMatch(lite,/Explore leads from the prototype/);
+  const lite=await (await get(db,'/lite')).text();assert.match(lite,/id="jobs"/);assert.match(lite,/src="\/lite\.js\?v=2\.7\.2"/);assert.doesNotMatch(lite,/Explore leads from the prototype/);
   for(const path of ['/privacy','/terms']){const r=await get(db,path);assert.equal(r.status,200);assert.match(await r.text(),/connect@yorphives\.com/);}
  }finally{sqlite.close();}
 });

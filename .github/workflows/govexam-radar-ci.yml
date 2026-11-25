@@ -64,19 +64,23 @@ jobs:
         run: |
           node --input-type=module <<'NODE'
           const base='https://hqventures-govexam-parity-preview.solopreneursid-proy.workers.dev';
-          const [page,script,api]=await Promise.all([
+          const [page,script,api,lite,liteScript]=await Promise.all([
             fetch(base+'/?v=plain-ui-20261125'),
             fetch(base+'/official.js?v=plain-ui-20261125'),
-            fetch(base+'/api/notices?limit=1')
+            fetch(base+'/api/notices?limit=1'),
+            fetch(base+'/lite?v=plain-ui-20261125'),
+            fetch(base+'/lite.js?v=2.7.2')
           ]);
-          if(!page.ok||!script.ok||!api.ok)throw Error('preview_http_failure');
-          const html=await page.text(),js=await script.text(),notices=await api.json();
+          if(!page.ok||!script.ok||!api.ok||!lite.ok||!liteScript.ok)throw Error('preview_http_failure');
+          const html=await page.text(),js=await script.text(),notices=await api.json(),liteHtml=await lite.text(),liteJs=await liteScript.text();
           for(const text of ['Find government jobs easily.','Job websites','gg-region-help','gg-language'])
             if(!html.includes(text))throw Error('preview_page_missing_'+text);
           for(const text of ['Government job notices','Check the official notice before you apply','No notices found'])
             if(!js.includes(text))throw Error('preview_script_missing_'+text);
           if(!Array.isArray(notices.notices))throw Error('preview_notices_unavailable');
-          console.log('Simplified preview and official-notice API verified');
+          if(!liteHtml.includes('/lite.js?v=2.7.2'))throw Error('low_data_script_version_missing');
+          new Function(liteJs);
+          console.log('Simplified preview, low-data script syntax and official-notice API verified');
           NODE
 
       - name: Verify public preview source and community boundaries

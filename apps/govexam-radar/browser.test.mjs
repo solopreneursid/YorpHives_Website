@@ -116,7 +116,7 @@ test('an eligible ISRO notice can be viewed, saved, exported and shown on the lo
  try{
   await page.route('**/api/notices?*',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({total:1,notices:[sample]})}));
   await page.goto(origin,{waitUntil:'domcontentloaded'});await page.locator('#official-notice-grid article').first().waitFor();
-  assert.match(await page.locator('#official-notice-grid').innerText(),/ISRO · India/);
+  assert.match(await page.locator('#official-notice-grid').innerText(),/ISRO · Government of India/);
   assert.equal(await page.locator('#official-notice-grid a[href="https://www.isro.gov.in/SACRecruitment1.html"]').count(),1);
   await page.locator('#official-notice-grid [data-save-notice]').click();await page.locator('#nav-mobile-saved').click();
   assert.match(await page.locator('#saved-official-notices').innerText(),/Test ISRO vacancy/);
@@ -124,7 +124,7 @@ test('an eligible ISRO notice can be viewed, saved, exported and shown on the lo
   const stream=await (await downloadPromise).createReadStream();let raw='';for await(const chunk of stream)raw+=chunk;
   const exported=JSON.parse(raw);assert.equal(exported.bookmarks[0].sourceId,'india-isro-opportunities');assert.equal(exported.bookmarks[0].sourceUrl,sample.sourceUrl);
   await page.goto(origin+'/lite',{waitUntil:'domcontentloaded'});await page.locator('#jobs .card').first().waitFor();
-  assert.match(await page.locator('#jobs').innerText(),/Test ISRO vacancy/);
+  assert.match(await page.locator('#jobs').innerText(),/Test ISRO vacancy/);assert.match(await page.locator('#jobs').innerText(),/Source: ISRO, Government of India/);
   assert.equal(await page.locator('#jobs a[href="https://www.isro.gov.in/SACRecruitment1.html"]').count(),1);
   assert.match(await page.locator('#credit').innerText(),/ISRO/);
  }finally{await page.close();}

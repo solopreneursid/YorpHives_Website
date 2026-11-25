@@ -43,7 +43,10 @@ export function parseIsroTable(html,now=Date.now()){
   const location=get('location'),post=get('post'),advert=get('advNo'),opening=get('openDate'),closing=get('closeDate'),details=get('moreDetails');
   if([location,post,advert,opening,closing,details].some(x=>x===undefined))throw Error('isro_row_schema_changed');
   recognized++;
-  const employer=clean(location).slice(0,200),title=clean(post).slice(0,220),number=clean(advert).slice(0,100);
+  const employer=clean(location),title=clean(post),number=clean(advert);
+  // Do not shorten source text: truncating a title or reference can remove a
+  // qualification or change its meaning. Skip unexpectedly long rows.
+  if(employer.length>200||title.length>220||number.length>100){reject('field_too_long');continue;}
   if(!owners.some(re=>re.test(employer))||thirdParty.test(title)){reject('third_party_or_unknown_owner');continue;}
   const openDay=day(opening),closeDay=day(closing),url=sourceUrl(details);
   if(!title||!number||!openDay||!closeDay||!url){reject('missing_or_invalid_fields');continue;}

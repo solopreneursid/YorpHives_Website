@@ -27,6 +27,7 @@ test('schema changes, excessive rows and unsafe authority links fail closed',()=
  assert.throws(()=>parseIsroTable(table(row().repeat(501)),clock),/isro_row_limit/);
  assert.equal(parseIsroTable(table(row({href:'//www.isro.gov.in.evil.example/job.html'})),clock).valid.length,0);
  assert.equal(parseIsroTable(table(row({href:'javascript:alert(1)'})),clock).valid.length,0);
+ assert.equal(parseIsroTable(table(row({title:'Long source title '.repeat(20)})),clock).valid.length,0);
 });
 test('a complete empty snapshot is valid, but publication requires two recent scheduled successes',async()=>{
  const {sqlite,db}=database();try{
