@@ -1,0 +1,47 @@
+[
+  {
+    "id": "US-0",
+    "country": "US",
+    "url": "https://www.irs.gov/irb/2025-45_IRB"
+  },
+  {
+    "id": "US-1",
+    "country": "US",
+    "url": "https://www.ssa.gov/OACT/COLA/cbb.html"
+  },
+  {
+    "id": "GB-2",
+    "country": "GB",
+    "url": "https://www.gov.uk/income-tax-rates"
+  },
+  {
+    "id": "IN-3",
+    "country": "IN",
+    "url": "https://www.incometax.gov.in/"
+  },
+  {
+    "id": "DE-4",
+    "country": "DE",
+    "url": "https://www.bundesfinanzministerium.de/"
+  },
+  {
+    "id": "AE-5",
+    "country": "AE",
+    "url": "https://tax.gov.ae/"
+  },
+  {
+    "id": "CA-6",
+    "country": "CA",
+    "url": "https://www.canada.ca/en/revenue-agency.html"
+  },
+  {
+    "id": "AU-7",
+    "country": "AU",
+    "url": "https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents"
+  },
+  {
+    "id": "SG-8",
+    "country": "SG",
+    "url": "https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates"
+  }
+]
