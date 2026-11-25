@@ -7,7 +7,7 @@ const app=readFileSync(new URL('../staging/integrated/application.js',import.met
 const start=app.indexOf('const TAX_RULES ='),end=app.indexOf('\n    };',start)+7;
 const fn=app.indexOf('function calculateTaxForCountry('),fnEnd=app.indexOf('\n    /**',fn);
 assert.ok(start>=0&&end>start&&fn>=0&&fnEnd>fn);
-const ctx=vm.createContext({});
+const ctx=vm.createContext({formatCurrency:value=>String(value),formatActiveDisplay:value=>String(value)});
 new vm.Script(app.slice(start,end)+'\n'+app.slice(fn,fnEnd)).runInContext(ctx,{timeout:1000});
 const samples=[[12570,0],[50270,7540],[100000,27432],[110000,33432],[125140,42516],[130000,44703],[150000,53703]];
 for(const [gross,tax] of samples)test('UK ordinary income '+gross,()=>{
