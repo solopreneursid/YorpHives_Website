@@ -14,10 +14,16 @@ test('integrated frontend builds from canonical sources and preserves original l
  const rules=read('staging/integrated/generated/country-rules.js');
  const app=read('staging/integrated/application.js');
  assert.equal(engine.trim(),original.slice(i,j).trim());
- assert.equal(app,original.slice(0,i)+original.slice(k));
+ const end=original.indexOf('\n    let activeModuleTab',k);
+ assert.equal(app,original.slice(0,i)+original.slice(end));
  const old=JSON.parse(original.slice(j,k).trim().replace(/^const COUNTRY_TAX_CONFIGS = /,'').replace(/;$/,'').replace(/\b(IN|US|GB):\s*\{/g,'"$1": {'));
  const current=JSON.parse(rules.trim().replace(/^const COUNTRY_TAX_CONFIGS = /,'').replace(/;$/,''));
- assert.deepEqual(current,old);
+ const start=original.indexOf('const TAX_RULES');
+ const stop=original.indexOf('\n    };',start)+7;
+ const sandbox=vm.createContext({});
+ const fallback=new vm.Script(original.slice(start,stop)+'\nconst COUNTRY_TAX_CONFIGS={};\n'+original.slice(k,end)+'\nJSON.stringify(COUNTRY_TAX_CONFIGS);').runInContext(sandbox,{timeout:1000});
+ assert.deepEqual(current,{...old,...JSON.parse(fallback)});
+ assert.equal(Object.keys(current).length,8);
  for(const s of [engine,rules,app])new vm.Script(s);
  const h=read('staging/integrated/index.html');
  assert.equal(new Set([...h.matchAll(/data-module-tab="([^"]+)"/g)].map(m=>m[1])).size,38);
