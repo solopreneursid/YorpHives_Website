@@ -10,7 +10,14 @@ test('generated Worker routes and validation',async()=>{
  const worker=(await import(pathToFileURL(join(temp,'worker.mjs')).href)).default;
  const call=(path,options)=>worker.fetch(new Request('https://preview.example'+path,options));
  const health=await call('/health');assert.equal(health.status,200);assert.equal((await health.json()).taxRulesVerified,false);
- const html=await call('/');assert.equal(html.status,200);assert.match(html.headers.get('x-robots-tag'),/noindex/);assert.match(await html.text(),/data-module-tab/);
+ const html=await call('/');assert.equal(html.status,200);assert.match(html.headers.get('x-robots-tag'),/noindex/);const simpleHtml=await html.text();assert.match(simpleHtml,/Taxes made easier/);assert.doesNotMatch(simpleHtml,/https:\/\//);
+ assert.match(html.headers.get('content-security-policy'),/script-src 'self';/);assert.doesNotMatch(html.headers.get('content-security-policy'),/tailwindcss/);
+ assert.match(await (await call('/advanced-preview')).text(),/data-module-tab/);
+ for(const path of ['/assets/simple.css','/assets/simple.mjs',...['country','primitives','us-filing-statuses','IN','US','GB','manifest','scenarios'].map(n=>'/assets/engine/'+n+'.mjs')]){
+  const asset=await call(path);assert.equal(asset.status,200,path);assert.doesNotMatch(asset.headers.get('content-security-policy'),/tailwindcss/);
+  if(path.endsWith('.mjs'))assert.match(asset.headers.get('content-type'),/application\/javascript/);
+ }
+ assert.equal(await (await call('/',{method:'HEAD'})).text(),'');
  assert.equal((await call('/assets/country-rules.js')).status,200);
  const vaultAsset=await call('/assets/browser-vault.mjs');assert.equal(vaultAsset.status,200);assert.match(vaultAsset.headers.get('content-type'),/application\/javascript/);assert.match(await vaultAsset.text(),/openEncryptedVault/);
  const cryptoAsset=await call('/assets/secure-records.mjs');assert.equal(cryptoAsset.status,200);assert.match(await cryptoAsset.text(),/AES-256-GCM/);
