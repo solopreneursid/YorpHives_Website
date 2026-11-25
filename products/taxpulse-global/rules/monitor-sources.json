@@ -278,5 +278,25 @@
     ],
     "url": "https://www.cpf.gov.sg/employer/employer-obligations/how-much-cpf-contributions-to-pay",
     "kind": "change-discovery"
+  },
+  {
+    "id": "GB-NI-2026",
+    "country": "GB",
+    "jurisdiction": "GB",
+    "topics": [
+      "payroll"
+    ],
+    "url": "https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "AU-enacted-rate-schedule",
+    "country": "AU",
+    "jurisdiction": "AU",
+    "topics": [
+      "income-tax"
+    ],
+    "url": "https://www.legislation.gov.au/C2004A03348/latest/text",
+    "kind": "change-discovery"
   }
 ]
