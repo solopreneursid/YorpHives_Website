@@ -6,12 +6,12 @@ const profile={country:'IN',taxYear:'2026',residentIndividual:true,ageGroup:'und
 // At 12 lakh taxable: 20,000 + 40,000 less 60,000 rebate.
 // At 12.1 lakh: marginal relief limits pre-cess tax to 10,000.
 // At 16 lakh: 20,000 + 40,000 + 60,000, plus 4% cess.
-for(const [grossSalary,expected] of [[1275000,0],[1285000,10400],[1675000,124800],[2475000,312000],[5075000,1201200],[5085000,1211600]])test('India new regime gross '+grossSalary,()=>{
+for(const [grossSalary,expected] of [[1275000,0],[1285000,10400],[1675000,124800],[2475000,312000],[5075000,1123200],[5085000,1133600]])test('India new regime gross '+grossSalary,()=>{
  const r=compareIndiaRegimes({...profile,grossSalary}).newRegime;
  assert.equal(r.incomeTax,expected);
 });
 test('old regime age exemptions and rebate',()=>{
- for(const [ageGroup,expected] of [['under-60',33800],['60-79',31200],['80-plus',20800]]){
+ for(const [ageGroup,expected] of [['under-60',44200],['60-79',41600],['80-plus',31200]]){
  const r=compareIndiaRegimes({...profile,ageGroup,grossSalary:700000}).oldRegime;
  assert.equal(r.incomeTax,expected);
  }
