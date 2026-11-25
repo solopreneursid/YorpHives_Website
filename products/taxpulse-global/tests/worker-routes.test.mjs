@@ -14,7 +14,7 @@ test('generated Worker routes and validation',async()=>{
  assert.match(html.headers.get('content-security-policy'),/script-src 'self';/);assert.doesNotMatch(html.headers.get('content-security-policy'),/tailwindcss/);
  assert.equal((await call('/advanced-preview')).status,404);
  assert.equal((await call('/assets/application.js')).status,404);
- for(const path of ['/assets/simple.css','/assets/simple.mjs',...['country','primitives','us-filing-statuses','IN','US','GB','manifest','scenarios','taxable-income','proof','fingerprint'].map(n=>'/assets/engine/'+n+'.mjs')]){
+ for(const path of ['/assets/simple.css','/assets/simple.mjs',...['country','primitives','us-filing-statuses','IN','US','GB','manifest','scenarios','taxable-income','proof','fingerprint','reverse-salary'].map(n=>'/assets/engine/'+n+'.mjs')]){
   const asset=await call(path);assert.equal(asset.status,200,path);assert.doesNotMatch(asset.headers.get('content-security-policy'),/tailwindcss/);
   if(path.endsWith('.mjs'))assert.match(asset.headers.get('content-type'),/application\/javascript/);
  }
