@@ -2,46 +2,191 @@
   {
     "id": "US-0",
     "country": "US",
-    "url": "https://www.irs.gov/irb/2025-45_IRB"
+    "url": "https://www.irs.gov/irb/2025-45_IRB",
+    "jurisdiction": "US",
+    "topics": [
+      "income-tax",
+      "investment-tax"
+    ],
+    "kind": "change-discovery"
   },
   {
     "id": "US-1",
     "country": "US",
-    "url": "https://www.ssa.gov/OACT/COLA/cbb.html"
+    "url": "https://www.ssa.gov/OACT/COLA/cbb.html",
+    "jurisdiction": "US",
+    "topics": [
+      "payroll"
+    ],
+    "kind": "change-discovery"
   },
   {
     "id": "GB-2",
     "country": "GB",
-    "url": "https://www.gov.uk/income-tax-rates"
+    "url": "https://www.gov.uk/income-tax-rates",
+    "jurisdiction": "GB",
+    "topics": [
+      "income-tax"
+    ],
+    "kind": "change-discovery"
   },
   {
     "id": "IN-3",
     "country": "IN",
-    "url": "https://www.incometax.gov.in/"
+    "url": "https://www.incometax.gov.in/",
+    "jurisdiction": "IN",
+    "topics": [
+      "income-tax",
+      "investment-tax"
+    ],
+    "kind": "change-discovery"
   },
   {
     "id": "DE-4",
     "country": "DE",
-    "url": "https://www.bundesfinanzministerium.de/"
+    "url": "https://www.bundesfinanzministerium.de/",
+    "jurisdiction": "DE",
+    "topics": [
+      "income-tax",
+      "payroll"
+    ],
+    "kind": "change-discovery"
   },
   {
     "id": "AE-5",
     "country": "AE",
-    "url": "https://tax.gov.ae/"
+    "url": "https://tax.gov.ae/",
+    "jurisdiction": "AE",
+    "topics": [
+      "business-tax"
+    ],
+    "kind": "change-discovery"
   },
   {
     "id": "CA-6",
     "country": "CA",
-    "url": "https://www.canada.ca/en/revenue-agency.html"
+    "url": "https://www.canada.ca/en/revenue-agency.html",
+    "jurisdiction": "CA",
+    "topics": [
+      "income-tax",
+      "payroll"
+    ],
+    "kind": "change-discovery"
   },
   {
     "id": "AU-7",
     "country": "AU",
-    "url": "https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents"
+    "url": "https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents",
+    "jurisdiction": "AU",
+    "topics": [
+      "income-tax"
+    ],
+    "kind": "change-discovery"
   },
   {
     "id": "SG-8",
     "country": "SG",
-    "url": "https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates"
+    "url": "https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates",
+    "jurisdiction": "SG",
+    "topics": [
+      "income-tax"
+    ],
+    "kind": "change-discovery"
+  },
+  {
+    "id": "US-state-directory",
+    "country": "US",
+    "jurisdiction": "US",
+    "topics": [
+      "regional-tax",
+      "payroll"
+    ],
+    "url": "https://www.irs.gov/businesses/small-businesses-self-employed/state-government-websites",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "GB-SCT-bands",
+    "country": "GB",
+    "jurisdiction": "GB-SCT",
+    "topics": [
+      "regional-tax",
+      "income-tax"
+    ],
+    "url": "https://www.gov.scot/publications/scottish-income-tax-rates-and-bands/",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "CA-regional-brackets",
+    "country": "CA",
+    "jurisdiction": "CA",
+    "topics": [
+      "regional-tax",
+      "income-tax"
+    ],
+    "url": "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "CA-regional-directory",
+    "country": "CA",
+    "jurisdiction": "CA",
+    "topics": [
+      "regional-tax"
+    ],
+    "url": "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/provincial-territorial-tax-credits-individuals.html",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "IN-OD-profession",
+    "country": "IN",
+    "jurisdiction": "IN-OD",
+    "topics": [
+      "payroll"
+    ],
+    "url": "https://finance.odisha.gov.in/en/notification/tax-profession",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "IN-TS-profession",
+    "country": "IN",
+    "jurisdiction": "IN-TS",
+    "topics": [
+      "payroll"
+    ],
+    "url": "https://tgct.gov.in/tgportal/HelpDocuments/PTRegistrationHelp.aspx",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "IN-MN-profession",
+    "country": "IN",
+    "jurisdiction": "IN-MN",
+    "topics": [
+      "payroll"
+    ],
+    "url": "https://www.manipurtaxes.gov.in/en/professional-tax/rules/",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "AU-state-directory",
+    "country": "AU",
+    "jurisdiction": "AU",
+    "topics": [
+      "regional-tax",
+      "payroll",
+      "business-tax"
+    ],
+    "url": "https://www.ato.gov.au/businesses-and-organisations/not-for-profit-organisations/your-organisation/in-detail/income-tax/mutuality-and-taxable-income-for-not-for-profits/other-issues/state-and-territory-requirements",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "AE-tax-directory",
+    "country": "AE",
+    "jurisdiction": "AE",
+    "topics": [
+      "income-tax",
+      "business-tax"
+    ],
+    "url": "https://u.ae/information-and-services/finance-and-investment/taxation",
+    "kind": "change-discovery"
   }
 ]
