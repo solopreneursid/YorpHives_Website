@@ -104,7 +104,7 @@ test('vault fails closed for unavailable storage, invalid IDs and tampered ciphe
   await assert.rejects(vault.read('../inject', 'an-example-passphrase-for-unit-tests'), /Invalid record ID/);
   const saved = await vault.save({ amount: 999 }, 'an-example-passphrase-for-unit-tests');
   const stored = local.rows.get(saved.id);
-  stored.envelope.ciphertext = '0' + stored.envelope.ciphertext.slice(1);
+  stored.envelope.ciphertext = (stored.envelope.ciphertext[0] === '0' ? '1' : '0') + stored.envelope.ciphertext.slice(1);
   await assert.rejects(vault.read(saved.id, 'an-example-passphrase-for-unit-tests'));
   vault.close();
 });
