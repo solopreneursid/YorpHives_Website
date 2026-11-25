@@ -1,8 +1,8 @@
 import {calculateSalaryRemainder} from './taxable-income.mjs';
-export function compareSalaryOffers(input){
+export function compareSalaryOffers(input,ruleContext={}){
  if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length!==2||!Object.hasOwn(input,'first')||!Object.hasOwn(input,'second'))throw new TypeError('Provide two salary offers');
  const {first,second}=input;
- const a=calculateSalaryRemainder(first),b=calculateSalaryRemainder(second);
+ const a=calculateSalaryRemainder(first,ruleContext),b=calculateSalaryRemainder(second,ruleContext);
  if(a.country!==b.country||a.region!==b.region||a.currency!==b.currency||a.taxYearLabel!==b.taxYearLabel)throw new RangeError('Compare offers in the same tax region and period');
  const diff=(x,y)=>(Math.round(y*100)-Math.round(x*100))/100;
  const annualDifference=diff(a.annualRemainder,b.annualRemainder);
