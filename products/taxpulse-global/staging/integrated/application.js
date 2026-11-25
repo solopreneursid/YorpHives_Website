@@ -3498,31 +3498,13 @@ Restricted Stock Units (RSU Vest): £20,000`
       const qtWithheld = Math.max(0, parseFloat(document.getElementById('qtTdsAlreadyWithheldInput')?.value) || 0);
       const qtPrior = Math.max(0, parseFloat(document.getElementById('qtPriorYearTaxInput')?.value) || 0);
 
-      const netUnwithheld = Math.max(0, qtTotalTax - qtWithheld);
-      const safeHarbor90 = Math.max(0, (qtTotalTax * 0.90) - qtWithheld);
-      const safeHarborPrior = Math.max(0, qtPrior - qtWithheld);
-      const safeHarborTarget = code === 'US' ? Math.min(safeHarbor90, safeHarborPrior) : safeHarbor90;
-      const annualPenaltyRisk = netUnwithheld * (code === 'IN' ? 0.12 : 0.08);
-
+      const allocation = TaxPulseAdvanced.calculate({module:'quarterly_tax',parameters:{annualEstimatedTax:Math.min(qtTotalTax,1e9),alreadyPaid:Math.min(qtWithheld,1e9),remainingQuarters:4}}).result;
+      const netUnwithheld = allocation.remaining;
       document.getElementById('qtNetUnwithheldVal').textContent = formatActiveDisplay(netUnwithheld, countryRule);
-      document.getElementById('qtThresholdCheckSub').textContent = code === 'IN'
-        ? (netUnwithheld >= 10000 ? 'Mandatory Advance Tax (>= ₹10,000 u/s 208)' : 'Exempt from Advance Tax (< ₹10,000)')
-        : (netUnwithheld >= 1000 ? 'Quarterly Form 1040-ES Required (>= $1,000)' : 'Exempt from Quarterly Filing (< $1,000)');
-      document.getElementById('qtSafeHarborVal').textContent = formatActiveDisplay(safeHarborTarget, countryRule);
-      document.getElementById('qtPenaltyRiskVal').textContent = `${formatActiveDisplay(annualPenaltyRisk, countryRule)} / yr`;
-
-      const scheduleQuarters = code === 'IN' ? [
-        { q: 'Q1 Installment (By 15 June)', cumPct: 0.15, slicePct: 0.15 },
-        { q: 'Q2 Installment (By 15 Sept)', cumPct: 0.45, slicePct: 0.30 },
-        { q: 'Q3 Installment (By 15 Dec)', cumPct: 0.75, slicePct: 0.30 },
-        { q: 'Q4 Final (By 15 March)', cumPct: 1.00, slicePct: 0.25 }
-      ] : [
-        { q: 'Q1 Payment (By 15 April)', cumPct: 0.25, slicePct: 0.25 },
-        { q: 'Q2 Payment (By 15 June)', cumPct: 0.50, slicePct: 0.25 },
-        { q: 'Q3 Payment (By 15 Sept)', cumPct: 0.75, slicePct: 0.25 },
-        { q: 'Q4 Payment (By 15 Jan)', cumPct: 1.00, slicePct: 0.25 }
-      ];
-
+      document.getElementById('qtThresholdCheckSub').textContent = 'Illustrative allocation — statutory filing requirements not verified';
+      document.getElementById('qtSafeHarborVal').textContent = 'Not verified';
+      document.getElementById('qtPenaltyRiskVal').textContent = 'Not verified';
+      const scheduleQuarters = Array.from({length:4},(_,i)=>({q:'Illustrative payment '+(i+1),cumPct:(i+1)/4,slicePct:.25}));
       const qtGrid = document.getElementById('qtScheduleCardsGrid');
       if (qtGrid) {
         qtGrid.innerHTML = scheduleQuarters.map(s => `
@@ -5119,56 +5101,15 @@ Warm regards,
       const flUsd = Math.max(0, parseFloat(document.getElementById('flInvoiceUsdInput')?.value) || 4500);
       const flInr = convertBetweenCurrencies(flUsd, 'USD', 'INR');
 
-      const exportInvoiceText = `======================================================================
-EXPORT TAX INVOICE (ZERO-RATED SUPPLY UNDER GST LUT)
-======================================================================
-Exporter / Service Provider : ${flName}
-Tax ID & LUT Reference      : ${flTaxId}
-Jurisdiction                : ${countryRule.name} (${countryRule.currency.code})
-Invoice No. & Date          : EXP-2026-0117 | Date: 2026-11-17
-----------------------------------------------------------------------
-Billed To (Foreign Client)  : ${flClient}
-Place of Supply             : Outside India (Export of Services — Sec 2(6) IGST Act)
-RBI Purpose & SAC Code      : ${flPurpose}
-----------------------------------------------------------------------
-Description of Services                                    Amount (USD)
-----------------------------------------------------------------------
-1. Software Architecture, AI Engineering & Consulting     $${flUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-----------------------------------------------------------------------
-IGST / VAT (0% Export Under LUT)                          $0.00
-TOTAL PAYABLE IN USD                                      $${flUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-Equivalent Value in Local Currency (INR @ ${EXCHANGE_RATES_TO_USD.INR})       ${formatCurrency(flInr, 'INR')}
-----------------------------------------------------------------------
-STATUTORY DECLARATION:
-"Supply meant for export under Letter of Undertaking (LUT) without
-payment of integrated tax (IGST)."
-======================================================================`;
-
-      const w8BenText = `======================================================================
-CERTIFICATE OF FOREIGN STATUS OF BENEFICIAL OWNER FOR US TAX
-WITHHOLDING AND REPORTING (IRS FORM W-8BEN SUMMARY DECLARATION)
-======================================================================
-Part I: Identification of Beneficial Owner
-1. Name of Individual / Provider : ${flName}
-2. Country of Citizenship/Res.   : ${countryRule.name} (${code})
-3. Foreign Tax Identifying No.   : ${flTaxId.split('|')[0].trim()}
-4. Client / Withholding Agent    : ${flClient}
-
-Part II: Claim of Tax Treaty Benefits & Foreign-Source Service Status
-- The beneficial owner is a tax resident of ${countryRule.name} within the
-  meaning of the income tax treaty between the United States and ${countryRule.name}.
-- All software/consulting services are performed 100% outside the
-  United States (Foreign-Source Income under IRC Sec 862(a)(3)).
-- Applicable US Withholding Tax Rate: 0.0% (Exempt from 24% Backup WHT).
-
-Part III: Certification
-I certify under penalties of perjury that I am not a U.S. person and
-the income to which this form relates is not effectively connected with
-the conduct of a trade or business in the United States.
-
-Signed Electronically: ${flName} | Date: 2026-11-17
-======================================================================`;
-
+      const billing = TaxPulseAdvanced.calculate({module:'freelancer_billing',parameters:{subtotal:Math.min(flUsd,1e9),assumedIndirectTaxRate:0,assumedWithholdingRate:0}}).result;
+      const exportInvoiceText = `UNSIGNED SAMPLE — NOT A TAX INVOICE
+Provider: ${flName}
+Client: ${flClient}
+Scenario subtotal: USD ${billing.subtotal.toFixed(2)}
+Assumed tax and withholding: zero for illustration only.
+Illustrative total: USD ${billing.invoiceTotal.toFixed(2)}
+GST/LUT eligibility and actual tax treatment require independent verification.`;
+      const w8BenText = 'W-8BEN preparation checklist (not a completed form): verify beneficial ownership, US tax status, tax residence, treaty eligibility and withholding with a qualified adviser. No certification or signature has been generated.';
       const invPre = document.getElementById('flExportInvoicePre');
       if (invPre) invPre.textContent = exportInvoiceText;
       const w8Pre = document.getElementById('flW8BenPre');
@@ -5194,19 +5135,20 @@ Signed Electronically: ${flName} | Date: 2026-11-17
       const extraPossibleSavings = Math.max(0, withShieldSim.finalIncomeTax - fullCapSim.finalIncomeTax);
 
       document.getElementById('tvCompletionBadge').textContent = `${Math.round(shieldPct)}% Shield Unlocked`;
-      document.getElementById('tvProgressLabel').textContent = `Logged Deductions: ${formatActiveDisplay(totalLoggedDeductions, countryRule)} of ${formatActiveDisplay(recommendedCap, countryRule)} Recommended Cap`;
-      document.getElementById('tvTaxSavedCashLabel').textContent = `Cash Tax Saved So Far: ${formatActiveDisplay(cashSavedSoFar, countryRule)}`;
+      document.getElementById('tvProgressLabel').textContent = `Logged Deductions: ${formatActiveDisplay(totalLoggedDeductions, countryRule)} of ${formatActiveDisplay(recommendedCap, countryRule)} Assumed Planning Limit`;
+      document.getElementById('tvTaxSavedCashLabel').textContent = `Illustrative Tax Difference: ${formatActiveDisplay(cashSavedSoFar, countryRule)}`;
       document.getElementById('tvProgressBarFill').style.width = `${shieldPct.toFixed(1)}%`;
 
-      const remGap = Math.max(0, recommendedCap - totalLoggedDeductions);
+      const remGap = TaxPulseAdvanced.calculate({module:'tax_vault',parameters:{categories:[{paid:Math.min(totalLoggedDeductions,1e9),assumedLimit:recommendedCap}]}}).result.categories[0].remainingLimit;
       document.getElementById('tvRemainingOpportunityBox').textContent = remGap > 0
-        ? `💡 Actionable Tip: You still have ${formatActiveDisplay(remGap, countryRule)} of unused tax-saving room for 2026. Investing that amount before the end of the tax year can save you an additional ${formatActiveDisplay(extraPossibleSavings, countryRule)} in income tax!`
-        : `🎉 Congratulations! You have unlocked 100% of your recommended ${formatActiveDisplay(recommendedCap, countryRule)} tax-saving shield for 2026!`;
+        ? `💡 Actionable Tip: You still have ${formatActiveDisplay(remGap, countryRule)} below the assumed planning limit. The model estimates a possible tax difference of ${formatActiveDisplay(extraPossibleSavings, countryRule)} in income tax!`
+        : `🎉 Congratulations! You have unlocked 100% of your recommended ${formatActiveDisplay(recommendedCap, countryRule)} illustrative planning target. Eligibility is not verified.`;
 
       // 4. Module 30: B2B White-Label Studio
       const wlName = (document.getElementById('wlFirmNameInput')?.value || 'Apex Chartered Accountants').trim();
       const wlTagline = (document.getElementById('wlTaglineInput')?.value || '').trim();
-      const wlUrl = (document.getElementById('wlBookingUrlInput')?.value || 'https://calendly.com').trim();
+      let wlUrl = '#';
+      try { const candidate = new URL(document.getElementById('wlBookingUrlInput')?.value || ''); if(candidate.protocol === 'https:' && !candidate.username && !candidate.password) wlUrl = candidate.href; } catch {}
 
       const baseUrl = window.location.href.split('?')[0];
       const wlParams = new URLSearchParams({
@@ -5266,12 +5208,12 @@ Signed Electronically: ${flName} | Date: 2026-11-17
 
       document.getElementById('copyExportInvoiceBtn').addEventListener('click', () => {
         fallbackCopy(document.getElementById('flExportInvoicePre')?.textContent || '');
-        showToast('Copied Zero-Rated GST LUT Export Invoice!');
+        showToast('Copied unsigned sample invoice');
       });
 
       document.getElementById('copyW8BenCertificateBtn').addEventListener('click', () => {
         fallbackCopy(document.getElementById('flW8BenPre')?.textContent || '');
-        showToast('Copied Pre-Filled IRS Form W-8BEN Certificate!');
+        showToast('Copied W-8BEN preparation checklist');
       });
 
       // Bind Module 29 inputs
