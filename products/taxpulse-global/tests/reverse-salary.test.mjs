@@ -36,6 +36,23 @@ test('automatic search finds exact UAE target without manual bounds',()=>{
 });
 test('automatic search distinguishes limit from impossibility',()=>{
  const profile={country:'US',region:'TX',taxYear:'2026',scopeConfirmed:true};
- assert.equal(automaticReverseSalary({profile,target:180000,period:'annual'}).searchComplete,false);
+ const result=automaticReverseSalary({profile,target:180000,period:'annual'});
+ assert.equal(result.searchComplete,true);assert.equal(result.found,true);
+ assert.ok(result.achieved>=180000);
+ assert.ok(calculateSalaryRemainder({...profile,pay:result.requiredPay-1}).annualRemainder<180000);
  assert.equal(automaticReverseSalary({profile,target:300000,period:'annual'}).searchComplete,true);
+});
+
+test('automatic search preserves incomplete status where no safe tighter bound exists',()=>{
+ const profile={country:'AU',region:'AU',taxYear:'2026',scopeConfirmed:true};
+ const result=automaticReverseSalary({profile,target:200000,period:'annual'});
+ assert.equal(result.found,false);assert.equal(result.searchComplete,false);
+});
+test('automatic search handles fixed UAE premiums at both tiers',()=>{
+ for(const basic of [16000,16000.01]){
+  const profile={country:'AE',region:'AE',taxYear:'2026',scopeConfirmed:true,monthlyBasicSalary:basic};
+  const result=automaticReverseSalary({profile,target:900000,period:'monthly'});
+  assert.equal(result.requiredPay,basic<=16000?900006:900011);
+  assert.equal(result.searchComplete,true);
+ }
 });
