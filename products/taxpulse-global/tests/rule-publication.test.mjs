@@ -1,3 +1,4 @@
+import {nationalEvidenceRules} from '../engine/national-registry.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
@@ -8,6 +9,7 @@ import {runScheduledPublication} from '../engine/scheduled-publication.mjs';
 import {loadRuntimeRules} from '../engine/runtime-rules.mjs';
 const read=p=>JSON.parse(readFileSync(new URL('../rules/'+p,import.meta.url)));
 const regional=read('regional-versions.json'),indiaSalary=read('india-salary-versions.json'),payroll=read('payroll-versions.json');
+const national=read('national-investment-2026.json');
 const now=new Date('2026-11-25T12:00:00.000Z'),engineFingerprint='a'.repeat(64);
 const hex=b=>Buffer.from(b).toString('hex');
 const digest=async p=>hex(await crypto.subtle.digest('SHA-256',snapshotBytes(p)));
@@ -15,7 +17,7 @@ const key=await crypto.subtle.generateKey('Ed25519',true,['sign','verify']);
 const publicKeyHex=hex(await crypto.subtle.exportKey('raw',key.publicKey)),options={publicKeyHex,engineFingerprint,now};
 function dbAdapter(db){return {prepare(sql){const s=db.prepare(sql);let args=[];return {bind(...a){args=a;return this;},async first(){return s.get(...args);},async run(){return {meta:{changes:Number(s.run(...args).changes)}};}};}};}
 async function pack(sequence){
- const p={schemaVersion:1,sequence,engineFingerprint,issuedAt:'2026-11-25T00:00:00.000Z',expiresAt:'2026-11-30T00:00:00.000Z',mode:'preview',regional:structuredClone(regional),indiaSalary:structuredClone(indiaSalary),payroll:structuredClone(payroll),evidence:[]};
+ const p={schemaVersion:2,sequence,engineFingerprint,issuedAt:'2026-11-25T00:00:00.000Z',expiresAt:'2026-11-30T00:00:00.000Z',mode:'preview',regional:structuredClone(regional),indiaSalary:structuredClone(indiaSalary),payroll:structuredClone(payroll),national:structuredClone(national),evidence:[]};
  const fixtures=[];
  const add=(r,method,input,path,expected)=>fixtures.push({version:r.version,id:r.version+'-'+fixtures.length,method,input,path,expected});
  for(const r of p.regional.versions){const [country,region]=r.jurisdiction.split('-');for(const income of [0,1000])add(r,'regional-tax',{country,region,taxYear:'2026',income,scopeConfirmed:true},['regionalTax'],country==='GB'?0:income*r.rates[0]/10000);}
@@ -29,7 +31,16 @@ async function pack(sequence){
    for(const [income,expected] of values)add(r,'employee-contributions',{country,taxYear:'2026',income,scopeConfirmed:true,...(country==='SG'?{ageBand:'55-or-under'}:{})},['totalEmployeeContribution'],expected);
   }
  }
- for(const r of [...p.regional.versions,...p.indiaSalary.versions,...p.payroll.versions])p.evidence.push({version:r.version,sourceUrl:r.sourceUrls[0],sourceDigest:'b'.repeat(64),reviewedAt:'2026-11-24T00:00:00.000Z',fixtureDigest:await digest(fixtures.filter(f=>f.version===r.version))});
+ const nationalEvidence=await nationalEvidenceRules(p.national);
+ for(const r of nationalEvidence){
+  const country=r.jurisdiction;
+  if(r.component==='national-assessment'){
+   if(country==='US'){for(const [pay,expected] of [[16100,0],[26100,1000]])add(r,'salary-remainder',{country,region:'TX',taxYear:'2026',pay,scopeConfirmed:true},['incomeTax'],expected);}
+   else if(country==='AE'){for(const salaryIncome of [1000,100000])add(r,'taxable-income',{country,taxYear:'2026',salaryIncome,employeeWagesOnly:true},['incomeTax'],0);}
+   else {const rows={AU:[[100000,20520],[110000,23520]],CA:[[10000,0],[20000,496.72]],SG:[[10000,0],[30000,200]],DE:[[1000,0],[12348,0]]}[country];for(const [taxableIncome,expected] of rows)add(r,'taxable-income',{country,taxYear:'2026',taxableIncome,...(country==='DE'?{assessment:'individual'}:country==='CA'?{netIncome:taxableIncome,fullYearResident:true}:{residentEligible:true})},['incomeTax'],expected);}
+  }else{for(const saleProceeds of [1000,10000]){const input={country,taxYear:'2026',acquired:'2020-01-01',disposed:'2026-05-01',saleProceeds,adjustedBasis:0,eligibleLosses:0,otherTaxableIncome:country==='IN'?1500000:0,scopeConfirmed:true,...(country==='US'?{filingStatus:'single'}:country==='IN'?{assetType:'listed-equity'}:{})};add(r,'capital-gain',input,['estimatedGainTax'],country==='GB'?Math.max(0,saleProceeds-3000)*.18:0);}}
+ }
+ for(const r of [...p.regional.versions,...p.indiaSalary.versions,...p.payroll.versions,...nationalEvidence])p.evidence.push({version:r.version,sourceUrl:r.sourceUrls[0],sourceDigest:'b'.repeat(64),reviewedAt:'2026-11-24T00:00:00.000Z',fixtureDigest:await digest(fixtures.filter(f=>f.version===r.version))});
  return {envelope:{payload:p,digest:await digest(p),signature:hex(await crypto.subtle.sign('Ed25519',key.privateKey,snapshotBytes(p)))},fixtures};
 }
 test('atomic publication, fixture rejection, replay, emergency block and forward recovery',async()=>{
