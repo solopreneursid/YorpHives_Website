@@ -248,3 +248,42 @@ export function calculateCapitalGain(input){
  if(realized<0n)warnings.push('This disposal has a loss. No tax benefit, refund or carryforward is calculated.');
  return {country,taxYear:'2026',taxYearLabel:period.join(' to '),currency:country==='US'?'USD':country==='GB'?'GBP':'INR',sampleOnly:true,taxRulesVerified:false,ruleId:country+'-2026-investment-disposal-v2',assetType,acquired,disposed,holding,holdingYears:holding==='not-rate-determining'?null:holdingYears,realizedGain:cgOut(realized),eligibleLossesApplied:cgOut(loss),netPositiveGain:cgOut(net),allowanceApplied:cgOut(allowance),taxableGain:cgOut(net-allowance),otherTaxableIncome:cgOut(other),brackets:rows,taxBeforeCess:cgOut(base),cessAmount:cgOut(cess),estimatedGainTax:cgOut(total),sourceUrls,warnings};
 }
+
+
+// Regional tax components. Canada and US inputs are jurisdiction-specific taxable income,
+// not federal taxable income or gross salary. UK takes ordinary salary only.
+const CA_REGIONAL={"AB":["Alberta",[61200,154259,185111,246813,370220],[800,1000,1200,1300,1400,1500]],"BC":["British Columbia",[50363,100728,115648,140430,190405,265545],[560,770,1050,1229,1470,1680,2050]],"MB":["Manitoba",[47564,101200],[1080,1275,1740]],"NB":["New Brunswick",[52333,104666,193861],[940,1400,1600,1950]],"NL":["Newfoundland and Labrador",[44678,89354,159528,223340,285319,570638,1141275],[870,1450,1580,1780,1980,2080,2130,2180]],"NT":["Northwest Territories",[53003,106009,172346],[590,860,1220,1405]],"NS":["Nova Scotia",[30995,61991,97417,157124],[879,1495,1667,1750,2100]],"NU":["Nunavut",[55801,111602,181439],[400,700,900,1150]],"ON":["Ontario",[53891,107785,150000,220000],[505,915,1116,1216,1316]],"PE":["Prince Edward Island",[33928,65820,106890,142520,200000],[950,1347,1660,1762,1900,2000]],"SK":["Saskatchewan",[54532,155805],[1050,1250,1450]],"YT":["Yukon",[58523,117045,181440,500000],[640,900,1090,1280,1500]]};
+const US_REGIONAL={"PA":["Pennsylvania",307,"https://www.pa.gov/agencies/revenue/resources/tax-rates/personal-income-tax-rates"],"IL":["Illinois",495,"https://tax.illinois.gov/research/taxrates/income.html"],"TX":["Texas",0,"https://www.texas.gov/business-taxes/taxes"]};
+const GB_REGIONAL={SCT:['Scotland',[3967,16956,31092,62430,125140],[1900,2000,2100,4200,4500,4800]],RUK:['England, Wales and Northern Ireland',[37700,125140],[2000,4000,4500]]};
+const REGIONAL_CATALOG=Object.freeze([
+ ...Object.entries(US_REGIONAL).map(([code,[name]])=>({country:'US',region:code,name,currency:'USD',inputBasis:code==='TX'?'employee-wages':'state-taxable-income',resultBasis:'state-tax-before-credits'})),
+ ...Object.entries(CA_REGIONAL).map(([code,[name]])=>({country:'CA',region:code,name,currency:'CAD',inputBasis:'provincial-taxable-income',resultBasis:'basic-provincial-tax-before-adjustments'})),
+ ...Object.entries(GB_REGIONAL).map(([code,[name]])=>({country:'GB',region:code,name,currency:'GBP',inputBasis:'ordinary-salary',resultBasis:'regional-uk-income-tax'}))
+]);
+export function regionalTaxCatalog(){return REGIONAL_CATALOG.map(item=>({...item}));}
+export function calculateRegionalTax(input){
+ const keys=['country','region','taxYear','income','scopeConfirmed'];
+ if(!input||typeof input!=='object'||Array.isArray(input)||keys.some(k=>!Object.hasOwn(input,k))||Object.keys(input).some(k=>!keys.includes(k))||input.taxYear!=='2026'||input.scopeConfirmed!==true)throw new TypeError('Unsupported regional example');
+ const config=REGIONAL_CATALOG.find(x=>x.country===input.country&&x.region===input.region);
+ if(!config)throw new TypeError('Region not supported');
+ const gross=cgMoney(input.income);
+ let taxable=gross,personalAllowance=0n,bounds,rates,sources,warnings;
+ if(config.country==='US'){
+  const [,rate,source]=US_REGIONAL[config.region];bounds=[];rates=[rate];sources=[source];
+  warnings=[config.region==='TX'?'Texas does not levy state personal income tax. This is not a zero total tax or take-home estimate.':'State tax on caller-provided state taxable income only, before credits and tax forgiveness. Do not substitute federal taxable income or gross wages.', 'Excludes federal income tax, payroll, local taxes, other states and other obligations.'];
+ }else if(config.country==='CA'){
+  [,bounds,rates]=CA_REGIONAL[config.region];sources=["https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"];
+  warnings=['Basic provincial or territorial tax before personal credits, surtaxes, tax reductions, health premiums and other adjustments. Not the final amount payable. Excludes federal tax, CPP/QPP and EI. Confirm jurisdiction of residence on December 31 and correct taxable income. Quebec is not supported.'];
+ }else{
+  [,bounds,rates]=GB_REGIONAL[config.region];sources=["https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027","https://www.gov.uk/income-tax-rates"];
+  // Salary is the only income and adjusted net income equals gross salary.
+  // Round the allowance reduction down to whole pounds (input accepts whole pounds only).
+  if(gross%100n!==0n)throw new RangeError('UK salary must be whole pounds');
+  const reduction=maxBig(0n,(gross/100n-100000n)/2n)*100n;
+  personalAllowance=minBig(gross,maxBig(0n,1257000n-reduction));
+  taxable=gross-personalAllowance;
+  warnings=['Ordinary annual salary only; assumes eligibility for standard personal allowance and no other income or adjustments to adjusted net income. No savings, dividends, pension contributions, benefits, reliefs, National Insurance or student loans. Scottish rates replace the rest-of-UK income tax rates; do not add both.'];
+ }
+ const result=cgSlices(0n,taxable,bounds,rates);
+ return {...config,taxYear:'2026',taxYearLabel:config.country==='GB'?'6 April 2026 to 5 April 2027':'Calendar year 2026',sampleOnly:true,taxRulesVerified:false,ruleId:config.country+'-'+config.region+'-2026-regional-v1',inputIncome:cgOut(gross),taxableIncome:cgOut(taxable),personalAllowanceApplied:config.country==='GB'?cgOut(personalAllowance):null,brackets:result.rows,regionalTax:cgOut(cgRound(result.total)),sourceUrls:sources,warnings};
+}

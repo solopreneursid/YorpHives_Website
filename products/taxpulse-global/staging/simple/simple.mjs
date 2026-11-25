@@ -1,6 +1,6 @@
 import { countryCalculate, catalog } from './engine/country.mjs';
 import { compareIncomeScenarios } from './engine/scenarios.mjs';
-import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain } from './engine/taxable-income.mjs';
+import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain, calculateRegionalTax, regionalTaxCatalog } from './engine/taxable-income.mjs';
 import { createReceipt, verifyReceipt } from './engine/proof.mjs';
 import engineFingerprint from './engine/fingerprint.mjs';
 import manifest from './engine/manifest.mjs';
@@ -246,3 +246,43 @@ $('gain-form').addEventListener('submit',event=>{
 });
 $('gain-download').addEventListener('click',()=>downloadReceipt(lastGain,$('gain-download'),$('gain-error')));
 gainChanged();
+
+const regionalOptions=regionalTaxCatalog();
+let lastRegional=null;
+function clearRegional(){lastRegional=null;$('regional-result').hidden=true;$('regional-error').textContent='';}
+function regionalCountryChanged(){
+ const country=$('regional-country').value;
+ $('regional-region').replaceChildren();
+ for(const r of regionalOptions.filter(x=>x.country===country)){
+  const option=document.createElement('option');option.value=r.region;option.textContent=r.name;$('regional-region').append(option);
+ }
+ regionalRegionChanged();
+}
+function regionalRegionChanged(){
+ const config=regionalOptions.find(x=>x.country===$('regional-country').value&&x.region===$('regional-region').value);
+ $('regional-income-label').textContent=(config.inputBasis==='ordinary-salary'?'Annual salary before tax':config.inputBasis==='employee-wages'?'Annual employee wages':config.inputBasis==='state-taxable-income'?'Annual state taxable income (not federal taxable income)':'Annual provincial or territorial taxable income')+' ('+config.currency+')';
+ $('regional-income').step=config.country==='GB'?'1':'0.01';
+ $('regional-period').textContent=config.country==='GB'?'6 April 2026 – 5 April 2027':'Calendar year 2026';
+ $('regional-scope').textContent=config.country==='GB'?'Ordinary salary only, eligible for the standard personal allowance, no other income, pension contributions or tax reliefs. Select the correct UK taxpayer region. Excludes National Insurance and other deductions.':config.country==='CA'?'Basic provincial tax before credits, surtaxes, health premiums and tax reductions. Confirm the province or territory of residence on December 31 and taxable income. Quebec not supported. This is not final provincial tax or total income tax.':config.region==='TX'?'Ordinary wages in Texas only. No state personal income tax; federal, payroll and other taxes still apply.':'Enter the correct state taxable income after any eligible state deductions. This is state tax before credits or forgiveness; excludes federal, local and payroll taxes.';
+ $('regional-income').value='';$('regional-confirm').value='';clearRegional();
+}
+$('regional-country').addEventListener('change',regionalCountryChanged);
+$('regional-region').addEventListener('change',regionalRegionChanged);
+$('regional-form').addEventListener('input',clearRegional);
+$('regional-form').addEventListener('submit',event=>{
+ event.preventDefault();clearRegional();
+ try{
+ const input={country:$('regional-country').value,region:$('regional-region').value,taxYear:'2026',income:$('regional-income').valueAsNumber,scopeConfirmed:$('regional-confirm').value==='yes'};
+ const r=calculateRegionalTax(input),f=v=>money(v,r.currency);
+ $('regional-tax-label').textContent=r.country==='CA'?'Basic provincial/territorial tax before adjustments':r.country==='GB'?'Income tax under selected UK rates':'State personal income tax before credits';
+ $('regional-tax').textContent=f(r.regionalTax);$('regional-taxable').textContent=f(r.taxableIncome);
+ $('regional-breakdown').replaceChildren();
+ const rows=[...(r.personalAllowanceApplied===null?[]:[['Personal allowance applied',r.personalAllowanceApplied]]),...r.brackets.map(b=>['Income taxed at '+percent(b.rate),b.taxableGain]),['Tax component',r.regionalTax]];
+ for(const [label,value] of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=f(value);$('regional-breakdown').append(dt,dd);}
+ $('regional-warnings').textContent=r.warnings.join(' ')+' Unverified example only.';
+ $('regional-source').replaceChildren();for(const url of r.sourceUrls){const a=document.createElement('a');a.href=url;a.rel='noopener noreferrer';a.target='_blank';a.textContent='Official tax source';$('regional-source').append(a,document.createElement('br'));}
+ lastRegional={kind:'regional-tax',input};$('regional-result').hidden=false;$('regional-result').focus();
+ }catch{$('regional-error').textContent='Check the amount and confirm the eligibility conditions. Unsupported regions and inputs cannot be calculated.';}
+});
+$('regional-download').addEventListener('click',()=>downloadReceipt(lastRegional,$('regional-download'),$('regional-error')));
+regionalCountryChanged();

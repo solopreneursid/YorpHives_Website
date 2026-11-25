@@ -1,5 +1,5 @@
 import { countryCalculate } from './country.mjs';
-import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain } from './taxable-income.mjs';
+import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain, calculateRegionalTax } from './taxable-income.mjs';
 
 const SCHEMA='taxpulse-example-receipt-v1';
 const HASH=/^[a-f0-9]{64}$/;
@@ -27,6 +27,7 @@ async function hash(value){
 }
 function calculate(kind,input){
  if(kind==='salary')return countryCalculate({...input,module:'pit'});
+ if(kind==='regional-tax')return calculateRegionalTax(input);
  if(kind==='capital-gain')return calculateCapitalGain(input);
  if(kind==='india-regimes')return compareIndiaRegimes(input);
  if(kind==='taxable-income')return assessTaxableIncome(input);

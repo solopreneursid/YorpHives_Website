@@ -1,0 +1,21 @@
+{
+  "reviewDate": "2026-11-25",
+  "status": "source-reviewed-preview-only",
+  "productionEnabled": false,
+  "sources": {
+    "US": {
+      "PA": "https://www.pa.gov/agencies/revenue/resources/tax-rates/personal-income-tax-rates",
+      "IL": "https://tax.illinois.gov/research/taxrates/income.html",
+      "TX": "https://www.texas.gov/business-taxes/taxes"
+    },
+    "CA": "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html",
+    "GB": [
+      "https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027",
+      "https://www.gov.uk/income-tax-rates",
+      "https://www.mygov.scot/scottish-income-tax/current-income-tax-rates"
+    ]
+  },
+  "scope": "Three US states; twelve Canadian provincial/territorial base schedules; Scotland and rest-of-UK ordinary salary with personal allowance taper. Before credits and adjustments for US and Canada. No Quebec, full state/province coverage, payroll, local taxes or combined take-home.",
+  "tests": "tests/regional-tax.test.mjs",
+  "limitations": "Official HTML tables transcribed; independent statutory review and official calculator differential tests pending."
+}

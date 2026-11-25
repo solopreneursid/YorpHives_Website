@@ -80,3 +80,7 @@ A separate scoped one-disposal engine is available in the simple workspace and P
 ## Property and digital assets
 
 The scoped investment endpoint now accepts assetType for all three jurisdictions (US/GB default to listed-equity for existing API callers). India property purchased on or after 23 July 2024 uses a 24-month holding boundary and no equity allowance; Indian VDA requires zero loss offsets and gross consideration minus acquisition cost only. US property scope is vacant non-depreciable investment land. UK residential property excludes main-home relief; UK crypto requires a caller-confirmed allowable pooled/matched basis. No portfolio matching, home relief, depreciation, TDS credit or grandfathered indexation is calculated. Sources and limitations are in rules/evidence/property-crypto-2026-review.json. Production flags unchanged.
+
+## Regional income-tax components
+
+POST /v1/regional/calculate and the local regional form provide three US states (PA, IL, TX), twelve Canadian provincial/territorial basic schedules (Quebec excluded), and Scottish/rest-of-UK ordinary salary income tax including personal allowance taper. US and Canadian results are components before credits and adjustments; the inputs are jurisdiction-specific taxable income, not assumed from federal income. No combined take-home calculation. Receipt replay and source references are included. Production verification flags remain unchanged.

@@ -45,6 +45,9 @@ test('generated Worker routes and validation',async()=>{
  assert.equal((await call('/v1/investment/capital-gain')).status,405);
  const crypto=await call('/v1/investment/capital-gain',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'IN',taxYear:'2026',assetType:'crypto',acquired:'2024-08-01',disposed:'2026-08-02',saleProceeds:1500000,adjustedBasis:1000000,eligibleLosses:0,otherTaxableIncome:1500000,scopeConfirmed:true})});
  assert.equal(crypto.status,200);assert.equal((await crypto.json()).estimatedGainTax,156000);
+ const region=await call('/v1/regional/calculate',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'US',region:'PA',taxYear:'2026',income:100000,scopeConfirmed:true})});
+ assert.equal(region.status,200);assert.equal((await region.json()).regionalTax,3070);
+ assert.equal((await call('/v1/regional/calculate')).status,405);
  assert.equal((await call('/missing')).status,404);
  assert.equal((await call('/v1/country/calculate')).status,405);
  }finally{rmSync(temp,{recursive:true,force:true})}

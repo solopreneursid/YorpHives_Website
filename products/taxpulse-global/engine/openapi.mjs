@@ -625,6 +625,144 @@ export const spec = {
           }
         }
       }
+    },
+    "/v1/regional/calculate": {
+      "post": {
+        "operationId": "calculateRegionalTax",
+        "description": "Unverified component only. US state taxable income (Texas wages); Canada basic provincial/territorial tax before credits and adjustments; UK ordinary salary only. Not take-home pay.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "region",
+                      "taxYear",
+                      "income",
+                      "scopeConfirmed"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "US"
+                      },
+                      "region": {
+                        "enum": [
+                          "PA",
+                          "IL",
+                          "TX"
+                        ]
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "income": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "region",
+                      "taxYear",
+                      "income",
+                      "scopeConfirmed"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "CA"
+                      },
+                      "region": {
+                        "enum": [
+                          "AB",
+                          "BC",
+                          "MB",
+                          "NB",
+                          "NL",
+                          "NT",
+                          "NS",
+                          "NU",
+                          "ON",
+                          "PE",
+                          "SK",
+                          "YT"
+                        ]
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "income": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "region",
+                      "taxYear",
+                      "income",
+                      "scopeConfirmed"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "GB"
+                      },
+                      "region": {
+                        "enum": [
+                          "SCT",
+                          "RUK"
+                        ]
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "income": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 1
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scoped regional tax example"
+          },
+          "400": {
+            "description": "Unsupported inputs"
+          }
+        }
+      }
     }
   }
 };

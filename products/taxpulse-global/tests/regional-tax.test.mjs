@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {calculateRegionalTax as calc,regionalTaxCatalog} from '../engine/taxable-income.mjs';
+import {createReceipt,verifyReceipt} from '../engine/proof.mjs';
+const input=(country,region,income)=>({country,region,taxYear:'2026',income,scopeConfirmed:true});
+const tax=(country,region,income)=>calc(input(country,region,income));
+for(const [region,expected] of [["AB",8776],["BC",6642.38],["MB",11822.5],["NB",11592.68],["NL",12047.07],["NT",7168.92],["NS",13715.9],["NU",5325.97],["ON",6940.47],["PE",13192.89],["SK",11409.36],["YT",7478.4]])test('Canada '+region+' 2026 basic provincial rate at 100000',()=>{const r=tax('CA',region,100000);assert.equal(r.regionalTax,expected);assert.equal(r.resultBasis,'basic-provincial-tax-before-adjustments');assert.equal(r.taxRulesVerified,false);assert.equal(r.personalAllowanceApplied,null);});
+test('Ontario boundary and marginal rate',()=>{assert.equal(tax('CA','ON',53891).regionalTax,2721.5);assert.equal(tax('CA','ON',53901).regionalTax,2722.41);});
+test('US state rates are components not total tax',()=>{assert.equal(tax('US','PA',100000).regionalTax,3070);assert.equal(tax('US','IL',100000).regionalTax,4950);assert.equal(tax('US','TX',100000).regionalTax,0);});
+test('Scotland bands and rest of UK salary',()=>{assert.equal(tax('GB','SCT',50000).regionalTax,8982.05);assert.equal(tax('GB','RUK',50000).regionalTax,7486);assert.equal(tax('GB','SCT',16537).regionalTax,753.73);assert.equal(tax('GB','SCT',12570).regionalTax,0);});
+test('UK taper applies before bands; upper threshold after allowance is fixed',()=>{assert.equal(tax('GB','SCT',110000).personalAllowanceApplied,7570);assert.equal(tax('GB','SCT',110000).taxableIncome,102430);assert.equal(tax('GB','SCT',125140).personalAllowanceApplied,0);assert.ok(Math.abs(tax('GB','SCT',125150).regionalTax-tax('GB','SCT',125140).regionalTax-4.8)<.000001);});
+test('unsupported scope fails closed and catalog is detached',()=>{for(const v of [input('CA','QC',100000),input('US','NY',100000),input('GB','SCT',100.01),input('CA','ON',-1),{...input('US','PA',1000),scopeConfirmed:false},{...input('CA','ON',1000),extra:1}])assert.throws(()=>calc(v));const list=regionalTaxCatalog();assert.equal(list.length,17);list[0].name='changed';assert.notEqual(regionalTaxCatalog()[0].name,'changed');});
+test('regional receipt replay',async()=>{const engineFingerprint='a'.repeat(64);const r=await createReceipt({kind:'regional-tax',input:input('GB','SCT',50000),engineFingerprint});assert.deepEqual(await verifyReceipt(r,engineFingerprint),{integrity:true,sameEngine:true,reproduced:true});});

@@ -83,6 +83,22 @@
 <p id="compare-error" class="error" role="alert"></p><div id="compare-result" hidden aria-live="polite" tabindex="-1"><h3>What changes?</h3><div class="results"><div><span>Salary difference</span><strong id="gross-change"></strong></div><div><span>Income tax difference</span><strong id="tax-change"></strong></div><div><span>Difference after income tax only</span><strong id="net-change"></strong></div></div><p id="change-rate"></p><p class="muted">Does not compare countries, currencies, living costs, benefits or payroll deductions.</p></div>
 </section>
 <section id="plan" class="card"><h2>Plan ahead</h2><p>Learn what affects income tax before making a decision.</p><div class="tiles"><article><h3>Try a pay rise</h3><p>See how a different salary affects income tax in the example above.</p><a href="#compare">Compare two salaries</a></article><article><h3>Understand tax deductions</h3><p>Deductions reduce the amount of income that may be taxed. Eligibility depends on local law. A personalized savings check is not available yet.</p></article><article><h3>Moving to another country?</h3><p>Tax residence and local rules matter. International comparison and residency tools are still being checked.</p></article></div></section>
+<section id="regional-tax" class="card" aria-labelledby="regional-title">
+<h2 id="regional-title">Tax in your state or region</h2>
+<p>Try example regional income tax in selected US states, Canadian provinces and territories, or the UK. These results are separate from federal and payroll taxes.</p>
+<form id="regional-form"><div class="fields">
+<label for="regional-country">Country<select id="regional-country"><option value="US">United States</option><option value="CA">Canada</option><option value="GB">United Kingdom</option></select></label>
+<label for="regional-region">State, province or region<select id="regional-region" required></select></label>
+<div><span class="field-label">Tax period</span><p id="regional-period" class="field-value"></p></div>
+<label for="regional-income"><span id="regional-income-label">Annual taxable income</span><input id="regional-income" type="number" min="0" max="1000000000" step="0.01" required inputmode="decimal"></label>
+</div><p class="notice" id="regional-scope"></p>
+<label for="regional-confirm">Does this made-up example meet the conditions above?<select id="regional-confirm" required><option value="">Choose an answer</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+<button type="submit" class="primary">Calculate regional tax example</button></form>
+<p id="regional-error" class="error" role="alert"></p>
+<div id="regional-result" hidden tabindex="-1" aria-live="polite"><h3>Regional tax example</h3>
+<div class="results"><div><span id="regional-tax-label"></span><strong id="regional-tax"></strong></div><div><span>Income subject to tax</span><strong id="regional-taxable"></strong></div></div>
+<details><summary>How this was calculated</summary><dl id="regional-breakdown" class="breakdown"></dl><p id="regional-source"></p></details><p id="regional-warnings" class="notice"></p>
+<button type="button" class="secondary" id="regional-download">Download regional tax report</button></div></section>
 <section id="investment-tax" class="card" aria-labelledby="investment-title">
 <h2 id="investment-title">Tax on investment profits</h2>
 <p>Try a made-up sale of qualifying shares, investment property or cryptocurrency in India, the US or the UK. Enter amounts in the local currency. This does not cover your entire tax return.</p>
