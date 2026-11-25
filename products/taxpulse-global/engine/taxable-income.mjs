@@ -1,3 +1,4 @@
+import {nationalRules} from './national-registry.mjs';
 import {resolvePayrollRule} from './payroll-registry.mjs';
 import {resolveIndiaSalaryRule} from './india-salary-registry.mjs';
 import {regionalRules,resolveRegionalRule} from './regional-registry.mjs';
@@ -10,27 +11,28 @@ const DE_SOURCE='https://www.gesetze-im-internet.de/estg/__32a.html';
 const CA_SOURCE='https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4032-payroll-deductions-tables/t4032on-jan/t4032on-january-general-information.html';
 const CA_CREDIT_SOURCE='https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/payroll-deductions-t4127-payroll-deductions-formulas/t4127-jan-122nd-edition-effective-january-1-2026/t4127-jan-payroll-deductions-formulas-computer-programs.html';
 
-function germanTariff(value){
+function germanTariff(value,p){
  // Exact integer rational evaluation avoids floating-point errors at euro floors.
  const x=BigInt(Math.floor(value));
  let tax,band;
- if(x<=12348n){tax=0n;band='Basic allowance';}
- else if(x<=17799n){
-   const y=x-12348n;
-   tax=(91451n*y*y+1400000000n*y)/10000000000n;
+ if(x<=BigInt(p.limits[0])){tax=0n;band='Basic allowance';}
+ else if(x<=BigInt(p.limits[1])){
+   const y=x-BigInt(p.limits[0]);const [a,b,d]=p.quadratic[0].map(BigInt);
+   tax=(a*y*y+b*y+d)/BigInt(p.quadraticDivisor);
    band='First progressive zone';
- }else if(x<=69878n){
-   const z=x-17799n;
-   tax=(17310n*z*z+2397000000n*z+10348700000000n)/10000000000n;
+ }else if(x<=BigInt(p.limits[2])){
+   const z=x-BigInt(p.limits[1]);const [a,b,d]=p.quadratic[1].map(BigInt);
+   tax=(a*z*z+b*z+d)/BigInt(p.quadraticDivisor);
    band='Second progressive zone';
- }else if(x<=277825n){tax=(42n*x-1113563n)/100n;band='42% zone';}
- else{tax=(45n*x-1947038n)/100n;band='45% zone';}
+ }else if(x<=BigInt(p.limits[3])){tax=(BigInt(p.linear[0][0])*x-BigInt(p.linear[0][1]))/BigInt(p.linearDivisor);band='42% zone';}
+ else{tax=(BigInt(p.linear[1][0])*x-BigInt(p.linear[1][1]))/BigInt(p.linearDivisor);band='45% zone';}
  return {roundedTaxableIncome:Number(x),tariffTax:Number(tax),band};
 }
 
-export function assessTaxableIncome(input){
+export function assessTaxableIncome(input,ruleContext={}){
  if(!input||typeof input!=='object'||Array.isArray(input)||input.taxYear!=='2026')throw new TypeError('Unsupported tax period');
  const {country}=input;
+ const p=nationalRules(input.taxYear,ruleContext.national).national[country];
  if(country==='AE'){
    if(Object.keys(input).some(k=>!['country','taxYear','salaryIncome','employeeWagesOnly'].includes(k))||input.employeeWagesOnly!==true)throw new TypeError('Only ordinary employee wages supported');
    const salaryIncome=amount(input.salaryIncome);
@@ -41,7 +43,7 @@ export function assessTaxableIncome(input){
  if(country==='DE'){
    if(!['individual','joint'].includes(input.assessment))throw new TypeError('Choose assessment type');
    if(Object.keys(input).some(k=>!['country','taxYear','taxableIncome','assessment'].includes(k)))throw new TypeError('Unsupported input');
-   const joint=input.assessment==='joint',unit=germanTariff(joint?taxableIncome/2:taxableIncome);
+   const joint=input.assessment==='joint',unit=germanTariff(joint?taxableIncome/2:taxableIncome,p);
    return {...common,currency:'EUR',sourceUrls:[DE_SOURCE],ruleId:'DE-2026-EStG-32a-v1',
     assessment:input.assessment,taxableIncome,unitTaxableIncome:unit.roundedTaxableIncome,
     tariffZone:unit.band,incomeTax:unit.tariffTax*(joint?2:1),
@@ -52,12 +54,12 @@ export function assessTaxableIncome(input){
    if(input.fullYearResident!==true)throw new TypeError('Only full-year resident examples supported');
    const netIncome=amount(input.netIncome);
    if(netIncome<taxableIncome)throw new RangeError('Net income cannot be below taxable income');
-   const bounds=[0,58523,117045,181440,258482,Infinity],rates=[.14,.205,.26,.29,.33];
+   const bounds=[0,...p.bounds,Infinity],rates=p.rates.map(r=>r/10000);
    const rows=rates.map((rate,i)=>({lower:bounds[i],upper:Number.isFinite(bounds[i+1])?bounds[i+1]:null,rate,taxed:Math.max(0,Math.min(taxableIncome,bounds[i+1])-bounds[i])}));
    const taxBeforeCredits=rows.reduce((sum,r)=>sum+r.taxed*r.rate,0);
-   const phase=Math.max(0,Math.min(1,(netIncome-181440)/(258482-181440)));
-   const basicPersonalAmount=16452-1623*phase;
-   const basicPersonalCredit=Math.min(taxBeforeCredits,basicPersonalAmount*.14);
+   const phase=Math.max(0,Math.min(1,(netIncome-p.creditPhaseStart)/(p.creditPhaseEnd-p.creditPhaseStart)));
+   const basicPersonalAmount=p.basicPersonalAmount-p.creditReduction*phase;
+   const basicPersonalCredit=Math.min(taxBeforeCredits,basicPersonalAmount*p.creditRate/10000);
    return {...common,currency:'CAD',sourceUrls:[CA_SOURCE,CA_CREDIT_SOURCE],ruleId:'CA-2026-federal-BPA-v1',
     taxableIncome,netIncome,taxBeforeCredits:cents(taxBeforeCredits),basicPersonalAmount:cents(basicPersonalAmount),
     basicPersonalCredit:cents(basicPersonalCredit),incomeTax:cents(Math.max(0,taxBeforeCredits-basicPersonalCredit)),
@@ -66,11 +68,11 @@ export function assessTaxableIncome(input){
  if(country==='AU'||country==='SG'){
    if(Object.keys(input).some(k=>!['country','taxYear','taxableIncome','residentEligible'].includes(k))||input.residentEligible!==true)throw new TypeError('Resident rate eligibility must be confirmed');
    const au=country==='AU';
-   const bounds=au?[0,18200,45000,135000,190000,Infinity]:[0,20000,30000,40000,80000,120000,160000,200000,240000,280000,320000,500000,1000000,Infinity];
-   const rates=au?[0,.15,.30,.37,.45]:[0,.02,.035,.07,.115,.15,.18,.19,.195,.20,.22,.23,.24];
+   const bounds=[0,...p.bounds,Infinity];
+   const rates=p.rates.map(r=>r/10000);
    const brackets=rates.map((rate,i)=>{const taxed=Math.max(0,Math.min(taxableIncome,bounds[i+1])-bounds[i]);return {lower:bounds[i],upper:Number.isFinite(bounds[i+1])?bounds[i+1]:null,rate,taxed,tax:cents(taxed*rate)};});
    const raw=brackets.reduce((sum,b)=>sum+b.taxed*b.rate,0);
-   const eligibleOffset=au?Math.max(0,taxableIncome<=37500?700:taxableIncome<=45000?700-.05*(taxableIncome-37500):325-.015*(taxableIncome-45000)):0;
+   const eligibleOffset=au?Math.max(0,taxableIncome<=p.offsetFirstLimit?p.offsetMaximum:taxableIncome<=p.offsetSecondLimit?p.offsetMaximum-p.offsetFirstRate/10000*(taxableIncome-p.offsetFirstLimit):p.offsetSecondAmount-p.offsetSecondRate/10000*(taxableIncome-p.offsetSecondLimit)):0;
    const lowIncomeOffset=Math.min(raw,eligibleOffset);
    return {...common,currency:au?'AUD':'SGD',taxYearLabel:au?'FY 2026–27 (1 July 2026 to 30 June 2027)':'YA 2026 (income earned in 2025)',taxableIncome,
     taxBeforeCredits:cents(raw),lowIncomeOffset:cents(lowIncomeOffset),incomeTax:cents(Math.max(0,raw-lowIncomeOffset)),brackets,
@@ -147,13 +149,6 @@ export function compareIndiaRegimes(input,registry){
 // One qualifying investment disposal; no inferred legal eligibility or tax basis.
 // Integer minor units and basis-point rates; round final component to cents.
 const CG_SOURCES={"US":["https://www.irs.gov/irb/2025-45_IRB","https://www.irs.gov/taxtopics/tc409","https://www.irs.gov/publications/p550","https://www.irs.gov/publications/p505"],"GB":["https://www.gov.uk/capital-gains-tax/rates","https://www.gov.uk/guidance/capital-gains-tax-rates-and-allowances","https://www.gov.uk/capital-gains-tax/losses"],"IN":["https://wm.incometaxindia.gov.in/w/determination-of-tax-in-certain-special-cases","https://wmstatic-prd.incometaxindia.gov.in/web/guest/w/section-198-76","https://wm.incometaxindia.gov.in/w/section-2-1"]};
-const US_CG={
- single:{zero:49450,top:545500,bounds:[12400,50400,105700,201775,256225,640600]},
- mfj:{zero:98900,top:613700,bounds:[24800,100800,211400,403550,512450,768700]},
- mfs:{zero:49450,top:306850,bounds:[12400,50400,105700,201775,256225,384350]},
- hoh:{zero:66200,top:579600,bounds:[17700,67450,105700,201750,256200,640600]}
-};
-const CG_RATES=[1000,1200,2200,2400,3200,3500,3700];
 function cgMoney(v){
  if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>MAX)throw new RangeError('Invalid amount');
  const scaled=v*100,rounded=Math.round(scaled);
@@ -180,12 +175,13 @@ function cgSlices(start,gain,bounds,rates){
  }
  return {total,rows};
 }
-export function calculateCapitalGain(input){
+export function calculateCapitalGain(input,ruleContext={}){
  const common=['country','taxYear','acquired','disposed','saleProceeds','adjustedBasis','eligibleLosses','otherTaxableIncome','scopeConfirmed'];
  if(!input||typeof input!=='object'||Array.isArray(input)||!['IN','US','GB'].includes(input.country)||input.taxYear!=='2026'||input.scopeConfirmed!==true)throw new TypeError('Unsupported investment example');
  const country=input.country,required=[...common,...(country==='US'?['filingStatus']:country==='IN'?['assetType']:[])];
  const keys=[...required,...(country==='IN'?[]:['assetType'])];
  if(Object.keys(input).some(k=>!keys.includes(k))||required.some(k=>!Object.hasOwn(input,k)))throw new TypeError('Unsupported fields');
+ const rules=nationalRules(input.taxYear,ruleContext.national),p=rules.investment[country];
  const assetType=Object.hasOwn(input,'assetType')?input.assetType:'listed-equity';
  const allowed=country==='IN'?['listed-equity','equity-fund','property','crypto']:country==='US'?['listed-equity','investment-land','crypto']:['listed-equity','property','crypto'];
  if(!allowed.includes(assetType))throw new TypeError('Unsupported asset type');
@@ -196,7 +192,7 @@ export function calculateCapitalGain(input){
  if(acquired>disposed||disposed<period[0]||disposed>period[1])throw new RangeError('Disposal must be in the selected tax year and on or after acquisition');
  // Leap-day anniversary rules are excluded until jurisdiction-specific evidence is reviewed.
  if(country!=='GB'&&!cryptoIndia&&acquired.slice(5)==='02-29')throw new RangeError('Leap-day acquisition not supported');
- const holdingYears=propertyIndia?2:1;
+ const holdingYears=country==='IN'?(propertyIndia?p.propertyHoldingYears:p.equityHoldingYears):country==='US'?p.holdingYears:1;
  const anniversary=(Number(acquired.slice(0,4))+holdingYears)+acquired.slice(4);
  const holding=country==='GB'||cryptoIndia?'not-rate-determining':disposed>anniversary?'long-term':'short-term';
  const proceeds=cgMoney(input.saleProceeds),basis=cgMoney(input.adjustedBasis),loss=cgMoney(input.eligibleLosses),other=cgMoney(input.otherTaxableIncome);
@@ -207,10 +203,10 @@ export function calculateCapitalGain(input){
  let allowance=0n,raw=0n,rows=[],cess=0n,warnings=[];
  const sourceUrls=[...CG_SOURCES[country]];
  if(country==='US'){
-  if(!Object.hasOwn(US_CG,input.filingStatus))throw new TypeError('Unsupported filing status');
-  const p=US_CG[input.filingStatus];
-  const ordinary=cgSlices(other,net,p.bounds,CG_RATES);
-  const preferential=holding==='long-term'?cgSlices(other,net,[p.zero,p.top],[0,1500,2000]):ordinary;
+  if(!Object.hasOwn(rules.national.US.filing,input.filingStatus))throw new TypeError('Unsupported filing status');
+  const filing=rules.national.US.filing[input.filingStatus];
+  const ordinary=cgSlices(other,net,filing.bounds,rules.national.US.ordinaryRates);
+  const preferential=holding==='long-term'?cgSlices(other,net,[filing.zero,filing.top],p.preferentialRates):ordinary;
   // IRS Publication 505 worksheet 2-7: compare preferential and ordinary regular tax.
   // The same ordinary-income base cancels when comparing incremental tax.
   const s=preferential.total<=ordinary.total?preferential:ordinary;
@@ -219,36 +215,37 @@ export function calculateCapitalGain(input){
   if(assetType==='investment-land'){sourceUrls.push('https://www.irs.gov/taxtopics/tc704');warnings.push('Vacant land held solely for investment, no depreciable improvements, business use, installment sale, like-kind exchange or home-sale exclusion.');}
   if(assetType==='crypto'){sourceUrls.push('https://www.irs.gov/individuals/international-taxpayers/frequently-asked-questions-on-digital-asset-transactions');warnings.push('One directly purchased lot of ordinary investment tokens sold for cash; excludes NFTs, derivatives, staking, mining, gifts and basis selection across lots.');}
  }else if(country==='GB'){
-  allowance=minBig(net,300000n);
-  const s=cgSlices(other,net-allowance,[37700],[1800,2400]);raw=s.total;rows=s.rows;
+  allowance=minBig(net,BigInt(p.allowance)*100n);
+  const s=cgSlices(other,net-allowance,[p.basicBand],p.rates);raw=s.total;rows=s.rows;
   warnings=['UK-resident individual, full annual exempt amount and standard basic rate band. Excludes business reliefs, pension/Gift Aid band extensions, FIG claims and other gains or carryovers. Holding length does not select the rate.'];
   if(assetType==='property'){sourceUrls.push('https://www.gov.uk/tax-sell-property/work-out-your-gain');warnings.push('UK investment residential property never used as your home; no private residence relief, business relief, connected-party sale or special valuation. Most taxable UK residential property sales must be reported and paid within 60 days of completion.');}
   else if(assetType==='crypto'){sourceUrls.push('https://www.gov.uk/guidance/check-if-you-need-to-pay-tax-when-you-sell-cryptoassets','https://www.gov.uk/hmrc-internal-manuals/cryptoassets-manual/crypto22200');warnings.push('Ordinary purchased tokens sold for cash, correct allowable pooled or matched cost supplied by user; same-day and 30-day matching are not calculated. No NFTs, staking, mining, lending or liquidity pools.');}
   else warnings.push('Ordinary shares; correct allowable share cost supplied by user. Special share matching is not calculated.');
  }else{
   // Exclude rebate, unused basic exemption and surcharge interactions.
-  if(other<130000000n||other+net>500000000n)throw new RangeError('India requires other taxable ordinary income of INR 13 lakh or more and combined net taxable income at most INR 50 lakh');
+  if(other<BigInt(p.minimumOtherIncome)*100n||other+net>BigInt(p.maximumCombinedIncome)*100n)throw new RangeError('India requires other taxable ordinary income of INR 13 lakh or more and combined net taxable income at most INR 50 lakh');
   const scope='Resident individual using new regime, no other gains or special income. Other taxable ordinary income at least INR 13 lakh and combined net taxable income at most INR 50 lakh. Includes 4% cess; excludes surcharge, return-level rounding, withholding credits and other taxes.';
   if(cryptoIndia){
    sourceUrls.push('https://wm.incometaxindia.gov.in/w/section-194-78');
-   raw=positive*3000n;rows=positive>0n?[{rate:.30,taxableGain:cgOut(positive),tax:cgOut(cgRound(raw))}]:[];
+   raw=positive*BigInt(p.cryptoRate);rows=positive>0n?[{rate:p.cryptoRate/10000,taxableGain:cgOut(positive),tax:cgOut(cgRound(raw))}]:[];
    warnings=[scope,'Ordinary purchased virtual digital asset sold for cash. Gross consideration before fees or withholding; actual acquisition cost only. No deduction for selling costs, no loss offset, no loss carryforward, and no TDS credit calculation.'];
   }else if(propertyIndia){
    if(acquired<'2024-07-23')throw new RangeError('Pre-23-July-2024 property requires grandfathering and indexation review');
    sourceUrls.push('https://www.incometaxindia.gov.in/w/capital-gain');
-   const slice=holding==='long-term'?cgSlices(0n,net,[],[1250]):cgSlices(other,net,[400000,800000,1200000,1600000,2000000,2400000],[0,500,1000,1500,2000,2500,3000]);
+   const bands=resolveIndiaSalaryRule(input.taxYear,ruleContext.indiaSalary).parameters.new.bands;
+   const slice=holding==='long-term'?cgSlices(0n,net,[],[p.propertyLongRate]):cgSlices(other,net,bands.filter(b=>b[0]!==null).map(b=>b[0]),bands.map(b=>b[1]*100));
    raw=slice.total;rows=slice.rows;
    warnings=[scope,'Indian investment land or building acquired on or after 23 July 2024; more than 24 months is long-term. No reinvestment relief, depreciation, agricultural land, deemed stamp-duty valuation or pre-2024 indexation comparison. User confirms tax consideration and allowable basis are correct.'];
   }else{
    if(acquired<'2018-02-01')throw new RangeError('Only qualifying post-January 2018 equity investments supported');
-   allowance=holding==='long-term'?minBig(net,12500000n):0n;
-   const rate=holding==='long-term'?1250:2000;
+   allowance=holding==='long-term'?minBig(net,BigInt(p.equityAllowance)*100n):0n;
+   const rate=holding==='long-term'?p.equityLongRate:p.equityShortRate;
    raw=(net-allowance)*BigInt(rate);rows=net>allowance?[{rate:rate/10000,taxableGain:cgOut(net-allowance),tax:cgOut(cgRound(raw))}]:[];
    warnings=[scope,'Qualifying STT conditions confirmed; full annual equity gain threshold available.'];
   }
-  cess=cgRound(raw*4n/100n);
+  cess=cgRound(raw*BigInt(p.cessPercent)/100n);
  }
- const base=cgRound(raw),total=cgRound(raw+(country==='IN'?raw*4n/100n:0n));
+ const base=cgRound(raw),total=cgRound(raw+(country==='IN'?raw*BigInt(p.cessPercent)/100n:0n));
  if(realized<0n)warnings.push('This disposal has a loss. No tax benefit, refund or carryforward is calculated.');
  return {country,taxYear:'2026',taxYearLabel:period.join(' to '),currency:country==='US'?'USD':country==='GB'?'GBP':'INR',sampleOnly:true,taxRulesVerified:false,ruleId:country+'-2026-investment-disposal-v2',assetType,acquired,disposed,holding,holdingYears:holding==='not-rate-determining'?null:holdingYears,realizedGain:cgOut(realized),eligibleLossesApplied:cgOut(loss),netPositiveGain:cgOut(net),allowanceApplied:cgOut(allowance),taxableGain:cgOut(net-allowance),otherTaxableIncome:cgOut(other),brackets:rows,taxBeforeCess:cgOut(base),cessAmount:cgOut(cess),estimatedGainTax:cgOut(total),sourceUrls,warnings};
 }
@@ -289,7 +286,7 @@ export function calculateRegionalTax(input,registry){
 // UK category A uses actual monthly pay-period thresholds, not annual NI thresholds.
 const PAY_SOURCES={"US":["https://www.irs.gov/irb/2025-45_IRB","https://www.irs.gov/instructions/i941","https://www.irs.gov/taxtopics/tc560","https://www.texas.gov/business-taxes/taxes"],"GB":["https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027","https://www.gov.uk/income-tax-rates"]};
 export function calculateSalaryRemainder(input,ruleContext={}){
- if(input&&['DE','AE'].includes(input.country))return germanEmiratiSalaryRemainder(input);
+ if(input&&['DE','AE'].includes(input.country))return germanEmiratiSalaryRemainder(input,ruleContext);
  if(input&&['CA','AU','IN','SG'].includes(input.country))return extendedSalaryRemainder(input,ruleContext);
  const keys=['country','region','taxYear','pay','scopeConfirmed'];
  if(!input||typeof input!=='object'||Array.isArray(input)||keys.some(k=>!Object.hasOwn(input,k))||Object.keys(input).some(k=>!keys.includes(k))||input.taxYear!=='2026'||input.scopeConfirmed!==true)throw new TypeError('Unsupported salary example');
@@ -301,8 +298,9 @@ export function calculateSalaryRemainder(input,ruleContext={}){
   // Restrict to this range until AMT and credit eligibility are modeled.
   if(pay>25000000n)throw new RangeError('US examples limited to USD 250,000 annual wages');
   gross=pay;currency='USD';period='Calendar year 2026';payFrequency='annual';
-  const taxable=maxBig(0n,gross-1610000n);
-  incomeTax=cgRound(cgSlices(0n,taxable,US_CG.single.bounds,CG_RATES).total);
+  const us=nationalRules(input.taxYear,ruleContext.national).national.US;
+  const taxable=maxBig(0n,gross-BigInt(us.standardDeduction)*100n);
+  incomeTax=cgRound(cgSlices(0n,taxable,us.filing.single.bounds,us.ordinaryRates).total);
   const oasdi=payroll('oasdi'),medicare=payroll('medicare');
   contributions=[
    {name:'Social Security',amount:cgOut(cgRound(minBig(gross,BigInt(oasdi.annualWageBase)*100n)*BigInt(oasdi.employeeRateBasisPoints)))},
@@ -391,11 +389,12 @@ function extendedSalaryRemainder(input,ruleContext={}){
   const enhanced=cgRound(pensionable*BigInt(cpp.cppEnhancedRateBasisPoints))+cgMoney(c.components[1].amount);
   const baseCPP=cgMoney(c.components[0].amount)-cgRound(pensionable*BigInt(cpp.cppEnhancedRateBasisPoints)),ei=cgMoney(c.components[2].amount);
   taxable=gross-enhanced;
-  const federal=assessTaxableIncome({country:'CA',taxYear:'2026',taxableIncome:cgOut(taxable),netIncome:cgOut(taxable),fullYearResident:true});
-  const federalExtraCredit=cgRound((baseCPP+ei+minBig(gross,150100n))*1400n);
+  const ca=nationalRules(input.taxYear,ruleContext.national).national.CA;
+  const federal=assessTaxableIncome({country:'CA',taxYear:'2026',taxableIncome:cgOut(taxable),netIncome:cgOut(taxable),fullYearResident:true},ruleContext);
+  const federalExtraCredit=cgRound((baseCPP+ei+minBig(gross,BigInt(ca.employmentAmount)*100n))*BigInt(ca.creditRate));
   const federalTax=maxBig(0n,cgMoney(federal.incomeTax)-federalExtraCredit);
   const provincial=calculateRegionalTax({country:'CA',region:'AB',taxYear:'2026',income:cgOut(taxable),scopeConfirmed:true},ruleContext.regional);
-  const provincialCredit=cgRound((2276900n+baseCPP+ei)*800n);
+  const provincialCredit=cgRound((BigInt(ca.albertaPersonalAmount)*100n+baseCPP+ei)*BigInt(ca.albertaCreditRate));
   const albertaTax=maxBig(0n,cgMoney(provincial.regionalTax)-provincialCredit);
   incomeTaxComponents=[item('Federal income tax',federalTax),item('Alberta income tax',albertaTax)];
   tax=federalTax+albertaTax;
@@ -404,7 +403,7 @@ function extendedSalaryRemainder(input,ruleContext={}){
  }else if(country==='AU'&&input.region==='AU'){
   if(pay<10000000n||pay>100000000n)throw new RangeError('Australia example supports AUD 100,000–1,000,000 annual salary');
   currency='AUD';period='FY 2026–27 (1 July 2026 to 30 June 2027)';
-  const r=assessTaxableIncome({country:'AU',taxYear:'2026',taxableIncome:cgOut(gross),residentEligible:true});
+  const r=assessTaxableIncome({country:'AU',taxYear:'2026',taxableIncome:cgOut(gross),residentEligible:true},ruleContext);
   tax=cgMoney(r.incomeTax);incomeTaxComponents=[item('Resident income tax',tax)];
   contributions=annualContrib(gross).components;
   warnings=['Full-year Australian resident, ordinary salary equals taxable income and excludes employer superannuation. Full 2% Medicare levy applies; no Medicare levy surcharge liability, HELP/student debt, other income, deductions, tax offsets or salary sacrifice. Medicare levy is an assessment component, not separate paycheck withholding.'];
@@ -425,10 +424,11 @@ function extendedSalaryRemainder(input,ruleContext={}){
   currency='SGD';period='Income earned in calendar year 2026; YA 2027';payFrequency='monthly';gross=pay*12n;
   const r=calculateEmployeeContributions({country:'SG',taxYear:'2026',income:cgOut(pay),ageBand:'55-or-under',scopeConfirmed:true},ruleContext);
   const cpf=cgMoney(r.totalEmployeeContribution)*12n;
-  const earned=minBig(gross,100000n);
+  const sg=nationalRules(input.taxYear,ruleContext.national).national.SG;
+  const earned=minBig(gross,BigInt(sg.earnedIncomeRelief)*100n);
   taxable=maxBig(0n,gross-cpf-earned);
   // IRAS resident schedule YA 2024 onward; no speculative YA 2027 rebate.
-  const t=cgSlices(0n,taxable,[20000,30000,40000,80000,120000,160000,200000,240000,280000,320000,500000,1000000],[0,200,350,700,1150,1500,1800,1900,1950,2000,2200,2300,2400]);
+  const t=cgSlices(0n,taxable,sg.bounds,sg.rates);
   tax=cgRound(t.total);incomeTaxComponents=[item('Resident income tax before rebates',tax)];
   contributions=[item('Employee CPF',cpf)];
   taxAdjustments=[item('Compulsory employee CPF relief',cpf),item('Earned income relief',earned)];
@@ -442,7 +442,7 @@ function extendedSalaryRemainder(input,ruleContext={}){
 
 // Deliberately scoped annual assessment plus monthly contributions, not payroll withholding.
 const DE_AE_PAY_SOURCES={"DE":["https://www.gesetze-im-internet.de/estg/__32a.html","https://www.gesetze-im-internet.de/solzg_1995/__3.html","https://www.gesetze-im-internet.de/solzg_1995/__4.html","https://www.bmas.de/DE/Service/Gesetze-und-Gesetzesvorhaben/sozialversicherungs-rechengroessenverordnung-2026.html","https://www.bundesgesundheitsministerium.de/beitraege","https://www.bundesgesundheitsministerium.de/themen/pflege/online-ratgeber-pflege/die-pflegeversicherung/finanzierung","https://www.deutsche-rentenversicherung.de/KnappschaftBahnSee/DE/Aktuelles/Meldungen/2026/2026_01_02_Sozialversicherungsrechengroessen2026.html"],"AE":["https://u.ae/en/information-and-services/finance-and-investment/taxation","https://u.ae/en/information-and-services/moving-to-the-uae/expatriates-working-in-the-uae/pension-schemes-for-expatriate-workers","https://u.ae/en/information-and-services/jobs/insurance/unemployment-insurance-scheme","https://iloe.ae/default.aspx","https://tax.gov.ae/en/faq.aspx?keyword=What+is+the+standard+rate+of+VAT+in+the+UAE%3F"]};
-function germanEmiratiSalaryRemainder(input){
+function germanEmiratiSalaryRemainder(input,ruleContext={}){
  const keys=['country','region','taxYear','pay','scopeConfirmed',...(input.country==='DE'?['annualTaxableIncome','healthSupplementRate']:['monthlyBasicSalary'])];
  if(!input||typeof input!=='object'||Array.isArray(input)||keys.some(k=>!Object.hasOwn(input,k))||Object.keys(input).some(k=>!keys.includes(k))||input.taxYear!=='2026'||input.scopeConfirmed!==true||input.region!==input.country)throw new TypeError('Unsupported salary example');
  const pay=cgMoney(input.pay),gross=pay*12n;
@@ -455,7 +455,7 @@ function germanEmiratiSalaryRemainder(input){
   const supplement=cgMoney(input.healthSupplementRate);
   if(supplement>1000n)throw new RangeError('Supply insurer supplemental percentage from 0 to 10');
   currency='EUR';
-  const incomeTax=cgMoney(assessTaxableIncome({country:'DE',taxYear:'2026',taxableIncome:cgOut(taxable),assessment:'individual'}).incomeTax);
+  const incomeTax=cgMoney(assessTaxableIncome({country:'DE',taxYear:'2026',taxableIncome:cgOut(taxable),assessment:'individual'},ruleContext).incomeTax);
   const solidarity=minBig(incomeTax*550n/10000n,maxBig(0n,incomeTax-2035000n)*1190n/10000n);
   tax=incomeTax+solidarity;
   incomeTaxComponents=[item('Ordinary income tax',incomeTax),item('Solidarity surcharge',solidarity)];
