@@ -22,4 +22,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test products/taxpulse-global/tests/staging.test.mjs
+      - run: node --test products/taxpulse-global/tests/*.test.mjs
