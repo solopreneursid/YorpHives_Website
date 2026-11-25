@@ -1,0 +1,59 @@
+// 2026 assessment models; inputs are taxable income, not gross salary.
+// Source-reviewed formula components are not full statutory certification.
+const MAX=1_000_000_000;
+const amount=(v)=>{if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>MAX)throw new TypeError('Invalid income');return v;};
+const cents=v=>Math.round((v+Number.EPSILON)*100)/100;
+const DE_SOURCE='https://www.gesetze-im-internet.de/estg/__32a.html';
+const CA_SOURCE='https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4032-payroll-deductions-tables/t4032on-jan/t4032on-january-general-information.html';
+const CA_CREDIT_SOURCE='https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/payroll-deductions-t4127-payroll-deductions-formulas/t4127-jan-122nd-edition-effective-january-1-2026/t4127-jan-payroll-deductions-formulas-computer-programs.html';
+
+function germanTariff(value){
+ // Exact integer rational evaluation avoids floating-point errors at euro floors.
+ const x=BigInt(Math.floor(value));
+ let tax,band;
+ if(x<=12348n){tax=0n;band='Basic allowance';}
+ else if(x<=17799n){
+   const y=x-12348n;
+   tax=(91451n*y*y+1400000000n*y)/10000000000n;
+   band='First progressive zone';
+ }else if(x<=69878n){
+   const z=x-17799n;
+   tax=(17310n*z*z+2397000000n*z+10348700000000n)/10000000000n;
+   band='Second progressive zone';
+ }else if(x<=277825n){tax=(42n*x-1113563n)/100n;band='42% zone';}
+ else{tax=(45n*x-1947038n)/100n;band='45% zone';}
+ return {roundedTaxableIncome:Number(x),tariffTax:Number(tax),band};
+}
+
+export function assessTaxableIncome(input){
+ if(!input||typeof input!=='object'||Array.isArray(input)||input.taxYear!=='2026')throw new TypeError('Unsupported tax period');
+ const {country}=input;
+ const taxableIncome=amount(input.taxableIncome);
+ const common={country,taxYear:'2026',sampleOnly:true,taxRulesVerified:false,inputBasis:'taxable-income'};
+ if(country==='DE'){
+   if(!['individual','joint'].includes(input.assessment))throw new TypeError('Choose assessment type');
+   if(Object.keys(input).some(k=>!['country','taxYear','taxableIncome','assessment'].includes(k)))throw new TypeError('Unsupported input');
+   const joint=input.assessment==='joint',unit=germanTariff(joint?taxableIncome/2:taxableIncome);
+   return {...common,currency:'EUR',sourceUrls:[DE_SOURCE],ruleId:'DE-2026-EStG-32a-v1',
+    assessment:input.assessment,taxableIncome,unitTaxableIncome:unit.roundedTaxableIncome,
+    tariffZone:unit.band,incomeTax:unit.tariffTax*(joint?2:1),
+    warnings:['Ordinary tariff only. Excludes solidarity surcharge, church tax, special income, credits and payroll. Joint treatment assumes legal eligibility. Not a salary calculator.']};
+ }
+ if(country==='CA'){
+   if(Object.keys(input).some(k=>!['country','taxYear','taxableIncome','netIncome','fullYearResident'].includes(k)))throw new TypeError('Unsupported input');
+   if(input.fullYearResident!==true)throw new TypeError('Only full-year resident examples supported');
+   const netIncome=amount(input.netIncome);
+   if(netIncome<taxableIncome)throw new RangeError('Net income cannot be below taxable income');
+   const bounds=[0,58523,117045,181440,258482,Infinity],rates=[.14,.205,.26,.29,.33];
+   const rows=rates.map((rate,i)=>({lower:bounds[i],upper:Number.isFinite(bounds[i+1])?bounds[i+1]:null,rate,taxed:Math.max(0,Math.min(taxableIncome,bounds[i+1])-bounds[i])}));
+   const taxBeforeCredits=rows.reduce((sum,r)=>sum+r.taxed*r.rate,0);
+   const phase=Math.max(0,Math.min(1,(netIncome-181440)/(258482-181440)));
+   const basicPersonalAmount=16452-1623*phase;
+   const basicPersonalCredit=Math.min(taxBeforeCredits,basicPersonalAmount*.14);
+   return {...common,currency:'CAD',sourceUrls:[CA_SOURCE,CA_CREDIT_SOURCE],ruleId:'CA-2026-federal-BPA-v1',
+    taxableIncome,netIncome,taxBeforeCredits:cents(taxBeforeCredits),basicPersonalAmount:cents(basicPersonalAmount),
+    basicPersonalCredit:cents(basicPersonalCredit),incomeTax:cents(Math.max(0,taxBeforeCredits-basicPersonalCredit)),
+    brackets:rows,warnings:['Federal tax only, after the basic personal credit. Excludes provincial tax, Quebec abatement, other credits, payroll and special cases. Not a salary calculator.']};
+ }
+ throw new TypeError('Unsupported country');
+}
