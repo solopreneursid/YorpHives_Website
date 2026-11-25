@@ -1,3 +1,4 @@
+import {resolvePayrollRule} from './payroll-registry.mjs';
 import {resolveIndiaSalaryRule} from './india-salary-registry.mjs';
 import {regionalRules,resolveRegionalRule} from './regional-registry.mjs';
 // 2026 assessment models; inputs are taxable income, not gross salary.
@@ -293,6 +294,7 @@ export function calculateSalaryRemainder(input,ruleContext={}){
  const keys=['country','region','taxYear','pay','scopeConfirmed'];
  if(!input||typeof input!=='object'||Array.isArray(input)||keys.some(k=>!Object.hasOwn(input,k))||Object.keys(input).some(k=>!keys.includes(k))||input.taxYear!=='2026'||input.scopeConfirmed!==true)throw new TypeError('Unsupported salary example');
  const pay=cgMoney(input.pay);
+ const payroll=component=>resolvePayrollRule(input.country,component,input.taxYear,ruleContext.payroll).parameters;
  let gross,incomeTax,contributions,currency,period,warnings,payFrequency;
  if(input.country==='US'&&input.region==='TX'){
   // Single, under 65, nondependent, nonblind, ordinary wages only.
@@ -301,10 +303,11 @@ export function calculateSalaryRemainder(input,ruleContext={}){
   gross=pay;currency='USD';period='Calendar year 2026';payFrequency='annual';
   const taxable=maxBig(0n,gross-1610000n);
   incomeTax=cgRound(cgSlices(0n,taxable,US_CG.single.bounds,CG_RATES).total);
+  const oasdi=payroll('oasdi'),medicare=payroll('medicare');
   contributions=[
-   {name:'Social Security',amount:cgOut(cgRound(minBig(gross,18450000n)*620n))},
-   {name:'Medicare',amount:cgOut(cgRound(gross*145n))},
-   {name:'Additional Medicare',amount:cgOut(cgRound(maxBig(0n,gross-20000000n)*90n))}
+   {name:'Social Security',amount:cgOut(cgRound(minBig(gross,BigInt(oasdi.annualWageBase)*100n)*BigInt(oasdi.employeeRateBasisPoints)))},
+   {name:'Medicare',amount:cgOut(cgRound(gross*BigInt(medicare.employeeRateBasisPoints)))},
+   {name:'Additional Medicare',amount:cgOut(cgRound(maxBig(0n,gross-BigInt(medicare.additionalThreshold)*100n)*BigInt(medicare.additionalRateBasisPoints)))}
   ];
   warnings=['Texas-only full-year resident employee, single filer, under 65, nonblind and not a dependent; one job, wages only, standard deduction, no credits or other deductions. All pay subject to Social Security and Medicare. Regular federal rate schedule estimate, not tax-table or paycheck withholding. Texas state personal income tax is zero. Excludes AMT, federal credits, health insurance, retirement and all other deductions.'];
  }else if(input.country==='GB'&&['SCT','RUK'].includes(input.region)){
@@ -312,7 +315,8 @@ export function calculateSalaryRemainder(input,ruleContext={}){
   gross=pay*12n;currency='GBP';period='6 April 2026 to 5 April 2027';payFrequency='monthly';
   const regional=calculateRegionalTax({country:'GB',region:input.region,taxYear:'2026',income:cgOut(gross),scopeConfirmed:true},ruleContext.regional);
   incomeTax=cgMoney(regional.regionalTax);
-  const monthlyNI=cgRound(maxBig(0n,minBig(pay,418900n)-104800n)*800n+maxBig(0n,pay-418900n)*200n);
+  const ni=payroll('ni');const lower=BigInt(ni.monthlyLower)*100n,upper=BigInt(ni.monthlyUpper)*100n;
+  const monthlyNI=cgRound(maxBig(0n,minBig(pay,upper)-lower)*BigInt(ni.mainRateBasisPoints)+maxBig(0n,pay-upper)*BigInt(ni.upperRateBasisPoints));
   contributions=[{name:'Employee National Insurance (category A)',amount:cgOut(monthlyNI*12n)}];
   warnings=['Twelve identical monthly pay periods, ordinary employee category A, not a director, standard personal allowance eligibility, correct UK taxpayer region, no other income or adjustments. Annual income tax estimate plus monthly employee NI. Excludes pensions, student loans, benefits, other deductions and PAYE timing differences.'];
  }else throw new TypeError('Unsupported salary region');
@@ -324,45 +328,45 @@ export function calculateSalaryRemainder(input,ruleContext={}){
 
 // Contribution components only. Eligibility and wage bases are explicit caller assertions.
 const CONTRIBUTION_SOURCES={"CA":["https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/payroll-deductions-contributions/canada-pension-plan-cpp/cpp-contribution-rates-maximums.html","https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4032-payroll-deductions-tables/t4032oc-jan/t4032oc-january-general-information.html","https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/payroll-deductions-contributions/employment-insurance-ei/ei-premium-rates-maximums.html"],"AU":["https://www.ato.gov.au/tax-and-super-professionals/for-tax-professionals/prepare-and-lodge/tax-time/before-you-lodge/medicare-levy"],"IN":["https://unifiedportal-emp.epfindia.gov.in/epfo/"],"SG":["https://www.cpf.gov.sg/employer/employer-obligations/how-much-cpf-contributions-to-pay","https://www.cpf.gov.sg/service/article/what-is-the-ordinary-wage-ow-ceiling"]};
-const CPF_RATES=Object.freeze({'55-or-under':[2000,3700],'56-60':[1800,3400],'61-65':[1250,2500],'66-70':[750,1650],'over-70':[500,1250]});
-export function calculateEmployeeContributions(input){
+export function calculateEmployeeContributions(input,ruleContext={}){
  const required=['country','taxYear','income','scopeConfirmed'];
  if(!input||typeof input!=='object'||Array.isArray(input)||required.some(k=>!Object.hasOwn(input,k))||input.taxYear!=='2026'||input.scopeConfirmed!==true||!Object.hasOwn(CONTRIBUTION_SOURCES,input.country))throw new TypeError('Unsupported contribution example');
  const country=input.country,keys=[...required,...(country==='SG'?['ageBand']:[])];
  if(Object.keys(input).some(k=>!keys.includes(k))||keys.some(k=>!Object.hasOwn(input,k)))throw new TypeError('Unsupported fields');
  const income=cgMoney(input.income);
+ const rule=resolvePayrollRule(country,{CA:'cpp-ei',AU:'medicare-levy',IN:'epf',SG:'cpf'}[country],input.taxYear,ruleContext.payroll),p=rule.parameters;
  let currency,period,frequency,basis,components,warnings,employerContribution=null,subjectIncome=null;
  const component=(name,amount)=>({name,amount:cgOut(amount)});
  if(country==='CA'){
   currency='CAD';period='Calendar year 2026';frequency='annual';basis='pensionable-and-insurable-earnings';
-  const cpp=cgRound(maxBig(0n,minBig(income,7460000n)-350000n)*595n);
-  const cpp2=cgRound(maxBig(0n,minBig(income,8500000n)-7460000n)*400n);
-  const ei=cgRound(minBig(income,6890000n)*163n);
+  const cpp=cgRound(maxBig(0n,minBig(income,BigInt(p.cppCeiling)*100n)-BigInt(p.cppExemption)*100n)*BigInt(p.cppRateBasisPoints));
+  const cpp2=cgRound(maxBig(0n,minBig(income,BigInt(p.cpp2Ceiling)*100n)-BigInt(p.cppCeiling)*100n)*BigInt(p.cpp2RateBasisPoints));
+  const ei=cgRound(minBig(income,BigInt(p.eiCeiling)*100n)*BigInt(p.eiRateBasisPoints));
   components=[component('CPP',cpp),component('CPP2',cpp2),component('Employment Insurance',ei)];
   warnings=['Full-year ordinary employee outside Quebec, age 18–64 throughout the year, one employer, all earnings both pensionable and insurable, full basic exemption. Annual estimate; actual pay-period rounding and payroll deductions may differ. Excludes income tax and QPP/QPIP.'];
  }else if(country==='AU'){
   currency='AUD';period='FY 2026–27 (1 July 2026 to 30 June 2027)';frequency='annual';basis='taxable-income';
   // Do not infer eligibility for the full levy. No future threshold extrapolation.
-  if(income<10000000n)throw new RangeError('Full-rate example requires taxable income of at least AUD 100,000');
-  components=[component('Medicare levy (full 2% rate)',cgRound(income*200n))];
+  if(income<BigInt(p.minimumSupportedIncome)*100n)throw new RangeError('Full-rate example requires taxable income of at least AUD 100,000');
+  components=[component('Medicare levy (full 2% rate)',cgRound(income*BigInt(p.fullRateBasisPoints)))];
   warnings=['Full-year Australian resident with confirmed full-rate 2% Medicare levy liability, no exemption or reduction. This is an income-tax assessment component, not a separate payroll withholding calculation. Excludes Medicare levy surcharge, income tax, superannuation and other obligations.'];
  }else if(country==='IN'){
   currency='INR';period='Illustrative 2026 monthly contribution';frequency='monthly';basis='confirmed-epf-contribution-wage';
-  if(income%100n!==0n||income>1500000n)throw new RangeError('Enter the confirmed whole-rupee EPF contribution wage, up to INR 15,000');
-  components=[component('Employee EPF (12% example)',((income*12n+5000n)/10000n)*100n)];
+  if(income%100n!==0n||income>BigInt(p.maximumSupportedWage)*100n)throw new RangeError('Enter the confirmed whole-rupee EPF contribution wage, up to INR 15,000');
+  components=[component('Employee EPF (12% example)',((income*BigInt(p.employeeRateBasisPoints)+500000n)/1000000n)*100n)];
   subjectIncome=cgOut(income);
   warnings=['Only employees with a confirmed applicable 12% EPF rate and an actual EPF contribution wage no greater than INR 15,000. Enter that wage, not gross pay; the engine does not determine the legal wage base, membership, wage ceiling eligibility or current labour-code treatment. No voluntary/higher-wage contributions, employer allocation, ESI, professional tax or income tax.'];
  }else{
   currency='SGD';period='Calendar year 2026';frequency='monthly';basis='ordinary-monthly-wages';
-  if(!Object.hasOwn(CPF_RATES,input.ageBand)||income<=75000n)throw new RangeError('Only full-rate age bands and monthly wages above SGD 750 are supported');
-  const [employeeRate,totalRate]=CPF_RATES[input.ageBand],wage=minBig(income,800000n);
+  if(!Object.hasOwn(p.ageRates,input.ageBand)||income<=BigInt(p.minimumExclusiveWage)*100n)throw new RangeError('Only full-rate age bands and monthly wages above SGD 750 are supported');
+  const [employeeRate,totalRate]=p.ageRates[input.ageBand],wage=minBig(income,BigInt(p.ordinaryWageCeiling)*100n);
   // Employee contribution floor to whole dollars; total nearest dollar; employer residual.
   const employee=wage*BigInt(employeeRate)/1000000n*100n;
   const total=(wage*BigInt(totalRate)+500000n)/1000000n*100n;
   components=[component('Employee CPF',employee)];employerContribution=cgOut(total-employee);subjectIncome=cgOut(wage);
   warnings=['Singapore citizen or third-year-or-later permanent resident on full rates; ordinary monthly wages above SGD 750 only, no additional wages, one employer. Select the applicable contribution age band for the month; rate changes apply from the month after the relevant birthday. No first/second-year PR graduated rates, annual additional-wage ceiling calculation or income tax.'];
  }
- return {country,taxYear:'2026',taxYearLabel:period,currency,frequency,inputBasis:basis,inputIncome:cgOut(income),contributionWage:subjectIncome,components,totalEmployeeContribution:cgOut(components.reduce((sum,c)=>sum+cgMoney(c.amount),0n)),employerContribution,sampleOnly:true,taxRulesVerified:false,ruleId:country+'-2026-contributions-v1',sourceUrls:[...CONTRIBUTION_SOURCES[country]],warnings:[...warnings,'Contribution component only, not a complete take-home estimate.']};
+ return {country,taxYear:'2026',taxYearLabel:period,currency,frequency,inputBasis:basis,inputIncome:cgOut(income),contributionWage:subjectIncome,components,totalEmployeeContribution:cgOut(components.reduce((sum,c)=>sum+cgMoney(c.amount),0n)),employerContribution,sampleOnly:true,taxRulesVerified:false,ruleId:rule.version,sourceUrls:rule.sourceUrls,warnings:[...warnings,'Contribution component only, not a complete take-home estimate.']};
 }
 
 
@@ -376,15 +380,16 @@ function extendedSalaryRemainder(input,ruleContext={}){
  if(pay%100n!==0n)throw new RangeError('Whole currency units required');
  let gross=pay,tax=0n,taxable=pay,contributions=[],incomeTaxComponents=[],taxAdjustments=[],currency,period,payFrequency='annual',warnings;
  const item=(name,amount)=>({name,amount:cgOut(amount)});
- const annualContrib=(income)=>calculateEmployeeContributions({country,taxYear:'2026',income:cgOut(income),scopeConfirmed:true});
+ const annualContrib=(income)=>calculateEmployeeContributions({country,taxYear:'2026',income:cgOut(income),scopeConfirmed:true},ruleContext);
  if(country==='CA'&&input.region==='AB'){
   if(pay<6000000n||pay>15000000n)throw new RangeError('Alberta example supports CAD 60,000–150,000 annual wages');
   currency='CAD';period='Calendar year 2026';
   const c=annualContrib(gross);
   contributions=c.components;
-  const pensionable=maxBig(0n,minBig(gross,7460000n)-350000n);
-  const enhanced=cgRound(pensionable*100n)+cgMoney(c.components[1].amount);
-  const baseCPP=cgMoney(c.components[0].amount)-cgRound(pensionable*100n),ei=cgMoney(c.components[2].amount);
+  const cpp=resolvePayrollRule('CA','cpp-ei',input.taxYear,ruleContext.payroll).parameters;
+  const pensionable=maxBig(0n,minBig(gross,BigInt(cpp.cppCeiling)*100n)-BigInt(cpp.cppExemption)*100n);
+  const enhanced=cgRound(pensionable*BigInt(cpp.cppEnhancedRateBasisPoints))+cgMoney(c.components[1].amount);
+  const baseCPP=cgMoney(c.components[0].amount)-cgRound(pensionable*BigInt(cpp.cppEnhancedRateBasisPoints)),ei=cgMoney(c.components[2].amount);
   taxable=gross-enhanced;
   const federal=assessTaxableIncome({country:'CA',taxYear:'2026',taxableIncome:cgOut(taxable),netIncome:cgOut(taxable),fullYearResident:true});
   const federalExtraCredit=cgRound((baseCPP+ei+minBig(gross,150100n))*1400n);
@@ -407,7 +412,7 @@ function extendedSalaryRemainder(input,ruleContext={}){
   currency='INR';period='FY 2026–27 (1 April 2026 to 31 March 2027)';
   const epfWage=cgMoney(input.epfMonthlyWage),professionalTax=cgMoney(input.professionalTaxAnnual);
   if(epfWage%100n!==0n||professionalTax%100n!==0n||professionalTax>250000n||epfWage*12n>gross)throw new RangeError('Invalid confirmed contribution wage or professional tax');
-  const epf=calculateEmployeeContributions({country:'IN',taxYear:'2026',income:cgOut(epfWage),scopeConfirmed:true});
+  const epf=calculateEmployeeContributions({country:'IN',taxYear:'2026',income:cgOut(epfWage),scopeConfirmed:true},ruleContext);
   const annualEPF=cgMoney(epf.totalEmployeeContribution)*12n;
   const r=compareIndiaRegimes({country:'IN',taxYear:'2026',grossSalary:cgOut(gross),residentIndividual:true,ageGroup:'under-60',ordinarySalaryOnly:true,oldEligibleDeductions:0,newEligibleDeductions:0},ruleContext.indiaSalary).newRegime;
   tax=cgMoney(r.incomeTax);taxable=cgMoney(r.taxableIncome);
@@ -418,7 +423,7 @@ function extendedSalaryRemainder(input,ruleContext={}){
  }else if(country==='SG'&&input.region==='SG'){
   if(pay<=75000n||pay>10000000n)throw new RangeError('Singapore example supports SGD 751–100,000 whole-dollar monthly wages');
   currency='SGD';period='Income earned in calendar year 2026; YA 2027';payFrequency='monthly';gross=pay*12n;
-  const r=calculateEmployeeContributions({country:'SG',taxYear:'2026',income:cgOut(pay),ageBand:'55-or-under',scopeConfirmed:true});
+  const r=calculateEmployeeContributions({country:'SG',taxYear:'2026',income:cgOut(pay),ageBand:'55-or-under',scopeConfirmed:true},ruleContext);
   const cpf=cgMoney(r.totalEmployeeContribution)*12n;
   const earned=minBig(gross,100000n);
   taxable=maxBig(0n,gross-cpf-earned);
