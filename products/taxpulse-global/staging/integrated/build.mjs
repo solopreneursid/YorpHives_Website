@@ -31,3 +31,12 @@ write('secure-records.mjs.txt',read('engine/secure-records.mjs'));
 write('browser-vault.mjs.txt',read('engine/browser-vault.mjs'));
 
 write('webmanifest.txt',"{\"id\":\"/\",\"name\":\"TaxPulse Global Preview\",\"short_name\":\"TaxPulse\",\"start_url\":\"/\",\"scope\":\"/\",\"display\":\"standalone\",\"background_color\":\"#f8fafc\",\"theme_color\":\"#4f46e5\",\"description\":\"Illustrative financial scenario calculations; tax rules not verified.\"}");
+
+ // The simple workspace uses only local assets and the same engine as the API.
+ write('simple-index.html.txt',read('staging/simple/index.html'));
+ write('simple.css.txt',read('staging/simple/simple.css'));
+ write('simple.mjs.txt',read('staging/simple/simple.mjs'));
+ for(const name of ['country','primitives','us-filing-statuses','IN','US','GB','manifest']){
+   write('browser-'+name+'.mjs.txt',readFileSync(new URL(name+'.mjs',bundle),'utf8'));
+ }
+ write('browser-scenarios.mjs.txt',read('engine/scenarios.mjs'));
