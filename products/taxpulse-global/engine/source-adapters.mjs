@@ -53,7 +53,34 @@ export function extractCraBrackets(html){
  if(seen.size!==Object.keys(craRegions).length)throw Error('Incomplete CRA coverage; Quebec requires separate authority');
  return {jurisdiction:'CA',component:'income-tax-bands',taxYear:String(year),candidates,status:'candidate',legalStatus:'review_required',automaticActivation:false};
 }
+// Revenu Québec publishes each taxation year under a separate heading.
+export function extractQuebecBrackets(html){
+ if(typeof html!=='string'||html.length>2*1024*1024)throw Error('Invalid Quebec source');
+ const headings=[...html.matchAll(/<h[2-4]\b[^>]*>([\s\S]*?)<\/h[2-4]>/gi)];
+ const results=[],seen=new Set();
+ const amount=s=>{if(!/^\$\d{1,3}(?:,\d{3})*$|^\$\d+$/.test(s))throw Error('Invalid Quebec amount');const n=Number(s.replace(/[$,]/g,''));if(!Number.isSafeInteger(n)||n<=0||n>1e9)throw Error('Invalid threshold');return n;};
+ for(let i=0;i<headings.length;i++){
+  const h=headings[i],m=normalize(h[1]).match(/^Income tax rates for (\d{4})$/i);if(!m)continue;
+  const year=Number(m[1]);if(year<2020||year>2100||seen.has(year))throw Error('Invalid or repeated Quebec period');
+  const section=html.slice(h.index+h[0].length,headings[i+1]?.index??html.length),ts=tables(section).filter(t=>t.some(r=>r.length===2&&r[0]==='Taxable income'&&r[1]==='Rate'));
+  if(ts.length!==1)throw Error('Missing or ambiguous Quebec table');
+  const rows=ts[0].filter(r=>!(r[0]==='Taxable income'&&r[1]==='Rate'));
+  if(rows.length<2||rows.length>20||rows.some(r=>r.length!==2))throw Error('Unsupported Quebec table');
+  const bounds=[],rates=[];
+  for(let j=0;j<rows.length;j++){
+   const [label,rate]=rows[j];if(!/^\d{1,2}(?:\.\d{1,2})?%$/.test(rate))throw Error('Invalid Quebec rate');
+   rates.push(Math.round(parseFloat(rate)*100));
+   if(j===0){const a=label.match(/^(\$[\d,]+) or less$/);if(!a)throw Error('Invalid first band');bounds.push(amount(a[1]));}
+   else if(j===rows.length-1){const a=label.match(/^More than (\$[\d,]+)$/);if(!a||amount(a[1])!==bounds.at(-1))throw Error('Invalid final band');}
+   else{const a=label.match(/^More than (\$[\d,]+) but not more than (\$[\d,]+)$/);if(!a||amount(a[1])!==bounds.at(-1)||amount(a[2])<=bounds.at(-1))throw Error('Quebec bracket gap or overlap');bounds.push(amount(a[2]));}
+  }
+  seen.add(year);results.push({jurisdiction:'CA-QC',component:'regional-income-tax',taxYear:String(year),effectiveFrom:year+'-01-01',effectiveUntil:(year+1)+'-01-01',parameters:{bounds,rates},status:'candidate',legalStatus:'review_required',automaticActivation:false});
+ }
+ if(!results.length)throw Error('No recognized Quebec periods');
+ return {jurisdiction:'CA-QC',component:'income-tax-bands',candidates:results.sort((a,b)=>b.taxYear.localeCompare(a.taxYear)),status:'candidate',legalStatus:'review_required',automaticActivation:false};
+}
 export function extractCandidate(source,bytes){
+ if(source.id==='CA-QC-rate'&&source.url==='https://www.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/')return extractQuebecBrackets(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  if(source.id==='US-1'&&source.url==='https://www.ssa.gov/OACT/COLA/cbb.html')return extractSsaWageBase(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  const match=source.url.match(/^https:\/\/www\.gov\.uk\/guidance\/rates-and-thresholds-for-employers-(\d{4})-to-(\d{4})$/);
  if(source.id.startsWith('GB-NI-')&&match&&Number(match[2])===Number(match[1])+1)return extractUkNi(new TextDecoder('utf-8',{fatal:true}).decode(bytes),Number(match[1]));
