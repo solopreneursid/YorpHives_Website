@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "status": "manual-only",
+  "sources": {
+    "ppp": {
+      "publisher": "World Bank / International Comparison Program",
+      "indicator": "PA.NUS.PRVT.PP",
+      "url": "https://data.worldbank.org/indicator/PA.NUS.PRVT.PP",
+      "license": "CC BY 4.0",
+      "unit": "local currency units per international dollar",
+      "scope": "national household consumption",
+      "dataVerified": false
+    },
+    "fx": {
+      "publisher": "European Central Bank",
+      "url": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html",
+      "scope": "indicative reference rates; incomplete country coverage",
+      "dataVerified": false
+    }
+  },
+  "limitations": [
+    "No verified snapshot bundled yet. Manual input only.",
+    "PPP factors must share a reference year. Exchange rates are not purchasing power.",
+    "No inferred city prices or automated salary recommendations."
+  ]
+}
