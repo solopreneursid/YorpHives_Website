@@ -2,6 +2,11 @@ import {createHash} from 'node:crypto';
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 const root=new URL('../../',import.meta.url);
 const read=p=>readFileSync(new URL(p,root),'utf8');
+if(process.argv.includes('--production'))throw Error('This builder is staging-only; production requires a separate authorized release process');
+const release=JSON.parse(read('rules/manifest.json'));
+if(release.releaseMode!=='preview'||Object.values(release.countries).some(r=>r.productionEnabled!==false||r.verification!=='unverified'))throw Error('Preview manifest cannot activate statutory rules');
+const revenue=JSON.parse(read('data/monetization.json'));
+if(revenue.schemaVersion!==1||revenue.mode!=='disabled'||['ads','affiliates','tracking','payments'].some(k=>revenue[k]!==false))throw Error('Preview monetization must remain disabled');
 const out=new URL('./generated/',import.meta.url);mkdirSync(out,{recursive:true});
 const engine=read('engine/primitives.mjs').replace(/\s*export \{ TaxEnginePrimitives \};\s*$/,'');
 const rules={};for(const c of ['IN','US','GB','DE','AE','CA','AU','SG'])rules[c]={'2026':JSON.parse(read('rules/2026/'+c+'.json'))};
@@ -52,3 +57,6 @@ for(const name of ['taxable-income','proof','history','reverse-salary','salary-o
 const fingerprintInputs=['country','primitives','us-filing-statuses','IN','US','GB','taxable-income','proof','history','reverse-salary','salary-offers','negotiation','compensation','international'].map(name=>[name,readFileSync(new URL(name+'.mjs',bundle),'utf8')]);
 const fingerprint=createHash('sha256').update(JSON.stringify(fingerprintInputs)).digest('hex');
 write('browser-fingerprint.mjs.txt','export default '+JSON.stringify(fingerprint)+';\n');
+
+const previewInputs=['worker.mjs','simple-index.html.txt','simple.css.txt','simple.mjs.txt','browser-budget.mjs.txt','browser-financial-profile.mjs.txt','browser-decision-tools.mjs.txt','browser-fingerprint.mjs.txt','browser-manifest.mjs.txt'];
+write('preview-revision.txt',createHash('sha256').update(JSON.stringify(previewInputs.map(n=>[n,readFileSync(new URL(n,bundle),'utf8')]))).digest('hex'));
