@@ -86,3 +86,5 @@ a{color:#2447a4}a:hover{color:#173278}
 }
 
 .financial-chart{display:grid;gap:14px;margin:20px 0;padding:18px;border:1px solid #cbd7e7;border-radius:14px;background:#f5f8fd}.chart-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 12px;align-items:center}.chart-row strong{overflow-wrap:anywhere;text-align:right}.chart-row svg{grid-column:1/-1;width:100%;height:12px}.chart-track{fill:#dce5f2}.chart-positive{fill:#226b70}.chart-negative{fill:#a32e35}@media(max-width:360px){.chart-row{grid-template-columns:1fr}.chart-row strong{text-align:left}}
+
+.regulatory-panel{margin-top:28px;border-top:1px solid #cbd7e7;padding-top:18px}.regulatory-source{padding:16px;border-radius:12px;border:1px solid #cbd7e7;background:#f5f8fd;overflow-wrap:anywhere;box-shadow:0 3px 0 #dce5f2}.regulatory-source p{font-size:.9rem}.regulatory-source a{display:inline-flex;min-height:44px;align-items:center}
