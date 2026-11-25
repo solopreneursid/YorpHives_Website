@@ -128,6 +128,36 @@ export const spec = {
           }
         }
       }
+    },
+    "/v1/capabilities": {
+      "get": {
+        "operationId": "getCapabilities",
+        "responses": {
+          "200": {
+            "description": "Actual preview capabilities and disabled services"
+          }
+        }
+      }
+    },
+    "/v1/regulatory/status": {
+      "get": {
+        "operationId": "getRegulatoryStatus",
+        "responses": {
+          "200": {
+            "description": "Static regulatory verification manifest; not a live monitoring report"
+          }
+        }
+      }
+    },
+    "/v1/discovery": {
+      "get": {
+        "operationId": "getDiscovery",
+        "responses": {
+          "200": {
+            "description": "REST discovery metadata"
+          }
+        }
+      }
     }
   }
 };
