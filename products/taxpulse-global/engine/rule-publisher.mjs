@@ -17,10 +17,14 @@ export async function verifyPublicationFixtures(snapshot,evidence,fixtures){
  if(!Array.isArray(fixtures)||fixtures.length>1000)throw Error('Invalid fixtures');
  const ctx={regional:snapshot.regional,indiaSalary:snapshot.indiaSalary,payroll:snapshot.payroll};
  for(const e of evidence){
+  const rule=[...snapshot.regional.versions,...snapshot.indiaSalary.versions,...snapshot.payroll.versions].find(r=>r.version===e.version);
   const rows=fixtures.filter(f=>f.version===e.version);
+  if(!rule)throw Error('Unknown fixture rule');
   if(rows.length<2||new Set(rows.map(f=>f.id)).size!==rows.length||await hash(rows)!==e.fixtureDigest)throw Error('Missing independent fixture evidence: '+e.version);
   for(const f of rows){if(!Object.hasOwn(methods,f.method)||typeof f.id!=='string'||!Array.isArray(f.path)||!f.path.length||f.path.some(k=>typeof k!=='string'||['__proto__','constructor','prototype'].includes(k))||typeof f.expected!=='number'||!Number.isFinite(f.expected))throw Error('Invalid fixture');
-   const result=methods[f.method](f.input,ctx);
+   const i=f.input;if(!i||i.taxYear!==rule.taxYear||i.country!==rule.jurisdiction.split('-')[0])throw Error('Fixture jurisdiction or period mismatch');
+   if(rule.component==='regional-income-tax'&&(f.method!=='regional-tax'||i.country+'-'+i.region!==rule.jurisdiction)||rule.component==='ordinary-salary'&&f.method!=='india-salary'||['oasdi','medicare','ni'].includes(rule.component)&&f.method!=='salary-remainder'||['cpp-ei','medicare-levy','epf','cpf'].includes(rule.component)&&f.method!=='employee-contributions')throw Error('Fixture does not exercise rule component');
+   const result=methods[f.method](i,ctx);
    const actual=f.path.reduce((o,k)=>o&&Object.hasOwn(o,k)?o[k]:undefined,result);
    if(typeof actual!=='number'||!Number.isFinite(actual)||Math.abs(actual-f.expected)>.005)throw Error('Fixture mismatch: '+f.id);
   }
@@ -28,7 +32,7 @@ export async function verifyPublicationFixtures(snapshot,evidence,fixtures){
 }
 export async function publishSnapshot(db,envelope,fixtures,{publicKeyHex,engineFingerprint,now=new Date()}){
  const head=await readRuleHead(db);
- const previous=head.envelope?JSON.parse(head.envelope).payload:null;
+ const previous=head.envelope?JSON.parse(head.envelope).payload:{regional:{versions:regionalRules()},indiaSalary:{versions:[resolveIndiaSalaryRule('2026')]},payroll:{versions:payrollRules()}};
  const snapshot=await verifyRuleSnapshot(envelope,{publicKeyHex,engineFingerprint,minimumSequence:head.sequence,previous,now});
  verifyCoverage(snapshot);
  await verifyPublicationFixtures(snapshot,envelope.payload.evidence,fixtures);
