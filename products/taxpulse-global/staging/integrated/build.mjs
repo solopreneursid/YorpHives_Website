@@ -12,7 +12,7 @@ const write=(p,v)=>writeFileSync(new URL(p,bundle),v);
 const mapping={'index.html':'staging/integrated/index.html','script-1.js':'staging/assets/script-1.js','script-2.js':'staging/assets/script-2.js','style-1.css':'staging/assets/style-1.css','style-2.css':'staging/assets/style-2.css','application.js':'staging/integrated/application.js'};
 for(const [name,path] of Object.entries(mapping))write(name+'.txt',read(path));
 write('primitives.js.txt',engine+'\n');write('country-rules.js.txt','const COUNTRY_TAX_CONFIGS = '+JSON.stringify(rules)+';\n');
-for(const name of ['primitives','api','openapi','advanced'])write(name+'.mjs',read('engine/'+name+'.mjs'));
+for(const name of ['primitives','api','openapi','advanced','discovery'])write(name+'.mjs',read('engine/'+name+'.mjs'));
 let country=read('engine/country.mjs');
 for(const c of ['IN','US','GB']){
  const from="import "+c+" from '../rules/2026/"+c+".json' with { type: 'json' };";
@@ -21,3 +21,5 @@ for(const c of ['IN','US','GB']){
  write(c+'.mjs','export default '+JSON.stringify(rules[c]['2026'])+';\n');
 }
 write('country.mjs',country);write('worker.mjs',read('staging/integrated/worker.mjs'));
+
+write('manifest.mjs','export default '+JSON.stringify(JSON.parse(read('rules/manifest.json')))+';\n');
