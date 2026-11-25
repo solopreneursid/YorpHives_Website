@@ -3,16 +3,16 @@ function exact(o,keys){if(!o||typeof o!=='object'||Array.isArray(o)||Object.keys
 function units(v,scale,max){if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>max||Math.abs(v*scale-Math.round(v*scale))>0.00002)throw new RangeError('Invalid amount or precision');return BigInt(Math.round(v*scale));}
 const cents=n=>{if(n>100000000000000n||n< -100000000000000n)throw new RangeError('Comparison exceeds supported monetary precision');return Number(n)/100;};
 function round(n,d){return n<0n?-round(-n,d):(n+d/2n)/d;}
-function location(input){
+function location(input,ruleContext){
  exact(input,['salary','housing','living']);
- const salary=calculateSalaryRemainder(input.salary);
+ const salary=calculateSalaryRemainder(input.salary,ruleContext);
  const housing=units(input.housing,100,1e9),living=units(input.living,100,1e9);
  const disposable=units(salary.annualRemainder,100,12e9)-12n*(housing+living);
  return {salary,monthlyHousing:cents(housing),monthlyLiving:cents(living),annualDisposable:cents(disposable),monthlyDisposable:cents(round(disposable,12n))};
 }
-export function compareInternational(input){
+export function compareInternational(input,ruleContext={}){
  exact(input,['first','second','rate','rateDate']);
- const first=location(input.first),second=location(input.second);
+ const first=location(input.first,ruleContext),second=location(input.second,ruleContext);
  if(first.salary.country===second.salary.country)throw new RangeError('Choose different countries');
  const rate=units(input.rate,1000000,1000000);
  if(rate===0n)throw new RangeError('Exchange rate must be positive');
