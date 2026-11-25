@@ -42,7 +42,7 @@ write('webmanifest.txt',"{\"id\":\"/\",\"name\":\"TaxPulse Global Preview\",\"sh
  }
  write('browser-scenarios.mjs.txt',read('engine/scenarios.mjs'));
 
-for(const name of ['taxable-income','proof','history']){
+for(const name of ['taxable-income','proof','history','reverse-salary']){
   const content=read('engine/'+name+'.mjs');
   write(name+'.mjs',content);write('browser-'+name+'.mjs.txt',content);
 }
