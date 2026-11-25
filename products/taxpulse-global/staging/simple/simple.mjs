@@ -307,9 +307,15 @@ Object.assign(payOptions,{
  AE:{country:'AE',label:'Monthly gross wages (AED)',scope:'Non-GCC expatriate private-sector employee, wages only, no UAE/GCC pension liability. Twelve identical monthly payments and unchanged basic salary, standard ILOE premium with 5% VAT. No foreign taxes, optional deductions, service fees or end-of-service benefits. AED 100–1,000,000.',min:100,max:1000000,step:'0.01',period:'Calendar year 2026'}
 });
 function clearPay(){lastPay=null;$('pay-result').hidden=true;$('pay-error').textContent='';}
+function showEligibility(id,scope){
+ const list=$(id);list.replaceChildren();
+ for(const condition of scope.split(/\.\s+(?=[A-Z])/)){
+  const item=document.createElement('li');item.textContent=condition.endsWith('.')?condition:condition+'.';list.append(item);
+ }
+}
 function payChanged(){
  const c=payOptions[$('pay-region').value];
- $('pay-label').textContent=c.label;$('pay-scope').textContent=c.scope;$('pay-amount').max=c.max;$('pay-amount').step=c.step;
+ $('pay-label').textContent=c.label;showEligibility('pay-scope',c.scope);$('pay-amount').max=c.max;$('pay-amount').step=c.step;
  $('pay-period').textContent=c.period||(c.country==='US'?'Calendar year 2026':'6 April 2026 – 5 April 2027');
  $('pay-amount').min=c.min??0;
  for(const id of ['pay-epf','pay-professional-tax']){$(id+'-field').hidden=c.country!=='IN';$(id).disabled=c.country!=='IN';$(id).value='';}
@@ -454,7 +460,7 @@ const intlCurrency={TX:'USD',RUK:'GBP',SCT:'GBP',AB:'CAD',AU:'AUD',IN:'INR',SG:'
 function clearInternational(){lastInternational=null;$('intl-result').hidden=true;$('intl-error').textContent='';}
 function intlChanged(n){
  const id=k=>'intl-'+n+'-'+k,region=$(id('region')).value,c=payOptions[region],pay=$(id('pay'));
- $(id('label')).textContent=c.label;$(id('scope')).textContent=c.scope;
+ $(id('label')).textContent=c.label;showEligibility(id('scope'),c.scope);
  pay.min=c.min??0;pay.max=c.max;pay.step=c.step;pay.value='';
  for(const [k,on] of [['epf',region==='IN'],['pt',region==='IN'],['taxable',region==='DE'],['supplement',region==='DE'],['basic',region==='AE']]){
   $(id(k)+'-field').hidden=!on;$(id(k)).disabled=!on;$(id(k)).value='';
