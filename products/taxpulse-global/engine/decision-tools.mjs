@@ -7,12 +7,12 @@ const out=n=>{if(n>100000000000000n||n< -100000000000000n)throw new RangeError('
 const round=(n,d)=>n<0n?-round(-n,d):(n+d/2n)/d;
 function currency(c){if(!currencies.includes(c))throw new RangeError('Unsupported currency');return c;}
 const sample={sampleOnly:true,taxRulesVerified:false};
-export function indiaCtc(input){
+export function indiaCtc(input,ruleContext={}){
  exact(input,['annualCtc','employerContributions','nonCashBenefits','employeeContributions','otherPayrollDeductions','residentIndividual','ageGroup','oldEligibleDeductions','newEligibleDeductions']);
  const whole=v=>{if(!Number.isSafeInteger(v)||v<0||v>1e9)throw new RangeError('Enter whole annual rupees');return BigInt(v);};
  const ctc=whole(input.annualCtc),employer=whole(input.employerContributions),benefits=whole(input.nonCashBenefits),employee=whole(input.employeeContributions),other=whole(input.otherPayrollDeductions);
  const gross=ctc-employer-benefits;if(gross<0n||employee+other>gross)throw new RangeError('Salary components exceed cash wages');
- const tax=compareIndiaRegimes({country:'IN',taxYear:'2026',grossSalary:Number(gross),residentIndividual:input.residentIndividual,ageGroup:input.ageGroup,ordinarySalaryOnly:true,oldEligibleDeductions:input.oldEligibleDeductions,newEligibleDeductions:input.newEligibleDeductions});
+ const tax=compareIndiaRegimes({country:'IN',taxYear:'2026',grossSalary:Number(gross),residentIndividual:input.residentIndividual,ageGroup:input.ageGroup,ordinarySalaryOnly:true,oldEligibleDeductions:input.oldEligibleDeductions,newEligibleDeductions:input.newEligibleDeductions},ruleContext.indiaSalary);
  const regime=r=>{const net=(gross-employee-other)*100n-units(r.incomeTax);return {incomeTax:r.incomeTax,annualCash:out(net),monthlyCash:out(round(net,12n))};};
  return {...sample,currency:'INR',annualGross:Number(gross),annualEmployerContributions:Number(employer),annualNonCashBenefits:Number(benefits),annualEmployeeContributions:Number(employee),annualOtherPayrollDeductions:Number(other),old:regime(tax.oldRegime),new:regime(tax.newRegime),tax,warnings:['Use annual employer and employee amounts confirmed by the employer; do not double count noncash benefits or deductions. Assumes all remaining cash is ordinary taxable salary. No EPF, gratuity, professional tax, or eligibility is inferred. India EPFO wage-ceiling change effective 17 September 2026 requires independent review. Unverified example only.']};
 }
@@ -31,10 +31,10 @@ export function relocationBreakEven(input){
  const current=signed(input.currentMonthlySavings),destination=signed(input.destinationMonthlySavings),cost=units(input.movingCost),delta=destination-current;
  return {...sample,currency:input.currency,monthlyImprovement:out(delta),monthsToRecover:cost===0n?0:delta<=0n?null:Number((cost+delta-1n)/delta),firstYearDifference:out(delta*12n-cost),warnings:['Use monthly savings after taxes and living expenses, converted to the same currency. No future exchange-rate, inflation, investment, visa or cross-border tax assumptions.']};
 }
-export function indiaDeductionScenario(input){
+export function indiaDeductionScenario(input,ruleContext={}){
  exact(input,['grossSalary','residentIndividual','ageGroup','oldEligibleDeductions','newEligibleDeductions','extraOldEligibleDeductions','extraNewEligibleDeductions']);
  const whole=v=>{if(!Number.isSafeInteger(v)||v<0||v>1e9)throw new RangeError('Enter whole annual rupees');return v;};
  const base={country:'IN',taxYear:'2026',grossSalary:whole(input.grossSalary),residentIndividual:input.residentIndividual,ageGroup:input.ageGroup,ordinarySalaryOnly:true,oldEligibleDeductions:whole(input.oldEligibleDeductions),newEligibleDeductions:whole(input.newEligibleDeductions)};
- const before=compareIndiaRegimes(base),after=compareIndiaRegimes({...base,oldEligibleDeductions:whole(base.oldEligibleDeductions+whole(input.extraOldEligibleDeductions)),newEligibleDeductions:whole(base.newEligibleDeductions+whole(input.extraNewEligibleDeductions))});
+ const before=compareIndiaRegimes(base,ruleContext.indiaSalary),after=compareIndiaRegimes({...base,oldEligibleDeductions:whole(base.oldEligibleDeductions+whole(input.extraOldEligibleDeductions)),newEligibleDeductions:whole(base.newEligibleDeductions+whole(input.extraNewEligibleDeductions))},ruleContext.indiaSalary);
  return {...sample,currency:'INR',before,after,oldTaxReduction:before.oldRegime.incomeTax-after.oldRegime.incomeTax,newTaxReduction:before.newRegime.incomeTax-after.newRegime.incomeTax,warnings:['Only use deductions already confirmed eligible for each regime, excluding the standard deduction. A tax reduction is not a net financial benefit; the underlying expenditure may cost more. No deduction eligibility or regime recommendation is inferred.']};
 }
