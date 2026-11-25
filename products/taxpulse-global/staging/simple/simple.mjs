@@ -610,22 +610,47 @@ async function printReceipt(record,button,error){
 }
 for(const [id,getRecord] of [['pay',()=>lastPay],['reverse',()=>lastReverse],['offers',()=>lastOffers],['negotiation',()=>lastNegotiation],['comp',()=>lastCompensation],['intl',()=>lastInternational]])$(id+'-print').addEventListener('click',()=>printReceipt(getRecord(),$(id+'-print'),$(id+'-error')));
 
-// Hash navigation preserves form state while exposing only the chosen workspace.
+// Dedicated routes with legacy fragment compatibility, no network or financial data in URLs.
 const workspaceSections=[...document.querySelectorAll('main > section.card')];
 const dashboardHero=document.querySelector('main > .hero');
 const workspaceNav=[...document.querySelectorAll('.nav a')];
 const groups={compare:['my-tax','compare'],'reverse-salary':['salary-remainder','reverse-salary'],'salary-negotiation':['salary-remainder','salary-negotiation']};
-function showWorkspace({focus=false}={}){
+const categories={salary:'category-salary',taxes:'category-taxes',career:'category-career',abroad:'category-abroad',money:'category-money',business:'business','tax-rules':'updates'};
+function routeId(){
  const hash=location.hash.slice(1);
- const requested=workspaceSections.find(section=>section.id===hash);
- const active=requested?.id||'tools';
- const home=active==='tools';
+ if(workspaceSections.some(s=>s.id===hash))return hash;
+ const path=location.pathname.replace(/\/$/,'');
+ if(Object.hasOwn(categories,path.slice(1)))return categories[path.slice(1)];
+ if(path.startsWith('/tools/')){const id=path.slice(7);if(workspaceSections.some(s=>s.id===id))return id;}
+ return 'tools';
+}
+function showWorkspace({focus=false}={}){
+ const active=routeId(),home=active==='tools';
  const shown=new Set(groups[active]||[active]);
  dashboardHero.hidden=!home;
  for(const section of workspaceSections)section.hidden=!shown.has(section.id);
- for(const link of workspaceNav){if(link.hash==='#'+active)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');}
+ for(const link of workspaceNav){
+  const current=home?link.pathname==='/':categories[link.pathname.slice(1)]===active;
+  if(current)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');
+ }
  const target=document.getElementById(active);
- if(focus&&hash!=='main'){target.tabIndex=-1;target.focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}
+ document.title=home?'TaxPulse Global | Salary, tax and financial tools':target.querySelector('h2').textContent+' | TaxPulse Global';
+ if(focus&&location.hash!=='#main'){target.tabIndex=-1;target.focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}
 }
+document.addEventListener('click',event=>{
+ const link=event.target.closest('a[href]');
+ if(!link||event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey||link.target||link.hasAttribute('download'))return;
+ const url=new URL(link.href,location.href);
+ if(url.origin!==location.origin||url.hash||!(url.pathname==='/'||Object.hasOwn(categories,url.pathname.slice(1))||workspaceSections.some(s=>url.pathname==='/tools/'+s.id)))return;
+ event.preventDefault();history.pushState(null,'',url.pathname);showWorkspace({focus:true});
+});
+window.addEventListener('popstate',()=>showWorkspace({focus:true}));
 window.addEventListener('hashchange',()=>showWorkspace({focus:true}));
+const search=document.getElementById('tool-search');
+const directoryLinks=[...document.querySelectorAll('#tools .tool-link')];
+search.addEventListener('input',()=>{
+ const query=search.value.trim().toLocaleLowerCase();
+ let count=0;for(const link of directoryLinks){link.hidden=!link.textContent.toLocaleLowerCase().includes(query);if(!link.hidden)count++;}
+ document.getElementById('tool-search-count').textContent=count+' matching calculators';
+});
 showWorkspace();
