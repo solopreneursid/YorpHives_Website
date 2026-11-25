@@ -1,0 +1,207 @@
+{
+  "country_code": "CA",
+  "country_name": "Canada",
+  "flag": "🇨🇦",
+  "tax_year": "2026",
+  "tax_year_label": "2026 Federal Tax Year (CRA Indexed Brackets)",
+  "currency": {
+    "code": "CAD",
+    "symbol": "CA$",
+    "locale": "en-CA"
+  },
+  "source_url": "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html",
+  "modules": {
+    "personal_income_tax": {
+      "primitive": "progressive_brackets",
+      "standard_deduction": 16452,
+      "brackets": [
+        {
+          "min": 0,
+          "max": 58523,
+          "rate": 0.14
+        },
+        {
+          "min": 58523,
+          "max": 117045,
+          "rate": 0.205
+        },
+        {
+          "min": 117045,
+          "max": 181440,
+          "rate": 0.26
+        },
+        {
+          "min": 181440,
+          "max": 258482,
+          "rate": 0.29
+        },
+        {
+          "min": 258482,
+          "max": null,
+          "rate": 0.33
+        }
+      ]
+    },
+    "social_security_payroll": {
+      "primitive": "capped_percentage",
+      "employee_tiers": [
+        {
+          "name": "Base CPP (Canada Pension Plan)",
+          "rate": 0.0595,
+          "min_Floor": 3500,
+          "annual_cap": 74600,
+          "note": "5.95% from CA$3,500 to CA$74,600 YMPE (max CA$4,230.45)"
+        },
+        {
+          "name": "Second CPP (CPP2)",
+          "rate": 0.04,
+          "min_Floor": 74600,
+          "annual_cap": 85000,
+          "note": "4.0% from CA$74,600 YMPE to CA$85,000 YAMPE (max CA$416.00)"
+        },
+        {
+          "name": "Employment Insurance (EI)",
+          "rate": 0.0163,
+          "min_Floor": 0,
+          "annual_cap": 68900,
+          "note": "1.63% up to CA$68,900 MIE (max CA$1,123.07)"
+        }
+      ],
+      "employer_tiers": [
+        {
+          "name": "Employer Base CPP & CPP2 Match",
+          "rate": 0.0595,
+          "min_Floor": 3500,
+          "annual_cap": 74600,
+          "note": "Matches employee CPP (5.95%) + CPP2 (4%)"
+        },
+        {
+          "name": "Employer EI Contribution (1.4x Employee Rate)",
+          "rate": 0.02282,
+          "min_Floor": 0,
+          "annual_cap": 68900,
+          "note": "2.282% up to CA$68,900 MIE"
+        }
+      ]
+    },
+    "capital_gains_crypto": {
+      "primitive": "flat_or_slab_lookup",
+      "cess_rate": 0,
+      "assets": {
+        "listed_equity": {
+          "label": "Canada Listed Equities & ETFs",
+          "long_term_months": 12,
+          "short_term_rate": 0.2,
+          "long_term_rate": 0.15,
+          "annual_exemption": 0,
+          "note": "50% CGT discount / inclusion applies after 12 months holding period."
+        },
+        "real_estate": {
+          "label": "Canada Real Estate Property",
+          "long_term_months": 12,
+          "short_term_rate": 0.3,
+          "long_term_rate": 0.18,
+          "annual_exemption": 0,
+          "note": "Assessed on net realized property appreciation."
+        },
+        "crypto_vda": {
+          "label": "Canada Digital Assets & Crypto",
+          "long_term_months": 12,
+          "short_term_rate": 0.28,
+          "long_term_rate": 0.15,
+          "annual_exemption": 0,
+          "note": "Taxed according to digital asset capital gains rules."
+        }
+      }
+    },
+    "vat_gst": {
+      "primitive": "flat_or_slab_lookup",
+      "tax_name": "Goods & Services Tax (GST)",
+      "slabs": [
+        {
+          "id": "std",
+          "label": "Standard Rate (5%)",
+          "rate": 0.05
+        },
+        {
+          "id": "red",
+          "label": "Reduced / Merit Rate (0%)",
+          "rate": 0
+        },
+        {
+          "id": "zero",
+          "label": "Zero-Rated / Exports (0%)",
+          "rate": 0
+        }
+      ]
+    },
+    "corporate_tax": {
+      "primitive": "progressive_brackets",
+      "regimes": [
+        {
+          "id": "std_corp",
+          "label": "Canada Standard Corporate Tax Rate",
+          "brackets": [
+            {
+              "min": 0,
+              "max": null,
+              "rate": 0.265
+            }
+          ],
+          "note": "Standard 2026 statutory corporate rate."
+        }
+      ]
+    },
+    "property_transfer_tax": {
+      "primitive": "progressive_brackets",
+      "regions": [
+        {
+          "id": "std_prop",
+          "label": "Canada Standard Property Transfer / Stamp Duty",
+          "brackets": [
+            {
+              "min": 0,
+              "max": null,
+              "rate": 0.02
+            }
+          ],
+          "registration_rate": 0.005,
+          "registration_cap": 5000,
+          "non_resident_surcharge_rate": 0.08,
+          "note": "Standard regional transfer duty plus registration fee."
+        }
+      ]
+    },
+    "withholding_dtaa": {
+      "primitive": "treaty_offset",
+      "domestic_default_wht": {
+        "dividends": 0.25,
+        "interest": 0.2,
+        "royalties": 0.2
+      },
+      "treaties": {
+        "IN": {
+          "partner_name": "India DTAA",
+          "dividends": 0.1,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "Bilateral DTAA Articles 10-12"
+        },
+        "US": {
+          "partner_name": "United States Treaty",
+          "dividends": 0.15,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "Bilateral Tax Convention"
+        },
+        "GB": {
+          "partner_name": "United Kingdom Treaty",
+          "dividends": 0.1,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "Bilateral DTT"
+        }
+      }
+    }
+  }
+}
