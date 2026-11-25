@@ -1,3 +1,4 @@
+import {calculateBudget,expenseCategories} from './engine/budget.mjs';
 import {createFinancialProfile,offerFromProfile} from './engine/financial-profile.mjs';
 import {compareInternational} from './engine/international.mjs';
 import {compareCompensation} from './engine/compensation.mjs';
@@ -335,6 +336,7 @@ $('pay-form').addEventListener('submit',event=>{
   for(const [label,value] of [['Annual gross wages',r.annualGross],...(r.taxableIncome===undefined?[]:[['Taxable income',r.taxableIncome]]),...(r.taxAdjustments||[]).map(c=>[c.name,c.amount]),...(r.incomeTaxComponents||[{name:'Annual income tax',amount:r.incomeTax}]).map(c=>[c.name,c.amount]),...r.contributions.map(c=>[c.name,c.amount]),['Annual modeled deductions',r.totalModeledDeductions],['Annual money left',r.annualRemainder]]){
    const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=f(value);$('pay-breakdown').append(dt,dd);
   }
+  renderFinancialChart($('salary-chart'),[['Gross income',r.annualGross],['Income tax',r.incomeTax],['Employee contributions',r.employeeContributions],['Money left',r.annualRemainder]],r.currency);
   $('pay-warnings').textContent=r.warnings.join(' ')+' Unverified example only.';
   lastPay={kind:'salary-remainder',input};$('pay-result').hidden=false;$('pay-result').focus();
  }catch{$('pay-error').textContent='Check the pay amount and confirm all conditions. This example does not support other employment or tax situations.';}
@@ -660,10 +662,10 @@ showWorkspace();
 let savedProfile=null;
 $('profile-save').addEventListener('click',()=>{
  if(!lastPay)return;
- try{savedProfile=createFinancialProfile(lastPay.input);$('profile-summary').textContent='Saved example: '+savedProfile.region+' · '+money(savedProfile.salary.pay,savedProfile.currency)+' '+savedProfile.payPeriod;$('profile-bar').hidden=false;$('profile-use-intl').disabled=false;$('profile-save-status').textContent='Example kept in this tab. Open Work Abroad to reuse it.';}
+ try{savedProfile=createFinancialProfile(lastPay.input);$('profile-summary').textContent='Saved example: '+savedProfile.region+' · '+money(savedProfile.salary.pay,savedProfile.currency)+' '+savedProfile.payPeriod;$('profile-bar').hidden=false;$('profile-use-intl').disabled=false;$('budget-use-profile').disabled=false;$('profile-save-status').textContent='Example kept in this tab. Open Work Abroad or My Money to reuse it.';}
  catch{$('profile-save-status').textContent='Calculate a supported salary example first.';}
 });
-$('profile-clear').addEventListener('click',()=>{savedProfile=null;$('profile-summary').textContent='';$('profile-bar').hidden=true;$('profile-use-intl').disabled=true;$('profile-save-status').textContent='Saved example forgotten. Existing calculator inputs are unchanged.';$('profile-intl-status').textContent='';});
+$('profile-clear').addEventListener('click',()=>{savedProfile=null;$('profile-summary').textContent='';$('profile-bar').hidden=true;$('profile-use-intl').disabled=true;$('budget-use-profile').disabled=true;$('profile-save-status').textContent='Saved example forgotten. Existing calculator inputs are unchanged.';$('profile-intl-status').textContent='';});
 $('profile-use-intl').addEventListener('click',()=>{
  if(!savedProfile)return;
  try{const s=offerFromProfile(savedProfile);$('intl-1-region').value=s.region;intlChanged(1);$('intl-1-pay').value=String(s.pay);
@@ -671,3 +673,14 @@ $('profile-use-intl').addEventListener('click',()=>{
  $('profile-intl-status').textContent='Salary copied. Confirm the conditions again and enter living costs and exchange rate.';
  }catch{$('profile-intl-status').textContent='Could not reuse this example.';}
 });
+
+// Native SVG bars: no inline style or external chart libraries; exact text remains visible.
+function renderFinancialChart(root,rows,currency){
+ root.replaceChildren();const max=Math.max(1,...rows.map(([,v])=>Math.abs(v)));
+ for(const [label,value] of rows){const row=document.createElement('div');row.className='chart-row';const title=document.createElement('span');title.textContent=label;const amount=document.createElement('strong');amount.textContent=money(value,currency);const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 1000 12');svg.setAttribute('preserveAspectRatio','none');svg.setAttribute('aria-hidden','true');const track=document.createElementNS(svg.namespaceURI,'rect');track.setAttribute('width','1000');track.setAttribute('height','12');track.setAttribute('rx','4');track.setAttribute('class','chart-track');const bar=document.createElementNS(svg.namespaceURI,'rect');bar.setAttribute('width',String(Math.abs(value)/max*1000));bar.setAttribute('height','12');bar.setAttribute('rx','4');bar.setAttribute('class',value<0?'chart-negative':'chart-positive');svg.append(track,bar);row.append(title,amount,svg);root.append(row);}
+}
+function clearBudget(){$('budget-result').hidden=true;$('budget-error').textContent='';}
+$('budget-form').addEventListener('input',clearBudget);
+$('budget-copy').addEventListener('click',()=>{$('budget-alt-income').value=$('budget-income').value;$('budget-alt-housing').value=$('budget-housing').value;clearBudget();});
+$('budget-use-profile').addEventListener('click',()=>{if(!savedProfile)return;$('budget-currency').value=savedProfile.currency;$('budget-income').value=(savedProfile.annualTakeHome/12).toFixed(2);$('budget-alt-income').value=$('budget-income').value;for(const k of expenseCategories)$('budget-'+k).value='0';$('budget-alt-housing').value='0';$('budget-goal').value='0';$('budget-profile-status').textContent='Average monthly modeled take-home copied. Expenses and goal reset; enter example costs in the selected currency.';clearBudget();});
+$('budget-form').addEventListener('submit',event=>{event.preventDefault();clearBudget();try{const v=k=>$('budget-'+k).valueAsNumber;const r=calculateBudget({currency:$('budget-currency').value,monthlyIncome:v('income'),expenses:Object.fromEntries(expenseCategories.map(k=>[k,v(k)])),monthlyGoal:v('goal'),alternativeIncome:v('alt-income'),alternativeHousing:v('alt-housing')});const f=n=>money(n,r.currency);$('budget-total').textContent=f(r.monthlyExpenses);$('budget-balance').textContent=f(r.monthlyBalance);$('budget-annual').textContent=f(r.annualBalance);renderFinancialChart($('budget-chart'),[['Current monthly income',r.monthlyIncome],['Current monthly expenses',r.monthlyExpenses],['Current money left',r.monthlyBalance],['Alternative money left',r.alternative.monthlyBalance]],r.currency);$('budget-insight').textContent=(r.monthlyBalance<0?'Your example has a monthly shortfall. ':r.goalGap>0?'Monthly savings goal gap: '+f(r.goalGap)+'. ':'Your example meets the monthly savings goal. ')+'Alternative monthly balance change: '+f(r.alternative.monthlyDifference)+'.';$('budget-warning').textContent=r.warnings.join(' ');$('budget-result').hidden=false;$('budget-result').focus();}catch{$('budget-error').textContent='Check every amount and select a currency.';}});
