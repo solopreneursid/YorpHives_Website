@@ -1,5 +1,4 @@
 import {loadRuntimeRules} from './runtime-rules.mjs';
-import fpModule from './browser-fingerprint.mjs.txt';
 import a38 from './browser-india-salary-registry.mjs.txt';
 import a39 from './browser-india-salary-versions.mjs.txt';
 import a36 from './browser-regional-registry.mjs.txt';
@@ -52,7 +51,7 @@ async function read(req){
  return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(data));
  }finally{r.releaseLock();}
 }
-const baseFingerprint=JSON.parse(fpModule.slice('export default '.length).trim().replace(/;$/,''));
+const baseFingerprint=JSON.parse(a25.slice('export default '.length).trim().replace(/;$/,''));
 export default{async fetch(req,env){const u=new URL(req.url),p=u.pathname;
  const runtime=()=>loadRuntimeRules(env,baseFingerprint);
  if(p==='/assets/engine/runtime-context.mjs'&&['GET','HEAD'].includes(req.method)){const r=await runtime();return new Response(req.method==='HEAD'?null:'export default '+JSON.stringify(r)+';\n',{headers:{...headers,'content-type':'application/javascript; charset=utf-8'}});}
