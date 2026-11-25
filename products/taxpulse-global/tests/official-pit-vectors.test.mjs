@@ -44,3 +44,38 @@ test('ordinary-income tax is monotonic near checked US and UK thresholds', () =>
       country + ' tax decreases after ' + threshold);
   }
 });
+
+const US_STATUS_CASES = [
+  ['single', 120000, 17570],
+  ['mfj', 120000, 10040],
+  ['mfj', 300000, 49468],
+  ['mfj', 800900, 206583.5],
+  ['hoh', 120000, 13988],
+  ['hoh', 225900, 39207],
+  ['hoh', 225901, 39207.32],
+  ['hoh', 664750, 191171],
+  ['mfs', 120000, 17570],
+  ['mfs', 400450, 103291.75]
+];
+
+for (const [filingStatus, grossSalary, expected] of US_STATUS_CASES) {
+  test('2026 IRS ' + filingStatus + ' filing status, gross ' + grossSalary, () => {
+    const r = countryCalculate({
+      country: 'US', taxYear: '2026', module: 'pit',
+      parameters: { grossSalary, filingStatus }
+    });
+    assert.equal(r.result.filingStatus, filingStatus);
+    assert.ok(Math.abs(r.result.incomeTax - expected) < 0.005,
+      filingStatus + ' expected ' + expected + ', got ' + r.result.incomeTax);
+    assert.equal(r.taxRulesVerified, false);
+  });
+}
+
+test('unrecognized or inapplicable filing statuses are rejected', () => {
+  const call = (country, filingStatus) => countryCalculate({
+    country, taxYear: '2026', module: 'pit',
+    parameters: { grossSalary: 120000, filingStatus }
+  });
+  assert.throws(() => call('US', 'not-a-status'), /filing status/);
+  assert.throws(() => call('GB', 'mfj'), /only supported for US/);
+});
