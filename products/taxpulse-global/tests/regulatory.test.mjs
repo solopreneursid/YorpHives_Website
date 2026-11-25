@@ -21,3 +21,12 @@ test('US OASDI ceiling matches official 2026 maximum',()=>{
  const r=countryCalculate({country:'US',taxYear:'2026',module:'payroll',parameters:{grossSalary:200000}});
  assert.equal(r.result.employee.items[0].amount,11439);
 });
+
+test('2026 US head-of-household higher-rate boundary is correct in UI and backend', () => {
+ const gross=225900;
+ const backend=countryCalculate({country:'US',taxYear:'2026',module:'pit',
+   parameters:{grossSalary:gross,filingStatus:'hoh'}});
+ const front=ctx.calculateTaxForCountry('US','hoh',gross,0);
+ assert.ok(Math.abs(backend.result.incomeTax-39207)<0.005);
+ assert.ok(Math.abs(front.finalIncomeTax-39207)<0.005);
+});
