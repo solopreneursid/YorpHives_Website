@@ -3659,38 +3659,23 @@ Restricted Stock Units (RSU Vest): £20,000`
       const annualExpenses = Math.max(1, baseCalc.netTakeHomeAnnual * (1 - savRate));
       const fireTarget = annualExpenses * 25; // 4% Safe Withdrawal Rule
 
-      let bal10Yr = startPortfolio;
-      for (let y = 0; y < 10; y++) {
-        bal10Yr = (bal10Yr + annualInvested) * (1 + postTaxReturn);
-      }
-
-      // Compute years to hit fireTarget
-      let yrsToFire = 0;
-      let simBal = startPortfolio;
-      while (simBal < fireTarget && yrsToFire < 60) {
-        simBal = (simBal + annualInvested) * (1 + postTaxReturn);
-        yrsToFire += 0.25;
-      }
-
-      // Compare against a 0%-tax hub (e.g., UAE / tax-optimized regime)
-      let yrsZeroTax = 0;
-      let simZero = startPortfolio;
-      const zeroTaxInvested = grossAnnualLocal * savRate;
-      while (simZero < fireTarget && yrsZeroTax < 60) {
-        simZero = (simZero + zeroTaxInvested) * (1 + preTaxRet);
-        yrsZeroTax += 0.25;
-      }
-      const savedYears = Math.max(0, yrsToFire - yrsZeroTax);
+      const scenario = (contribution,annualReturn,years) => TaxPulseAdvanced.calculate({module:'fire_wealth',parameters:{initialSavings:Math.min(startPortfolio,1e9),monthlyContribution:Math.min(contribution/12,1e9),annualReturn:Math.min(1,Math.max(-.99,annualReturn)),years,withdrawalRate:.04,annualSpending:Math.min(annualExpenses,1e9)}}).result;
+      const tenYear = scenario(annualInvested,postTaxReturn,10);
+      const full = scenario(annualInvested,postTaxReturn,60);
+      const zero = scenario(grossAnnualLocal*savRate,preTaxRet,60);
+      const bal10Yr = tenYear.projectedBalance;
+      const yrsToFire = full.reachedMonth === null ? null : full.reachedMonth/12;
+      const savedYears = full.reachedMonth !== null && zero.reachedMonth !== null ? Math.max(0,(full.reachedMonth-zero.reachedMonth)/12) : 0;
 
       document.getElementById('fireAnnualInvestedVal').textContent = `${formatActiveDisplay(annualInvested, countryRule)} / yr`;
       document.getElementById('fireMonthlyInvestedSub').textContent = `${formatActiveDisplay(annualInvested / 12, countryRule)} / month invested`;
       document.getElementById('fireTenYearVal').textContent = formatActiveDisplay(bal10Yr, countryRule);
       document.getElementById('fireLtcgDragSub').textContent = `After ${(ltcgRate * 100).toFixed(1)}% LTCG tax drag (${(postTaxReturn * 100).toFixed(2)}% net CAGR)`;
       document.getElementById('fireTargetCorpusVal').textContent = formatActiveDisplay(fireTarget, countryRule);
-      document.getElementById('fireYearsToGoalVal').textContent = `${yrsToFire.toFixed(1)} Years`;
+      document.getElementById('fireYearsToGoalVal').textContent = yrsToFire === null ? 'Not reached within 60 years' : `${yrsToFire.toFixed(1)} Years`;
       document.getElementById('fireArbitrageGainSub').textContent = savedYears > 0.1
         ? `0% Tax Hub reaches FIRE ${savedYears.toFixed(1)} yrs faster`
-        : 'Already at maximum tax compounding velocity!';
+        : 'No earlier target demonstrated in this scenario.';
 
       updatePinnedScenarioBar();
     }
@@ -5510,12 +5495,14 @@ Signed Electronically: ${flName} | Date: 2026-11-17
       // Update Module 31: Salary Hike & 5-Year Career Progression
       const curSal = Math.max(0, parseFloat(document.getElementById('hikeCurrentSalaryInput')?.value) || 0);
       const newSal = Math.max(0, parseFloat(document.getElementById('hikeNewSalaryInput')?.value) || 0);
-      const growthRate = Math.max(0, parseFloat(document.getElementById('hikeAnnualGrowthRateInput')?.value) || 12) / 100;
+      const growthInput = parseFloat(document.getElementById('hikeAnnualGrowthRateInput')?.value);
+      const growthRate = Math.min(1, Math.max(0, Number.isFinite(growthInput) ? growthInput : 12) / 100);
+      const hikeScenario = TaxPulseAdvanced.calculate({module:'salary_hike',parameters:{currentSalary:Math.min(curSal,1e9),newSalary:Math.min(newSal,1e9),annualGrowthRate:growthRate,years:5}}).result;
 
       const curSim = calculateTaxForCountry(code, state.filingStatusId, curSal, 0);
       const newSim = calculateTaxForCountry(code, state.filingStatusId, newSal, 0);
 
-      const grossDiff = newSal - curSal;
+      const grossDiff = hikeScenario.absoluteIncrease;
       const curTotalTax = curSim.finalIncomeTax + curSim.totalSocialSecurity;
       const newTotalTax = newSim.finalIncomeTax + newSim.totalSocialSecurity;
       const taxDiff = Math.max(0, newTotalTax - curTotalTax);
@@ -5535,7 +5522,7 @@ Signed Electronically: ${flName} | Date: 2026-11-17
       if (fiveYrBody) {
         let rowsHtml = '';
         for (let yr = 1; yr <= 5; yr++) {
-          const projGross = Math.round(newSal * Math.pow(1 + growthRate, yr - 1));
+          const projGross = Math.round(hikeScenario.projection[yr-1].salary);
           const yrSim = calculateTaxForCountry(code, state.filingStatusId, projGross, 0);
           const yrTax = yrSim.finalIncomeTax + yrSim.totalSocialSecurity;
           rowsHtml += `
