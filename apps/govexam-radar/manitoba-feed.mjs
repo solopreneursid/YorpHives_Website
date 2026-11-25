@@ -69,31 +69,54 @@ const hash=async value=>{
  const result=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value));
  return [...new Uint8Array(result)].map(v=>v.toString(16).padStart(2,"0")).join("");
 };
+// One same-origin redirect, one bounded retry. A redirect to another site is
+// never silently followed (and never treated as valid government-source evidence).
 async function fetchRss(fetcher=fetch){
- const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),11000);
- try{
-  const response=await fetcher(MANITOBA.url,{method:"GET",signal:ctl.signal,redirect:"error",headers:{"Accept":"application/rss+xml, application/xml, text/xml"}});
-  if(!response.ok)return{error:"http_"+response.status,httpStatus:response.status};
-  const ct=response.headers.get("content-type")||"";
-  if(!/xml|rss/i.test(ct))return{error:"bad_content_type",httpStatus:response.status};
-  if(Number(response.headers.get("content-length")||0)>MAX_BYTES)return{error:"feed_too_big",httpStatus:response.status};
-  let xml="";
-  const reader=response.body?.getReader();
-  if(reader){
-   const decoder=new TextDecoder();
-   try{while(true){const {done,value}=await reader.read();if(done)break;
-     xml+=decoder.decode(value,{stream:true});if(xml.length>MAX_BYTES){await reader.cancel();return{error:"feed_too_big",httpStatus:response.status};}}
-     xml+=decoder.decode();
-   }finally{reader.releaseLock();}
-  }else{xml=await response.text();}
-  if(xml.length>MAX_BYTES)return{error:"feed_too_big",httpStatus:response.status};
-  return{xml,httpStatus:response.status};
- }catch(e){return{error:e?.name==="AbortError"?"timeout":"network_error",httpStatus:null};}
- finally{clearTimeout(timer);}
+ let target=MANITOBA.url;
+ for(let attempt=0;attempt<2;attempt++){
+  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),11000);
+  try{
+   for(let hop=0;hop<=1;hop++){
+    const response=await fetcher(target,{method:"GET",signal:ctl.signal,redirect:"manual",headers:{"Accept":"application/rss+xml, application/xml, text/xml"}});
+    if([301,302,303,307,308].includes(response.status)){
+     let next;
+     try{next=new URL(response.headers.get("location"),target);}catch{return{error:"invalid_redirect",httpStatus:response.status};}
+     if(hop===1||next.protocol!=="https:"||next.hostname!=="jobsearch.gov.mb.ca"||next.pathname!=="/rss/newJobPostingsFeed.rss"||next.search)
+      return{error:"unsafe_redirect",httpStatus:response.status};
+     target=next.toString();continue;
+    }
+    if([429,502,503,504].includes(response.status)&&attempt===0)break;
+    if(!response.ok)return{error:"http_"+response.status,httpStatus:response.status};
+    const ct=response.headers.get("content-type")||"";
+    if(!/xml|rss/i.test(ct))return{error:"bad_content_type",httpStatus:response.status};
+    if(Number(response.headers.get("content-length")||0)>MAX_BYTES)return{error:"feed_too_big",httpStatus:response.status};
+    let xml="",bytes=0;
+    const reader=response.body?.getReader();
+    if(reader){
+     const decoder=new TextDecoder();
+     try{
+      while(true){
+       const {done,value}=await reader.read();if(done)break;
+       bytes+=value.byteLength;
+       if(bytes>MAX_BYTES){await reader.cancel();return{error:"feed_too_big",httpStatus:response.status};}
+       xml+=decoder.decode(value,{stream:true});
+      }
+      xml+=decoder.decode();
+     }finally{reader.releaseLock();}
+    }else{xml=await response.text();if(new TextEncoder().encode(xml).byteLength>MAX_BYTES)return{error:"feed_too_big",httpStatus:response.status};}
+    return{xml,httpStatus:response.status};
+   }
+  }catch(e){
+   if(attempt===1)return{error:e?.name==="AbortError"?"timeout":"network_error",httpStatus:null};
+  }finally{clearTimeout(timer);}
+  if(attempt===0)await new Promise(resolve=>setTimeout(resolve,350));
+  target=MANITOBA.url;
+ }
+ return{error:"temporary_upstream_failure",httpStatus:null};
 }
-export async function ingestManitoba(db,fetcher=fetch,now=Date.now()){
+export async function ingestManitoba(db,fetcher=fetch,now=Date.now(),meta={}){
  if(!db)throw Error("D1 binding required");
- const outcome={id:crypto.randomUUID(),sourceId:MANITOBA.id,startedAt:now,finishedAt:now,state:"error",httpStatus:null,received:0,accepted:0,discarded:0,errorCode:null,details:""};
+ const outcome={id:meta?.auditId||crypto.randomUUID(),sourceId:MANITOBA.id,startedAt:now,finishedAt:now,state:"error",httpStatus:null,received:0,accepted:0,discarded:0,errorCode:null,details:""};
  try{
   const response=await fetchRss(fetcher);outcome.httpStatus=response.httpStatus;
   if(response.error){outcome.errorCode=response.error;return outcome;}
@@ -115,15 +138,26 @@ export async function ingestManitoba(db,fetcher=fetch,now=Date.now()){
   const next=offset+entries.length>=parsed.valid.length?1:offset+entries.length+1;
   await db.prepare("INSERT INTO source_feed_cursors(source_id,next_page,last_total_pages,last_success_at) VALUES(?,?,?,?) ON CONFLICT(source_id) DO UPDATE SET next_page=excluded.next_page,last_total_pages=excluded.last_total_pages,last_success_at=excluded.last_success_at")
    .bind(MANITOBA.id,next,Math.ceil(parsed.valid.length/PER_RUN),Date.now()).run();
-  outcome.state="ok";outcome.details=JSON.stringify({offset,next,eligible:parsed.valid.length,rejected:parsed.rejected}).slice(0,400);
+  outcome.state="ok";outcome.details=JSON.stringify({offset,next,eligible:parsed.valid.length,rejected:parsed.rejected,origin:meta?.origin||"scheduled"}).slice(0,400);
   return outcome;
  }catch(e){outcome.errorCode="storage_or_schema_error";outcome.details=String(e?.message||e).slice(0,220);
   console.error(JSON.stringify({event:"manitoba_ingest_error",reason:outcome.details}));return outcome;
  }finally{
   outcome.finishedAt=Date.now();
-  try{await db.prepare("INSERT INTO source_ingest_runs(id,source_id,started_at,finished_at,state,http_status,received,accepted,discarded,error_code,details) VALUES(?,?,?,?,?,?,?,?,?,?,?)")
-   .bind(outcome.id,MANITOBA.id,outcome.startedAt,outcome.finishedAt,outcome.state,outcome.httpStatus,outcome.received,outcome.accepted,outcome.discarded,outcome.errorCode,outcome.details).run();}
-  catch(e){console.error(JSON.stringify({event:"manitoba_audit_write_failed",reason:String(e?.message||e)}));}
+  const signed=meta?.origin==="signed_portable_collector";
+  const base="INSERT INTO source_ingest_runs(id,source_id,started_at,finished_at,state,http_status,received,accepted,discarded,error_code,details) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+  const sql=signed?base+
+   " ON CONFLICT(id) DO UPDATE SET started_at=excluded.started_at,finished_at=excluded.finished_at,state=excluded.state,http_status=excluded.http_status,received=excluded.received,accepted=excluded.accepted,discarded=excluded.discarded,error_code=excluded.error_code,details=excluded.details WHERE source_ingest_runs.state='error' AND source_ingest_runs.error_code='collector_claim_pending'":base;
+  let committed=false;
+  try{
+   const wrote=await db.prepare(sql)
+    .bind(outcome.id,MANITOBA.id,outcome.startedAt,outcome.finishedAt,outcome.state,
+     outcome.httpStatus,outcome.received,outcome.accepted,outcome.discarded,
+     outcome.errorCode,outcome.details).run();
+   committed=wrote?.meta?.changes===1||(!signed&&wrote?.success===true);
+  }catch(e){console.error(JSON.stringify({event:"manitoba_audit_write_failed",reason:String(e?.message||e)}));}
+  if(!committed && signed){outcome.state="error";outcome.errorCode="audit_write_failed";}
+
   console.log(JSON.stringify({event:"manitoba_feed",outcome:outcome.state,accepted:outcome.accepted,errorCode:outcome.errorCode}));
  }
 }

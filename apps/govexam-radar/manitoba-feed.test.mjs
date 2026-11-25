@@ -69,3 +69,33 @@ test("upstream HTTP 403 cannot publish false jobs or shift cursor",async()=>{
  assert.deepEqual(db.batches,[]);
  assert.equal(db.writes.filter(x=>x.sql.includes("source_ingest_runs")).length,1);
 });
+
+test("Manitoba follow only allowlisted HTTPS RSS redirects",async()=>{
+ const db=mockDb();let calls=0;
+ const fetcher=async()=>{
+  calls++;
+  if(calls===1)return new Response(null,{status:301,headers:{Location:MANITOBA.url}});
+  return new Response(feed(item()),{headers:{"content-type":"text/xml"}});
+ };
+ const result=await ingestManitoba(db,fetcher,DATE);
+ assert.equal(result.state,"ok");assert.equal(result.accepted,1);assert.equal(calls,2);
+});
+test("Manitoba reject cross-host redirects without persisting jobs",async()=>{
+ const db=mockDb();let calls=0;
+ const fetcher=async()=>{
+  calls++;
+  return new Response(null,{status:302,headers:{Location:"https://malicious.invalid/rss/newJobPostingsFeed.rss"}});
+ };
+ const result=await ingestManitoba(db,fetcher,DATE);
+ assert.equal(result.state,"error");assert.equal(result.errorCode,"unsafe_redirect");
+ assert.equal(db.batches.length,0);assert.equal(calls,1);
+});
+test("Manitoba retry is bounded after transient fetch exception",async()=>{
+ const db=mockDb();let count=0;
+ const fetcher=async()=>{
+  if(++count===1)throw new TypeError("connection reset");
+  return new Response(feed(item()),{headers:{"content-type":"application/rss+xml"}});
+ };
+ const result=await ingestManitoba(db,fetcher,DATE);
+ assert.equal(result.state,"ok");assert.equal(count,2);
+});

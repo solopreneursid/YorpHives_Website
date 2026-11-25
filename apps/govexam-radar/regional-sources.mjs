@@ -2,6 +2,36 @@
 // Audit: official/public recruiting pages checked 2026-11-16; source-specific feed permission must be verified independently.
 export const REGIONAL_SOURCES = [
   {
+    "id": "isro-india-careers",
+    "name": "Indian Space Research Organisation (ISRO) Careers",
+    "country": "India",
+    "flag": "🇮🇳",
+    "jurisdictionCode": "IN",
+    "jurisdiction": "All India",
+    "level": "national",
+    "category": "Space and research",
+    "url": "https://www.isro.gov.in/ViewAllOpportunities.html",
+    "note": "ISRO and Department of Space opportunities; check the official notice for dates and eligibility",
+    "coverage": "official_portal_directory",
+    "monitoring": "reachability_only",
+    "verifiedOn": "2026-11-25"
+  },
+  {
+    "id": "ssb-india-recruitment",
+    "name": "Sashastra Seema Bal Recruitment",
+    "country": "India",
+    "flag": "🇮🇳",
+    "jurisdictionCode": "",
+    "jurisdiction": "",
+    "level": "national",
+    "category": "Defence and border security",
+    "url": "https://recruitment.ssb.gov.in/",
+    "note": "Recruitment, admit cards and results; confirm eligibility on SSB's own website",
+    "coverage": "official_portal_directory",
+    "monitoring": "reachability_only",
+    "verifiedOn": "2026-11-25"
+  },
+  {
     "id": "bpsc-bihar",
     "name": "Bihar Public Service Commission",
     "country": "India",
