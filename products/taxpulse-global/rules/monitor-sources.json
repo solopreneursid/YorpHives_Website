@@ -188,5 +188,15 @@
     ],
     "url": "https://u.ae/information-and-services/finance-and-investment/taxation",
     "kind": "change-discovery"
+  },
+  {
+    "id": "IN-epfo-ceiling",
+    "country": "IN",
+    "jurisdiction": "IN",
+    "topics": [
+      "payroll"
+    ],
+    "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2314111&lang=1&reg=3",
+    "kind": "change-discovery"
   }
 ]
