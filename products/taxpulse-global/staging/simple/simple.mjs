@@ -1,3 +1,4 @@
+import {compareInternational} from './engine/international.mjs';
 import {compareCompensation} from './engine/compensation.mjs';
 import {negotiateSalary} from './engine/negotiation.mjs';
 import {compareSalaryOffers} from './engine/salary-offers.mjs';
@@ -448,6 +449,45 @@ $('comp-form').addEventListener('submit',event=>{
 });
 $('comp-download').addEventListener('click',()=>downloadReceipt(lastCompensation,$('comp-download'),$('comp-error')));
 
+let lastInternational=null;
+const intlCurrency={TX:'USD',RUK:'GBP',SCT:'GBP',AB:'CAD',AU:'AUD',IN:'INR',SG:'SGD',DE:'EUR',AE:'AED'};
+function clearInternational(){lastInternational=null;$('intl-result').hidden=true;$('intl-error').textContent='';}
+function intlChanged(n){
+ const id=k=>'intl-'+n+'-'+k,region=$(id('region')).value,c=payOptions[region],pay=$(id('pay'));
+ $(id('label')).textContent=c.label;$(id('scope')).textContent=c.scope;
+ pay.min=c.min??0;pay.max=c.max;pay.step=c.step;pay.value='';
+ for(const [k,on] of [['epf',region==='IN'],['pt',region==='IN'],['taxable',region==='DE'],['supplement',region==='DE'],['basic',region==='AE']]){
+  $(id(k)+'-field').hidden=!on;$(id(k)).disabled=!on;$(id(k)).value='';
+ }
+ $(id('confirm')).checked=false;$(id('housing')).value='';$(id('living')).value='';
+ $('intl-rate-label').textContent='1 '+intlCurrency[$('intl-2-region').value]+' equals how many '+intlCurrency[$('intl-1-region').value]+'?';
+ $('intl-rate').value='';$('intl-date').value='';clearInternational();
+}
+function intlInput(n){
+ const id=k=>'intl-'+n+'-'+k,region=$(id('region')).value,v=k=>$(id(k)).valueAsNumber;
+ return {salary:{country:payOptions[region].country,region,taxYear:'2026',pay:v('pay'),scopeConfirmed:$(id('confirm')).checked,...(region==='IN'?{epfMonthlyWage:v('epf'),professionalTaxAnnual:v('pt')}:region==='DE'?{annualTaxableIncome:v('taxable'),healthSupplementRate:v('supplement')}:region==='AE'?{monthlyBasicSalary:v('basic')}:{})},housing:v('housing'),living:v('living')};
+}
+$('intl-2-region').value='AE';
+for(const n of [1,2]){$('intl-'+n+'-region').addEventListener('change',()=>intlChanged(n));intlChanged(n);}
+$('intl-form').addEventListener('input',clearInternational);
+$('intl-form').addEventListener('submit',event=>{
+ event.preventDefault();clearInternational();
+ try{
+ const input={first:intlInput(1),second:intlInput(2),rate:$('intl-rate').valueAsNumber,rateDate:$('intl-date').value},r=compareInternational(input);
+ $('intl-winner').textContent=r.higherDisposable==='equal'?'Both examples leave the same amount':(r.higherDisposable==='first'?'Country 1':'Country 2')+' leaves more money in this example';
+ const rows=[];
+ for(const [title,v] of [['Country 1',r.first],['Country 2',r.second]]){
+ const f=x=>money(x,v.salary.currency);
+ rows.push([title+' tax period',v.salary.taxYearLabel],[title+' annual gross salary',f(v.salary.annualGross)],[title+' annual income tax',f(v.salary.incomeTax)],[title+' annual employee costs',f(v.salary.employeeContributions)],[title+' monthly money left after living costs',f(v.monthlyDisposable)],[title+' annual money left after living costs',f(v.annualDisposable)]);
+ }
+ rows.push(['Country 2 annual amount in comparison currency',money(r.secondAnnualConverted,r.comparisonCurrency)],['Annual difference (country 2 minus country 1)',money(r.annualDifference,r.comparisonCurrency)]);
+ $('intl-breakdown').replaceChildren();for(const [label,value] of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;$('intl-breakdown').append(dt,dd);}
+ $('intl-warning').textContent=[...r.warnings,...new Set([...r.first.salary.warnings,...r.second.salary.warnings])].join(' ');
+ lastInternational={kind:'international-salary',input};$('intl-result').hidden=false;$('intl-result').focus();
+ }catch{$('intl-error').textContent='Choose different countries, check both salaries and costs, confirm conditions, and enter a valid exchange rate and date.';}
+});
+$('intl-download').addEventListener('click',()=>downloadReceipt(lastInternational,$('intl-download'),$('intl-error')));
+
 const contributionOptions={
  CA:{label:'Annual pensionable and insurable earnings (CAD)',scope:'Full-year employee outside Quebec, aged 18–64 throughout the year, one employer. All earnings subject to CPP and EI; full annual basic exemption.',max:1000000000,step:'.01',period:'Calendar year 2026'},
  AU:{label:'Annual taxable income (AUD)',scope:'Full-year Australian resident who already knows the full 2% Medicare levy applies, no exemption or reduction. Only taxable income of AUD 100,000 or more. This excludes Medicare levy surcharge.',max:1000000000,step:'.01',period:'FY 2026–27'},
@@ -517,7 +557,7 @@ $('history-form').addEventListener('submit',event=>{
 $('history-download').addEventListener('click',()=>downloadReceipt(lastHistory,$('history-download'),$('history-error')));
 historyChanged();
 
-const printTitles={'salary-remainder':'Salary after modeled deductions','reverse-salary':'Required salary','automatic-reverse-salary':'Required salary','salary-offers':'Job offer comparison','salary-negotiation':'Pay rise estimate','compensation':'Total compensation comparison'};
+const printTitles={'salary-remainder':'Salary after modeled deductions','reverse-salary':'Required salary','automatic-reverse-salary':'Required salary','salary-offers':'Job offer comparison','salary-negotiation':'Pay rise estimate','compensation':'Total compensation comparison','international-salary':'International salary comparison'};
 function reportText(tag,value,parent){const el=document.createElement(tag);el.textContent=value;parent.append(el);return el;}
 function reportRows(parent,title,rows){
  reportText('h2',title,parent);const dl=document.createElement('dl');parent.append(dl);
@@ -537,6 +577,9 @@ function renderPrintReport(receipt){
  }else if(kind==='salary-offers')salaries.push(['Offer 1',r.first],['Offer 2',r.second]);
  else if(kind==='salary-negotiation'){
   reportRows(root,'Pay rise goal',[['Desired monthly increase',money(r.monthlyIncrease,r.baseline.currency)],['Estimated monthly increase',money(r.netIncrease,r.baseline.currency)],['Annual gross increase',money(r.grossIncrease,r.baseline.currency)]]);salaries.push(['Current salary',r.baseline],['Proposed salary',r.proposed]);
+ }else if(kind==='international-salary'){
+  for(const [title,v] of [['Country 1',r.first],['Country 2',r.second]]){reportRows(root,title+' living costs',[['Monthly housing',money(v.monthlyHousing,v.salary.currency)],['Other monthly costs',money(v.monthlyLiving,v.salary.currency)],['Annual disposable income',money(v.annualDisposable,v.salary.currency)]]);salaries.push([title+' salary',v.salary]);}
+  reportRows(root,'Exchange rate comparison',[['Rate date',r.rateDate],['Annual difference',money(r.annualDifference,r.comparisonCurrency)]]);
  }else if(kind==='compensation'){
   for(const [title,v] of [['Offer 1',r.first],['Offer 2',r.second]]){
    const f=n=>money(n,r.currency);reportRows(root,title+' compensation',[['Annual expenses',f(v.annualExpenses)],['Annual available cash',f(v.annualAvailableCash)],['Estimated non-cash benefits',f(v.annualBenefits)],['Estimated combined value',f(v.estimatedAnnualCombinedValue)]]);salaries.push([title+' salary',v.salary]);
@@ -559,4 +602,4 @@ async function printReceipt(record,button,error){
  catch{closePrintReport();error.textContent='Could not prepare the printable report. Try again in a secure browser.';}
  finally{button.disabled=false;}
 }
-for(const [id,getRecord] of [['pay',()=>lastPay],['reverse',()=>lastReverse],['offers',()=>lastOffers],['negotiation',()=>lastNegotiation],['comp',()=>lastCompensation]])$(id+'-print').addEventListener('click',()=>printReceipt(getRecord(),$(id+'-print'),$(id+'-error')));
+for(const [id,getRecord] of [['pay',()=>lastPay],['reverse',()=>lastReverse],['offers',()=>lastOffers],['negotiation',()=>lastNegotiation],['comp',()=>lastCompensation],['intl',()=>lastInternational]])$(id+'-print').addEventListener('click',()=>printReceipt(getRecord(),$(id+'-print'),$(id+'-error')));
