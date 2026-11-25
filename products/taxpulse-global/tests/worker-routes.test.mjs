@@ -29,7 +29,20 @@ test('generated Worker routes and validation',async()=>{
  const good=await post(JSON.stringify(payload));assert.equal(good.status,200);assert.ok(Math.abs((await good.json()).result.incomeTax-44703)<1e-7);
  assert.equal((await post(JSON.stringify(payload),{origin:'https://other.example'})).status,403);
  assert.equal((await post('{}',{'content-type':'text/plain'})).status,415);
- assert.equal((await post('x'.repeat(17000))).status,400);
+ assert.equal((await post('x'.repeat(17000))).status,413);
+ assert.equal((await post('{}',{'content-length':'16385'})).status,413);
+ assert.equal((await post(new Uint8Array([123,255,125]))).status,400);
+ assert.equal((await post('{')).status,400);
+ assert.equal(html.headers.get('x-frame-options'),'DENY');
+ assert.equal(html.headers.get('cross-origin-opener-policy'),'same-origin');
+ assert.equal(html.headers.get('cross-origin-resource-policy'),'same-origin');
+ assert.deepEqual(catalog.modules,['pit']);
+ for(const module of ['payroll','capgains','vat','corporate','property','dtaa']){
+  assert.ok(catalog.disabledModules[module]);
+  assert.equal((await post(JSON.stringify({...payload,module}))).status,400);
+ }
+ const schema=(await (await call('/openapi.json')).json()).paths['/v1/country/calculate'].post.requestBody.content['application/json'].schema;
+ assert.deepEqual(schema.properties.module.enum,catalog.modules);
  const indiaInput={country:'IN',taxYear:'2026',module:'pit',parameters:{grossSalary:1285000,residentIndividual:true}};
  const india=await post(JSON.stringify(indiaInput));assert.equal(india.status,200);const indiaResult=(await india.json()).result;assert.ok(Math.abs(indiaResult.incomeTax-10400)<0.005);assert.ok(Math.abs(indiaResult.marginalReliefApplied-51500)<0.005);
  assert.equal((await post(JSON.stringify({...indiaInput,parameters:{grossSalary:1285000}}))).status,400);
