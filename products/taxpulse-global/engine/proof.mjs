@@ -1,3 +1,4 @@
+import {compareSalaryOffers} from './salary-offers.mjs';
 import {reverseSalary,automaticReverseSalary} from './reverse-salary.mjs';
 import { countryCalculate } from './country.mjs';
 import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain, calculateRegionalTax, calculateSalaryRemainder, calculateEmployeeContributions } from './taxable-income.mjs';
@@ -29,6 +30,7 @@ async function hash(value){
  return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
 }
 function calculate(kind,input){
+ if(kind==='salary-offers')return compareSalaryOffers(input);
  if(kind==='reverse-salary'){
   const result=reverseSalary(input);
   if(!result.found)throw new RangeError('No salary result to report');
