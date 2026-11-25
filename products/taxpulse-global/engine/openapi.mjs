@@ -398,7 +398,7 @@ export const spec = {
     "/v1/investment/capital-gain": {
       "post": {
         "operationId": "calculateCapitalGainExample",
-        "description": "Unverified one-disposal example for qualifying ordinary investments only. See returned warnings. Not total tax.",
+        "description": "Scoped shares, property and cryptocurrency sale examples; assets and eligibility vary by country. India crypto requires gross proceeds, acquisition cost only and zero eligibleLosses. See returned limitations.",
         "requestBody": {
           "required": true,
           "content": {
@@ -465,7 +465,9 @@ export const spec = {
                       "assetType": {
                         "enum": [
                           "listed-equity",
-                          "equity-fund"
+                          "equity-fund",
+                          "property",
+                          "crypto"
                         ]
                       }
                     }
@@ -534,6 +536,13 @@ export const spec = {
                           "mfs",
                           "hoh"
                         ]
+                      },
+                      "assetType": {
+                        "enum": [
+                          "listed-equity",
+                          "investment-land",
+                          "crypto"
+                        ]
                       }
                     }
                   },
@@ -592,6 +601,13 @@ export const spec = {
                       },
                       "country": {
                         "const": "GB"
+                      },
+                      "assetType": {
+                        "enum": [
+                          "listed-equity",
+                          "property",
+                          "crypto"
+                        ]
                       }
                     }
                   }

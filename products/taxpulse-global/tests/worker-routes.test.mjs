@@ -43,6 +43,8 @@ test('generated Worker routes and validation',async()=>{
  const investment=await call('/v1/investment/capital-gain',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'GB',taxYear:'2026',acquired:'2025-06-01',disposed:'2026-06-02',saleProceeds:62600,adjustedBasis:50000,eligibleLosses:0,otherTaxableIncome:20000,scopeConfirmed:true})});
  assert.equal(investment.status,200);assert.equal((await investment.json()).estimatedGainTax,1728);
  assert.equal((await call('/v1/investment/capital-gain')).status,405);
+ const crypto=await call('/v1/investment/capital-gain',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'IN',taxYear:'2026',assetType:'crypto',acquired:'2024-08-01',disposed:'2026-08-02',saleProceeds:1500000,adjustedBasis:1000000,eligibleLosses:0,otherTaxableIncome:1500000,scopeConfirmed:true})});
+ assert.equal(crypto.status,200);assert.equal((await crypto.json()).estimatedGainTax,156000);
  assert.equal((await call('/missing')).status,404);
  assert.equal((await call('/v1/country/calculate')).status,405);
  }finally{rmSync(temp,{recursive:true,force:true})}

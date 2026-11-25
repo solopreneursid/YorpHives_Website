@@ -195,31 +195,47 @@ for(const [code,name] of Object.entries(allCountries)){
 countryChanged();
 
 const gainOptions={
- IN:{currency:'INR',period:'1 April 2026 – 31 March 2027',start:'2026-04-01',end:'2027-03-31',scope:'Resident individual using the new regime. Qualifying Indian equity shares or equity-oriented funds bought after 31 January 2018; required securities transaction tax (STT) paid. Other taxable ordinary income at least INR 13 lakh; combined net income at most INR 50 lakh. Full annual equity allowance available. No other gains or special income.'},
- US:{currency:'USD',period:'1 January – 31 December 2026',start:'2026-01-01',end:'2026-12-31',scope:'US resident individual, ordinary investment stock, one directly purchased lot, no qualified dividends, other gains, unused deductions, wash sales or special asset rates. Current-year losses must be legally eligible. Federal regular rate schedule only; no state tax, AMT or net investment income tax.'},
- GB:{currency:'GBP',period:'6 April 2026 – 5 April 2027',start:'2026-04-06',end:'2027-04-05',scope:'UK resident individual, ordinary investment shares, correct tax cost already known, full GBP 3,000 annual allowance, standard basic rate band, no other gains, carryovers, FIG claims or special reliefs. Only eligible current-year losses.'}
+ IN:{currency:'INR',period:'1 April 2026 – 31 March 2027',start:'2026-04-01',end:'2027-03-31',scope:'Resident individual using the new regime. Other taxable ordinary income at least INR 13 lakh; combined net income at most INR 50 lakh. No other gains or special income.'},
+ US:{currency:'USD',period:'1 January – 31 December 2026',start:'2026-01-01',end:'2026-12-31',scope:'US resident individual, one directly purchased investment, no qualified dividends, other gains, unused deductions, wash sales or special asset rates. Current-year losses must be legally eligible. Federal regular rate schedule only; no state tax, AMT or net investment income tax.'},
+ GB:{currency:'GBP',period:'6 April 2026 – 5 April 2027',start:'2026-04-06',end:'2027-04-05',scope:'UK resident individual, correct tax cost already known, full GBP 3,000 annual allowance, standard basic rate band, no other gains, carryovers, FIG claims or special reliefs. Only eligible current-year losses.'}
+};
+const gainAssets={
+ IN:{'listed-equity':['Listed equity shares','Qualifying shares bought after 31 January 2018; required securities transaction tax paid; full annual equity allowance available.'],'equity-fund':['Equity-oriented fund','Qualifying equity fund bought after 31 January 2018; required securities transaction tax paid; full annual equity allowance available.'],property:['Investment land or building','Bought on or after 23 July 2024. No depreciation, agricultural land, reinvestment relief or deemed stamp-duty valuation. Confirm allowable cost and tax consideration.'],crypto:['Cryptocurrency (VDA)','Purchased tokens sold for cash. Enter gross proceeds before fees or withholding and actual purchase cost only. No loss offsets, mining, staking or other income.']},
+ US:{'listed-equity':['Investment shares','Ordinary stock; no special share matching or rates.'],'investment-land':['Vacant investment land','Only non-depreciable vacant land held as an investment. No business use, improvements, home exclusion, installment sale or like-kind exchange.'],crypto:['Cryptocurrency','One ordinary token lot purchased and sold for cash; no NFTs, mining, staking, gifts, derivatives or multiple-lot basis selection.']},
+ GB:{'listed-equity':['Investment shares','Correct allowable share cost already known; no special share matching calculation.'],property:['UK investment residential property','Never used as your home; no private residence relief, connected-party sale or special valuation. Most taxable property sales must be reported and paid within 60 days of completion.'],crypto:['Cryptocurrency','Ordinary purchased tokens sold for cash. Supply the correct allowable pooled or matched cost, including same-day and 30-day matching where relevant. No NFTs, lending, staking, mining or liquidity pools.']}
 };
 let lastGain=null;
+function gainAssetChanged(){
+ const country=$('gain-country').value,asset=$('gain-asset').value,cryptoIndia=country==='IN'&&asset==='crypto';
+ $('gain-scope').textContent=gainOptions[country].scope+' '+gainAssets[country][asset][1];
+ $('gain-sale-label').textContent=cryptoIndia?'Gross sale proceeds before fees or withholding':'Sale proceeds after allowable selling costs';
+ $('gain-basis-label').textContent=cryptoIndia?'Actual purchase cost only':'Adjusted tax cost of investment';
+ $('gain-losses-field').hidden=cryptoIndia;$('gain-losses').disabled=cryptoIndia;$('gain-losses').value='0';
+ for(const id of ['gain-acquired','gain-disposed','gain-sale','gain-basis','gain-confirm'])$(id).value='';
+ clearGain();
+}
 function clearGain(){lastGain=null;$('gain-result').hidden=true;$('gain-error').textContent='';}
 function gainChanged(){
  const country=$('gain-country').value,c=gainOptions[country];
- $('gain-period').textContent=c.period;$('gain-scope').textContent=c.scope;
+ $('gain-period').textContent=c.period;
+ $('gain-asset').replaceChildren();for(const [value,[label]] of Object.entries(gainAssets[country])){const option=document.createElement('option');option.value=value;option.textContent=label;$('gain-asset').append(option);}
  $('gain-disposed').min=c.start;$('gain-disposed').max=c.end;
  for(const e of document.querySelectorAll('.gain-currency'))e.textContent='('+c.currency+')';
- for(const [field,control,show] of [['gain-asset-field','gain-asset',country==='IN'],['gain-filing-field','gain-filing',country==='US']]){$(field).hidden=!show;$(control).disabled=!show;}
+ for(const [field,control,show] of [['gain-filing-field','gain-filing',country==='US']]){$(field).hidden=!show;$(control).disabled=!show;}
  for(const id of ['gain-acquired','gain-disposed','gain-sale','gain-basis','gain-other','gain-confirm'])$(id).value='';
- $('gain-losses').value='0';clearGain();
+ gainAssetChanged();
 }
+$('gain-asset').addEventListener('change',gainAssetChanged);
 $('gain-country').addEventListener('change',gainChanged);
 $('gain-form').addEventListener('input',clearGain);
 $('gain-form').addEventListener('submit',event=>{
  event.preventDefault();clearGain();
  try{
   const country=$('gain-country').value;
-  const input={country,taxYear:'2026',acquired:$('gain-acquired').value,disposed:$('gain-disposed').value,saleProceeds:$('gain-sale').valueAsNumber,adjustedBasis:$('gain-basis').valueAsNumber,otherTaxableIncome:$('gain-other').valueAsNumber,eligibleLosses:$('gain-losses').valueAsNumber,scopeConfirmed:$('gain-confirm').value==='yes',...(country==='US'?{filingStatus:$('gain-filing').value}:country==='IN'?{assetType:$('gain-asset').value}:{})};
+  const input={country,taxYear:'2026',acquired:$('gain-acquired').value,disposed:$('gain-disposed').value,saleProceeds:$('gain-sale').valueAsNumber,adjustedBasis:$('gain-basis').valueAsNumber,otherTaxableIncome:$('gain-other').valueAsNumber,eligibleLosses:$('gain-losses').valueAsNumber,scopeConfirmed:$('gain-confirm').value==='yes',assetType:$('gain-asset').value,...(country==='US'?{filingStatus:$('gain-filing').value}:{})};
   const r=calculateCapitalGain(input),f=v=>money(v,r.currency);
   $('gain-profit').textContent=f(r.realizedGain);$('gain-taxable').textContent=f(r.taxableGain);$('gain-tax').textContent=f(r.estimatedGainTax);
-  $('gain-holding').textContent=r.holding==='not-rate-determining'?'The UK rate depends on taxable income, not how long the shares were held.':r.holding==='long-term'?'Held for more than one year: long-term example.':'Held for one year or less: short-term example.';
+  $('gain-holding').textContent=r.holding==='not-rate-determining'?'Holding length does not select the tax rate for this example.':r.holding==='long-term'?'Held for more than '+r.holdingYears+' year(s): long-term example.':'Held for '+r.holdingYears+' year(s) or less: short-term example.';
   $('gain-breakdown').replaceChildren();
   for(const [label,value] of [['Profit or loss',r.realizedGain],['Eligible losses used',r.eligibleLossesApplied],['Tax-free gain allowance used',r.allowanceApplied],...r.brackets.map(b=>['Gain taxed at '+percent(b.rate),b.taxableGain]),['Tax before cess',r.taxBeforeCess],['Cess',r.cessAmount],['Estimated tax on gain only',r.estimatedGainTax]]){
    const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=f(value);$('gain-breakdown').append(dt,dd);

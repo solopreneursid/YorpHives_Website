@@ -179,20 +179,29 @@ function cgSlices(start,gain,bounds,rates){
 export function calculateCapitalGain(input){
  const common=['country','taxYear','acquired','disposed','saleProceeds','adjustedBasis','eligibleLosses','otherTaxableIncome','scopeConfirmed'];
  if(!input||typeof input!=='object'||Array.isArray(input)||!['IN','US','GB'].includes(input.country)||input.taxYear!=='2026'||input.scopeConfirmed!==true)throw new TypeError('Unsupported investment example');
- const country=input.country,keys=[...common,...(country==='US'?['filingStatus']:country==='IN'?['assetType']:[])];
- if(Object.keys(input).some(k=>!keys.includes(k))||keys.some(k=>!Object.hasOwn(input,k)))throw new TypeError('Unsupported fields');
+ const country=input.country,required=[...common,...(country==='US'?['filingStatus']:country==='IN'?['assetType']:[])];
+ const keys=[...required,...(country==='IN'?[]:['assetType'])];
+ if(Object.keys(input).some(k=>!keys.includes(k))||required.some(k=>!Object.hasOwn(input,k)))throw new TypeError('Unsupported fields');
+ const assetType=Object.hasOwn(input,'assetType')?input.assetType:'listed-equity';
+ const allowed=country==='IN'?['listed-equity','equity-fund','property','crypto']:country==='US'?['listed-equity','investment-land','crypto']:['listed-equity','property','crypto'];
+ if(!allowed.includes(assetType))throw new TypeError('Unsupported asset type');
+ const cryptoIndia=country==='IN'&&assetType==='crypto';
+ const propertyIndia=country==='IN'&&assetType==='property';
  const acquired=cgDate(input.acquired),disposed=cgDate(input.disposed);
  const period=country==='US'?['2026-01-01','2026-12-31']:country==='IN'?['2026-04-01','2027-03-31']:['2026-04-06','2027-04-05'];
  if(acquired>disposed||disposed<period[0]||disposed>period[1])throw new RangeError('Disposal must be in the selected tax year and on or after acquisition');
  // Leap-day anniversary rules are excluded until jurisdiction-specific evidence is reviewed.
- if(country!=='GB'&&acquired.slice(5)==='02-29')throw new RangeError('Leap-day acquisition not supported');
- const anniversary=(Number(acquired.slice(0,4))+1)+acquired.slice(4);
- const holding=country==='GB'?'not-rate-determining':disposed>anniversary?'long-term':'short-term';
+ if(country!=='GB'&&!cryptoIndia&&acquired.slice(5)==='02-29')throw new RangeError('Leap-day acquisition not supported');
+ const holdingYears=propertyIndia?2:1;
+ const anniversary=(Number(acquired.slice(0,4))+holdingYears)+acquired.slice(4);
+ const holding=country==='GB'||cryptoIndia?'not-rate-determining':disposed>anniversary?'long-term':'short-term';
  const proceeds=cgMoney(input.saleProceeds),basis=cgMoney(input.adjustedBasis),loss=cgMoney(input.eligibleLosses),other=cgMoney(input.otherTaxableIncome);
  const realized=proceeds-basis,positive=maxBig(0n,realized);
  if(loss>positive)throw new RangeError('Eligible loss offset cannot exceed positive gain');
+ if(cryptoIndia&&loss!==0n)throw new RangeError('Indian virtual digital asset losses cannot be offset');
  const net=positive-loss;
  let allowance=0n,raw=0n,rows=[],cess=0n,warnings=[];
+ const sourceUrls=[...CG_SOURCES[country]];
  if(country==='US'){
   if(!Object.hasOwn(US_CG,input.filingStatus))throw new TypeError('Unsupported filing status');
   const p=US_CG[input.filingStatus];
@@ -203,21 +212,39 @@ export function calculateCapitalGain(input){
   const s=preferential.total<=ordinary.total?preferential:ordinary;
   raw=s.total;rows=s.rows;
   warnings=['Lower of ordinary and preferential regular federal rate schedules, not total tax or Form 1040 tax-table rounding. No NIIT, AMT, state tax, qualified dividends, other gains, unused deductions, wash sales, special asset rates or carryovers.'];
+  if(assetType==='investment-land'){sourceUrls.push('https://www.irs.gov/taxtopics/tc704');warnings.push('Vacant land held solely for investment, no depreciable improvements, business use, installment sale, like-kind exchange or home-sale exclusion.');}
+  if(assetType==='crypto'){sourceUrls.push('https://www.irs.gov/individuals/international-taxpayers/frequently-asked-questions-on-digital-asset-transactions');warnings.push('One directly purchased lot of ordinary investment tokens sold for cash; excludes NFTs, derivatives, staking, mining, gifts and basis selection across lots.');}
  }else if(country==='GB'){
   allowance=minBig(net,300000n);
   const s=cgSlices(other,net-allowance,[37700],[1800,2400]);raw=s.total;rows=s.rows;
-  warnings=['Ordinary UK-resident individual investment shares only, full annual exempt amount and standard basic rate band. Excludes property, business reliefs, pension/Gift Aid band extensions, FIG claims, special share matching and other gains or carryovers. Holding length does not select the rate.'];
+  warnings=['UK-resident individual, full annual exempt amount and standard basic rate band. Excludes business reliefs, pension/Gift Aid band extensions, FIG claims and other gains or carryovers. Holding length does not select the rate.'];
+  if(assetType==='property'){sourceUrls.push('https://www.gov.uk/tax-sell-property/work-out-your-gain');warnings.push('UK investment residential property never used as your home; no private residence relief, business relief, connected-party sale or special valuation. Most taxable UK residential property sales must be reported and paid within 60 days of completion.');}
+  else if(assetType==='crypto'){sourceUrls.push('https://www.gov.uk/guidance/check-if-you-need-to-pay-tax-when-you-sell-cryptoassets','https://www.gov.uk/hmrc-internal-manuals/cryptoassets-manual/crypto22200');warnings.push('Ordinary purchased tokens sold for cash, correct allowable pooled or matched cost supplied by user; same-day and 30-day matching are not calculated. No NFTs, staking, mining, lending or liquidity pools.');}
+  else warnings.push('Ordinary shares; correct allowable share cost supplied by user. Special share matching is not calculated.');
  }else{
-  if(!['listed-equity','equity-fund'].includes(input.assetType)||acquired<'2018-02-01')throw new RangeError('Only qualifying post-January 2018 equity investments supported');
-  // Avoid rebate, unused basic exemption and surcharge interactions.
+  // Exclude rebate, unused basic exemption and surcharge interactions.
   if(other<130000000n||other+net>500000000n)throw new RangeError('India requires other taxable ordinary income of INR 13 lakh or more and combined net taxable income at most INR 50 lakh');
-  allowance=holding==='long-term'?minBig(net,12500000n):0n;
-  const rate=holding==='long-term'?1250:2000;
-  raw=(net-allowance)*BigInt(rate);rows=net>allowance?[{rate:rate/10000,taxableGain:cgOut(net-allowance),tax:cgOut(cgRound(raw))}]:[];
+  const scope='Resident individual using new regime, no other gains or special income. Other taxable ordinary income at least INR 13 lakh and combined net taxable income at most INR 50 lakh. Includes 4% cess; excludes surcharge, return-level rounding, withholding credits and other taxes.';
+  if(cryptoIndia){
+   sourceUrls.push('https://wm.incometaxindia.gov.in/w/section-194-78');
+   raw=positive*3000n;rows=positive>0n?[{rate:.30,taxableGain:cgOut(positive),tax:cgOut(cgRound(raw))}]:[];
+   warnings=[scope,'Ordinary purchased virtual digital asset sold for cash. Gross consideration before fees or withholding; actual acquisition cost only. No deduction for selling costs, no loss offset, no loss carryforward, and no TDS credit calculation.'];
+  }else if(propertyIndia){
+   if(acquired<'2024-07-23')throw new RangeError('Pre-23-July-2024 property requires grandfathering and indexation review');
+   sourceUrls.push('https://www.incometaxindia.gov.in/w/capital-gain');
+   const slice=holding==='long-term'?cgSlices(0n,net,[],[1250]):cgSlices(other,net,[400000,800000,1200000,1600000,2000000,2400000],[0,500,1000,1500,2000,2500,3000]);
+   raw=slice.total;rows=slice.rows;
+   warnings=[scope,'Indian investment land or building acquired on or after 23 July 2024; more than 24 months is long-term. No reinvestment relief, depreciation, agricultural land, deemed stamp-duty valuation or pre-2024 indexation comparison. User confirms tax consideration and allowable basis are correct.'];
+  }else{
+   if(acquired<'2018-02-01')throw new RangeError('Only qualifying post-January 2018 equity investments supported');
+   allowance=holding==='long-term'?minBig(net,12500000n):0n;
+   const rate=holding==='long-term'?1250:2000;
+   raw=(net-allowance)*BigInt(rate);rows=net>allowance?[{rate:rate/10000,taxableGain:cgOut(net-allowance),tax:cgOut(cgRound(raw))}]:[];
+   warnings=[scope,'Qualifying STT conditions confirmed; full annual equity gain threshold available.'];
+  }
   cess=cgRound(raw*4n/100n);
-  warnings=['Resident individual, new regime, qualifying STT conditions confirmed, full annual equity gain threshold available. No other gains or special income. Ordinary taxable income must be at least INR 13 lakh and combined net income at most INR 50 lakh. Includes 4% cess; excludes surcharge, final return-level rounding and other taxes.'];
  }
  const base=cgRound(raw),total=cgRound(raw+(country==='IN'?raw*4n/100n:0n));
  if(realized<0n)warnings.push('This disposal has a loss. No tax benefit, refund or carryforward is calculated.');
- return {country,taxYear:'2026',taxYearLabel:period.join(' to '),currency:country==='US'?'USD':country==='GB'?'GBP':'INR',sampleOnly:true,taxRulesVerified:false,ruleId:country+'-2026-investment-disposal-v1',acquired,disposed,holding,realizedGain:cgOut(realized),eligibleLossesApplied:cgOut(loss),netPositiveGain:cgOut(net),allowanceApplied:cgOut(allowance),taxableGain:cgOut(net-allowance),otherTaxableIncome:cgOut(other),brackets:rows,taxBeforeCess:cgOut(base),cessAmount:cgOut(cess),estimatedGainTax:cgOut(total),sourceUrls:CG_SOURCES[country],warnings};
+ return {country,taxYear:'2026',taxYearLabel:period.join(' to '),currency:country==='US'?'USD':country==='GB'?'GBP':'INR',sampleOnly:true,taxRulesVerified:false,ruleId:country+'-2026-investment-disposal-v2',assetType,acquired,disposed,holding,holdingYears:holding==='not-rate-determining'?null:holdingYears,realizedGain:cgOut(realized),eligibleLossesApplied:cgOut(loss),netPositiveGain:cgOut(net),allowanceApplied:cgOut(allowance),taxableGain:cgOut(net-allowance),otherTaxableIncome:cgOut(other),brackets:rows,taxBeforeCess:cgOut(base),cessAmount:cgOut(cess),estimatedGainTax:cgOut(total),sourceUrls,warnings};
 }

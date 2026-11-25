@@ -76,3 +76,7 @@ The ordinary-salary comparison supports both regimes, age and residency categori
 ## Investment gains preview
 
 A separate scoped one-disposal engine is available in the simple workspace and POST /v1/investment/capital-gain, with report replay. US regular federal tax uses ordinary/long-term income stacking; UK ordinary shares use the standard allowance and basic band; India qualifies STT equity only, within an explicit ordinary-income range to exclude surcharge and rebate interactions. Tax basis and current-year loss eligibility are caller-confirmed. Legacy capital-gains endpoints remain illustrative and are not the new engine. No property, crypto-specific, multi-lot, carryover, NIIT or complete-return model is claimed. See rules/evidence/capital-gains-2026-review.json.
+
+## Property and digital assets
+
+The scoped investment endpoint now accepts assetType for all three jurisdictions (US/GB default to listed-equity for existing API callers). India property purchased on or after 23 July 2024 uses a 24-month holding boundary and no equity allowance; Indian VDA requires zero loss offsets and gross consideration minus acquisition cost only. US property scope is vacant non-depreciable investment land. UK residential property excludes main-home relief; UK crypto requires a caller-confirmed allowable pooled/matched basis. No portfolio matching, home relief, depreciation, TDS credit or grandfathered indexation is calculated. Sources and limitations are in rules/evidence/property-crypto-2026-review.json. Production flags unchanged.
