@@ -48,13 +48,14 @@ function calculate(kind,input,ruleContext={}){
   return result;
  }
  if(kind==='historical-tax')return compareHistoricalTax(input);
+ if(kind==='salary'&&Object.keys(ruleContext).length)throw new RangeError('Legacy salary model is not synchronized');
  if(kind==='salary')return countryCalculate({...input,module:'pit'});
- if(kind==='employee-contributions')return calculateEmployeeContributions(input);
+ if(kind==='employee-contributions')return calculateEmployeeContributions(input,ruleContext);
  if(kind==='salary-remainder')return calculateSalaryRemainder(input,ruleContext);
  if(kind==='regional-tax')return calculateRegionalTax(input,ruleContext.regional);
- if(kind==='capital-gain')return calculateCapitalGain(input);
+ if(kind==='capital-gain')return calculateCapitalGain(input,ruleContext);
  if(kind==='india-regimes')return compareIndiaRegimes(input,ruleContext.indiaSalary);
- if(kind==='taxable-income')return assessTaxableIncome(input);
+ if(kind==='taxable-income')return assessTaxableIncome(input,ruleContext);
  throw new TypeError('Unknown calculation type');
 }
 export async function createReceipt({kind,input,engineFingerprint},ruleContext={}){
