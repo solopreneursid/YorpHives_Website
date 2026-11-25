@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {inspect} from '../engine/regulatory-monitor.mjs';
+const source={id:'US-0',country:'US',url:'https://www.irs.gov/example'};
+test('regulatory monitor detects changes without editing rules',async()=>{const first=await inspect(source,{},async()=>new Response('original'));assert.equal(first.status,'baseline');const next=await inspect(source,first,async()=>new Response('updated'));assert.equal(next.status,'review_required');assert.equal(next.ruleChangesApplied,false);assert.equal((await inspect(source,first,async()=>new Response('original'))).status,'unchanged')});
+test('failed source does not imply verification',async()=>{const r=await inspect(source,{},async()=>new Response('denied',{status:403}));assert.equal(r.status,'fetch_failed');assert.equal(r.ruleChangesApplied,false)});
