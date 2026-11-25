@@ -34,7 +34,7 @@ export function automaticReverseSalary({profile,target,period},ruleContext={}){
  let floor=minimum;
  if(key==='DE:DE')floor=Math.max(floor,Math.ceil(profile.annualTaxableIncome/12));
  if(key==='AE:AE')floor=Math.max(floor,Math.ceil(profile.monthlyBasicSalary));
- if(key==='IN:IN')floor=Math.max(floor,profile.epfMonthlyWage*12,profile.epfMonthlyWage*.12*12+profile.professionalTaxAnnual);
+ if(key==='IN:IN')floor=Math.max(floor,profile.epfMonthlyWage*12);
  // Validate the profile even if the requested target exceeds the supported range.
  if(!Number.isFinite(floor)||floor>maximum)throw new RangeError('Unsupported profile');
  floor=Math.ceil(floor);
@@ -57,7 +57,7 @@ export function automaticReverseSalary({profile,target,period},ruleContext={}){
  // Canada and India remain conservative pending proof across rounding and relief boundaries.
  // Iterating a necessary bound cannot skip any feasible candidate.
  let start=Math.max(floor,Math.floor((annualTarget+deductionFloor)/multiplier));
- if(['US:TX','GB:RUK','GB:SCT','AU:AU','SG:SG','DE:DE','AE:AE'].includes(key)){
+ if(Object.keys(ruleContext).length===0&&['US:TX','GB:RUK','GB:SCT','AU:AU','SG:SG','DE:DE','AE:AE'].includes(key)){
   for(let i=0;i<64&&start<=maximum;i++){
    const at=calculateSalaryRemainder({...profile,pay:start},ruleContext);
    const next=Math.floor((annualTarget+at.totalModeledDeductions)/multiplier);
