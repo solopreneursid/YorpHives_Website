@@ -77,6 +77,8 @@ test('generated Worker routes and validation',async()=>{
  assert.equal(dePay.status,200);assert.equal((await dePay.json()).annualRemainder,36402);
  const aePay=await call('/v1/salary/remainder',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'AE',region:'AE',taxYear:'2026',pay:20000,monthlyBasicSalary:16000,scopeConfirmed:true})});
  assert.equal(aePay.status,200);assert.equal((await aePay.json()).annualRemainder,239937);
+ for(const path of ['/salary','/taxes','/career','/abroad','/money','/business','/tax-rules','/tools/salary-remainder','/tools/investment-tax']){const page=await call(path);assert.equal(page.status,200,path);assert.match(await page.text(),/category-card/);}
+ assert.equal((await call('/tools/not-a-tool')).status,404);
  assert.equal((await call('/missing')).status,404);
  assert.equal((await call('/v1/country/calculate')).status,405);
  }finally{rmSync(temp,{recursive:true,force:true})}
