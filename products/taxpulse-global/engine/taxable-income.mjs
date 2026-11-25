@@ -253,15 +253,15 @@ export function calculateCapitalGain(input){
 
 // Regional tax components. Canada and US inputs are jurisdiction-specific taxable income,
 // not federal taxable income or gross salary. UK takes ordinary salary only.
-const REGIONAL_CATALOG=Object.freeze(regionalRules().filter(r=>r.taxYear==='2026').map(r=>{const [country,region]=r.jurisdiction.split('-');return {country,region,name:r.name,currency:r.currency,inputBasis:country==='US'?(region==='TX'?'employee-wages':'state-taxable-income'):country==='CA'?'provincial-taxable-income':'ordinary-salary',resultBasis:country==='US'?'state-tax-before-credits':country==='CA'?'basic-provincial-tax-before-adjustments':'regional-uk-income-tax'};}));
-export function regionalTaxCatalog(){return REGIONAL_CATALOG.map(item=>({...item}));}
-export function calculateRegionalTax(input){
+const regionalMetadata=r=>{const [country,region]=r.jurisdiction.split('-');return {country,region,name:r.name,currency:r.currency,inputBasis:country==='US'?(region==='TX'?'employee-wages':'state-taxable-income'):country==='CA'?'provincial-taxable-income':'ordinary-salary',resultBasis:country==='US'?'state-tax-before-credits':country==='CA'?'basic-provincial-tax-before-adjustments':'regional-uk-income-tax'};};
+export function regionalTaxCatalog(){return regionalRules().filter(r=>r.taxYear==='2026').map(regionalMetadata);}
+export function calculateRegionalTax(input,registry){
  const keys=['country','region','taxYear','income','scopeConfirmed'];
- if(!input||typeof input!=='object'||Array.isArray(input)||keys.some(k=>!Object.hasOwn(input,k))||Object.keys(input).some(k=>!keys.includes(k))||input.taxYear!=='2026'||input.scopeConfirmed!==true)throw new TypeError('Unsupported regional example');
- const config=REGIONAL_CATALOG.find(x=>x.country===input.country&&x.region===input.region);
- if(!config)throw new TypeError('Region not supported');
+ if(!input||typeof input!=='object'||Array.isArray(input)||keys.some(k=>!Object.hasOwn(input,k))||Object.keys(input).some(k=>!keys.includes(k))||typeof input.taxYear!=='string'||!/^\d{4}$/.test(input.taxYear)||input.scopeConfirmed!==true)throw new TypeError('Unsupported regional example');
+ const rule=resolveRegionalRule(input,registry);
+ const config=regionalMetadata(rule);
  const gross=cgMoney(input.income);
- const rule=resolveRegionalRule(input);
+ if(config.country==='US'&&config.region==='TX'&&rule.rates.some(n=>n!==0))throw RangeError('Texas taxable-income scope must be reviewed before changing zero tax');
  let taxable=gross,personalAllowance=0n,warnings;
  const {bounds,rates,sourceUrls:sources}=rule;
  if(config.country==='US'){
@@ -278,7 +278,7 @@ export function calculateRegionalTax(input){
   warnings=['Ordinary annual salary only; assumes eligibility for standard personal allowance and no other income or adjustments to adjusted net income. No savings, dividends, pension contributions, benefits, reliefs, National Insurance or student loans. Scottish rates replace the rest-of-UK income tax rates; do not add both.'];
  }
  const result=cgSlices(0n,taxable,bounds,rates);
- return {...config,taxYear:'2026',taxYearLabel:config.country==='GB'?'6 April 2026 to 5 April 2027':'Calendar year 2026',sampleOnly:true,taxRulesVerified:false,ruleId:rule.version,inputIncome:cgOut(gross),taxableIncome:cgOut(taxable),personalAllowanceApplied:config.country==='GB'?cgOut(personalAllowance):null,brackets:result.rows,regionalTax:cgOut(cgRound(result.total)),sourceUrls:sources,warnings};
+ return {...config,taxYear:rule.taxYear,taxYearLabel:config.country==='GB'?'6 April '+rule.taxYear+' to 5 April '+(Number(rule.taxYear)+1):'Calendar year '+rule.taxYear,sampleOnly:true,taxRulesVerified:false,ruleId:rule.version,inputIncome:cgOut(gross),taxableIncome:cgOut(taxable),personalAllowanceApplied:config.country==='GB'?cgOut(personalAllowance):null,brackets:result.rows,regionalTax:cgOut(cgRound(result.total)),sourceUrls:sources,warnings};
 }
 
 
