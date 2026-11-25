@@ -14,7 +14,7 @@ test('generated Worker routes and validation',async()=>{
  assert.match(html.headers.get('content-security-policy'),/script-src 'self';/);assert.doesNotMatch(html.headers.get('content-security-policy'),/tailwindcss/);
  assert.equal((await call('/advanced-preview')).status,404);
  assert.equal((await call('/assets/application.js')).status,404);
- for(const path of ['/assets/simple.css','/assets/simple.mjs',...['country','primitives','us-filing-statuses','IN','US','GB','manifest','scenarios'].map(n=>'/assets/engine/'+n+'.mjs')]){
+ for(const path of ['/assets/simple.css','/assets/simple.mjs',...['country','primitives','us-filing-statuses','IN','US','GB','manifest','scenarios','taxable-income','proof','fingerprint'].map(n=>'/assets/engine/'+n+'.mjs')]){
   const asset=await call(path);assert.equal(asset.status,200,path);assert.doesNotMatch(asset.headers.get('content-security-policy'),/tailwindcss/);
   if(path.endsWith('.mjs'))assert.match(asset.headers.get('content-type'),/application\/javascript/);
  }
@@ -34,6 +34,9 @@ test('generated Worker routes and validation',async()=>{
  const india=await post(JSON.stringify(indiaInput));assert.equal(india.status,200);const indiaResult=(await india.json()).result;assert.ok(Math.abs(indiaResult.incomeTax-10400)<0.005);assert.ok(Math.abs(indiaResult.marginalReliefApplied-51500)<0.005);
  assert.equal((await post(JSON.stringify({...indiaInput,parameters:{grossSalary:1285000}}))).status,400);
  assert.equal((await post(JSON.stringify({...payload,country:'DE'}))).status,400);
+ const assess=await call('/v1/taxable-income/calculate',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'DE',taxYear:'2026',taxableIncome:50000,assessment:'individual'})});
+ assert.equal(assess.status,200);assert.equal((await assess.json()).incomeTax,10548);
+ assert.equal((await call('/v1/taxable-income/calculate')).status,405);
  assert.equal((await call('/missing')).status,404);
  assert.equal((await call('/v1/country/calculate')).status,405);
  }finally{rmSync(temp,{recursive:true,force:true})}
