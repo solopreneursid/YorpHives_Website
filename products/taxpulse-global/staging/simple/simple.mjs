@@ -43,6 +43,7 @@ function inputs() {
   const selected = countries.get(country);
   const grossSalary = $('salary').valueAsNumber;
   if (!$('tax-form').reportValidity() || !Number.isFinite(grossSalary)) throw new Error('Complete the salary and tax status above.');
+  if(country==='IN'&&grossSalary>5075000)throw new RangeError('India salary above INR 50.75 lakh is not supported yet because surcharge rules are under review.');
   const parameters = {grossSalary};
   if (country === 'IN') {
     if (!['true','false'].includes($('resident').value)) throw new Error('Choose whether the example is an Indian tax resident.');
@@ -80,7 +81,7 @@ $('tax-form').addEventListener('submit',event=>{
     $('scope').textContent=response.warnings.join(' ');
     lastResult={kind:'salary',input};
     $('tax-result').hidden=false;$('tax-result').focus();
-  } catch { $('error').textContent='Please check the salary and tax status. This example could not be calculated.'; }
+  } catch (error) { $('error').textContent=error instanceof RangeError&&$('country').value==='IN'?'India examples above INR 50.75 lakh annual salary are not supported yet; surcharge rules need review.':'Please check the salary and tax status. This example could not be calculated.'; }
 });
 $('compare-form').addEventListener('submit',event=>{
   event.preventDefault();$('compare-result').hidden=true;$('compare-error').textContent='';
@@ -95,7 +96,7 @@ $('compare-form').addEventListener('submit',event=>{
       $('change-rate').textContent+=' In this example, the higher salary leaves less money after income tax. This can happen near a tax relief threshold. The rules are not verified.';
     }
     $('compare-result').hidden=false;$('compare-result').focus();
-  } catch { $('compare-error').textContent='Enter valid example salaries and tax status in both forms.'; }
+  } catch (error) { $('compare-error').textContent=error instanceof RangeError&&$('country').value==='IN'?'India examples above INR 50.75 lakh annual salary are not supported yet; surcharge rules need review.':'Enter valid example salaries and tax status in both forms.'; }
 });
 $('clear-button').addEventListener('click',()=>{$('tax-form').reset();$('compare-form').reset();countryChanged();});
 async function downloadReceipt(record,button,error){
