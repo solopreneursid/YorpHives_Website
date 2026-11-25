@@ -1,3 +1,4 @@
+import runtime from './engine/runtime-context.mjs';
 import {indiaCtc,purchasingPower,relocationBreakEven,indiaDeductionScenario} from './engine/decision-tools.mjs';
 import {calculateBudget,expenseCategories} from './engine/budget.mjs';
 import {createFinancialProfile,offerFromProfile} from './engine/financial-profile.mjs';
@@ -10,7 +11,8 @@ import { countryCalculate, catalog } from './engine/country.mjs';
 import { compareIncomeScenarios } from './engine/scenarios.mjs';
 import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain, calculateRegionalTax, regionalTaxCatalog, calculateSalaryRemainder, calculateEmployeeContributions } from './engine/taxable-income.mjs';
 import { createReceipt, verifyReceipt } from './engine/proof.mjs';
-import engineFingerprint from './engine/fingerprint.mjs';
+const engineFingerprint=runtime.engineFingerprint;
+const ruleContext=runtime.context;
 import manifest from './engine/manifest.mjs';
 
 import { historicalRuleCatalog, compareHistoricalTax } from './engine/history.mjs';
@@ -113,7 +115,7 @@ async function downloadReceipt(record,button,error){
  if(!record)return;
  button.disabled=true;
  try{
-  const receipt=await createReceipt({...record,engineFingerprint});
+  const receipt=await createReceipt({...record,engineFingerprint},ruleContext);
   const url=URL.createObjectURL(new Blob([JSON.stringify(receipt,null,2)],{type:'application/json'}));
   const link=document.createElement('a');link.href=url;link.download='taxpulse-example.json';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
  }catch{error.textContent='Could not create a report. Use a secure browser and try again.';}
@@ -167,7 +169,7 @@ $('india-regime-form').addEventListener('submit',event=>{
   const residence=$('india-resident').value;
   if(!['yes','no'].includes(residence))throw new Error('Choose tax residence');
   const input={country:'IN',taxYear:'2026',grossSalary:$('india-gross').valueAsNumber,residentIndividual:residence==='yes',ageGroup:$('india-age').value,ordinarySalaryOnly:$('india-salary-only').value==='yes',oldEligibleDeductions:$('india-old-deductions').valueAsNumber,newEligibleDeductions:$('india-new-deductions').valueAsNumber};
-  const r=compareIndiaRegimes(input),f=v=>money(v,'INR');
+  const r=compareIndiaRegimes(input,ruleContext.indiaSalary),f=v=>money(v,'INR');
   $('india-old-tax').textContent=f(r.oldRegime.incomeTax);$('india-new-tax').textContent=f(r.newRegime.incomeTax);$('india-tax-difference').textContent=f(r.taxDifference);
   $('india-regime-verdict').textContent=r.lowerTaxRegime==='equal'?'Both regimes have the same example tax.':(r.lowerTaxRegime==='old'?'Old':'New')+' regime has lower tax in this example.';
   for(const [id,regime] of [['india-old-breakdown',r.oldRegime],['india-new-breakdown',r.newRegime]]){
@@ -186,7 +188,7 @@ $('proof-file').addEventListener('change',async()=>{
  if(!file)return;
  try{
   if(file.size>65536)throw new Error('Report too large');
-  const r=await verifyReceipt(JSON.parse(await file.text()),engineFingerprint);
+  const r=await verifyReceipt(JSON.parse(await file.text()),engineFingerprint,ruleContext);
   if(request!==proofRequest)return;
   $('proof-status').textContent=!r.integrity?'The report contents do not match its fingerprint.':!r.sameEngine&&r.reproduced?'The fingerprint matches and the example calculation was reproduced using retained historical rules in a different engine build. This is not legal verification or a digital signature.':!r.sameEngine?'The fingerprint matches, but this engine cannot reproduce the older report.':r.reproduced?'The fingerprint matches and the example calculation was reproduced. This is not legal verification or a digital signature.':'The fingerprint matches, but the calculation could not be reproduced.';
  }catch{if(request===proofRequest)$('proof-status').textContent='This file is not a supported TaxPulse example report.';}
@@ -283,7 +285,7 @@ $('regional-form').addEventListener('submit',event=>{
  event.preventDefault();clearRegional();
  try{
  const input={country:$('regional-country').value,region:$('regional-region').value,taxYear:'2026',income:$('regional-income').valueAsNumber,scopeConfirmed:$('regional-confirm').value==='yes'};
- const r=calculateRegionalTax(input),f=v=>money(v,r.currency);
+ const r=calculateRegionalTax(input,ruleContext.regional),f=v=>money(v,r.currency);
  $('regional-tax-label').textContent=r.country==='CA'?'Basic provincial/territorial tax before adjustments':r.country==='GB'?'Income tax under selected UK rates':'State personal income tax before credits';
  $('regional-tax-amount').textContent=f(r.regionalTax);$('regional-taxable').textContent=f(r.taxableIncome);
  $('regional-breakdown').replaceChildren();
@@ -331,7 +333,7 @@ $('pay-form').addEventListener('submit',event=>{
  event.preventDefault();clearPay();
  try{
   const region=$('pay-region').value,input={country:payOptions[region].country,region,taxYear:'2026',pay:$('pay-amount').valueAsNumber,scopeConfirmed:$('pay-confirm').value==='yes',...(region==='IN'?{epfMonthlyWage:$('pay-epf').valueAsNumber,professionalTaxAnnual:$('pay-professional-tax').valueAsNumber}:region==='DE'?{annualTaxableIncome:$('pay-de-taxable').valueAsNumber,healthSupplementRate:$('pay-de-supplement').valueAsNumber}:region==='AE'?{monthlyBasicSalary:$('pay-ae-basic').valueAsNumber}:{})};
-  const r=calculateSalaryRemainder(input),f=v=>money(v,r.currency);
+  const r=calculateSalaryRemainder(input,ruleContext),f=v=>money(v,r.currency);
   $('pay-annual').textContent=f(r.annualRemainder);$('pay-monthly').textContent=f(r.averageMonthlyRemainder);$('pay-deductions').textContent=f(r.totalModeledDeductions);
   $('pay-breakdown').replaceChildren();
   for(const [label,value] of [['Annual gross wages',r.annualGross],...(r.taxableIncome===undefined?[]:[['Taxable income',r.taxableIncome]]),...(r.taxAdjustments||[]).map(c=>[c.name,c.amount]),...(r.incomeTaxComponents||[{name:'Annual income tax',amount:r.incomeTax}]).map(c=>[c.name,c.amount]),...r.contributions.map(c=>[c.name,c.amount]),['Annual modeled deductions',r.totalModeledDeductions],['Annual money left',r.annualRemainder]]){
@@ -367,7 +369,7 @@ $('reverse-form').addEventListener('submit',event=>{
   const request={profile,target:$('reverse-target').valueAsNumber,period:$('reverse-period').value};
   const manual=$('reverse-manual').checked;
   const input=manual?{...request,minPay:$('reverse-min').valueAsNumber,maxPay:$('reverse-max').valueAsNumber}:request;
-  const r=manual?reverseSalary(input):automaticReverseSalary(input);
+  const r=manual?reverseSalary(input,ruleContext):automaticReverseSalary(input,ruleContext);
   if(!r.found){$('reverse-error').textContent=r.searchComplete===false?'Automatic search reached its limit. Choose a salary range yourself to continue.':'No salary in the supported search range meets your target.';return;}
   const s=r.salary,f=v=>money(v,s.currency);
   $('reverse-gross').textContent=f(s.annualGross);$('reverse-net').textContent=f(s.averageMonthlyRemainder);$('reverse-deductions').textContent=f(s.totalModeledDeductions);
@@ -403,7 +405,7 @@ $('offers-form').addEventListener('submit',event=>{
   const region=$('pay-region').value,profile={country:payOptions[region].country,region,taxYear:'2026',scopeConfirmed:$('pay-confirm').value==='yes'&&$('offers-confirm').checked};
   const first={...profile,pay:$('pay-amount').valueAsNumber,...(region==='IN'?{epfMonthlyWage:$('pay-epf').valueAsNumber,professionalTaxAnnual:$('pay-professional-tax').valueAsNumber}:region==='DE'?{annualTaxableIncome:$('pay-de-taxable').valueAsNumber,healthSupplementRate:$('pay-de-supplement').valueAsNumber}:region==='AE'?{monthlyBasicSalary:$('pay-ae-basic').valueAsNumber}:{})};
   const second={...profile,pay:$('offers-pay').valueAsNumber,...(region==='IN'?{epfMonthlyWage:$('offers-epf').valueAsNumber,professionalTaxAnnual:$('offers-pt').valueAsNumber}:region==='DE'?{annualTaxableIncome:$('offers-taxable').valueAsNumber,healthSupplementRate:$('offers-supplement').valueAsNumber}:region==='AE'?{monthlyBasicSalary:$('offers-basic').valueAsNumber}:{})};
-  const input={first,second},r=compareSalaryOffers(input),f=v=>money(v,r.currency);
+  const input={first,second},r=compareSalaryOffers(input,ruleContext),f=v=>money(v,r.currency);
   $('offers-winner').textContent=r.higherRemainder==='equal'?'Both offers leave the same annual amount':(r.higherRemainder==='first'?'Offer 1':'Offer 2')+' leaves more money per year';
   $('offers-first').textContent=f(r.first.averageMonthlyRemainder);$('offers-second').textContent=f(r.second.averageMonthlyRemainder);$('offers-diff').textContent=f(Math.abs(r.annualDifference));
   $('offers-breakdown').replaceChildren();
@@ -427,7 +429,7 @@ $('negotiation-form').addEventListener('submit',event=>{
  try{
   const region=$('pay-region').value;
   const current={country:payOptions[region].country,region,taxYear:'2026',pay:$('pay-amount').valueAsNumber,scopeConfirmed:$('pay-confirm').value==='yes'&&$('negotiation-confirm').checked,...(region==='IN'?{epfMonthlyWage:$('pay-epf').valueAsNumber,professionalTaxAnnual:$('pay-professional-tax').valueAsNumber}:region==='DE'?{annualTaxableIncome:$('pay-de-taxable').valueAsNumber,healthSupplementRate:$('pay-de-supplement').valueAsNumber}:region==='AE'?{monthlyBasicSalary:$('pay-ae-basic').valueAsNumber}:{})};
-  const input={current,monthlyIncrease:$('negotiation-increase').valueAsNumber},r=negotiateSalary(input);
+  const input={current,monthlyIncrease:$('negotiation-increase').valueAsNumber},r=negotiateSalary(input,ruleContext);
   if(!r.found){$('negotiation-error').textContent=r.search.searchComplete?'No supported salary meets this goal.':'Automatic search reached its limit. Try the manual salary range in the reverse calculator above.';return;}
   const f=v=>money(v,r.baseline.currency);
   $('negotiation-gross').textContent=f(r.proposed.annualGross);$('negotiation-net').textContent=f(r.netIncrease);$('negotiation-raise').textContent=f(r.grossIncrease)+(r.grossIncreasePercent===null?'':' ('+percent(r.grossIncreasePercent)+')');
@@ -448,7 +450,7 @@ $('comp-form').addEventListener('submit',event=>{
  try{
   if(!lastOffers||!$('comp-confirm').checked)throw new Error('Compare offers first');
   const extras=n=>Object.fromEntries(['retirement','insurance','otherBenefits','commuting','otherExpenses'].map(k=>[k,$('comp-'+n+'-'+k).valueAsNumber]));
-  const input={...lastOffers.input,firstExtras:extras(1),secondExtras:extras(2)},r=compareCompensation(input),f=v=>money(v,r.currency);
+  const input={...lastOffers.input,firstExtras:extras(1),secondExtras:extras(2)},r=compareCompensation(input,ruleContext),f=v=>money(v,r.currency);
   $('comp-breakdown').replaceChildren();
   for(const [label,value] of [['Offer 1 annual cash after work expenses',r.first.annualAvailableCash],['Offer 2 annual cash after work expenses',r.second.annualAvailableCash],['Offer 1 estimated non-cash benefits',r.first.annualBenefits],['Offer 2 estimated non-cash benefits',r.second.annualBenefits],['Offer 1 estimated combined annual value',r.first.estimatedAnnualCombinedValue],['Offer 2 estimated combined annual value',r.second.estimatedAnnualCombinedValue],['Annual cash difference (offer 2 minus offer 1)',r.annualCashDifference],['Combined value difference (offer 2 minus offer 1)',r.annualCombinedValueDifference]]){
    const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=f(value);$('comp-breakdown').append(dt,dd);
@@ -483,7 +485,7 @@ $('intl-form').addEventListener('input',clearInternational);
 $('intl-form').addEventListener('submit',event=>{
  event.preventDefault();clearInternational();
  try{
- const input={first:intlInput(1),second:intlInput(2),rate:$('intl-rate').valueAsNumber,rateDate:$('intl-date').value},r=compareInternational(input);
+ const input={first:intlInput(1),second:intlInput(2),rate:$('intl-rate').valueAsNumber,rateDate:$('intl-date').value},r=compareInternational(input,ruleContext);
  $('intl-winner').textContent=r.higherDisposable==='equal'?'Both examples leave the same amount':(r.higherDisposable==='first'?'Country 1':'Country 2')+' leaves more money in this example';
  const rows=[];
  for(const [title,v] of [['Country 1',r.first],['Country 2',r.second]]){
@@ -608,7 +610,7 @@ function closePrintReport(){document.body.classList.remove('taxpulse-printing');
 window.addEventListener('afterprint',closePrintReport);
 async function printReceipt(record,button,error){
  if(!record)return;button.disabled=true;
- try{const receipt=await createReceipt({...record,engineFingerprint});renderPrintReport(receipt);$('print-report').hidden=false;document.body.classList.add('taxpulse-printing');window.print();}
+ try{const receipt=await createReceipt({...record,engineFingerprint},ruleContext);renderPrintReport(receipt);$('print-report').hidden=false;document.body.classList.add('taxpulse-printing');window.print();}
  catch{closePrintReport();error.textContent='Could not prepare the printable report. Try again in a secure browser.';}
  finally{button.disabled=false;}
 }
@@ -663,13 +665,13 @@ showWorkspace();
 let savedProfile=null;
 $('profile-save').addEventListener('click',()=>{
  if(!lastPay)return;
- try{savedProfile=createFinancialProfile(lastPay.input);$('profile-summary').textContent='Saved example: '+savedProfile.region+' · '+money(savedProfile.salary.pay,savedProfile.currency)+' '+savedProfile.payPeriod;$('profile-bar').hidden=false;$('profile-use-intl').disabled=false;$('budget-use-profile').disabled=false;$('profile-save-status').textContent='Example kept in this tab. Open Work Abroad or My Money to reuse it.';}
+ try{savedProfile=createFinancialProfile(lastPay.input,ruleContext);$('profile-summary').textContent='Saved example: '+savedProfile.region+' · '+money(savedProfile.salary.pay,savedProfile.currency)+' '+savedProfile.payPeriod;$('profile-bar').hidden=false;$('profile-use-intl').disabled=false;$('budget-use-profile').disabled=false;$('profile-save-status').textContent='Example kept in this tab. Open Work Abroad or My Money to reuse it.';}
  catch{$('profile-save-status').textContent='Calculate a supported salary example first.';}
 });
 $('profile-clear').addEventListener('click',()=>{savedProfile=null;$('profile-summary').textContent='';$('profile-bar').hidden=true;$('profile-use-intl').disabled=true;$('budget-use-profile').disabled=true;$('profile-save-status').textContent='Saved example forgotten. Existing calculator inputs are unchanged.';$('profile-intl-status').textContent='';});
 $('profile-use-intl').addEventListener('click',()=>{
  if(!savedProfile)return;
- try{const s=offerFromProfile(savedProfile);$('intl-1-region').value=s.region;intlChanged(1);$('intl-1-pay').value=String(s.pay);
+ try{const s=offerFromProfile(savedProfile,ruleContext);$('intl-1-region').value=s.region;intlChanged(1);$('intl-1-pay').value=String(s.pay);
  for(const [key,id] of Object.entries({epfMonthlyWage:'epf',professionalTaxAnnual:'pt',annualTaxableIncome:'taxable',healthSupplementRate:'supplement',monthlyBasicSalary:'basic'}))if(Object.hasOwn(s,key))$('intl-1-'+id).value=String(s[key]);
  $('profile-intl-status').textContent='Salary copied. Confirm the conditions again and enter living costs and exchange rate.';
  }catch{$('profile-intl-status').textContent='Could not reuse this example.';}
@@ -688,4 +690,9 @@ $('budget-form').addEventListener('submit',event=>{event.preventDefault();clearB
 
 const decisionSpecs=[{"id":"india-ctc","category":"salary","title":"India: CTC to in-hand salary","desc":"Compare cash pay under old and new regimes","fn":"indiaCtc","fields":[["annualCtc","Annual CTC (INR)"],["employerContributions","Annual employer contributions"],["nonCashBenefits","Annual non-cash benefits"],["employeeContributions","Annual employee contributions"],["otherPayrollDeductions","Other annual payroll deductions"],["residentIndividual","Indian tax resident?","resident"],["ageGroup","Age group","age"],["oldEligibleDeductions","Confirmed old-regime deductions"],["newEligibleDeductions","Confirmed new-regime deductions"]],"result":[["annualGross","Annual gross cash salary"],["old.incomeTax","Old regime tax"],["new.incomeTax","New regime tax"],["old.monthlyCash","Old regime monthly cash"],["new.monthlyCash","New regime monthly cash"]]},{"id":"purchasing-power","category":"abroad","title":"Compare purchasing power","desc":"Compare national purchasing power using dated factors","fn":"purchasingPower","fields":[["firstCurrency","First currency","currency"],["secondCurrency","Second currency","currency"],["firstMonthlyIncome","First monthly disposable income"],["secondMonthlyIncome","Second monthly disposable income"],["firstFactor","First national PPP factor","factor"],["secondFactor","Second national PPP factor","factor"],["referenceYear","Common reference year","year"]],"result":[["firstInternationalDollars","First international dollars"],["secondInternationalDollars","Second international dollars"],["difference","Second minus first"]],"note":"Use same-year household-consumption factors from the <a href=\"https://data.worldbank.org/indicator/PA.NUS.PRVT.PP\">World Bank (CC BY 4.0)</a>. National averages, not exchange rates or city costs."},{"id":"relocation-break-even","category":"abroad","title":"Moving cost recovery","desc":"Estimate when moving costs could be recovered","fn":"relocationBreakEven","fields":[["currency","Comparison currency","currency"],["currentMonthlySavings","Current monthly savings (negative allowed)","signed"],["destinationMonthlySavings","Destination monthly savings (negative allowed)","signed"],["movingCost","One-time moving costs"]],"result":[["monthlyImprovement","Monthly improvement"],["monthsToRecover","Whole months to recover costs"],["firstYearDifference","First-year difference after moving costs"]]},{"id":"india-deduction-scenario","category":"taxes","title":"India: test tax deduction changes","desc":"Compare tax before and after confirmed deductions","fn":"indiaDeductionScenario","fields":[["grossSalary","Annual gross salary (INR)"],["residentIndividual","Indian tax resident?","resident"],["ageGroup","Age group","age"],["oldEligibleDeductions","Current old-regime eligible deductions"],["newEligibleDeductions","Current new-regime eligible deductions"],["extraOldEligibleDeductions","Additional eligible old-regime deductions"],["extraNewEligibleDeductions","Additional eligible new-regime deductions"]],"result":[["before.oldRegime.incomeTax","Old regime before"],["after.oldRegime.incomeTax","Old regime after"],["oldTaxReduction","Old regime tax reduction"],["newTaxReduction","New regime tax reduction"]]}];
 const decisionCalculators={indiaCtc,purchasingPower,relocationBreakEven,indiaDeductionScenario};
-for(const spec of decisionSpecs){const id=spec.id,form=$(id+'-form'),result=$(id+'-result'),error=$(id+'-error');form.addEventListener('input',()=>{result.hidden=true;error.textContent='';});form.addEventListener('submit',event=>{event.preventDefault();result.hidden=true;error.textContent='';try{if(id.startsWith('india-')&&!$(id+'-confirm').checked)throw Error('Confirm eligibility');const input=Object.fromEntries(spec.fields.map(([k,label,type])=>{const el=$(id+'-'+k);return [k,type==='resident'?el.value==='true':type==='age'||type==='currency'?el.value:el.valueAsNumber];}));const r=decisionCalculators[spec.fn](input),dl=$(id+'-breakdown');dl.replaceChildren();for(const [key,label] of spec.result){const v=key.split('.').reduce((a,k)=>a[k],r);const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=v===null?'Not recovered under these assumptions':key==='monthsToRecover'?String(v):r.currency?money(v,r.currency):new Intl.NumberFormat('en',{maximumFractionDigits:2}).format(v);dl.append(dt,dd);}$(id+'-warning').textContent=r.warnings.join(' ');result.hidden=false;result.focus();}catch{error.textContent='Check all amounts, dates and applicable conditions.';}});}
+for(const spec of decisionSpecs){const id=spec.id,form=$(id+'-form'),result=$(id+'-result'),error=$(id+'-error');form.addEventListener('input',()=>{result.hidden=true;error.textContent='';});form.addEventListener('submit',event=>{event.preventDefault();result.hidden=true;error.textContent='';try{if(id.startsWith('india-')&&!$(id+'-confirm').checked)throw Error('Confirm eligibility');const input=Object.fromEntries(spec.fields.map(([k,label,type])=>{const el=$(id+'-'+k);return [k,type==='resident'?el.value==='true':type==='age'||type==='currency'?el.value:el.valueAsNumber];}));const r=decisionCalculators[spec.fn](input,ruleContext),dl=$(id+'-breakdown');dl.replaceChildren();for(const [key,label] of spec.result){const v=key.split('.').reduce((a,k)=>a[k],r);const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=v===null?'Not recovered under these assumptions':key==='monthsToRecover'?String(v):r.currency?money(v,r.currency):new Intl.NumberFormat('en',{maximumFractionDigits:2}).format(v);dl.append(dt,dd);}$(id+'-warning').textContent=r.warnings.join(' ');result.hidden=false;result.focus();}catch{error.textContent='Check all amounts, dates and applicable conditions.';}});}
+
+// A tab pins the public rule snapshot. No salary or other user inputs are transmitted.
+const runtimeNotice=document.createElement('p');runtimeNotice.className='notice';runtimeNotice.setAttribute('role','status');runtimeNotice.textContent=runtime.state==='signed-preview'?'Signed preview rule snapshot '+runtime.sequence+' — refresh to load newer updates. Tax rules remain unverified.':runtime.state==='blocked'?'Regulatory update unavailable. Calculations are temporarily disabled.':'Bundled preview rule data. Automatic signed updates are not configured.';document.getElementById('main').prepend(runtimeNotice);
+function restrictRuntime(){const expired=runtime.state==='signed-preview'&&Date.parse(runtime.expiresAt)<=Date.now();const blocked=runtime.state==='blocked'||expired;const unsynced=new Set(['my-tax','compare','taxable-income','investment-tax','employee-contributions']);for(const section of document.querySelectorAll('main > section.card')){if((blocked&&section.querySelector('form'))||(runtime.state==='signed-preview'&&unsynced.has(section.id))){for(const button of section.querySelectorAll('button[type=submit]'))button.disabled=true;section.addEventListener('submit',e=>{e.preventDefault();e.stopImmediatePropagation();},true);}}if(expired)runtimeNotice.textContent='Rule snapshot expired. Refresh before calculating.';}
+restrictRuntime();if(runtime.state==='signed-preview')setTimeout(restrictRuntime,Math.min(2147483647,Math.max(0,Date.parse(runtime.expiresAt)-Date.now())));
