@@ -62,6 +62,8 @@ export function assertProductionReady(m = manifest) {
   const implemented = new Set(catalog().countries.map(({ code }) => code));
   for (const country of REQUIRED_COUNTRIES) {
     if (!implemented.has(country)) throw Error('Backend country not implemented: ' + country);
+  }
+  for (const country of REQUIRED_COUNTRIES) {
     const r = m.countries?.[country];
     if (!r || r.taxYear !== '2026' || r.verification !== 'verified' ||
         r.productionEnabled !== true || !Array.isArray(r.evidence)) {
