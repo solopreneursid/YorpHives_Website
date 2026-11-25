@@ -1,5 +1,6 @@
 // Read-only source feasibility probe. It does not import or publish notices.
 // Fail closed on redirects, access errors or any non-empty robots disallow.
+import {parseIsroTable} from './isro-feed.mjs';
 const origin='https://www.isro.gov.in';
 const options={redirect:'manual',signal:AbortSignal.timeout(12000),headers:{'User-Agent':'GlobalGovJobsSourceCheck/1.0','Accept':'text/plain,text/html'}};
 async function readBounded(response,limit){
@@ -18,6 +19,8 @@ try{
  const response=await fetch(origin+'/ViewAllOpportunities.html',{...options,signal:AbortSignal.timeout(12000)});
  const html=await readBounded(response,2*1024*1024);
  const table=html.match(/<table\b[\s\S]*?<\/table\s*>/i)?.[0]||'';
- console.log(JSON.stringify({stage:'advertisements',status:response.status,contentType:response.headers.get('content-type'),bytes:Buffer.byteLength(html),tableFound:!!table,tableSample:table.slice(0,12000)}));
- if(response.status!==200||!table)throw Error('advertisement_table_unavailable');
+ console.log(JSON.stringify({stage:'advertisements',status:response.status,contentType:response.headers.get('content-type'),bytes:Buffer.byteLength(html),tableFound:!!table}));
+ if(response.status!==200||!table||!/html/i.test(response.headers.get('content-type')||''))throw Error('advertisement_table_unavailable');
+ const parsed=parseIsroTable(html);
+ console.log(JSON.stringify({stage:'parser',recognized:parsed.recognized,eligible:parsed.valid.length,rejected:parsed.rejected,note:'Read-only probe; no records stored or published.'}));
 }catch(error){console.log(JSON.stringify({stage:'stopped',reason:String(error.message||error)}));process.exitCode=1;}
