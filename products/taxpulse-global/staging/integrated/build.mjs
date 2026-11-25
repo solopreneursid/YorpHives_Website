@@ -42,6 +42,7 @@ write('webmanifest.txt',"{\"id\":\"/\",\"name\":\"TaxPulse Global Preview\",\"sh
  }
  write('browser-scenarios.mjs.txt',read('engine/scenarios.mjs'));
 write('browser-financial-profile.mjs.txt',read('engine/financial-profile.mjs'));
+write('browser-budget.mjs.txt',read('engine/budget.mjs'));
 
 for(const name of ['taxable-income','proof','history','reverse-salary','salary-offers','negotiation','compensation','international']){
   const content=read('engine/'+name+'.mjs');
