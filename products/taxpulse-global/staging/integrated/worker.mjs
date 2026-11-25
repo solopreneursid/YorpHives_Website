@@ -8,12 +8,14 @@ import a6 from './primitives.js.txt';
 import a7 from './country-rules.js.txt';
 import a8 from './advanced-browser.js.txt';
 import a9 from './webmanifest.txt';
+import a10 from './secure-records.mjs.txt';
+import a11 from './browser-vault.mjs.txt';
 import {calculate} from './api.mjs';
 import {advancedCalculate,supported} from './advanced.mjs';
 import {countryCalculate,catalog} from './country.mjs';
 import {spec} from './openapi.mjs';
 import {capabilities,regulatoryStatus,discovery,llms} from './discovery.mjs';
-const assets={"/manifest.webmanifest":[a9,"application/manifest+json"],"/assets/advanced-browser.js":[a8,"application/javascript"],"/":[a0,"text/html"],"/assets/script-1.js":[a1,"application/javascript"],"/assets/script-2.js":[a2,"application/javascript"],"/assets/style-1.css":[a3,"text/css"],"/assets/style-2.css":[a4,"text/css"],"/assets/application.js":[a5,"application/javascript"],"/assets/primitives.js":[a6,"application/javascript"],"/assets/country-rules.js":[a7,"application/javascript"]};
+const assets={"/assets/secure-records.mjs":[a10,"application/javascript"],"/assets/browser-vault.mjs":[a11,"application/javascript"],"/manifest.webmanifest":[a9,"application/manifest+json"],"/assets/advanced-browser.js":[a8,"application/javascript"],"/":[a0,"text/html"],"/assets/script-1.js":[a1,"application/javascript"],"/assets/script-2.js":[a2,"application/javascript"],"/assets/style-1.css":[a3,"text/css"],"/assets/style-2.css":[a4,"text/css"],"/assets/application.js":[a5,"application/javascript"],"/assets/primitives.js":[a6,"application/javascript"],"/assets/country-rules.js":[a7,"application/javascript"]};
 const headers={'cache-control':'no-store','x-robots-tag':'noindex, nofollow','x-content-type-options':'nosniff','referrer-policy':'no-referrer','content-security-policy':"default-src 'none'; script-src 'self' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob:; connect-src 'none'; manifest-src 'self'; form-action 'none'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; worker-src 'none'"};
 const json=(x,status=200)=>new Response(JSON.stringify(x),{status,headers:{...headers,'content-type':'application/json'}});
 async function read(req){const r=req.body?.getReader();if(!r)throw Error('Missing body');let n=0,parts=[];while(true){const {done,value}=await r.read();if(done)break;n+=value.byteLength;if(n>16384){await r.cancel();throw Error('Too large')}parts.push(value)}return JSON.parse(await new Blob(parts).text())}
