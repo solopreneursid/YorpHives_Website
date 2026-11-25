@@ -14,7 +14,7 @@ permissions:
 jobs:
   staging-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,3 +23,14 @@ jobs:
         with:
           node-version: '22'
       - run: node --test products/taxpulse-global/tests/*.test.mjs
+      - name: Install pinned browser test dependency
+        if: github.event_name == 'push'
+        working-directory: products/taxpulse-global
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.1
+      - name: Install Chromium
+        if: github.event_name == 'push'
+        working-directory: products/taxpulse-global
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Test the actual simple workspace in Chromium
+        if: github.event_name == 'push'
+        run: node products/taxpulse-global/browser-tests/smoke.mjs
