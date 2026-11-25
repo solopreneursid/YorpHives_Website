@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {reverseSalary} from '../engine/reverse-salary.mjs';
+import {reverseSalary,automaticReverseSalary} from '../engine/reverse-salary.mjs';
 import {calculateSalaryRemainder} from '../engine/taxable-income.mjs';
 const profiles=[
  ['US','TX',60000,{}],['GB','RUK',4000,{}],['CA','AB',80000,{}],
@@ -27,4 +27,15 @@ test('unreachable target and invalid requests',()=>{
  const input={profile,target:1000000,period:'annual',minPay:100,maxPay:110};
  assert.equal(reverseSalary(input).found,false);
  for(const change of [{target:NaN},{target:1.001},{period:'weekly'},{maxPay:20000},{minPay:-1},{profile:{...profile,pay:100}},{profile:{...profile,scopeConfirmed:false}}])assert.throws(()=>reverseSalary({...input,...change}));
+});
+
+test('automatic search finds exact UAE target without manual bounds',()=>{
+ const profile={country:'AE',region:'AE',taxYear:'2026',scopeConfirmed:true,monthlyBasicSalary:16000};
+ const r=automaticReverseSalary({profile,target:19994.75,period:'monthly'});
+ assert.equal(r.requiredPay,20000);assert.equal(r.searchComplete,true);
+});
+test('automatic search distinguishes limit from impossibility',()=>{
+ const profile={country:'US',region:'TX',taxYear:'2026',scopeConfirmed:true};
+ assert.equal(automaticReverseSalary({profile,target:180000,period:'annual'}).searchComplete,false);
+ assert.equal(automaticReverseSalary({profile,target:300000,period:'annual'}).searchComplete,true);
 });
