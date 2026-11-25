@@ -37,3 +37,27 @@ jobs:
         run: npx --no-install playwright install --with-deps chromium
       - name: Test the actual simple workspace in Chromium
         run: node products/taxpulse-global/browser-tests/smoke.mjs
+      - name: Verify deployed preview independently
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, 'verify deployed regulatory')
+        run: node products/taxpulse-global/browser-tests/hosted-smoke.mjs
+  regulatory-source-probe:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'verify deployed regulatory')
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch official sources without changing rules
+        working-directory: products/taxpulse-global
+        run: node scripts/probe-regulatory-sources.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regulatory-source-probe
+          path: products/taxpulse-global/regulatory-probe.json
+          if-no-files-found: warn
+          retention-days: 7
