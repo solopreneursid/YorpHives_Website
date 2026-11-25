@@ -30,9 +30,33 @@ export function extractUkNi(html,year){
  const monthlyLower=monthly('Primary threshold'),monthlyUpper=monthly('Upper earnings limit');if(monthlyLower<=0||monthlyUpper<=monthlyLower||monthlyUpper>1e6)throw Error('Invalid thresholds');
  return {jurisdiction:'GB',component:'ni',taxYear:String(year),effectiveFrom:year+'-04-06',effectiveUntil:(year+1)+'-04-06',parameters:{monthlyLower,monthlyUpper,mainRateBasisPoints:rate(row[0][2]),upperRateBasisPoints:rate(row[0][3])},status:'candidate',legalStatus:'review_required',automaticActivation:false};
 }
+// CRA publishes contiguous cent-denominated income bands, including the final unlimited band.
+const craRegions={'Federal':'CA','Alberta':'CA-AB','British Columbia':'CA-BC','Manitoba':'CA-MB','New Brunswick':'CA-NB','Newfoundland and Labrador':'CA-NL','Northwest Territories':'CA-NT','Nova Scotia':'CA-NS','Nunavut':'CA-NU','Ontario':'CA-ON','Prince Edward Island':'CA-PE','Saskatchewan':'CA-SK','Yukon':'CA-YT'};
+export function extractCraBrackets(html){
+ if(typeof html!=='string'||html.length>2*1024*1024)throw Error('Invalid CRA source');
+ const years=[...normalize(html).matchAll(/Current year tax rates and income brackets \((\d{4})\)/g)].map(m=>Number(m[1]));
+ const distinct=[...new Set(years)];if(distinct.length!==1||distinct[0]<2020||distinct[0]>2100)throw Error('Ambiguous CRA tax year');
+ const year=distinct[0],candidates=[],seen=new Set();
+ for(const match of html.matchAll(/<table\b[^>]*>([\s\S]*?)<\/table>/gi)){
+  const caption=match[1].match(/<caption\b[^>]*>([\s\S]*?)<\/caption>/i);
+  if(!caption)continue;
+  const label=normalize(caption[1]).match(/^(.+?) rate:\s*(\d{4})$/);
+  if(!label||!Object.hasOwn(craRegions,label[1]))continue;
+  if(Number(label[2])!==year||seen.has(label[1]))throw Error('Duplicate or conflicting CRA period');
+  const rows=tables(match[0])[0].filter(r=>r.length===3&&r[0].startsWith('$'));
+  const minor=v=>{if(!/^\$\d{1,3}(?:,\d{3})*(?:\.\d{2})?$|^\$\d+(?:\.\d{2})?$/.test(v))throw Error('Invalid CRA amount');const n=Number(v.replace(/[$,]/g,''));if(!Number.isFinite(n)||n<0||n>1e9)throw Error('CRA amount out of range');return Math.round(n*100);};
+  let lower=0;const bounds=[],rates=[];
+  for(let i=0;i<rows.length;i++){const [from,to,rate]=rows[i];if(minor(from)!==lower||!/^\d{1,2}(?:\.\d{1,2})?%$/.test(rate))throw Error('CRA bracket gap or invalid rate');const bp=Math.round(parseFloat(rate)*100);if(bp>10000)throw Error('Invalid CRA rate');rates.push(bp);if(i===rows.length-1){if(to.toLowerCase()!=='unlimited')throw Error('Missing open final CRA band');}else{const upper=minor(to);if(upper<lower||upper%100!==0)throw Error('Invalid CRA threshold');bounds.push(upper/100);lower=upper+1;}}
+  if(rows.length<2||rows.length>20||rates.length!==bounds.length+1)throw Error('Incomplete CRA bands');
+  seen.add(label[1]);candidates.push({jurisdiction:craRegions[label[1]],component:label[1]==='Federal'?'national-assessment':'regional-income-tax',taxYear:String(year),effectiveFrom:year+'-01-01',effectiveUntil:(year+1)+'-01-01',parameters:{bounds,rates},status:'candidate',legalStatus:'review_required',automaticActivation:false});
+ }
+ if(seen.size!==Object.keys(craRegions).length)throw Error('Incomplete CRA coverage; Quebec requires separate authority');
+ return {jurisdiction:'CA',component:'income-tax-bands',taxYear:String(year),candidates,status:'candidate',legalStatus:'review_required',automaticActivation:false};
+}
 export function extractCandidate(source,bytes){
  if(source.id==='US-1'&&source.url==='https://www.ssa.gov/OACT/COLA/cbb.html')return extractSsaWageBase(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  const match=source.url.match(/^https:\/\/www\.gov\.uk\/guidance\/rates-and-thresholds-for-employers-(\d{4})-to-(\d{4})$/);
  if(source.id.startsWith('GB-NI-')&&match&&Number(match[2])===Number(match[1])+1)return extractUkNi(new TextDecoder('utf-8',{fatal:true}).decode(bytes),Number(match[1]));
+ if(source.url==='https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html')return extractCraBrackets(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  return null;
 }
