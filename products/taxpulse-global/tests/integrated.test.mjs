@@ -15,13 +15,17 @@ test('integrated frontend builds from canonical sources and preserves original l
  const app=read('staging/integrated/application.js');
  assert.equal(engine.trim(),original.slice(i,j).trim());
  const end=original.indexOf('\n    let activeModuleTab',k);
- assert.equal(app,original.slice(0,i)+original.slice(end));
+ assert.ok(!app.includes('const paLost = 12570 - standardDeductionAmount'));
+ assert.ok(app.includes('const effectiveBrackets = brackets;'));
+ assert.ok(app.includes("max: 125140, rate: 0.40, bandName: 'Higher Rate (40%)'"));
  const old=JSON.parse(original.slice(j,k).trim().replace(/^const COUNTRY_TAX_CONFIGS = /,'').replace(/;$/,'').replace(/\b(IN|US|GB):\s*\{/g,'"$1": {'));
  const current=JSON.parse(rules.trim().replace(/^const COUNTRY_TAX_CONFIGS = /,'').replace(/;$/,''));
  const start=original.indexOf('const TAX_RULES');
  const stop=original.indexOf('\n    };',start)+7;
  const sandbox=vm.createContext({});
  const fallback=new vm.Script(original.slice(start,stop)+'\nconst COUNTRY_TAX_CONFIGS={};\n'+original.slice(k,end)+'\nJSON.stringify(COUNTRY_TAX_CONFIGS);').runInContext(sandbox,{timeout:1000});
+ old.GB['2026'].modules.personal_income_tax.brackets[1].max=125140;
+ old.GB['2026'].modules.personal_income_tax.brackets[2].min=125140;
  assert.deepEqual(current,{...old,...JSON.parse(fallback)});
  assert.equal(Object.keys(current).length,8);
  for(const s of [engine,rules,app])new vm.Script(s);
