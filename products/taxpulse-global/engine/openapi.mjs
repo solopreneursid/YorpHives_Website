@@ -101,7 +101,14 @@ export const spec = {
                       "freelancer_billing",
                       "freelancer_ledger",
                       "residency_payslip",
-                      "ctc_restructurer"
+                      "ctc_restructurer",
+                      "bulk_csv",
+                      "tax_vault",
+                      "payroll_hra_generator",
+                      "ca_handoff",
+                      "pe_risk",
+                      "expat_nomad",
+                      "agent_deal_desk"
                     ]
                   },
                   "parameters": {
