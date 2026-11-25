@@ -18,7 +18,7 @@
 <section class="hero"><p class="eyebrow">Understand your money</p><h1>Taxes made easier.</h1><p>See how income tax works, compare two salaries and understand the numbers, step by step.</p><p class="notice"><strong>Practice with made-up numbers only.</strong> Tax rules are not fully checked yet. Do not use these results to file taxes, choose a job or make financial decisions. Do not enter real financial details.</p></section>
 <section id="my-tax" class="card" aria-labelledby="tax-title">
 <p class="eyebrow">Step 1</p><h2 id="tax-title">How much income tax might I pay?</h2>
-<p class="muted">Choose a country and enter an example yearly salary. Three countries have a salary example. Five more country examples are available below.</p>
+<p class="muted">Choose a country and enter an example yearly salary. Three countries have a basic salary example. For India, use the detailed comparison below to include surcharge and compare both regimes. Five more country examples are available below.</p>
 <form id="tax-form">
 <div class="fields">
 <label for="country">Country<select id="country" name="country" required><option value="IN">India</option><option value="US">United States</option><option value="GB">United Kingdom (England, Wales and Northern Ireland)</option></select></label>
@@ -38,6 +38,26 @@
 <button id="download" type="button" class="secondary">Download example report (JSON)</button>
 </div>
 </section>
+<section id="india-regimes" class="card" aria-labelledby="india-regime-title">
+<h2 id="india-regime-title">India: old or new tax regime?</h2>
+<p>Compare two ways of calculating income tax for FY 2026–27 (April 2026 to March 2027). Use made-up salary figures only.</p>
+<form id="india-regime-form">
+<div class="fields">
+<label for="india-gross">Yearly salary before tax (INR)<input id="india-gross" type="number" min="0" max="1000000000" step="1" inputmode="numeric" required placeholder="Example: 1500000"></label>
+<label for="india-resident">Tax resident in India?<select id="india-resident" required><option value="">Choose an answer</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+<label for="india-age">Age group during the tax year<select id="india-age" required><option value="">Choose an answer</option><option value="under-60">Below 60</option><option value="60-79">60–79</option><option value="80-plus">80 or above</option></select></label>
+<label for="india-old-deductions">Other eligible old-regime deductions (INR)<input id="india-old-deductions" type="number" min="0" max="1000000000" step="1" inputmode="numeric" value="0" required></label>
+<label for="india-new-deductions">Other eligible new-regime deductions (INR)<input id="india-new-deductions" type="number" min="0" max="1000000000" step="1" inputmode="numeric" value="0" required></label>
+<label for="india-salary-only">Is this ordinary salary only, with no other income?<select id="india-salary-only" required><option value="">Choose an answer</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+</div><p class="muted">Enter only deductions or exemptions you already know are allowed under each regime. The standard deduction is added automatically. Do not enter investment gains, rental or freelance income. Use whole rupees.</p>
+<button type="submit" class="primary">Compare old and new regimes</button>
+</form>
+<p id="india-regime-error" class="error" role="alert"></p>
+<div id="india-regime-result" hidden tabindex="-1" aria-live="polite">
+<h3 id="india-regime-verdict"></h3><div class="results"><div><span>Old regime income tax</span><strong id="india-old-tax"></strong></div><div><span>New regime income tax</span><strong id="india-new-tax"></strong></div><div><span>Difference in yearly income tax</span><strong id="india-tax-difference"></strong></div></div>
+<details><summary>How each tax amount was calculated</summary><h4>Old regime</h4><dl id="india-old-breakdown" class="breakdown"></dl><h4>New regime</h4><dl id="india-new-breakdown" class="breakdown"></dl></details>
+<p class="notice">A lower example tax amount does not establish eligibility or mean that you should choose that regime. This is not take-home pay.</p><button type="button" class="secondary" id="india-regime-download">Download regime comparison report</button>
+</div></section>
 <section id="taxable-income" class="card" aria-labelledby="assessment-title">
 <h2 id="assessment-title">More country examples</h2>
 <p>Choose a country. For most of these examples, enter taxable income (after eligible deductions), not gross salary. For UAE, enter employee wages.</p>

@@ -323,6 +323,77 @@ export const spec = {
           }
         }
       }
+    },
+    "/v1/india/regime-compare": {
+      "post": {
+        "operationId": "compareIndiaRegimes",
+        "description": "Unverified ordinary salary examples only for FY 2026–27. Other deductions are caller-confirmed eligible amounts excluding the standard deduction.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "country",
+                  "taxYear",
+                  "grossSalary",
+                  "residentIndividual",
+                  "ageGroup",
+                  "ordinarySalaryOnly",
+                  "oldEligibleDeductions",
+                  "newEligibleDeductions"
+                ],
+                "properties": {
+                  "country": {
+                    "const": "IN"
+                  },
+                  "taxYear": {
+                    "const": "2026"
+                  },
+                  "grossSalary": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000
+                  },
+                  "residentIndividual": {
+                    "type": "boolean"
+                  },
+                  "ageGroup": {
+                    "enum": [
+                      "under-60",
+                      "60-79",
+                      "80-plus"
+                    ]
+                  },
+                  "ordinarySalaryOnly": {
+                    "const": true
+                  },
+                  "oldEligibleDeductions": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000
+                  },
+                  "newEligibleDeductions": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned unverified comparison"
+          },
+          "400": {
+            "description": "Unsupported input"
+          }
+        }
+      }
     }
   }
 };

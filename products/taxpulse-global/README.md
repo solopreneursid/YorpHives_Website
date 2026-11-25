@@ -68,3 +68,7 @@ The assessment API is `POST /v1/taxable-income/calculate`; its two input variant
 ## Australia, Singapore and UAE scoped examples
 
 All eight original jurisdictions now have at least one connected income-tax example. AU uses FY 2026–27 resident rates and LITO, SG uses YA 2026 chargeable-income rates before credits/rebates (2025 earnings), and AE accepts ordinary employee wages only. The older unverified country fixtures remain disabled. These models exclude broader taxation and payroll obligations; no production verification flags have changed. See rules/evidence/au-sg-ae-2026-review.json. The existing proof checker can replay the new models when the engine fingerprint matches.
+
+## India FY 2026–27 detailed regime comparison
+
+The ordinary-salary comparison supports both regimes, age and residency categories, caller-confirmed eligible deductions, section 156 rebate and marginal relief, surcharge and surcharge marginal relief, 4% cess and section 516 rounding. Integer arithmetic uses 1/10000 INR internally; inputs are whole rupees. A separate API at POST /v1/india/regime-compare and local UI share this implementation and support unsigned replay receipts. The older basic income-tax calculator remains limited and is not a complete filing calculation. All production flags remain unchanged. See rules/evidence/india-2026-regime-compare.json.

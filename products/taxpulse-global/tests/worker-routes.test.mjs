@@ -37,6 +37,9 @@ test('generated Worker routes and validation',async()=>{
  const assess=await call('/v1/taxable-income/calculate',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'DE',taxYear:'2026',taxableIncome:50000,assessment:'individual'})});
  assert.equal(assess.status,200);assert.equal((await assess.json()).incomeTax,10548);
  assert.equal((await call('/v1/taxable-income/calculate')).status,405);
+ const indiaCompare=await call('/v1/india/regime-compare',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'IN',taxYear:'2026',grossSalary:1500000,residentIndividual:true,ageGroup:'under-60',ordinarySalaryOnly:true,oldEligibleDeductions:0,newEligibleDeductions:0})});
+ assert.equal(indiaCompare.status,200);assert.equal((await indiaCompare.json()).newRegime.incomeTax,97500);
+ assert.equal((await call('/v1/india/regime-compare')).status,405);
  assert.equal((await call('/missing')).status,404);
  assert.equal((await call('/v1/country/calculate')).status,405);
  }finally{rmSync(temp,{recursive:true,force:true})}

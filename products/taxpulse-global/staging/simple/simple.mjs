@@ -1,6 +1,6 @@
 import { countryCalculate, catalog } from './engine/country.mjs';
 import { compareIncomeScenarios } from './engine/scenarios.mjs';
-import { assessTaxableIncome } from './engine/taxable-income.mjs';
+import { assessTaxableIncome, compareIndiaRegimes } from './engine/taxable-income.mjs';
 import { createReceipt, verifyReceipt } from './engine/proof.mjs';
 import engineFingerprint from './engine/fingerprint.mjs';
 import manifest from './engine/manifest.mjs';
@@ -8,7 +8,7 @@ import manifest from './engine/manifest.mjs';
 const $ = id => document.getElementById(id);
 const countries = new Map(catalog().countries.map(country => [country.code, country]));
 const allCountries = {IN:'India',US:'United States',GB:'United Kingdom',DE:'Germany',AE:'United Arab Emirates',CA:'Canada',AU:'Australia',SG:'Singapore'};
-let lastResult = null, lastAssessment = null, proofRequest = 0;
+let lastResult = null, lastAssessment = null, lastIndiaComparison = null, proofRequest = 0;
 
 function money(value, currency) {
   return new Intl.NumberFormat(currency === 'INR' ? 'en-IN' : 'en', {style:'currency',currency,currencyDisplay:'code',maximumFractionDigits:2}).format(value);
@@ -81,7 +81,7 @@ $('tax-form').addEventListener('submit',event=>{
     $('scope').textContent=response.warnings.join(' ');
     lastResult={kind:'salary',input};
     $('tax-result').hidden=false;$('tax-result').focus();
-  } catch (error) { $('error').textContent=error instanceof RangeError&&$('country').value==='IN'?'India examples above INR 50.75 lakh annual salary are not supported yet; surcharge rules need review.':'Please check the salary and tax status. This example could not be calculated.'; }
+  } catch (error) { $('error').textContent=error instanceof RangeError&&$('country').value==='IN'?'Use the India old-versus-new comparison below for higher salaries, including surcharge.':'Please check the salary and tax status. This example could not be calculated.'; }
 });
 $('compare-form').addEventListener('submit',event=>{
   event.preventDefault();$('compare-result').hidden=true;$('compare-error').textContent='';
@@ -96,7 +96,7 @@ $('compare-form').addEventListener('submit',event=>{
       $('change-rate').textContent+=' In this example, the higher salary leaves less money after income tax. This can happen near a tax relief threshold. The rules are not verified.';
     }
     $('compare-result').hidden=false;$('compare-result').focus();
-  } catch (error) { $('compare-error').textContent=error instanceof RangeError&&$('country').value==='IN'?'India examples above INR 50.75 lakh annual salary are not supported yet; surcharge rules need review.':'Enter valid example salaries and tax status in both forms.'; }
+  } catch (error) { $('compare-error').textContent=error instanceof RangeError&&$('country').value==='IN'?'Use the India old-versus-new comparison below for higher salaries, including surcharge.':'Enter valid example salaries and tax status in both forms.'; }
 });
 $('clear-button').addEventListener('click',()=>{$('tax-form').reset();$('compare-form').reset();countryChanged();});
 async function downloadReceipt(record,button,error){
@@ -147,6 +147,29 @@ $('assessment-form').addEventListener('submit',event=>{
   lastAssessment={kind:'taxable-income',input};$('assessment-result').hidden=false;$('assessment-result').focus();
  }catch{$('assessment-error').textContent='Check the amounts and confirm the eligibility question. This example does not support other tax statuses or income types.';}
 });
+function clearIndiaComparison(){
+ lastIndiaComparison=null;$('india-regime-result').hidden=true;$('india-regime-error').textContent='';
+}
+$('india-regime-form').addEventListener('input',clearIndiaComparison);
+$('india-regime-form').addEventListener('submit',event=>{
+ event.preventDefault();clearIndiaComparison();
+ try{
+  const residence=$('india-resident').value;
+  if(!['yes','no'].includes(residence))throw new Error('Choose tax residence');
+  const input={country:'IN',taxYear:'2026',grossSalary:$('india-gross').valueAsNumber,residentIndividual:residence==='yes',ageGroup:$('india-age').value,ordinarySalaryOnly:$('india-salary-only').value==='yes',oldEligibleDeductions:$('india-old-deductions').valueAsNumber,newEligibleDeductions:$('india-new-deductions').valueAsNumber};
+  const r=compareIndiaRegimes(input),f=v=>money(v,'INR');
+  $('india-old-tax').textContent=f(r.oldRegime.incomeTax);$('india-new-tax').textContent=f(r.newRegime.incomeTax);$('india-tax-difference').textContent=f(r.taxDifference);
+  $('india-regime-verdict').textContent=r.lowerTaxRegime==='equal'?'Both regimes have the same example tax.':(r.lowerTaxRegime==='old'?'Old':'New')+' regime has lower tax in this example.';
+  for(const [id,regime] of [['india-old-breakdown',r.oldRegime],['india-new-breakdown',r.newRegime]]){
+   $(id).replaceChildren();
+   for(const [label,value] of [['Standard deduction',regime.standardDeduction],['Other eligible deductions',regime.otherEligibleDeductions],['Rounded taxable income',regime.taxableIncome],['Tax before rebate',regime.taxBeforeRebate],['Tax rebate',regime.rebateApplied],['Rebate marginal relief',regime.rebateMarginalRelief],['Surcharge before relief',regime.surchargeBeforeRelief],['Surcharge relief',regime.surchargeMarginalRelief],['Surcharge charged',regime.surchargeApplied],['Health and education cess',regime.cessAmount],['Final rounded income tax',regime.incomeTax]]){
+    const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=f(value);$(id).append(dt,dd);
+   }
+  }
+  lastIndiaComparison={kind:'india-regimes',input};$('india-regime-result').hidden=false;$('india-regime-result').focus();
+ }catch{$('india-regime-error').textContent='Enter valid whole rupee amounts, choose a tax status and confirm salary-only income. Other deductions cannot exceed salary after the standard deduction.';}
+});
+$('india-regime-download').addEventListener('click',()=>downloadReceipt(lastIndiaComparison,$('india-regime-download'),$('india-regime-error')));
 $('proof-file').addEventListener('change',async()=>{
  const request=++proofRequest,file=$('proof-file').files[0];
  $('proof-status').textContent='';
