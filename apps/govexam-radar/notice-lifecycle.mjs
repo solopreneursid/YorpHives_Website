@@ -26,7 +26,7 @@ export async function serveNoticeChanges(db,params,scope="research"){
    if(gate.ready)allowed.push(allowedIsroPreviewSource());
    where.push("r.source_id IN ("+allowed.map(()=>"?").join(",")+")","r.source_id=j.source_id");
    args.push(...allowed);
-   if(gate.ready){where.push("(r.source_id!=? OR (j.last_seen_at=? AND NOT EXISTS (SELECT 1 FROM source_ingest_runs g WHERE g.source_id=? AND g.started_at>?)))");args.push(ISRO_SOURCE.id,gate.snapshotAt,ISRO_SOURCE.id,gate.snapshotAt);}
+   if(gate.ready){where.push("(r.source_id!=? OR (j.last_seen_at=? AND NOT EXISTS (SELECT 1 FROM source_ingest_runs g WHERE g.source_id=? AND g.started_at>=? AND (g.started_at>? OR g.state!='ok'))))");args.push(ISRO_SOURCE.id,gate.snapshotAt,ISRO_SOURCE.id,gate.snapshotAt,gate.snapshotAt);}
   }
   if(country){where.push("j.country=?");args.push(country);}
   const result=await db.prepare("SELECT r.notice_id as noticeId,r.source_id as sourceId,r.observed_at as observedAt,r.old_title as previousTitle,r.new_title as title,r.old_closing_at as previousClosingAt,r.new_closing_at as closingAt,j.country,j.jurisdiction_name as jurisdiction,j.source_page as sourceUrl FROM notice_revisions r JOIN official_job_notices j ON j.id=r.notice_id WHERE "+where.join(" AND ")+" ORDER BY r.observed_at DESC LIMIT ?").bind(...args,limit).all();

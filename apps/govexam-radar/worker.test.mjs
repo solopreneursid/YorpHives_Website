@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import {Script} from "node:vm";
 import worker,{govradarScheduledTask,GOVRADAR_SINGLE_CRON} from "./worker.js";
 const request=(path,method="GET")=>worker.fetch(new Request("https://app.example"+path,{method}));
 test("health responds without PII or fake sync",async()=>{const r=await request("/api/health");assert.equal(r.status,200);const x=await r.json();assert.equal(x.status,"ok");assert.equal(x.service,"hqventures-govradar");});
@@ -16,6 +17,12 @@ test("full original six-tab experience and separate simple interface",async()=>{
 test("assets, manifest, PWA and service worker are served",async()=>{for(const path of ["/app.css","/app.js","/icon.svg","/manifest.webmanifest","/sw.js"]){const r=await request(path);assert.equal(r.status,200,path);assert.ok((await r.text()).length>40,path);}});
 test("self-hosted full CSS is served",async()=>{const r=await request("/full.css");assert.equal(r.status,200);assert.match(await r.text(),/\.bg-indigo-600/);});
 test("browser enhancements are independently served",async()=>{const r=await request("/enhance.js");assert.equal(r.status,200);const js=await r.text();assert.match(js,/runFeedSync/);assert.match(js,/handleCommunityLogin/);});
+test("served browser scripts are valid JavaScript after template expansion",async()=>{
+ for(const path of ["/lite.js","/official.js","/portable-bookmarks.js"]){
+  const response=await request(path);assert.equal(response.status,200,path);
+  const script=await response.text();assert.doesNotThrow(()=>new Script(script,{filename:path}),path);
+ }
+});
 test("public OpenAPI contract is machine readable",async()=>{const r=await request("/openapi.json");assert.equal(r.status,200);const spec=await r.json();assert.equal(spec.openapi,"3.1.0");assert.ok(spec.paths["/api/catalog"]);});
 test("unsafe paths and methods are rejected",async()=>{assert.equal((await request("/api/check?id=https://evil.invalid")).status,404);assert.equal((await request("/does-not-exist")).status,404);assert.equal((await request("/api/catalog","POST")).status,405);});
 

@@ -48,6 +48,13 @@ test('a valid snapshot stores only the current ISRO record with source provenanc
   assert.equal(saved.source_id,ISRO_SOURCE.id);assert.equal(saved.source_page,'https://www.isro.gov.in/SACRecruitment1.html');assert.equal(saved.last_seen_at,now-500);assert.equal(saved.life_status,'open');
  }finally{sqlite.close();}
 });
+test('a retry from the same scheduled cycle cannot count as a second independent check',async()=>{
+ const {sqlite,db}=database();try{
+  const html=table(row({opens:'Oct 01, 2024',closes:'Oct 31, 2024'}));
+  await ingestIsro(db,responses(html),now-2000);await ingestIsro(db,responses(html),now-1000);
+  assert.equal((await isroPublicationGate(db,now+1000)).ready,false);
+ }finally{sqlite.close();}
+});
 test('an unfinished scheduled attempt closes the gate and no records are published from blocked robots',async()=>{
  const {sqlite,db}=database();try{
   const html=table(row({opens:'Oct 01, 2024',closes:'Oct 31, 2024'}));

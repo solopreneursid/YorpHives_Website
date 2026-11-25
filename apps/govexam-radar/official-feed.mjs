@@ -247,8 +247,8 @@ export async function serveOfficialNotices(db,params,scope="research"){
   // successful run may be displayed; a vanished row is withheld, not called
   // withdrawn. Incomplete/failed runs close the gate before any row is shown.
   if(scope==="approved_staging"&&isroGate.ready){
-   where.push("(source_id!=? OR (last_seen_at=? AND NOT EXISTS (SELECT 1 FROM source_ingest_runs g WHERE g.source_id=? AND g.started_at>?)))");
-   bind.push(ISRO_SOURCE.id,isroGate.snapshotAt,ISRO_SOURCE.id,isroGate.snapshotAt);
+   where.push("(source_id!=? OR (last_seen_at=? AND NOT EXISTS (SELECT 1 FROM source_ingest_runs g WHERE g.source_id=? AND g.started_at>=? AND (g.started_at>? OR g.state!='ok'))))");
+   bind.push(ISRO_SOURCE.id,isroGate.snapshotAt,ISRO_SOURCE.id,isroGate.snapshotAt,isroGate.snapshotAt);
   }
   if(sourceId){where.push("source_id=?");bind.push(sourceId);}
   if(country){where.push("country=?");bind.push(country);}
@@ -333,8 +333,8 @@ export async function servePublicIngestionStatus(db){
   const placeholders=ids.map(()=>"?").join(","),auditPlaceholders=auditIds.map(()=>"?").join(",");
   const now=Date.now(),cutoff=new Date(now).toISOString();
   const latest=await db.prepare("SELECT source_id as sourceId,started_at as startedAt,finished_at as finishedAt,state,received,accepted,discarded,error_code as errorCode FROM source_ingest_runs WHERE source_id IN ("+auditPlaceholders+") ORDER BY finished_at DESC LIMIT 8").bind(...auditIds).all();
-  const snapshotGuard=gate.ready?" AND (source_id!=? OR (last_seen_at=? AND NOT EXISTS (SELECT 1 FROM source_ingest_runs g WHERE g.source_id=? AND g.started_at>?)))":"";
-  const bySource=await db.prepare("SELECT source_id AS sourceId,country,jurisdiction_name AS jurisdiction,government_tier AS level,employer_type AS employerType,COUNT(*) AS count FROM official_job_notices WHERE source_id IN ("+placeholders+") AND life_status='open' AND closing_at>? AND last_seen_at>=? AND review_state IN ('official_feed_unreviewed','founder_reviewed')"+snapshotGuard+" GROUP BY source_id,country,jurisdiction_name,government_tier,employer_type").bind(...ids,cutoff,now-14*86400000,...(gate.ready?[candidate,gate.snapshotAt,candidate,gate.snapshotAt]:[])).all();
+  const snapshotGuard=gate.ready?" AND (source_id!=? OR (last_seen_at=? AND NOT EXISTS (SELECT 1 FROM source_ingest_runs g WHERE g.source_id=? AND g.started_at>=? AND (g.started_at>? OR g.state!='ok'))))":"";
+  const bySource=await db.prepare("SELECT source_id AS sourceId,country,jurisdiction_name AS jurisdiction,government_tier AS level,employer_type AS employerType,COUNT(*) AS count FROM official_job_notices WHERE source_id IN ("+placeholders+") AND life_status='open' AND closing_at>? AND last_seen_at>=? AND review_state IN ('official_feed_unreviewed','founder_reviewed')"+snapshotGuard+" GROUP BY source_id,country,jurisdiction_name,government_tier,employer_type").bind(...ids,cutoff,now-14*86400000,...(gate.ready?[candidate,gate.snapshotAt,candidate,gate.snapshotAt,gate.snapshotAt]:[])).all();
   const recent=await db.prepare("SELECT source_id AS sourceId,MAX(CASE WHEN state='ok' AND details LIKE '%\"origin\":\"scheduled\"%' THEN finished_at ELSE NULL END) AS lastSuccessfulScheduledAt,SUM(CASE WHEN state='ok' AND details LIKE '%\"origin\":\"scheduled\"%' AND finished_at>=? THEN 1 ELSE 0 END) AS recentNativeSuccessCount,MAX(CASE WHEN id NOT LIKE 'bootstrap-%' AND details NOT LIKE '%\"origin\":\"signed_portable_collector\"%' AND (error_code IS NULL OR error_code!='collector_claim_pending') THEN finished_at ELSE NULL END) AS lastNativeAttemptAt FROM source_ingest_runs WHERE source_id IN ("+auditPlaceholders+") GROUP BY source_id").bind(now-8*3600000,...auditIds).all();
   const sources=auditIds.map(sourceId=>{
    const row=(recent.results||[]).find(x=>x.sourceId===sourceId)||{};

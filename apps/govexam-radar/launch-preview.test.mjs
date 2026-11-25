@@ -74,6 +74,25 @@ test('ISRO notices appear only after two complete checks and only from the lates
  }finally{sqlite.close();}
 });
 
+test('a same-timestamp pending ISRO attempt cannot race the public database read',async()=>{
+ const {sqlite,db,now,future,past}=fixture();try{
+  const snapshot=now-2000,source='india-isro-opportunities';
+  sqlite.prepare('INSERT INTO official_job_notices VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run('isro-current',source,'Test ISRO role','ISRO test centre','India','India','Technical','https://www.isro.gov.in/TestRecruitment.html',past,future,now-60000,snapshot,'official_feed_unreviewed','IN','India','national','government_agency','open');
+  const add=sqlite.prepare('INSERT INTO source_ingest_runs VALUES (?,?,?,?,?,?,?,?,?,?)');
+  add.run('isro-old',source,now-3*3600000,now-3*3600000+50,'ok',1,0,1,null,'{"origin":"scheduled","snapshot":"complete"}');
+  add.run('isro-new',source,snapshot,snapshot+50,'ok',1,1,0,null,'{"origin":"scheduled","snapshot":"complete"}');
+  let injected=false;
+  const race={prepare(sql){
+   if(!injected&&sql.startsWith('SELECT id,source_id as sourceId,title')){
+    injected=true;add.run('isro-concurrent',source,snapshot,snapshot,'error',0,0,0,'isro_collection_pending','{"origin":"scheduled","snapshot":"pending"}');
+   }
+   return db.prepare(sql);
+  }};
+  const result=await (await get(race,'/api/notices?country=India')).json();
+  assert.equal(injected,true);assert.deepEqual(result.notices,[]);assert.equal(result.total,0);
+ }finally{sqlite.close();}
+});
+
 test('paused community blocks new public interactions while retaining authenticated data controls',async()=>{
  const {sqlite,db}=fixture();try{
   for(const path of ['/api/community/register','/api/community/post','/api/community/reply','/api/community/report','/api/community/vote']){
@@ -85,7 +104,7 @@ test('paused community blocks new public interactions while retaining authentica
   assert.equal((await get(db,'/api/community/delete-account','POST')).status,401);
   const catalog=await (await get(db,'/api/catalog')).json();assert.deepEqual(catalog.leads,[]);
   for(const path of ['/','/lite']){const html=await (await get(db,path)).text();assert.match(html,/href="\/privacy"/);assert.match(html,/href="\/terms"/);}
-  const lite=await (await get(db,'/lite')).text();assert.match(lite,/id="jobs"/);assert.match(lite,/src="\/lite\.js"/);assert.doesNotMatch(lite,/Explore leads from the prototype/);
+  const lite=await (await get(db,'/lite')).text();assert.match(lite,/id="jobs"/);assert.match(lite,/src="\/lite\.js\?v=2\.7\.1"/);assert.doesNotMatch(lite,/Explore leads from the prototype/);
   for(const path of ['/privacy','/terms']){const r=await get(db,path);assert.equal(r.status,200);assert.match(await r.text(),/connect@yorphives\.com/);}
  }finally{sqlite.close();}
 });

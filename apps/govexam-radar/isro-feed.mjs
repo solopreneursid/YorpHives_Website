@@ -117,7 +117,10 @@ export async function isroPublicationGate(db,now=Date.now()){
  try{
   const r=await db.prepare("SELECT started_at AS startedAt,finished_at AS finishedAt,state,details FROM source_ingest_runs WHERE source_id=? AND started_at>=? AND details LIKE '%\"origin\":\"scheduled\"%' ORDER BY started_at DESC,finished_at DESC LIMIT 2").bind(ISRO_SOURCE.id,now-8*3600000).all();
   const rows=r.results||[],latest=rows[0];
-  const ready=rows.length===2&&rows.every(x=>x.state==='ok'&&String(x.details).includes('"snapshot":"complete"'))&&Number.isSafeInteger(latest?.startedAt)&&Number.isSafeInteger(latest?.finishedAt)&&latest.startedAt>0&&latest.finishedAt>=latest.startedAt&&now-latest.finishedAt<=5*3600000&&latest.finishedAt<=now+60000;
+  // Retries or duplicate delivery of one Cron event cannot count as two
+  // independent cycles. Normal runs are three hours apart; allow one hour
+  // of scheduling variation while still requiring genuinely separate checks.
+  const ready=rows.length===2&&rows.every(x=>x.state==='ok'&&String(x.details).includes('"snapshot":"complete"'))&&Number.isSafeInteger(latest?.startedAt)&&Number.isSafeInteger(rows[1]?.startedAt)&&latest.startedAt-rows[1].startedAt>=2*3600000&&Number.isSafeInteger(latest?.finishedAt)&&latest.startedAt>0&&latest.finishedAt>=latest.startedAt&&now-latest.finishedAt<=5*3600000&&latest.finishedAt<=now+60000;
   return {ready,snapshotAt:ready?latest.startedAt:null,lastCheckAt:latest?.finishedAt||null,successfulCycles:rows.filter(x=>x.state==='ok').length};
  }catch(error){console.error(JSON.stringify({event:'isro_gate_failed',reason:String(error?.message||error).slice(0,120)}));return {ready:false,reason:'gate_unavailable'};}
 }
