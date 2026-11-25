@@ -331,7 +331,8 @@ $('pay-form').addEventListener('submit',event=>{
 $('pay-download').addEventListener('click',()=>downloadReceipt(lastPay,$('pay-download'),$('pay-error')));
 payChanged();
 
-function clearReverse(){ $('reverse-result').hidden=true;$('reverse-error').textContent='';}
+let lastReverse=null;
+function clearReverse(){lastReverse=null; $('reverse-result').hidden=true;$('reverse-error').textContent='';}
 function reverseRegionChanged(){
  const c=payOptions[$('pay-region').value];
  $('reverse-scope').textContent='Selected salary type: '+c.label+'. Supported range: '+(c.min??0)+' to '+c.max+'.';
@@ -350,14 +351,22 @@ $('reverse-form').addEventListener('submit',event=>{
   const region=$('pay-region').value;
   const profile={country:payOptions[region].country,region,taxYear:'2026',scopeConfirmed:$('pay-confirm').value==='yes',...(region==='IN'?{epfMonthlyWage:$('pay-epf').valueAsNumber,professionalTaxAnnual:$('pay-professional-tax').valueAsNumber}:region==='DE'?{annualTaxableIncome:$('pay-de-taxable').valueAsNumber,healthSupplementRate:$('pay-de-supplement').valueAsNumber}:region==='AE'?{monthlyBasicSalary:$('pay-ae-basic').valueAsNumber}:{})};
   const request={profile,target:$('reverse-target').valueAsNumber,period:$('reverse-period').value};
-  const r=$('reverse-manual').checked?reverseSalary({...request,minPay:$('reverse-min').valueAsNumber,maxPay:$('reverse-max').valueAsNumber}):automaticReverseSalary(request);
+  const manual=$('reverse-manual').checked;
+  const input=manual?{...request,minPay:$('reverse-min').valueAsNumber,maxPay:$('reverse-max').valueAsNumber}:request;
+  const r=manual?reverseSalary(input):automaticReverseSalary(input);
   if(!r.found){$('reverse-error').textContent=r.searchComplete===false?'Automatic search reached its limit. Choose a salary range yourself to continue.':'No salary in the supported search range meets your target.';return;}
   const s=r.salary,f=v=>money(v,s.currency);
   $('reverse-gross').textContent=f(s.annualGross);$('reverse-net').textContent=f(s.averageMonthlyRemainder);$('reverse-deductions').textContent=f(s.totalModeledDeductions);
   $('reverse-warning').textContent=($('reverse-manual').checked?'Lowest whole-unit salary within your selected range, not necessarily outside it. ':'Lowest whole-unit salary meeting the target under these fixed assumptions. ')+s.warnings.join(' ')+' Unverified example only.';
+  $('reverse-breakdown').replaceChildren();
+  for(const [label,value] of [['Yearly income tax',s.incomeTax],...s.contributions.map(c=>[c.name,c.amount]),['Yearly money left',s.annualRemainder]]){
+   const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=f(value);$('reverse-breakdown').append(dt,dd);
+  }
+  lastReverse={kind:manual?'reverse-salary':'automatic-reverse-salary',input};
   $('reverse-result').hidden=false;$('reverse-result').focus();
  }catch{$('reverse-error').textContent='Check the salary range, target and country conditions above. The full range must be supported by the selected example.';}
 });
+$('reverse-download').addEventListener('click',()=>downloadReceipt(lastReverse,$('reverse-download'),$('reverse-error')));
 reverseRegionChanged();
 
 const contributionOptions={
