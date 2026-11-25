@@ -1131,6 +1131,87 @@ export const spec = {
           }
         }
       }
+    },
+    "/v1/history/rules": {
+      "get": {
+        "operationId": "historicalRuleCatalog",
+        "responses": {
+          "200": {
+            "description": "Versioned enacted ordinary income-tax schedules; unverified preview"
+          }
+        }
+      }
+    },
+    "/v1/history/compare": {
+      "post": {
+        "operationId": "compareHistoricalTax",
+        "description": "Compare two chronological rule versions for the same country. Taxable income before credits/offsets; not total tax.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "country",
+                  "firstRuleId",
+                  "secondRuleId",
+                  "taxableIncome",
+                  "scopeConfirmed"
+                ],
+                "properties": {
+                  "country": {
+                    "enum": [
+                      "US",
+                      "AU"
+                    ]
+                  },
+                  "firstRuleId": {
+                    "enum": [
+                      "US-2024-single-ordinary-v1",
+                      "US-2025-single-ordinary-v1",
+                      "US-2026-single-ordinary-v1",
+                      "AU-2024-25-resident-ordinary-v1",
+                      "AU-2025-26-resident-ordinary-v1",
+                      "AU-2026-27-resident-ordinary-v1",
+                      "AU-2027-28-resident-ordinary-v1"
+                    ]
+                  },
+                  "secondRuleId": {
+                    "enum": [
+                      "US-2024-single-ordinary-v1",
+                      "US-2025-single-ordinary-v1",
+                      "US-2026-single-ordinary-v1",
+                      "AU-2024-25-resident-ordinary-v1",
+                      "AU-2025-26-resident-ordinary-v1",
+                      "AU-2026-27-resident-ordinary-v1",
+                      "AU-2027-28-resident-ordinary-v1"
+                    ]
+                  },
+                  "taxableIncome": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1000000000,
+                    "multipleOf": 0.01
+                  },
+                  "scopeConfirmed": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scoped comparison with rule snapshots"
+          },
+          "400": {
+            "description": "Unsupported input"
+          }
+        }
+      }
     }
   }
 };

@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {historicalRuleCatalog,compareHistoricalTax as calc} from '../engine/history.mjs';
+import {createReceipt,verifyReceipt} from '../engine/proof.mjs';
+const us={country:'US',firstRuleId:'US-2024-single-ordinary-v1',secondRuleId:'US-2026-single-ordinary-v1',taxableIncome:100000,scopeConfirmed:true};
+const au={country:'AU',firstRuleId:'AU-2024-25-resident-ordinary-v1',secondRuleId:'AU-2027-28-resident-ordinary-v1',taxableIncome:100000,scopeConfirmed:true};
+test('published rule snapshots match retained v1 archive and unique IDs',()=>{const rows=historicalRuleCatalog();assert.deepEqual(rows,JSON.parse(readFileSync(new URL('../rules/history/snapshots-v1.json',import.meta.url),'utf8')));assert.equal(new Set(rows.map(r=>r.id)).size,7);for(const r of rows){assert.equal(r.legislation,'enacted');assert.equal(r.rates.length,r.bounds.length+1);assert.ok(r.bounds.every((n,i)=>i===0||n>r.bounds[i-1]));}});
+test('catalog mutation cannot alter stored rules',()=>{const rows=historicalRuleCatalog();rows[0].bounds[0]=0;rows[0].sourceUrls.length=0;assert.equal(historicalRuleCatalog()[0].bounds[0],11600);assert.equal(historicalRuleCatalog()[0].sourceUrls.length,1);});
+test('US 2024 versus 2026 regular schedule',()=>{const r=calc(us);assert.equal(r.first.taxBeforeAdjustments,17053);assert.equal(r.second.taxBeforeAdjustments,16712);assert.equal(r.taxChange,-341);});
+test('US 2025 schedule and exact bracket boundary',()=>{const r=calc({...us,secondRuleId:'US-2025-single-ordinary-v1',taxableIncome:48475});assert.equal(r.second.taxBeforeAdjustments,5578.5);assert.equal(calc({...us,taxableIncome:12400}).second.taxBeforeAdjustments,1240);});
+test('Australia enacted 2027 rate versus 2024',()=>{const r=calc(au);assert.equal(r.first.taxBeforeAdjustments,20788);assert.equal(r.second.taxBeforeAdjustments,20252);assert.equal(r.taxChange,-536);assert.equal(r.second.rule.start,'2027-07-01');});
+test('Australia 2025 identical and 2026 rate',()=>{assert.equal(calc({...au,secondRuleId:'AU-2025-26-resident-ordinary-v1'}).taxChange,0);assert.equal(calc({...au,secondRuleId:'AU-2026-27-resident-ordinary-v1'}).second.taxBeforeAdjustments,20520);assert.equal(calc({...au,taxableIncome:18200}).taxChange,0);});
+test('reject unknown years, mixed countries, reversed order, proposals, invalid amounts and scope',()=>{for(const extra of [{secondRuleId:'US-2027-single-ordinary-v1'},{secondRuleId:au.secondRuleId},{firstRuleId:us.secondRuleId},{taxableIncome:-1},{taxableIncome:1.001},{scopeConfirmed:false},{year:'2025'},{country:'IN'}])assert.throws(()=>calc({...us,...extra}));});
+test('report replay with exact snapshots and digest',async()=>{const engineFingerprint='a'.repeat(64);const receipt=await createReceipt({kind:'historical-tax',input:au,engineFingerprint});assert.deepEqual(await verifyReceipt(receipt,engineFingerprint),{integrity:true,sameEngine:true,reproduced:true});receipt.payload.result.second.rule.rates[1]=0;assert.equal((await verifyReceipt(receipt,engineFingerprint)).integrity,false);});

@@ -1,6 +1,8 @@
 import { countryCalculate } from './country.mjs';
 import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain, calculateRegionalTax, calculateSalaryRemainder, calculateEmployeeContributions } from './taxable-income.mjs';
 
+import { compareHistoricalTax } from './history.mjs';
+
 const SCHEMA='taxpulse-example-receipt-v1';
 const HASH=/^[a-f0-9]{64}$/;
 const MAX_BYTES=65536;
@@ -26,6 +28,7 @@ async function hash(value){
  return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
 }
 function calculate(kind,input){
+ if(kind==='historical-tax')return compareHistoricalTax(input);
  if(kind==='salary')return countryCalculate({...input,module:'pit'});
  if(kind==='employee-contributions')return calculateEmployeeContributions(input);
  if(kind==='salary-remainder')return calculateSalaryRemainder(input);

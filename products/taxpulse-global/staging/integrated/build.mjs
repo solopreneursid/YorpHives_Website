@@ -42,10 +42,10 @@ write('webmanifest.txt',"{\"id\":\"/\",\"name\":\"TaxPulse Global Preview\",\"sh
  }
  write('browser-scenarios.mjs.txt',read('engine/scenarios.mjs'));
 
-for(const name of ['taxable-income','proof']){
+for(const name of ['taxable-income','proof','history']){
   const content=read('engine/'+name+'.mjs');
   write(name+'.mjs',content);write('browser-'+name+'.mjs.txt',content);
 }
-const fingerprintInputs=['country','primitives','us-filing-statuses','IN','US','GB','taxable-income','proof'].map(name=>[name,readFileSync(new URL(name+'.mjs',bundle),'utf8')]);
+const fingerprintInputs=['country','primitives','us-filing-statuses','IN','US','GB','taxable-income','proof','history'].map(name=>[name,readFileSync(new URL(name+'.mjs',bundle),'utf8')]);
 const fingerprint=createHash('sha256').update(JSON.stringify(fingerprintInputs)).digest('hex');
 write('browser-fingerprint.mjs.txt','export default '+JSON.stringify(fingerprint)+';\n');

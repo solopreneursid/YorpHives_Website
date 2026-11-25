@@ -96,3 +96,7 @@ POST /v1/contributions/calculate and the local form support scoped Canadian CPP/
 ## Extended salary remainder
 
 The salary endpoint and local form now also support scoped Alberta (federal and provincial taxes, enhanced CPP deduction, CPP/EI credits), Australia (full Medicare levy, no surcharge), India (new regime, confirmed EPF wage and supplied professional tax), and Singapore (calendar 2026 monthly wages assessed YA 2027 before rebates). These are constrained estimates, not full take-home or payroll calculations. No automatic eligibility, professional tax schedule or future tax rebate inference. See rules/evidence/extended-salary-2026-review.json.
+
+## Time Machine — versioned ordinary rate schedules
+
+The history module contains seven explicit enacted rule snapshots, mirrored in rules/history/snapshots-v1.json. Append new IDs rather than editing existing versions; regression checks compare the v1 archive. GET /v1/history/rules and POST /v1/history/compare expose the same local browser engine. Only same-country chronological comparisons at fixed taxable income before credits/offsets are allowed. Australia FY2027–28 is an enacted future rate schedule, not a full future liability estimate. Reports include the selected rule snapshots; replay is currently limited to the matching overall engine fingerprint. Production flags remain unchanged.

@@ -5,6 +5,8 @@ import { createReceipt, verifyReceipt } from './engine/proof.mjs';
 import engineFingerprint from './engine/fingerprint.mjs';
 import manifest from './engine/manifest.mjs';
 
+import { historicalRuleCatalog, compareHistoricalTax } from './engine/history.mjs';
+
 const $ = id => document.getElementById(id);
 const countries = new Map(catalog().countries.map(country => [country.code, country]));
 const allCountries = {IN:'India',US:'United States',GB:'United Kingdom',DE:'Germany',AE:'United Arab Emirates',CA:'Canada',AU:'Australia',SG:'Singapore'};
@@ -354,3 +356,40 @@ $('contrib-form').addEventListener('submit',event=>{
 });
 $('contrib-download').addEventListener('click',()=>downloadReceipt(lastContribution,$('contrib-download'),$('contrib-error')));
 contributionChanged();
+
+const historyRules=historicalRuleCatalog();
+let lastHistory=null;
+function clearHistory(){lastHistory=null;$('history-result').hidden=true;$('history-error').textContent='';}
+function historyChanged(){
+ const country=$('history-country').value,items=historyRules.filter(r=>r.country===country);
+ for(const id of ['history-first','history-second']){
+  const select=$(id);select.replaceChildren();
+  for(const r of items){const o=document.createElement('option');o.value=r.id;o.textContent=r.label+(r.start>'2026-11-25'?' — enacted future rate':'');select.append(o);}
+ }
+ $('history-second').selectedIndex=items.length-1;
+ $('history-income-label').textContent='Same taxable income in both periods ('+items[0].currency+')';
+ $('history-scope').textContent=items[0].scope;$('history-income').value='';$('history-confirm').value='';clearHistory();
+}
+$('history-country').addEventListener('change',historyChanged);
+$('history-form').addEventListener('input',clearHistory);
+$('history-form').addEventListener('submit',event=>{
+ event.preventDefault();clearHistory();
+ try{
+ const input={country:$('history-country').value,firstRuleId:$('history-first').value,secondRuleId:$('history-second').value,taxableIncome:$('history-income').valueAsNumber,scopeConfirmed:$('history-confirm').value==='yes'};
+ const r=compareHistoricalTax(input),f=v=>money(v,r.currency);
+ $('history-first-label').textContent=r.first.rule.label;$('history-second-label').textContent=r.second.rule.label;
+ $('history-tax-first').textContent=f(r.first.taxBeforeAdjustments);$('history-tax-second').textContent=f(r.second.taxBeforeAdjustments);$('history-change').textContent=f(r.taxChange);
+ $('history-detail').replaceChildren();
+ for(const entry of [r.first,r.second]){
+  const h=document.createElement('h4');h.textContent=entry.rule.label+' ('+entry.rule.start+' to '+entry.rule.end+')';$('history-detail').append(h);
+  const p=document.createElement('p');p.textContent='Rule: '+entry.rule.id+' · Enacted schedule';$('history-detail').append(p);
+  const dl=document.createElement('dl');dl.className='breakdown';
+  for(const b of entry.brackets.filter(b=>b.taxableIncome>0)){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=percent(b.rate)+' on '+f(b.taxableIncome);dd.textContent=f(b.tax);dl.append(dt,dd);}
+  $('history-detail').append(dl);
+  for(const url of entry.rule.sourceUrls){const a=document.createElement('a');a.href=url;a.rel='noopener noreferrer';a.target='_blank';a.textContent='Official rate source';$('history-detail').append(a,document.createElement('br'));}
+ }
+ $('history-warning').textContent=r.warnings.join(' ');lastHistory={kind:'historical-tax',input};$('history-result').hidden=false;$('history-result').focus();
+ }catch{$('history-error').textContent='Choose an earlier and a later supported period, enter valid taxable income, and confirm the conditions.';}
+});
+$('history-download').addEventListener('click',()=>downloadReceipt(lastHistory,$('history-download'),$('history-error')));
+historyChanged();
