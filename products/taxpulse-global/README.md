@@ -64,3 +64,7 @@ India ordinary-salary examples reject taxable income above INR 5,000,000 because
 TaxPulse example receipts contain input, result, SHA-256 content digest and an engine fingerprint derived from the bundled calculation sources. A local file checker validates integrity and replays the computation when the fingerprint matches. Receipts are unsigned and are not proof of identity, authenticity or statutory correctness. Earlier engine versions are not yet archived for browser replay. The preview continues to prohibit real financial inputs and all tax rules remain unverified.
 
 The assessment API is `POST /v1/taxable-income/calculate`; its two input variants are described in OpenAPI. The public preview remains noindex, with no production route, payments or AI inference. Full independent statutory review, official calculator differential testing and historical engine retention remain open.
+
+## Australia, Singapore and UAE scoped examples
+
+All eight original jurisdictions now have at least one connected income-tax example. AU uses FY 2026–27 resident rates and LITO, SG uses YA 2026 chargeable-income rates before credits/rebates (2025 earnings), and AE accepts ordinary employee wages only. The older unverified country fixtures remain disabled. These models exclude broader taxation and payroll obligations; no production verification flags have changed. See rules/evidence/au-sg-ae-2026-review.json. The existing proof checker can replay the new models when the engine fingerprint matches.

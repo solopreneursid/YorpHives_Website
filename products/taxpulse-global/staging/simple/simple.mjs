@@ -112,13 +112,22 @@ async function downloadReceipt(record,button,error){
 $('download').addEventListener('click',()=>downloadReceipt(lastResult,$('download'),$('error')));
 $('assessment-download').addEventListener('click',()=>downloadReceipt(lastAssessment,$('assessment-download'),$('assessment-error')));
 function clearAssessment(){lastAssessment=null;$('assessment-result').hidden=true;$('assessment-error').textContent='';}
+const assessmentOptions={
+ DE:{currency:'EUR',year:'Calendar year 2026',help:'German ordinary income tax only. Excludes church tax, solidarity surcharge and payroll contributions.'},
+ CA:{currency:'CAD',year:'Calendar year 2026',help:'Federal tax after the basic personal credit only. Excludes provincial tax, Quebec abatement, payroll and other credits. Net income must be at least taxable income.'},
+ AU:{currency:'AUD',year:'FY 2026–27 (July 2026 to June 2027)',help:'Resident income tax after the low-income tax offset only. Excludes Medicare levy, student debt, other offsets and payroll.',question:'Full-year Australian tax resident, eligible for the full tax-free threshold?'},
+ SG:{currency:'SGD',year:'YA 2026 (income earned in 2025)',help:'Gross tax on chargeable income, before rebates and credits. Excludes CPF and relief eligibility. This is not tax on 2026 earnings.',question:'Singapore tax resident for YA 2026?'},
+ AE:{currency:'AED',year:'Calendar year 2026',help:'UAE personal income tax on employee wages only. Business income, foreign taxes and social contributions are separate.',question:'Is this ordinary employee pay, not freelance or business income?'}
+};
 function assessmentChanged(){
- const canada=$('assessment-country').value==='CA';
- $('assessment-type-field').hidden=canada;$('assessment-type').disabled=canada;
+ const country=$('assessment-country').value,config=assessmentOptions[country],canada=country==='CA';
+ $('assessment-type-field').hidden=country!=='DE';$('assessment-type').disabled=country!=='DE';
  for(const id of ['net-income','canada-resident']){$(id+'-field').hidden=!canada;$(id).disabled=!canada;$(id).value='';}
- $('taxable-amount').value='';$('assessment-currency').textContent=canada?'(CAD)':'(EUR)';
- $('assessment-help').textContent=canada?'Canadian federal tax after the basic personal credit only. Excludes provincial tax, Quebec abatement, payroll and other credits. Net income must be at least taxable income.':'German ordinary income tax only. Excludes church tax, solidarity surcharge and payroll contributions.';
- clearAssessment();
+ $('eligibility-field').hidden=!config.question;$('eligibility').disabled=!config.question;$('eligibility').value='';
+ $('eligibility-label').textContent=config.question||'Eligible?';
+ $('taxable-amount').value='';$('assessment-currency').textContent='('+config.currency+')';
+ $('assessment-amount-label').textContent=country==='AE'?'Yearly employee wages':country==='SG'?'Yearly chargeable income':'Yearly taxable income';
+ $('assessment-year').textContent=config.year;$('assessment-help').textContent=config.help;clearAssessment();
 }
 $('assessment-country').addEventListener('change',assessmentChanged);
 $('assessment-form').addEventListener('input',clearAssessment);
@@ -126,16 +135,17 @@ $('assessment-form').addEventListener('submit',event=>{
  event.preventDefault();clearAssessment();
  try{
   const country=$('assessment-country').value;
-  const input={country,taxYear:'2026',taxableIncome:$('taxable-amount').valueAsNumber,...(country==='DE'?{assessment:$('assessment-type').value}:{netIncome:$('net-income').valueAsNumber,fullYearResident:$('canada-resident').value==='yes'})};
+  const value=$('taxable-amount').valueAsNumber,yes=$('eligibility').value==='yes';
+  const input={country,taxYear:'2026',...(country==='AE'?{salaryIncome:value,employeeWagesOnly:yes}:{taxableIncome:value,...(country==='DE'?{assessment:$('assessment-type').value}:country==='CA'?{netIncome:$('net-income').valueAsNumber,fullYearResident:$('canada-resident').value==='yes'}:{residentEligible:yes})})};
   const r=assessTaxableIncome(input),f=v=>money(v,r.currency);
-  $('assessment-result-label').textContent=country==='CA'?'Federal income tax after basic personal credit':'Ordinary German income tax';
+  $('assessment-result-label').textContent=({CA:'Federal income tax after basic personal credit',DE:'Ordinary German income tax',AU:'Income tax after low-income offset',SG:'Gross income tax before rebates',AE:'UAE income tax on employee wages'})[country];
   $('assessment-tax').textContent=f(r.incomeTax);
-  const rows=country==='CA'?[['Tax before credits',f(r.taxBeforeCredits)],['Basic personal amount',f(r.basicPersonalAmount)],['Credit applied',f(r.basicPersonalCredit)]]:[['Taxable income per assessment unit',f(r.unitTaxableIncome)],['Tax zone',r.tariffZone]];
+  const rows=country==='CA'?[['Tax before credits',f(r.taxBeforeCredits)],['Basic personal amount',f(r.basicPersonalAmount)],['Credit applied',f(r.basicPersonalCredit)]]:country==='DE'?[['Taxable income per assessment unit',f(r.unitTaxableIncome)],['Tax zone',r.tariffZone]]:country==='AE'?[['Employee wages',f(r.salaryIncome)],['UAE personal income tax',f(0)]]:[['Tax before offsets',f(r.taxBeforeCredits)],...(country==='AU'?[['Low-income tax offset applied',f(r.lowIncomeOffset)]]:[]),['Tax period',r.taxYearLabel]];
   $('assessment-breakdown').replaceChildren();
   for(const [label,value] of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;$('assessment-breakdown').append(dt,dd);}
   $('assessment-scope').textContent=r.warnings.join(' ')+' Unverified example only.';
   lastAssessment={kind:'taxable-income',input};$('assessment-result').hidden=false;$('assessment-result').focus();
- }catch{$('assessment-error').textContent='Check the amounts and tax status. Only full-year Canadian residents and eligible German assessment types are supported.';}
+ }catch{$('assessment-error').textContent='Check the amounts and confirm the eligibility question. This example does not support other tax statuses or income types.';}
 });
 $('proof-file').addEventListener('change',async()=>{
  const request=++proofRequest,file=$('proof-file').files[0];
@@ -152,9 +162,9 @@ assessmentChanged();
 for(const [code,name] of Object.entries(allCountries)){
   const item=document.createElement('li');
   const state=manifest.countries[code];
-  item.textContent=name+' — '+(countries.has(code)?'Salary example connected':['DE','CA'].includes(code)?'Taxable-income example connected (limited scope)':'Not available in simple calculator')+'; '+(state?.verification==='verified'&&state?.productionEnabled===true?'marked verified in manifest':'tax rules not verified');
-  if(['DE','CA'].includes(code)){
-    const source=code==='DE'?'https://www.gesetze-im-internet.de/estg/__32a.html':'https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4032-payroll-deductions-tables/t4032on-jan/t4032on-january-general-information.html';
+  item.textContent=name+' — '+(countries.has(code)?'Salary example connected':['DE','CA','AU','SG','AE'].includes(code)?'Country example connected (limited scope)':'Not available in simple calculator')+'; '+(state?.verification==='verified'&&state?.productionEnabled===true?'marked verified in manifest':'tax rules not verified');
+  if(['DE','CA','AU','SG','AE'].includes(code)){
+    const source=({"AU":"https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents","SG":"https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates","AE":"https://www.tax.gov.ae/en/taxes/corporate.tax/corporate.tax.topics/basis.of.taxation.natural.person.aspx"})[code]||(code==='DE'?'https://www.gesetze-im-internet.de/estg/__32a.html':'https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4032-payroll-deductions-tables/t4032on-jan/t4032on-january-general-information.html');
     const a=document.createElement('a');a.href=source;a.textContent='Official source for reviewed formula';a.target='_blank';a.rel='noopener noreferrer';item.append(document.createElement('br'),a);
   }
   $('country-status').append(item);

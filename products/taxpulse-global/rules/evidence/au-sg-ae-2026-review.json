@@ -1,0 +1,32 @@
+{
+  "reviewDate": "2026-11-25",
+  "status": "source-reviewed-scope-only",
+  "productionEnabled": false,
+  "countries": {
+    "AU": {
+      "period": "2026-27",
+      "sources": [
+        "https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents",
+        "https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/tax-offsets/low-income-tax-offset"
+      ],
+      "scope": "Full-year resident tariff and low-income offset only; Medicare and other obligations excluded"
+    },
+    "SG": {
+      "period": "YA 2026 (2025 income)",
+      "sources": [
+        "https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates"
+      ],
+      "scope": "Gross resident chargeable-income tariff before rebates and credits"
+    },
+    "AE": {
+      "period": "2026",
+      "sources": [
+        "https://u.ae/en/information-and-services/finance-and-investment/taxation",
+        "https://www.tax.gov.ae/en/taxes/corporate.tax/corporate.tax.topics/basis.of.taxation.natural.person.aspx"
+      ],
+      "scope": "Ordinary employee wages only; not corporate tax, foreign tax or social contributions"
+    }
+  },
+  "tests": "tests/new-country-assessments.test.mjs",
+  "limitations": "Source-reviewed examples, not independent statutory certification or production approval."
+}

@@ -18,7 +18,7 @@
 <section class="hero"><p class="eyebrow">Understand your money</p><h1>Taxes made easier.</h1><p>See how income tax works, compare two salaries and understand the numbers, step by step.</p><p class="notice"><strong>Practice with made-up numbers only.</strong> Tax rules are not fully checked yet. Do not use these results to file taxes, choose a job or make financial decisions. Do not enter real financial details.</p></section>
 <section id="my-tax" class="card" aria-labelledby="tax-title">
 <p class="eyebrow">Step 1</p><h2 id="tax-title">How much income tax might I pay?</h2>
-<p class="muted">Choose a country and enter an example yearly salary. Three countries have a salary example. Germany and Canada have separate taxable-income examples below.</p>
+<p class="muted">Choose a country and enter an example yearly salary. Three countries have a salary example. Five more country examples are available below.</p>
 <form id="tax-form">
 <div class="fields">
 <label for="country">Country<select id="country" name="country" required><option value="IN">India</option><option value="US">United States</option><option value="GB">United Kingdom (England, Wales and Northern Ireland)</option></select></label>
@@ -39,20 +39,22 @@
 </div>
 </section>
 <section id="taxable-income" class="card" aria-labelledby="assessment-title">
-<h2 id="assessment-title">Already know your taxable income?</h2>
-<p>Try an example for Germany or Canada. Taxable income is the amount left after eligible deductions. It is not your gross salary.</p>
+<h2 id="assessment-title">More country examples</h2>
+<p>Choose a country. For most of these examples, enter taxable income (after eligible deductions), not gross salary. For UAE, enter employee wages.</p>
 <form id="assessment-form">
 <div class="fields">
-<label for="assessment-country">Country<select id="assessment-country"><option value="DE">Germany</option><option value="CA">Canada (federal tax only)</option></select></label>
-<label for="taxable-amount">Yearly taxable income <span id="assessment-currency">(EUR)</span><input id="taxable-amount" type="number" min="0" max="1000000000" step="0.01" required inputmode="decimal" placeholder="Example: 50000"></label>
+<label for="assessment-country">Country<select id="assessment-country"><option value="DE">Germany</option><option value="CA">Canada (federal tax only)</option><option value="AU">Australia</option><option value="SG">Singapore</option><option value="AE">United Arab Emirates (employee wages)</option></select></label>
+<label for="taxable-amount"><span id="assessment-amount-label">Yearly taxable income</span> <span id="assessment-currency">(EUR)</span><input id="taxable-amount" type="number" min="0" max="1000000000" step="0.01" required inputmode="decimal" placeholder="Example: 50000"></label>
 <label id="assessment-type-field" for="assessment-type">Tax return type<select id="assessment-type"><option value="individual">Individual</option><option value="joint">Joint, if eligible</option></select></label>
 <label id="net-income-field" for="net-income" hidden>Net income before taxable-income deductions (CAD)<input id="net-income" disabled type="number" min="0" max="1000000000" step="0.01" required inputmode="decimal"></label>
 <label id="canada-resident-field" for="canada-resident" hidden>Full-year Canadian tax resident?<select id="canada-resident" disabled required><option value="">Choose an answer</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+<label id="eligibility-field" for="eligibility" hidden><span id="eligibility-label">Eligible for resident rates?</span><select id="eligibility" disabled required><option value="">Choose an answer</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+<div><span class="field-label">Tax period</span><p id="assessment-year" class="field-value">2026</p></div>
 </div><p class="muted" id="assessment-help">German ordinary income tax only. Excludes church tax, solidarity surcharge and payroll contributions.</p>
 <button type="submit" class="primary">Calculate taxable-income example</button>
 </form>
 <p id="assessment-error" class="error" role="alert"></p>
-<div id="assessment-result" hidden tabindex="-1" aria-live="polite"><h3>Example income tax</h3><div class="results"><div><span id="assessment-result-label">Income tax</span><strong id="assessment-tax"></strong></div></div><dl id="assessment-breakdown" class="breakdown"></dl><p id="assessment-scope" class="notice"></p><button id="assessment-download" type="button" class="secondary">Download taxable-income report</button></div>
+<div id="assessment-result" hidden tabindex="-1" aria-live="polite"><h3>Example income tax</h3><div class="results"><div><span id="assessment-result-label">Income tax</span><strong id="assessment-tax"></strong></div></div><dl id="assessment-breakdown" class="breakdown"></dl><p id="assessment-scope" class="notice"></p><button id="assessment-download" type="button" class="secondary">Download country example report</button></div>
 </section>
 <section id="compare" class="card" aria-labelledby="compare-title">
 <p class="eyebrow">Step 2</p><h2 id="compare-title">What if my salary changes?</h2>

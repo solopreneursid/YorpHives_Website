@@ -65,6 +65,18 @@ try {
    await page.getByRole('button',{name:'Calculate taxable-income example'}).click();
    await page.locator('#assessment-result').waitFor();
    assert.match(await page.locator('#assessment-tax').innerText(),/CAD\s*14,392\.73/);
+   for(const [code,amount,expected] of [['AU','60000',/AUD\s*8,420/],['SG','80000',/SGD\s*3,350/],['AE','120000',/AED\s*0/]]){
+    await page.locator('#assessment-country').selectOption(code);
+    await page.locator('#taxable-amount').fill(amount);
+    await page.locator('#eligibility').selectOption('yes');
+    await page.getByRole('button',{name:'Calculate taxable-income example'}).click();
+    await page.locator('#assessment-result').waitFor();
+    assert.match(await page.locator('#assessment-tax').innerText(),expected);
+    await page.locator('#eligibility').selectOption('no');
+    await page.getByRole('button',{name:'Calculate taxable-income example'}).click();
+    assert.equal(await page.locator('#assessment-result').isVisible(),false);
+    assert.ok(await page.locator('#assessment-error').isVisible());
+   }
    await page.locator('#country').selectOption('US');
    assert.equal(await page.locator('#tax-result').isVisible(),false);
    assert.equal(await page.locator('#residency-field').isVisible(),false);

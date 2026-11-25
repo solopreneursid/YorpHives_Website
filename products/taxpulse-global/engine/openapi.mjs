@@ -163,7 +163,7 @@ export const spec = {
     "/v1/taxable-income/calculate": {
       "post": {
         "operationId": "calculateTaxableIncomeSample",
-        "description": "Fictional examples: German ordinary tariff, Canadian federal tax after BPA only. Not gross salary or take-home pay.",
+        "description": "Fictional scoped income tax examples for DE, CA, AU, SG and AE. AE accepts employee wages only; other examples require taxable income. Not take-home pay.",
         "requestBody": {
           "required": true,
           "content": {
@@ -227,6 +227,84 @@ export const spec = {
                         "maximum": 1000000000
                       },
                       "fullYearResident": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "taxYear",
+                      "taxableIncome",
+                      "residentEligible"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "AU"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "taxableIncome": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000
+                      },
+                      "residentEligible": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "taxYear",
+                      "taxableIncome",
+                      "residentEligible"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "SG"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "taxableIncome": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000
+                      },
+                      "residentEligible": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "taxYear",
+                      "salaryIncome",
+                      "employeeWagesOnly"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "AE"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "salaryIncome": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000
+                      },
+                      "employeeWagesOnly": {
                         "const": true
                       }
                     }

@@ -28,6 +28,11 @@ function germanTariff(value){
 export function assessTaxableIncome(input){
  if(!input||typeof input!=='object'||Array.isArray(input)||input.taxYear!=='2026')throw new TypeError('Unsupported tax period');
  const {country}=input;
+ if(country==='AE'){
+   if(Object.keys(input).some(k=>!['country','taxYear','salaryIncome','employeeWagesOnly'].includes(k))||input.employeeWagesOnly!==true)throw new TypeError('Only ordinary employee wages supported');
+   const salaryIncome=amount(input.salaryIncome);
+   return {country,taxYear:'2026',taxYearLabel:'Calendar year 2026',sampleOnly:true,taxRulesVerified:false,inputBasis:'employee-wages',currency:'AED',salaryIncome,incomeTax:0,sourceUrls:["https://u.ae/en/information-and-services/finance-and-investment/taxation","https://www.tax.gov.ae/en/taxes/corporate.tax/corporate.tax.topics/basis.of.taxation.natural.person.aspx"],ruleId:'AE-2026-employee-wages-v1',warnings:['UAE personal income tax on ordinary employee wages only. Excludes business activity, foreign tax obligations, social contributions and other taxes or deductions. Zero income tax is not a take-home pay estimate.']};
+ }
  const taxableIncome=amount(input.taxableIncome);
  const common={country,taxYear:'2026',sampleOnly:true,taxRulesVerified:false,inputBasis:'taxable-income'};
  if(country==='DE'){
@@ -54,6 +59,21 @@ export function assessTaxableIncome(input){
     taxableIncome,netIncome,taxBeforeCredits:cents(taxBeforeCredits),basicPersonalAmount:cents(basicPersonalAmount),
     basicPersonalCredit:cents(basicPersonalCredit),incomeTax:cents(Math.max(0,taxBeforeCredits-basicPersonalCredit)),
     brackets:rows,warnings:['Federal tax only, after the basic personal credit. Excludes provincial tax, Quebec abatement, other credits, payroll and special cases. Not a salary calculator.']};
+ }
+ if(country==='AU'||country==='SG'){
+   if(Object.keys(input).some(k=>!['country','taxYear','taxableIncome','residentEligible'].includes(k))||input.residentEligible!==true)throw new TypeError('Resident rate eligibility must be confirmed');
+   const au=country==='AU';
+   const bounds=au?[0,18200,45000,135000,190000,Infinity]:[0,20000,30000,40000,80000,120000,160000,200000,240000,280000,320000,500000,1000000,Infinity];
+   const rates=au?[0,.15,.30,.37,.45]:[0,.02,.035,.07,.115,.15,.18,.19,.195,.20,.22,.23,.24];
+   const brackets=rates.map((rate,i)=>{const taxed=Math.max(0,Math.min(taxableIncome,bounds[i+1])-bounds[i]);return {lower:bounds[i],upper:Number.isFinite(bounds[i+1])?bounds[i+1]:null,rate,taxed,tax:cents(taxed*rate)};});
+   const raw=brackets.reduce((sum,b)=>sum+b.taxed*b.rate,0);
+   const eligibleOffset=au?Math.max(0,taxableIncome<=37500?700:taxableIncome<=45000?700-.05*(taxableIncome-37500):325-.015*(taxableIncome-45000)):0;
+   const lowIncomeOffset=Math.min(raw,eligibleOffset);
+   return {...common,currency:au?'AUD':'SGD',taxYearLabel:au?'FY 2026–27 (1 July 2026 to 30 June 2027)':'YA 2026 (income earned in 2025)',taxableIncome,
+    taxBeforeCredits:cents(raw),lowIncomeOffset:cents(lowIncomeOffset),incomeTax:cents(Math.max(0,raw-lowIncomeOffset)),brackets,
+    sourceUrls:au?["https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents","https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/tax-offsets/low-income-tax-offset"]:["https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates"],
+    ruleId:au?'AU-FY2026-27-resident-LITO-v1':'SG-YA2026-resident-gross-tax-v1',
+    warnings:au?['Full-year resident with full tax-free threshold, ordinary taxable income and low-income tax offset only. Excludes Medicare levy and surcharge, other offsets, student debt, and special cases. Not take-home pay.']:['Resident chargeable income and gross income tax before rebates or credits only. YA 2026 covers 2025 income. Excludes CPF, relief eligibility, rebates, nonresident and special income. Not take-home pay.']};
  }
  throw new TypeError('Unsupported country');
 }
