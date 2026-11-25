@@ -298,5 +298,15 @@
     ],
     "url": "https://www.legislation.gov.au/C2004A03348/latest/text",
     "kind": "change-discovery"
+  },
+  {
+    "id": "CA-QC-rate",
+    "country": "CA",
+    "jurisdiction": "CA-QC",
+    "topics": [
+      "regional-tax"
+    ],
+    "url": "https://www.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/",
+    "kind": "change-discovery"
   }
 ]
