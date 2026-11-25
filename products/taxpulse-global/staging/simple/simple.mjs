@@ -88,6 +88,9 @@ $('compare-form').addEventListener('submit',event=>{
     $('tax-change').textContent=money(r.taxChange,r.currency);
     $('net-change').textContent=money(r.afterIncomeTaxChange,r.currency);
     $('change-rate').textContent=r.effectiveTaxOnChange===null?'Both salaries are the same.':'Share of the salary difference due to income tax: '+percent(r.effectiveTaxOnChange)+'.';
+    if(r.grossChange>0&&r.afterIncomeTaxChange<0){
+      $('change-rate').textContent+=' In this example, the higher salary leaves less money after income tax. This can happen near a tax relief threshold. The rules are not verified.';
+    }
     $('compare-result').hidden=false;$('compare-result').focus();
   } catch { $('compare-error').textContent='Enter valid example salaries and tax status in both forms.'; }
 });
