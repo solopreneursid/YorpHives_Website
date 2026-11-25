@@ -1,3 +1,4 @@
+import {compareSalaryOffers} from './engine/salary-offers.mjs';
 import {reverseSalary,automaticReverseSalary} from './engine/reverse-salary.mjs';
 import { countryCalculate, catalog } from './engine/country.mjs';
 import { compareIncomeScenarios } from './engine/scenarios.mjs';
@@ -368,6 +369,40 @@ $('reverse-form').addEventListener('submit',event=>{
 });
 $('reverse-download').addEventListener('click',()=>downloadReceipt(lastReverse,$('reverse-download'),$('reverse-error')));
 reverseRegionChanged();
+
+let lastOffers=null;
+function clearOffers(){lastOffers=null;$('offers-result').hidden=true;$('offers-error').textContent='';}
+function offersRegionChanged(){
+ const region=$('pay-region').value,c=payOptions[region],pay=$('offers-pay');
+ $('offers-label').textContent='Second offer: '+c.label;
+ pay.min=c.min??0;pay.max=c.max;pay.step=c.step;pay.value='';
+ for(const [id,active] of [['offers-epf',region==='IN'],['offers-pt',region==='IN'],['offers-taxable',region==='DE'],['offers-supplement',region==='DE'],['offers-basic',region==='AE']]){
+  $(id+'-field').hidden=!active;$(id).disabled=!active;$(id).value='';
+ }
+ $('offers-confirm').checked=false;clearOffers();
+}
+$('pay-region').addEventListener('change',offersRegionChanged);
+$('pay-form').addEventListener('input',()=>{$('offers-confirm').checked=false;clearOffers();});
+$('offers-form').addEventListener('input',clearOffers);
+$('offers-form').addEventListener('submit',event=>{
+ event.preventDefault();clearOffers();
+ try{
+  const region=$('pay-region').value,profile={country:payOptions[region].country,region,taxYear:'2026',scopeConfirmed:$('pay-confirm').value==='yes'&&$('offers-confirm').checked};
+  const first={...profile,pay:$('pay-amount').valueAsNumber,...(region==='IN'?{epfMonthlyWage:$('pay-epf').valueAsNumber,professionalTaxAnnual:$('pay-professional-tax').valueAsNumber}:region==='DE'?{annualTaxableIncome:$('pay-de-taxable').valueAsNumber,healthSupplementRate:$('pay-de-supplement').valueAsNumber}:region==='AE'?{monthlyBasicSalary:$('pay-ae-basic').valueAsNumber}:{})};
+  const second={...profile,pay:$('offers-pay').valueAsNumber,...(region==='IN'?{epfMonthlyWage:$('offers-epf').valueAsNumber,professionalTaxAnnual:$('offers-pt').valueAsNumber}:region==='DE'?{annualTaxableIncome:$('offers-taxable').valueAsNumber,healthSupplementRate:$('offers-supplement').valueAsNumber}:region==='AE'?{monthlyBasicSalary:$('offers-basic').valueAsNumber}:{})};
+  const input={first,second},r=compareSalaryOffers(input),f=v=>money(v,r.currency);
+  $('offers-winner').textContent=r.higherRemainder==='equal'?'Both offers leave the same annual amount':(r.higherRemainder==='first'?'Offer 1':'Offer 2')+' leaves more money per year';
+  $('offers-first').textContent=f(r.first.averageMonthlyRemainder);$('offers-second').textContent=f(r.second.averageMonthlyRemainder);$('offers-diff').textContent=f(Math.abs(r.annualDifference));
+  $('offers-breakdown').replaceChildren();
+  for(const [label,value] of [['Offer 1 annual gross',r.first.annualGross],['Offer 2 annual gross',r.second.annualGross],['Offer 1 annual income tax',r.first.incomeTax],['Offer 2 annual income tax',r.second.incomeTax],['Offer 1 annual employee contributions',r.first.employeeContributions],['Offer 2 annual employee contributions',r.second.employeeContributions],['Offer 1 annual money left',r.first.annualRemainder],['Offer 2 annual money left',r.second.annualRemainder]]){
+   const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=f(value);$('offers-breakdown').append(dt,dd);
+  }
+  $('offers-warning').textContent=[...r.warnings,...new Set([...r.first.warnings,...r.second.warnings])].join(' ')+' Unverified example only.';
+  lastOffers={kind:'salary-offers',input};$('offers-result').hidden=false;$('offers-result').focus();
+ }catch{$('offers-error').textContent='Check both salaries, any required extra amounts and the country conditions above.';}
+});
+$('offers-download').addEventListener('click',()=>downloadReceipt(lastOffers,$('offers-download'),$('offers-error')));
+offersRegionChanged();
 
 const contributionOptions={
  CA:{label:'Annual pensionable and insurable earnings (CAD)',scope:'Full-year employee outside Quebec, aged 18–64 throughout the year, one employer. All earnings subject to CPP and EI; full annual basic exemption.',max:1000000000,step:'.01',period:'Calendar year 2026'},
