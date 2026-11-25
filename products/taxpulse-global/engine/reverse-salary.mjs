@@ -41,7 +41,26 @@ export function automaticReverseSalary({profile,target,period}){
  calculateSalaryRemainder({...profile,pay:floor});
  // Monthly output may round up by half a cent.
  const annualTarget=period==='monthly'?Math.max(0,target-.005)*12:target;
- const start=Math.max(floor,Math.floor(annualTarget/multiplier));
+ // UAE premium is constant for a fixed basic wage; Germany's assessed tax
+ // is also constant when the caller holds assessed taxable income fixed.
+ // Other profiles use only lower bounds that hold for every candidate.
+ let deductionFloor=0;
+ const base=calculateSalaryRemainder({...profile,pay:floor});
+ if(key==='AE:AE')deductionFloor=base.totalModeledDeductions;
+ if(key==='DE:DE')deductionFloor=base.incomeTax;
+ if(key==='IN:IN')deductionFloor=base.employeeContributions;
+ // Texas regular federal tax and FICA are individually nondecreasing in
+ // gross wages, including the contribution ceiling and additional Medicare.
+ // Iterating a necessary bound cannot skip any feasible candidate.
+ let start=Math.max(floor,Math.floor((annualTarget+deductionFloor)/multiplier));
+ if(key==='US:TX'){
+  for(let i=0;i<64&&start<=maximum;i++){
+   const at=calculateSalaryRemainder({...profile,pay:start});
+   const next=Math.floor(annualTarget+at.totalModeledDeductions);
+   if(next<=start)break;
+   start=next;
+  }
+ }
  if(start>maximum)return {found:false,searchComplete:true,sampleOnly:true,taxRulesVerified:false};
  const end=Math.min(maximum,start+10000);
  const result=reverseSalary({profile,target,period,minPay:start,maxPay:end});
