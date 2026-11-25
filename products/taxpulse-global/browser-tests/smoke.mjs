@@ -27,7 +27,7 @@ try {
  await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});
  const origin='http://127.0.0.1:'+server.address().port;
  browser=await chromium.launch({headless:true});
- for(const viewport of [{width:390,height:844},{width:1440,height:900}]){
+ for(const viewport of [{width:320,height:640},{width:390,height:844},{width:1440,height:900}]){
   const context=await browser.newContext({viewport,acceptDownloads:true});
   try {
    const page=await context.newPage(),errors=[],requests=[];
@@ -39,6 +39,20 @@ try {
    assert.deepEqual(duplicateIds,[],'Duplicate HTML IDs');
    assert.equal(await page.locator('#country-status li').count(),8);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'horizontal overflow');
+   const accessibility=await page.evaluate(()=>{
+    const controls=[...document.querySelectorAll('input:not([type=hidden]),select,textarea')];
+    const unlabeled=controls.filter(e=>!e.labels?.length&&!e.getAttribute('aria-label')&&!e.getAttribute('aria-labelledby')).map(e=>e.id);
+    const missingLinks=[...document.querySelectorAll('a[href^="#"]')].filter(a=>!document.getElementById(a.getAttribute('href').slice(1))).map(a=>a.getAttribute('href'));
+    const missingDescriptions=[...document.querySelectorAll('[aria-describedby]')].flatMap(e=>e.getAttribute('aria-describedby').split(/\s+/).filter(id=>!document.getElementById(id)));
+    return {unlabeled,missingLinks,missingDescriptions};
+   });
+   assert.deepEqual(accessibility,{unlabeled:[],missingLinks:[],missingDescriptions:[]});
+   await page.keyboard.press('Tab');
+   assert.equal(await page.evaluate(()=>document.activeElement.classList.contains('skip')),true);
+   await page.keyboard.press('Enter');
+   assert.equal(await page.evaluate(()=>document.activeElement.id),'main');
+   assert.equal(await page.locator('#tools .tool-link').count(),13);
+   assert.ok(await page.locator('#tools .tool-link').first().evaluate(e=>e.getBoundingClientRect().height>=44));
    await page.locator('#salary').fill('1275000');
    await page.locator('#resident').selectOption('true');
    await page.getByRole('button',{name:'Show my example'}).click();
