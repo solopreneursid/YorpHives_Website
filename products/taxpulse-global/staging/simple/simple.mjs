@@ -149,7 +149,7 @@ $('assessment-form').addEventListener('submit',event=>{
   const country=$('assessment-country').value;
   const value=$('taxable-amount').valueAsNumber,yes=$('eligibility').value==='yes';
   const input={country,taxYear:'2026',...(country==='AE'?{salaryIncome:value,employeeWagesOnly:yes}:{taxableIncome:value,...(country==='DE'?{assessment:$('assessment-type').value}:country==='CA'?{netIncome:$('net-income').valueAsNumber,fullYearResident:$('canada-resident').value==='yes'}:{residentEligible:yes})})};
-  const r=assessTaxableIncome(input),f=v=>money(v,r.currency);
+  const r=assessTaxableIncome(input,ruleContext),f=v=>money(v,r.currency);
   $('assessment-result-label').textContent=({CA:'Federal income tax after basic personal credit',DE:'Ordinary German income tax',AU:'Income tax after low-income offset',SG:'Gross income tax before rebates',AE:'UAE income tax on employee wages'})[country];
   $('assessment-tax').textContent=f(r.incomeTax);
   const rows=country==='CA'?[['Tax before credits',f(r.taxBeforeCredits)],['Basic personal amount',f(r.basicPersonalAmount)],['Credit applied',f(r.basicPersonalCredit)]]:country==='DE'?[['Taxable income per assessment unit',f(r.unitTaxableIncome)],['Tax zone',r.tariffZone]]:country==='AE'?[['Employee wages',f(r.salaryIncome)],['UAE personal income tax',f(0)]]:[['Tax before offsets',f(r.taxBeforeCredits)],...(country==='AU'?[['Low-income tax offset applied',f(r.lowIncomeOffset)]]:[]),['Tax period',r.taxYearLabel]];
@@ -245,7 +245,7 @@ $('gain-form').addEventListener('submit',event=>{
  try{
   const country=$('gain-country').value;
   const input={country,taxYear:'2026',acquired:$('gain-acquired').value,disposed:$('gain-disposed').value,saleProceeds:$('gain-sale').valueAsNumber,adjustedBasis:$('gain-basis').valueAsNumber,otherTaxableIncome:$('gain-other').valueAsNumber,eligibleLosses:$('gain-losses').valueAsNumber,scopeConfirmed:$('gain-confirm').value==='yes',assetType:$('gain-asset').value,...(country==='US'?{filingStatus:$('gain-filing').value}:{})};
-  const r=calculateCapitalGain(input),f=v=>money(v,r.currency);
+  const r=calculateCapitalGain(input,ruleContext),f=v=>money(v,r.currency);
   $('gain-profit').textContent=f(r.realizedGain);$('gain-taxable').textContent=f(r.taxableGain);$('gain-tax').textContent=f(r.estimatedGainTax);
   $('gain-holding').textContent=r.holding==='not-rate-determining'?'Holding length does not select the tax rate for this example.':r.holding==='long-term'?'Held for more than '+r.holdingYears+' year(s): long-term example.':'Held for '+r.holdingYears+' year(s) or less: short-term example.';
   $('gain-breakdown').replaceChildren();
@@ -520,7 +520,7 @@ $('contrib-form').addEventListener('submit',event=>{
  event.preventDefault();clearContribution();
  try{
   const country=$('contrib-country').value,input={country,taxYear:'2026',income:$('contrib-income').valueAsNumber,scopeConfirmed:$('contrib-confirm').value==='yes',...(country==='SG'?{ageBand:$('contrib-age').value}:{})};
-  const r=calculateEmployeeContributions(input),f=v=>money(v,r.currency);
+  const r=calculateEmployeeContributions(input,ruleContext),f=v=>money(v,r.currency);
   $('contrib-total').textContent=f(r.totalEmployeeContribution);$('contrib-frequency').textContent=r.frequency==='annual'?'Per year':'Per month';
   $('contrib-breakdown').replaceChildren();
   const rows=[...r.components.map(c=>[c.name,c.amount]),...(r.contributionWage===null?[]:[['Contribution wage',r.contributionWage]]),...(r.employerContribution===null?[]:[['Employer contribution (not deducted from pay)',r.employerContribution]])];
@@ -694,7 +694,7 @@ for(const spec of decisionSpecs){const id=spec.id,form=$(id+'-form'),result=$(id
 
 // A tab pins the public rule snapshot. No salary or other user inputs are transmitted.
 const runtimeNotice=document.createElement('p');runtimeNotice.className='notice';runtimeNotice.setAttribute('role','status');runtimeNotice.textContent=runtime.state==='signed-preview'?'Signed preview rule snapshot '+runtime.sequence+' — refresh to load newer updates. Tax rules remain unverified.':runtime.state==='blocked'?'Regulatory update unavailable. Calculations are temporarily disabled.':'Bundled preview rule data. Automatic signed updates are not configured.';document.getElementById('main').prepend(runtimeNotice);
-function restrictRuntime(){const expired=runtime.state==='signed-preview'&&Date.parse(runtime.expiresAt)<=Date.now();const blocked=runtime.state==='blocked'||expired;const unsynced=new Set(['my-tax','compare','taxable-income','investment-tax','employee-contributions']);for(const section of document.querySelectorAll('main > section.card')){if((blocked&&section.querySelector('form'))||(runtime.state==='signed-preview'&&unsynced.has(section.id))){for(const button of section.querySelectorAll('button[type=submit]'))button.disabled=true;section.addEventListener('submit',e=>{e.preventDefault();e.stopImmediatePropagation();},true);}}if(expired)runtimeNotice.textContent='Rule snapshot expired. Refresh before calculating.';}
+function restrictRuntime(){const expired=runtime.state==='signed-preview'&&Date.parse(runtime.expiresAt)<=Date.now();const blocked=runtime.state==='blocked'||expired;const unsynced=new Set(['my-tax','compare']);for(const section of document.querySelectorAll('main > section.card')){if((blocked&&section.querySelector('form'))||(runtime.state==='signed-preview'&&unsynced.has(section.id))){for(const button of section.querySelectorAll('button[type=submit]'))button.disabled=true;section.addEventListener('submit',e=>{e.preventDefault();e.stopImmediatePropagation();},true);}}if(expired)runtimeNotice.textContent='Rule snapshot expired. Refresh before calculating.';}
 restrictRuntime();if(runtime.state==='signed-preview')setTimeout(restrictRuntime,Math.min(2147483647,Math.max(0,Date.parse(runtime.expiresAt)-Date.now())));
 
 // Public regulatory status uses only configured official source metadata and text nodes.
