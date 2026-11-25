@@ -94,7 +94,7 @@ $('compare-form').addEventListener('submit',event=>{
     $('compare-result').hidden=false;$('compare-result').focus();
   } catch { $('compare-error').textContent='Enter valid example salaries and tax status in both forms.'; }
 });
-$('reset').addEventListener('click',()=>{$('tax-form').reset();$('compare-form').reset();countryChanged();});
+$('clear-button').addEventListener('click',()=>{$('tax-form').reset();$('compare-form').reset();countryChanged();});
 $('download').addEventListener('click',()=>{
   if(!lastResult)return;
   const url=URL.createObjectURL(new Blob([JSON.stringify(lastResult,null,2)],{type:'application/json'}));
