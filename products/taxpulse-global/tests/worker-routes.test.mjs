@@ -12,6 +12,8 @@ test('generated Worker routes and validation',async()=>{
  const health=await call('/health');assert.equal(health.status,200);assert.equal((await health.json()).taxRulesVerified,false);
  const html=await call('/');assert.equal(html.status,200);assert.match(html.headers.get('x-robots-tag'),/noindex/);assert.match(await html.text(),/data-module-tab/);
  assert.equal((await call('/assets/country-rules.js')).status,200);
+ const vaultAsset=await call('/assets/browser-vault.mjs');assert.equal(vaultAsset.status,200);assert.match(vaultAsset.headers.get('content-type'),/application\/javascript/);assert.match(await vaultAsset.text(),/openEncryptedVault/);
+ const cryptoAsset=await call('/assets/secure-records.mjs');assert.equal(cryptoAsset.status,200);assert.match(await cryptoAsset.text(),/AES-256-GCM/);
  const catalog=await (await call('/v1/catalog')).json();assert.equal(catalog.countries.length,3);
  assert.equal((await (await call('/openapi.json')).json()).openapi,'3.1.0');
  const payload={country:'GB',taxYear:'2026',module:'pit',parameters:{grossSalary:130000}};
