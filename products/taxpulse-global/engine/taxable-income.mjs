@@ -1,3 +1,4 @@
+import {resolveIndiaSalaryRule} from './india-salary-registry.mjs';
 import {regionalRules,resolveRegionalRule} from './regional-registry.mjs';
 // 2026 assessment models; inputs are taxable income, not gross salary.
 // Source-reviewed formula components are not full statutory certification.
@@ -84,12 +85,13 @@ const INR_SCALE=10000n;
 const inr=x=>Number(x)/10000;
 const minBig=(a,b)=>a<b?a:b;
 const maxBig=(a,b)=>a>b?a:b;
-const roundTen=x=>((x+5n)/10n)*10n;
-const NEW_BANDS=[[400000n,0n],[800000n,5n],[1200000n,10n],[1600000n,15n],[2000000n,20n],[2400000n,25n],[null,30n]];
-function indiaBands(regime,resident,ageGroup){
- if(regime==='new')return NEW_BANDS;
- const exempt=resident&&ageGroup==='80-plus'?500000n:resident&&ageGroup==='60-79'?300000n:250000n;
- return [[exempt,0n],[500000n,5n],[1000000n,20n],[null,30n]];
+const roundTo=(x,unit)=>((x+unit/2n)/unit)*unit;
+function indiaBands(regime,resident,ageGroup,params){
+ const rule=params[regime];
+ const bands=rule.bands.map(([limit,rate])=>[limit===null?null:BigInt(limit),BigInt(rate)]);
+ if(regime==='new')return bands;
+ const exempt=BigInt(resident&&Object.hasOwn(rule.exempt,ageGroup)?rule.exempt[ageGroup]:rule.exempt.default);
+ return [[exempt,0n],...bands];
 }
 function indiaBase(income,bands){
  let lower=0n,tax=0n;const brackets=[];
@@ -102,8 +104,8 @@ function indiaBase(income,bands){
  }
  return {tax,brackets};
 }
-function indiaSurcharge(income,regime,bands,baseAfterRebate){
- const levels=regime==='new'?[[5000000n,10n],[10000000n,15n],[20000000n,25n]]:[[5000000n,10n],[10000000n,15n],[20000000n,25n],[50000000n,37n]];
+function indiaSurcharge(income,rule,bands,baseAfterRebate){
+ const levels=rule.surcharge.map(([threshold,rate])=>[BigInt(threshold),BigInt(rate)]);
  let rate=0n,priorRate=0n,threshold=0n;
  for(const [limit,next] of levels)if(income>limit){priorRate=rate;rate=next;threshold=limit;}
  const nominal=baseAfterRebate*rate/100n;
@@ -112,33 +114,33 @@ function indiaSurcharge(income,regime,bands,baseAfterRebate){
  const relief=maxBig(0n,baseAfterRebate+nominal-cap);
  return {rate,nominal,relief,net:nominal-relief};
 }
-function indiaRegime(regime,gross,deductions,resident,ageGroup){
- const standard=minBig(gross,regime==='new'?75000n:50000n);
+function indiaRegime(regime,gross,deductions,resident,ageGroup,params){
+ const rule=params[regime],rounding=BigInt(params.roundingRupees);
+ const standard=minBig(gross,BigInt(rule.standardDeduction));
  if(deductions>gross-standard)throw new RangeError('Other eligible deductions cannot exceed salary after standard deduction');
- const taxableUnrounded=gross-standard-deductions,taxable=roundTen(taxableUnrounded);
- const bands=indiaBands(regime,resident,ageGroup),{tax,brackets}=indiaBase(taxable,bands);
+ const taxableUnrounded=gross-standard-deductions,taxable=roundTo(taxableUnrounded,rounding);
+ const bands=indiaBands(regime,resident,ageGroup,params),{tax,brackets}=indiaBase(taxable,bands);
  let rebate=0n,rebateMarginalRelief=0n;
  if(resident){
-  if(regime==='old'&&taxable<=500000n)rebate=minBig(tax,12500n*INR_SCALE);
-  if(regime==='new'){
-   if(taxable<=1200000n)rebate=minBig(tax,60000n*INR_SCALE);
-   else rebateMarginalRelief=maxBig(0n,tax-(taxable-1200000n)*INR_SCALE);
-  }
+  const threshold=BigInt(rule.rebateThreshold);
+  if(taxable<=threshold)rebate=minBig(tax,BigInt(rule.rebateLimit)*INR_SCALE);
+  else if(rule.rebateMarginalRelief)rebateMarginalRelief=maxBig(0n,tax-(taxable-threshold)*INR_SCALE);
  }
  const base=tax-rebate-rebateMarginalRelief;
- const surcharge=indiaSurcharge(taxable,regime,bands,base);
- const beforeCess=base+surcharge.net,cess=beforeCess*4n/100n;
- const unroundedTax=beforeCess+cess,finalTax=roundTen(unroundedTax/INR_SCALE);
+ const surcharge=indiaSurcharge(taxable,rule,bands,base);
+ const beforeCess=base+surcharge.net,cess=beforeCess*BigInt(params.cessPercent)/100n;
+ const unroundedTax=beforeCess+cess,finalTax=roundTo(unroundedTax/INR_SCALE,rounding);
  return {regime,grossSalary:Number(gross),standardDeduction:Number(standard),otherEligibleDeductions:Number(deductions),taxableIncomeBeforeRounding:Number(taxableUnrounded),taxableIncome:Number(taxable),brackets,taxBeforeRebate:inr(tax),rebateApplied:inr(rebate),rebateMarginalRelief:inr(rebateMarginalRelief),taxAfterRebate:inr(base),surchargeRate:Number(surcharge.rate)/100,surchargeBeforeRelief:inr(surcharge.nominal),surchargeMarginalRelief:inr(surcharge.relief),surchargeApplied:inr(surcharge.net),cessAmount:inr(cess),taxBeforeFinalRounding:inr(unroundedTax),incomeTax:Number(finalTax),salaryAfterIncomeTax:Number(gross-finalTax)};
 }
-export function compareIndiaRegimes(input){
+export function compareIndiaRegimes(input,registry){
  const keys=['country','taxYear','grossSalary','residentIndividual','ageGroup','ordinarySalaryOnly','oldEligibleDeductions','newEligibleDeductions'];
- if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(k=>!keys.includes(k))||keys.some(k=>!Object.hasOwn(input,k))||input.country!=='IN'||input.taxYear!=='2026'||input.ordinarySalaryOnly!==true||typeof input.residentIndividual!=='boolean'||!['under-60','60-79','80-plus'].includes(input.ageGroup))throw new TypeError('Unsupported India salary example');
+ if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(k=>!keys.includes(k))||keys.some(k=>!Object.hasOwn(input,k))||input.country!=='IN'||typeof input.taxYear!=='string'||!/^\d{4}$/.test(input.taxYear)||input.ordinarySalaryOnly!==true||typeof input.residentIndividual!=='boolean'||!['under-60','60-79','80-plus'].includes(input.ageGroup))throw new TypeError('Unsupported India salary example');
  const whole=value=>{if(!Number.isSafeInteger(value)||value<0||value>MAX)throw new RangeError('Enter a non-negative whole rupee amount');return BigInt(value);};
  const gross=whole(input.grossSalary),oldDeductions=whole(input.oldEligibleDeductions),newDeductions=whole(input.newEligibleDeductions);
- const oldRegime=indiaRegime('old',gross,oldDeductions,input.residentIndividual,input.ageGroup);
- const newRegime=indiaRegime('new',gross,newDeductions,input.residentIndividual,input.ageGroup);
- return {country:'IN',taxYear:'2026',taxYearLabel:'FY 2026–27 (1 April 2026 to 31 March 2027)',currency:'INR',sampleOnly:true,taxRulesVerified:false,inputBasis:'ordinary-salary',ruleId:'IN-TY2026-27-ordinary-salary-comparison-v1',sourceUrls:["https://www.incometaxindia.gov.in/documents/d/guest/income_tax_act_2025_as_amended_by_fa_act_2026-pdf","https://www.incometaxindia.gov.in/documents/d/guest/finance-act-2026-pdf-1","https://www.incometax.gov.in/iec/foportal/help/all-topics/e-filing-services/income-and-tax-estimator-um"],oldRegime,newRegime,lowerTaxRegime:oldRegime.incomeTax===newRegime.incomeTax?'equal':oldRegime.incomeTax<newRegime.incomeTax?'old':'new',taxDifference:Math.abs(oldRegime.incomeTax-newRegime.incomeTax),warnings:['Ordinary salary only. Additional deductions are user-confirmed eligible amounts, excluding the standard deduction; eligibility is not independently determined. Excludes capital gains, business income, agricultural income, foreign tax credits, arrears relief, other taxes and payroll. This comparison is an unverified example, not a filing recommendation.']};
+ const rule=resolveIndiaSalaryRule(input.taxYear,registry);
+ const oldRegime=indiaRegime('old',gross,oldDeductions,input.residentIndividual,input.ageGroup,rule.parameters);
+ const newRegime=indiaRegime('new',gross,newDeductions,input.residentIndividual,input.ageGroup,rule.parameters);
+ return {country:'IN',taxYear:rule.taxYear,taxYearLabel:'FY '+rule.taxYear+'–'+String(Number(rule.taxYear)+1).slice(-2)+' (1 April '+rule.taxYear+' to 31 March '+(Number(rule.taxYear)+1)+')',currency:'INR',sampleOnly:true,taxRulesVerified:false,inputBasis:'ordinary-salary',ruleId:rule.version,sourceUrls:rule.sourceUrls,oldRegime,newRegime,lowerTaxRegime:oldRegime.incomeTax===newRegime.incomeTax?'equal':oldRegime.incomeTax<newRegime.incomeTax?'old':'new',taxDifference:Math.abs(oldRegime.incomeTax-newRegime.incomeTax),warnings:['Ordinary salary only. Additional deductions are user-confirmed eligible amounts, excluding the standard deduction; eligibility is not independently determined. Excludes capital gains, business income, agricultural income, foreign tax credits, arrears relief, other taxes and payroll. This comparison is an unverified example, not a filing recommendation.']};
 }
 
 // One qualifying investment disposal; no inferred legal eligibility or tax basis.
