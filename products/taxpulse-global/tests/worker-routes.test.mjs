@@ -56,7 +56,7 @@ test('generated Worker routes and validation',async()=>{
  assert.equal((await call('/v1/contributions/calculate')).status,405);
  const extendedPay=await call('/v1/salary/remainder',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'AU',region:'AU',taxYear:'2026',pay:100000,scopeConfirmed:true})});
  assert.equal(extendedPay.status,200);assert.equal((await extendedPay.json()).annualRemainder,77480);
- const history=await call('/v1/history/rules');assert.equal(history.status,200);assert.equal((await history.json()).rules.length,7);
+ const history=await call('/v1/history/rules');assert.equal(history.status,200);assert.equal((await history.json()).rules.length,14);
  const compare=await call('/v1/history/compare',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'AU',firstRuleId:'AU-2024-25-resident-ordinary-v1',secondRuleId:'AU-2027-28-resident-ordinary-v1',taxableIncome:100000,scopeConfirmed:true})});
  assert.equal(compare.status,200);assert.equal((await compare.json()).taxChange,-536);
  assert.equal((await call('/v1/history/compare')).status,405);

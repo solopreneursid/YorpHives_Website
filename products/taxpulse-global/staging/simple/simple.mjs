@@ -180,7 +180,7 @@ $('proof-file').addEventListener('change',async()=>{
   if(file.size>65536)throw new Error('Report too large');
   const r=await verifyReceipt(JSON.parse(await file.text()),engineFingerprint);
   if(request!==proofRequest)return;
-  $('proof-status').textContent=!r.integrity?'The report contents do not match its fingerprint.':!r.sameEngine?'The fingerprint matches, but this is a different engine version. We cannot replay it here.':r.reproduced?'The fingerprint matches and the example calculation was reproduced. This is not legal verification or a digital signature.':'The fingerprint matches, but the calculation could not be reproduced.';
+  $('proof-status').textContent=!r.integrity?'The report contents do not match its fingerprint.':!r.sameEngine&&r.reproduced?'The fingerprint matches and the example calculation was reproduced using retained historical rules in a different engine build. This is not legal verification or a digital signature.':!r.sameEngine?'The fingerprint matches, but this engine cannot reproduce the older report.':r.reproduced?'The fingerprint matches and the example calculation was reproduced. This is not legal verification or a digital signature.':'The fingerprint matches, but the calculation could not be reproduced.';
  }catch{if(request===proofRequest)$('proof-status').textContent='This file is not a supported TaxPulse example report.';}
 });
 assessmentChanged();
@@ -364,7 +364,7 @@ function historyChanged(){
  const country=$('history-country').value,items=historyRules.filter(r=>r.country===country);
  for(const id of ['history-first','history-second']){
   const select=$(id);select.replaceChildren();
-  for(const r of items){const o=document.createElement('option');o.value=r.id;o.textContent=r.label+(r.start>'2026-11-25'?' — enacted future rate':'');select.append(o);}
+  for(const r of items){const o=document.createElement('option');o.value=r.id;o.textContent=r.label+(r.start>new Date().toISOString().slice(0,10)?' — enacted future rate':'');select.append(o);}
  }
  $('history-second').selectedIndex=items.length-1;
  $('history-income-label').textContent='Same taxable income in both periods ('+items[0].currency+')';

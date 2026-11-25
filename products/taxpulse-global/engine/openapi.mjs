@@ -1164,7 +1164,10 @@ export const spec = {
                   "country": {
                     "enum": [
                       "US",
-                      "AU"
+                      "AU",
+                      "IN",
+                      "GB",
+                      "CA"
                     ]
                   },
                   "firstRuleId": {
@@ -1175,7 +1178,14 @@ export const spec = {
                       "AU-2024-25-resident-ordinary-v1",
                       "AU-2025-26-resident-ordinary-v1",
                       "AU-2026-27-resident-ordinary-v1",
-                      "AU-2027-28-resident-ordinary-v1"
+                      "AU-2027-28-resident-ordinary-v1",
+                      "CA-2025-ordinary-v1",
+                      "CA-2026-ordinary-v1",
+                      "GB-2024-25-ordinary-v1",
+                      "GB-2025-26-ordinary-v1",
+                      "GB-2026-27-ordinary-v1",
+                      "IN-2024-25-ordinary-v1",
+                      "IN-2025-26-ordinary-v1"
                     ]
                   },
                   "secondRuleId": {
@@ -1186,7 +1196,14 @@ export const spec = {
                       "AU-2024-25-resident-ordinary-v1",
                       "AU-2025-26-resident-ordinary-v1",
                       "AU-2026-27-resident-ordinary-v1",
-                      "AU-2027-28-resident-ordinary-v1"
+                      "AU-2027-28-resident-ordinary-v1",
+                      "CA-2025-ordinary-v1",
+                      "CA-2026-ordinary-v1",
+                      "GB-2024-25-ordinary-v1",
+                      "GB-2025-26-ordinary-v1",
+                      "GB-2026-27-ordinary-v1",
+                      "IN-2024-25-ordinary-v1",
+                      "IN-2025-26-ordinary-v1"
                     ]
                   },
                   "taxableIncome": {

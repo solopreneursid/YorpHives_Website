@@ -39,21 +39,24 @@ function calculate(kind,input){
  throw new TypeError('Unknown calculation type');
 }
 export async function createReceipt({kind,input,engineFingerprint}){
- if(!HASH.test(engineFingerprint))throw new TypeError('Invalid engine fingerprint');
+ if(typeof engineFingerprint!=='string'||!HASH.test(engineFingerprint))throw new TypeError('Invalid engine fingerprint');
  const normalizedInput=plain(input);
  const payload={schema:SCHEMA,kind,input:normalizedInput,engineFingerprint,result:calculate(kind,normalizedInput),warning:WARNING,verified:false};
  return {payload,digest:await hash(payload),algorithm:'SHA-256',signature:null};
 }
 export async function verifyReceipt(receipt,currentFingerprint){
- if(!HASH.test(currentFingerprint))throw new TypeError('Invalid current engine fingerprint');
+ if(typeof currentFingerprint!=='string'||!HASH.test(currentFingerprint))throw new TypeError('Invalid current engine fingerprint');
  if(!receipt||receipt.algorithm!=='SHA-256'||receipt.signature!==null||typeof receipt.digest!=='string'||!HASH.test(receipt.digest))throw new TypeError('Invalid receipt format');
  const p=receipt.payload;
  if(!p||p.schema!==SCHEMA||p.verified!==false||p.warning!==WARNING||typeof p.engineFingerprint!=='string'||!HASH.test(p.engineFingerprint))throw new TypeError('Invalid receipt payload');
  const integrity=(await hash(p))===receipt.digest;
  if(!integrity)return {integrity:false,sameEngine:false,reproduced:false};
  const sameEngine=p.engineFingerprint===currentFingerprint;
- if(!sameEngine)return {integrity:true,sameEngine:false,reproduced:false};
+ // Only the explicitly retained historical algorithm may be replayed across builds.
+ // Never execute code or accept rate schedules supplied by a report.
+ const compatibleHistory=p.kind==='historical-tax'&&p.result?.algorithmId==='ordinary-progressive-minor-units-v1';
+ if(!sameEngine&&!compatibleHistory)return {integrity:true,sameEngine:false,reproduced:false};
  let reproduced=false;
  try{reproduced=canonical(calculate(p.kind,p.input))===canonical(p.result);}catch{}
- return {integrity:true,sameEngine:true,reproduced};
+ return {integrity:true,sameEngine,reproduced};
 }

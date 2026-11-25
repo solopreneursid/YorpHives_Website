@@ -1,0 +1,178 @@
+[
+  {
+    "id": "CA-2025-ordinary-v1",
+    "country": "CA",
+    "label": "2025",
+    "start": "2025-01-01",
+    "end": "2025-12-31",
+    "currency": "CAD",
+    "scope": "Canadian federal ordinary taxable income before all credits, provincial taxes, Quebec abatement and payroll. Annual assessment rates, not withholding.",
+    "legislation": "enacted",
+    "bounds": [
+      57375,
+      114750,
+      177882,
+      253414
+    ],
+    "rates": [
+      1450,
+      2050,
+      2600,
+      2900,
+      3300
+    ],
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/last-year.html"
+    ]
+  },
+  {
+    "id": "CA-2026-ordinary-v1",
+    "country": "CA",
+    "label": "2026",
+    "start": "2026-01-01",
+    "end": "2026-12-31",
+    "currency": "CAD",
+    "scope": "Canadian federal ordinary taxable income before all credits, provincial taxes, Quebec abatement and payroll. Annual assessment rates, not withholding.",
+    "legislation": "enacted",
+    "bounds": [
+      58523,
+      117045,
+      181440,
+      258482
+    ],
+    "rates": [
+      1400,
+      2050,
+      2600,
+      2900,
+      3300
+    ],
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+    ]
+  },
+  {
+    "id": "GB-2024-25-ordinary-v1",
+    "country": "GB",
+    "label": "FY 2024–25",
+    "start": "2024-04-06",
+    "end": "2025-04-05",
+    "currency": "GBP",
+    "scope": "England, Wales and Northern Ireland ordinary non-savings, non-dividend taxable income after allowances, before credits and National Insurance. Excludes Scotland and special band extensions.",
+    "legislation": "enacted",
+    "bounds": [
+      37700,
+      125140
+    ],
+    "rates": [
+      2000,
+      4000,
+      4500
+    ],
+    "sourceUrls": [
+      "https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past"
+    ]
+  },
+  {
+    "id": "GB-2025-26-ordinary-v1",
+    "country": "GB",
+    "label": "FY 2025–26",
+    "start": "2025-04-06",
+    "end": "2026-04-05",
+    "currency": "GBP",
+    "scope": "England, Wales and Northern Ireland ordinary non-savings, non-dividend taxable income after allowances, before credits and National Insurance. Excludes Scotland and special band extensions.",
+    "legislation": "enacted",
+    "bounds": [
+      37700,
+      125140
+    ],
+    "rates": [
+      2000,
+      4000,
+      4500
+    ],
+    "sourceUrls": [
+      "https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past"
+    ]
+  },
+  {
+    "id": "GB-2026-27-ordinary-v1",
+    "country": "GB",
+    "label": "FY 2026–27",
+    "start": "2026-04-06",
+    "end": "2027-04-05",
+    "currency": "GBP",
+    "scope": "England, Wales and Northern Ireland ordinary non-savings, non-dividend taxable income after allowances, before credits and National Insurance. Excludes Scotland and special band extensions.",
+    "legislation": "enacted",
+    "bounds": [
+      37700,
+      125140
+    ],
+    "rates": [
+      2000,
+      4000,
+      4500
+    ],
+    "sourceUrls": [
+      "https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past"
+    ]
+  },
+  {
+    "id": "IN-2024-25-ordinary-v1",
+    "country": "IN",
+    "label": "FY 2024–25",
+    "start": "2024-04-01",
+    "end": "2025-03-31",
+    "currency": "INR",
+    "scope": "Indian individual new-regime ordinary taxable income after deductions. Base slab tax only, before rebate, marginal relief, surcharge, cess and statutory rounding. Does not compare old and new regimes or establish final tax.",
+    "legislation": "enacted",
+    "bounds": [
+      300000,
+      700000,
+      1000000,
+      1200000,
+      1500000
+    ],
+    "rates": [
+      0,
+      500,
+      1000,
+      1500,
+      2000,
+      3000
+    ],
+    "sourceUrls": [
+      "https://www.incometax.gov.in/iec/foportal/help/individual/return-applicable-3"
+    ]
+  },
+  {
+    "id": "IN-2025-26-ordinary-v1",
+    "country": "IN",
+    "label": "FY 2025–26",
+    "start": "2025-04-01",
+    "end": "2026-03-31",
+    "currency": "INR",
+    "scope": "Indian individual new-regime ordinary taxable income after deductions. Base slab tax only, before rebate, marginal relief, surcharge, cess and statutory rounding. Does not compare old and new regimes or establish final tax.",
+    "legislation": "enacted",
+    "bounds": [
+      400000,
+      800000,
+      1200000,
+      1600000,
+      2000000,
+      2400000
+    ],
+    "rates": [
+      0,
+      500,
+      1000,
+      1500,
+      2000,
+      2500,
+      3000
+    ],
+    "sourceUrls": [
+      "https://www.incometax.gov.in/iec/foportal/help/individual/return-applicable-1"
+    ]
+  }
+]

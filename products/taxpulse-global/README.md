@@ -100,3 +100,7 @@ The salary endpoint and local form now also support scoped Alberta (federal and 
 ## Time Machine — versioned ordinary rate schedules
 
 The history module contains seven explicit enacted rule snapshots, mirrored in rules/history/snapshots-v1.json. Append new IDs rather than editing existing versions; regression checks compare the v1 archive. GET /v1/history/rules and POST /v1/history/compare expose the same local browser engine. Only same-country chronological comparisons at fixed taxable income before credits/offsets are allowed. Australia FY2027–28 is an enacted future rate schedule, not a full future liability estimate. Reports include the selected rule snapshots; replay is currently limited to the matching overall engine fingerprint. Production flags remain unchanged.
+
+## Time Machine expansion and compatible replay
+
+Append-only v2 archive adds seven historical rate schedules for India, Canada and the UK. v1 archive is unchanged. Historical reports with a different overall engine fingerprint can be reproduced only when the retained ordinary-progressive-minor-units-v1 algorithm and locally retained rule IDs reproduce the full result exactly. No report-provided code or tax rates are executed; rehashing altered results does not establish reproducibility. All other report kinds remain engine-build-bound. No signature or professional certification is claimed.

@@ -218,6 +218,14 @@ try {
    const [historyReport]=await Promise.all([page.waitForEvent('download'),page.locator('#history-download').click()]);
    await page.locator('#proof-file').setInputFiles(await historyReport.path());
    await page.waitForFunction(()=>document.getElementById('proof-status').textContent.includes('calculation was reproduced'));
+   await page.locator('#history-country').selectOption('IN');
+   assert.equal(await page.locator('#history-first option').count(),2);
+   await page.locator('#history-income').fill('1500000');
+   await page.locator('#history-confirm').selectOption('yes');
+   await page.getByRole('button',{name:'Compare tax periods'}).click();
+   await page.locator('#history-result').waitFor();
+   assert.match(await page.locator('#history-tax-first').innerText(),/INR\s*1,40,000/);
+   assert.match(await page.locator('#history-tax-second').innerText(),/INR\s*1,05,000/);
    await page.locator('#history-country').selectOption('US');
    assert.equal(await page.locator('#history-result').isVisible(),false);
    assert.equal(await page.locator('#history-first option').count(),3);
