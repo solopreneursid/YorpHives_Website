@@ -287,9 +287,9 @@ export function calculateRegionalTax(input,registry){
 // Scoped annual salary remainder: ordinary employee wages, no other deductions.
 // UK category A uses actual monthly pay-period thresholds, not annual NI thresholds.
 const PAY_SOURCES={"US":["https://www.irs.gov/irb/2025-45_IRB","https://www.irs.gov/instructions/i941","https://www.irs.gov/taxtopics/tc560","https://www.texas.gov/business-taxes/taxes"],"GB":["https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027","https://www.gov.uk/income-tax-rates"]};
-export function calculateSalaryRemainder(input){
+export function calculateSalaryRemainder(input,ruleContext={}){
  if(input&&['DE','AE'].includes(input.country))return germanEmiratiSalaryRemainder(input);
- if(input&&['CA','AU','IN','SG'].includes(input.country))return extendedSalaryRemainder(input);
+ if(input&&['CA','AU','IN','SG'].includes(input.country))return extendedSalaryRemainder(input,ruleContext);
  const keys=['country','region','taxYear','pay','scopeConfirmed'];
  if(!input||typeof input!=='object'||Array.isArray(input)||keys.some(k=>!Object.hasOwn(input,k))||Object.keys(input).some(k=>!keys.includes(k))||input.taxYear!=='2026'||input.scopeConfirmed!==true)throw new TypeError('Unsupported salary example');
  const pay=cgMoney(input.pay);
@@ -310,7 +310,7 @@ export function calculateSalaryRemainder(input){
  }else if(input.country==='GB'&&['SCT','RUK'].includes(input.region)){
   if(pay%100n!==0n||pay>10000000n)throw new RangeError('UK examples require whole pounds of monthly pay up to GBP 100,000');
   gross=pay*12n;currency='GBP';period='6 April 2026 to 5 April 2027';payFrequency='monthly';
-  const regional=calculateRegionalTax({country:'GB',region:input.region,taxYear:'2026',income:cgOut(gross),scopeConfirmed:true});
+  const regional=calculateRegionalTax({country:'GB',region:input.region,taxYear:'2026',income:cgOut(gross),scopeConfirmed:true},ruleContext.regional);
   incomeTax=cgMoney(regional.regionalTax);
   const monthlyNI=cgRound(maxBig(0n,minBig(pay,418900n)-104800n)*800n+maxBig(0n,pay-418900n)*200n);
   contributions=[{name:'Employee National Insurance (category A)',amount:cgOut(monthlyNI*12n)}];
@@ -369,7 +369,7 @@ export function calculateEmployeeContributions(input){
 // Salary integration with explicit jurisdiction and eligibility contracts.
 // No mixing of assessment years, or automatic inference of missing wage bases.
 const EXTENDED_PAY_SOURCES={"CA":["https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4032-payroll-deductions-tables/t4032ab-jan/t4032ab-january-general-information.html","https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/payroll-deductions-t4127-payroll-deductions-formulas/t4127-jan-122nd-edition-effective-january-1-2026/t4127-jan-payroll-deductions-formulas-computer-programs.html","https://www.canada.ca/en/services/benefits/publicpensions/cpp/cpp-enhancement.html"],"AU":["https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents","https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insurance/medicare-levy/what-is-the-medicare-levy","https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insurance/medicare-levy-surcharge/medicare-levy-surcharge-income-thresholds-and-rates"],"IN":["https://www.incometax.gov.in/iec/foportal/help/all-topics/e-filing-services/objective-and-scope-new-act","https://www.incometax.gov.in/iec/foportal/help/new-tax-vs-old-tax-regime-faqs"],"SG":["https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates","https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/earned-income-relief","https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund%28cpf%29-relief-for-employees"]};
-function extendedSalaryRemainder(input){
+function extendedSalaryRemainder(input,ruleContext={}){
  const required=['country','region','taxYear','pay','scopeConfirmed',...(input.country==='IN'?['epfMonthlyWage','professionalTaxAnnual']:[])];
  if(typeof input!=='object'||Array.isArray(input)||required.some(k=>!Object.hasOwn(input,k))||Object.keys(input).some(k=>!required.includes(k))||input.taxYear!=='2026'||input.scopeConfirmed!==true)throw new TypeError('Unsupported salary example');
  const country=input.country,pay=cgMoney(input.pay);
@@ -389,7 +389,7 @@ function extendedSalaryRemainder(input){
   const federal=assessTaxableIncome({country:'CA',taxYear:'2026',taxableIncome:cgOut(taxable),netIncome:cgOut(taxable),fullYearResident:true});
   const federalExtraCredit=cgRound((baseCPP+ei+minBig(gross,150100n))*1400n);
   const federalTax=maxBig(0n,cgMoney(federal.incomeTax)-federalExtraCredit);
-  const provincial=calculateRegionalTax({country:'CA',region:'AB',taxYear:'2026',income:cgOut(taxable),scopeConfirmed:true});
+  const provincial=calculateRegionalTax({country:'CA',region:'AB',taxYear:'2026',income:cgOut(taxable),scopeConfirmed:true},ruleContext.regional);
   const provincialCredit=cgRound((2276900n+baseCPP+ei)*800n);
   const albertaTax=maxBig(0n,cgMoney(provincial.regionalTax)-provincialCredit);
   incomeTaxComponents=[item('Federal income tax',federalTax),item('Alberta income tax',albertaTax)];
@@ -409,7 +409,7 @@ function extendedSalaryRemainder(input){
   if(epfWage%100n!==0n||professionalTax%100n!==0n||professionalTax>250000n||epfWage*12n>gross)throw new RangeError('Invalid confirmed contribution wage or professional tax');
   const epf=calculateEmployeeContributions({country:'IN',taxYear:'2026',income:cgOut(epfWage),scopeConfirmed:true});
   const annualEPF=cgMoney(epf.totalEmployeeContribution)*12n;
-  const r=compareIndiaRegimes({country:'IN',taxYear:'2026',grossSalary:cgOut(gross),residentIndividual:true,ageGroup:'under-60',ordinarySalaryOnly:true,oldEligibleDeductions:0,newEligibleDeductions:0}).newRegime;
+  const r=compareIndiaRegimes({country:'IN',taxYear:'2026',grossSalary:cgOut(gross),residentIndividual:true,ageGroup:'under-60',ordinarySalaryOnly:true,oldEligibleDeductions:0,newEligibleDeductions:0},ruleContext.indiaSalary).newRegime;
   tax=cgMoney(r.incomeTax);taxable=cgMoney(r.taxableIncome);
   incomeTaxComponents=[item('New-regime income tax including cess',tax)];
   contributions=[item('Employee EPF (confirmed 12% contribution wage)',annualEPF),item('Professional tax (user-confirmed annual amount)',professionalTax)];
