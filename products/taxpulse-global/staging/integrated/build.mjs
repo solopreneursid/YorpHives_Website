@@ -26,3 +26,5 @@ write('manifest.mjs','export default '+JSON.stringify(JSON.parse(read('rules/man
 
 const advancedBrowser='globalThis.TaxPulseAdvanced = (() => {\n'+read('engine/advanced.mjs').replace(/\bexport (?=const supported|function advancedCalculate)/g,'')+'\nreturn Object.freeze({calculate:advancedCalculate,supported:Object.freeze(supported)});\n})();\n';
 write('advanced-browser.js.txt',advancedBrowser);
+
+write('webmanifest.txt',"{\"id\":\"/\",\"name\":\"TaxPulse Global Preview\",\"short_name\":\"TaxPulse\",\"start_url\":\"/\",\"scope\":\"/\",\"display\":\"standalone\",\"background_color\":\"#f8fafc\",\"theme_color\":\"#4f46e5\",\"description\":\"Illustrative financial scenario calculations; tax rules not verified.\"}");
