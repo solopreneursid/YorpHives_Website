@@ -1,7 +1,7 @@
 import {calculateSalaryRemainder} from './taxable-income.mjs';
 function exact(o,keys){if(!o||typeof o!=='object'||Array.isArray(o)||Object.keys(o).length!==keys.length||keys.some(k=>!Object.hasOwn(o,k)))throw new TypeError('Invalid comparison fields');}
 function units(v,scale,max){if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>max||Math.abs(v*scale-Math.round(v*scale))>0.00002)throw new RangeError('Invalid amount or precision');return BigInt(Math.round(v*scale));}
-const cents=n=>Number(n)/100;
+const cents=n=>{if(n>100000000000000n||n< -100000000000000n)throw new RangeError('Comparison exceeds supported monetary precision');return Number(n)/100;};
 function round(n,d){return n<0n?-round(-n,d):(n+d/2n)/d;}
 function location(input){
  exact(input,['salary','housing','living']);
