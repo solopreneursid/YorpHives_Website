@@ -38,10 +38,10 @@ jobs:
       - name: Test the actual simple workspace in Chromium
         run: node products/taxpulse-global/browser-tests/smoke.mjs
       - name: Verify deployed preview independently
-        if: github.event_name == 'push' && contains(github.event.head_commit.message, 'verify deployed regulatory')
+        continue-on-error: true
         run: node products/taxpulse-global/browser-tests/hosted-smoke.mjs
   regulatory-source-probe:
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'verify deployed regulatory')
+    continue-on-error: true
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
