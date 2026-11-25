@@ -39,7 +39,10 @@
       "income-tax",
       "investment-tax"
     ],
-    "kind": "change-discovery"
+    "kind": "change-discovery",
+    "alternateUrls": [
+      "https://www.incometaxindia.gov.in/income-tax-act-202511"
+    ]
   },
   {
     "id": "DE-4",
@@ -50,7 +53,10 @@
       "income-tax",
       "payroll"
     ],
-    "kind": "change-discovery"
+    "kind": "change-discovery",
+    "alternateUrls": [
+      "https://www.gesetze-im-internet.de/estg/__32a.html"
+    ]
   },
   {
     "id": "AE-5",
@@ -60,7 +66,10 @@
     "topics": [
       "business-tax"
     ],
-    "kind": "change-discovery"
+    "kind": "change-discovery",
+    "alternateUrls": [
+      "https://tax.gov.ae/en/legislation/corporate.tax.aspx"
+    ]
   },
   {
     "id": "CA-6",
@@ -144,7 +153,10 @@
       "payroll"
     ],
     "url": "https://finance.odisha.gov.in/en/notification/tax-profession",
-    "kind": "change-discovery"
+    "kind": "change-discovery",
+    "alternateUrls": [
+      "https://finance.odisha.gov.in/en/financial-notification"
+    ]
   },
   {
     "id": "IN-TS-profession",
@@ -164,7 +176,10 @@
       "payroll"
     ],
     "url": "https://www.manipurtaxes.gov.in/en/professional-tax/rules/",
-    "kind": "change-discovery"
+    "kind": "change-discovery",
+    "alternateUrls": [
+      "https://manipurtaxes.gov.in/en/professional-tax/rules/"
+    ]
   },
   {
     "id": "AU-state-directory",
@@ -307,6 +322,9 @@
       "regional-tax"
     ],
     "url": "https://www.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/",
-    "kind": "change-discovery"
+    "kind": "change-discovery",
+    "alternateUrls": [
+      "https://www-prd.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/"
+    ]
   }
 ]
