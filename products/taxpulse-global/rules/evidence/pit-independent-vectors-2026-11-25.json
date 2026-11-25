@@ -1,0 +1,73 @@
+{
+  "reviewedOn": "2026-11-25",
+  "status": "partial_parameter_and_arithmetic_review_not_release_authorization",
+  "countryCoverage": [
+    "US",
+    "GB"
+  ],
+  "module": "pit",
+  "verificationScope": "US federal 2026 single filing status with standard deduction only; UK 2026/27 ordinary employment income for England, Wales and Northern Ireland using standard Personal Allowance and taper, no additional allowances.",
+  "sources": {
+    "US": [
+      "https://www.irs.gov/irb/2025-45_IRB",
+      "https://www.irs.gov/publications/p505"
+    ],
+    "GB": [
+      "https://www.gov.uk/income-tax-rates",
+      "https://www.gov.uk/government/publications/budget-2025-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances"
+    ]
+  },
+  "independentExpectedAmounts": {
+    "US": [
+      {
+        "grossSalary": 16100,
+        "incomeTax": 0
+      },
+      {
+        "grossSalary": 28500,
+        "incomeTax": 1240
+      },
+      {
+        "grossSalary": 66500,
+        "incomeTax": 5800
+      },
+      {
+        "grossSalary": 100000,
+        "incomeTax": 13170
+      },
+      {
+        "grossSalary": 121800,
+        "incomeTax": 17966
+      }
+    ],
+    "GB": [
+      {
+        "grossSalary": 50270,
+        "incomeTax": 7540
+      },
+      {
+        "grossSalary": 100000,
+        "incomeTax": 27432
+      },
+      {
+        "grossSalary": 110000,
+        "incomeTax": 33432
+      },
+      {
+        "grossSalary": 125140,
+        "incomeTax": 42516
+      },
+      {
+        "grossSalary": 130000,
+        "incomeTax": 44703
+      }
+    ]
+  },
+  "exclusions": [
+    "Other US filing statuses and credits, deductions, AMT, state/local taxes and capital gains",
+    "UK Scottish rates, savings/dividend income, benefits, student loans and personal allowances beyond the standard case",
+    "Taxable-income rounding and annualized payroll deductions",
+    "All 6 other countries and 6 other API modules per country"
+  ],
+  "effect": "No change to preview-only release mode. None of the eight countries is marked fully verified."
+}
