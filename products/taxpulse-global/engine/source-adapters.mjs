@@ -80,7 +80,7 @@ export function extractQuebecBrackets(html){
  return {jurisdiction:'CA-QC',component:'income-tax-bands',candidates:results.sort((a,b)=>b.taxYear.localeCompare(a.taxYear)),status:'candidate',legalStatus:'review_required',automaticActivation:false};
 }
 export function extractCandidate(source,bytes){
- if(source.id==='CA-QC-rate'&&source.url==='https://www.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/')return extractQuebecBrackets(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+ if(source.id==='CA-QC-rate'&&['https://www.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/','https://www-prd.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/'].includes(source.url))return extractQuebecBrackets(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  if(source.id==='US-1'&&source.url==='https://www.ssa.gov/OACT/COLA/cbb.html')return extractSsaWageBase(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  const match=source.url.match(/^https:\/\/www\.gov\.uk\/guidance\/rates-and-thresholds-for-employers-(\d{4})-to-(\d{4})$/);
  if(source.id.startsWith('GB-NI-')&&match&&Number(match[2])===Number(match[1])+1)return extractUkNi(new TextDecoder('utf-8',{fatal:true}).decode(bytes),Number(match[1]));
