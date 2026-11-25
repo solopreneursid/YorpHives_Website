@@ -763,6 +763,98 @@ export const spec = {
           }
         }
       }
+    },
+    "/v1/salary/remainder": {
+      "post": {
+        "operationId": "calculateSalaryRemainder",
+        "description": "Unverified salary remainder, not actual payslip. US Texas single annual wages <=250000 USD; UK ordinary category A employee with 12 identical monthly whole-pound payments <=100000 GBP.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "region",
+                      "taxYear",
+                      "pay",
+                      "scopeConfirmed"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "US"
+                      },
+                      "region": {
+                        "enum": [
+                          "TX"
+                        ]
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "pay": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 250000,
+                        "multipleOf": 0.01
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "region",
+                      "taxYear",
+                      "pay",
+                      "scopeConfirmed"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "GB"
+                      },
+                      "region": {
+                        "enum": [
+                          "SCT",
+                          "RUK"
+                        ]
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "pay": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100000,
+                        "multipleOf": 1
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scoped example after modeled taxes and employee contributions"
+          },
+          "400": {
+            "description": "Unsupported input"
+          }
+        }
+      }
     }
   }
 };

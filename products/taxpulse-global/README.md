@@ -84,3 +84,7 @@ The scoped investment endpoint now accepts assetType for all three jurisdictions
 ## Regional income-tax components
 
 POST /v1/regional/calculate and the local regional form provide three US states (PA, IL, TX), twelve Canadian provincial/territorial basic schedules (Quebec excluded), and Scottish/rest-of-UK ordinary salary income tax including personal allowance taper. US and Canadian results are components before credits and adjustments; the inputs are jurisdiction-specific taxable income, not assumed from federal income. No combined take-home calculation. Receipt replay and source references are included. Production verification flags remain unchanged.
+
+## Scoped salary remainder
+
+The local salary form and POST /v1/salary/remainder calculate modeled annual and average monthly money left after regular income tax plus employee FICA in Texas (single ordinary employee, <= USD 250,000) or category A National Insurance in the UK (12 identical monthly whole-pound payments). Excludes all other deductions and credits and is not actual take-home pay. Uses monthly NI thresholds, regional tax engine and unsigned replay receipts. Fixed duplicate regional-tax DOM ID and added a browser-wide duplicate-ID assertion. See rules/evidence/salary-remainder-2026-review.json. Production remains gated.

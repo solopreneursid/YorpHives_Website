@@ -287,3 +287,39 @@ export function calculateRegionalTax(input){
  const result=cgSlices(0n,taxable,bounds,rates);
  return {...config,taxYear:'2026',taxYearLabel:config.country==='GB'?'6 April 2026 to 5 April 2027':'Calendar year 2026',sampleOnly:true,taxRulesVerified:false,ruleId:config.country+'-'+config.region+'-2026-regional-v1',inputIncome:cgOut(gross),taxableIncome:cgOut(taxable),personalAllowanceApplied:config.country==='GB'?cgOut(personalAllowance):null,brackets:result.rows,regionalTax:cgOut(cgRound(result.total)),sourceUrls:sources,warnings};
 }
+
+
+// Scoped annual salary remainder: ordinary employee wages, no other deductions.
+// UK category A uses actual monthly pay-period thresholds, not annual NI thresholds.
+const PAY_SOURCES={"US":["https://www.irs.gov/irb/2025-45_IRB","https://www.irs.gov/instructions/i941","https://www.irs.gov/taxtopics/tc560","https://www.texas.gov/business-taxes/taxes"],"GB":["https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027","https://www.gov.uk/income-tax-rates"]};
+export function calculateSalaryRemainder(input){
+ const keys=['country','region','taxYear','pay','scopeConfirmed'];
+ if(!input||typeof input!=='object'||Array.isArray(input)||keys.some(k=>!Object.hasOwn(input,k))||Object.keys(input).some(k=>!keys.includes(k))||input.taxYear!=='2026'||input.scopeConfirmed!==true)throw new TypeError('Unsupported salary example');
+ const pay=cgMoney(input.pay);
+ let gross,incomeTax,contributions,currency,period,warnings,payFrequency;
+ if(input.country==='US'&&input.region==='TX'){
+  // Single, under 65, nondependent, nonblind, ordinary wages only.
+  // Restrict to this range until AMT and credit eligibility are modeled.
+  if(pay>25000000n)throw new RangeError('US examples limited to USD 250,000 annual wages');
+  gross=pay;currency='USD';period='Calendar year 2026';payFrequency='annual';
+  const taxable=maxBig(0n,gross-1610000n);
+  incomeTax=cgRound(cgSlices(0n,taxable,US_CG.single.bounds,CG_RATES).total);
+  contributions=[
+   {name:'Social Security',amount:cgOut(cgRound(minBig(gross,18450000n)*620n))},
+   {name:'Medicare',amount:cgOut(cgRound(gross*145n))},
+   {name:'Additional Medicare',amount:cgOut(cgRound(maxBig(0n,gross-20000000n)*90n))}
+  ];
+  warnings=['Texas-only full-year resident employee, single filer, under 65, nonblind and not a dependent; one job, wages only, standard deduction, no credits or other deductions. All pay subject to Social Security and Medicare. Regular federal rate schedule estimate, not tax-table or paycheck withholding. Texas state personal income tax is zero. Excludes AMT, federal credits, health insurance, retirement and all other deductions.'];
+ }else if(input.country==='GB'&&['SCT','RUK'].includes(input.region)){
+  if(pay%100n!==0n||pay>10000000n)throw new RangeError('UK examples require whole pounds of monthly pay up to GBP 100,000');
+  gross=pay*12n;currency='GBP';period='6 April 2026 to 5 April 2027';payFrequency='monthly';
+  const regional=calculateRegionalTax({country:'GB',region:input.region,taxYear:'2026',income:cgOut(gross),scopeConfirmed:true});
+  incomeTax=cgMoney(regional.regionalTax);
+  const monthlyNI=cgRound(maxBig(0n,minBig(pay,418900n)-104800n)*800n+maxBig(0n,pay-418900n)*200n);
+  contributions=[{name:'Employee National Insurance (category A)',amount:cgOut(monthlyNI*12n)}];
+  warnings=['Twelve identical monthly pay periods, ordinary employee category A, not a director, standard personal allowance eligibility, correct UK taxpayer region, no other income or adjustments. Annual income tax estimate plus monthly employee NI. Excludes pensions, student loans, benefits, other deductions and PAYE timing differences.'];
+ }else throw new TypeError('Unsupported salary region');
+ const employeeContributions=contributions.reduce((sum,c)=>sum+cgMoney(c.amount),0n);
+ const total=incomeTax+employeeContributions,remaining=gross-total;
+ return {country:input.country,region:input.region,taxYear:'2026',taxYearLabel:period,currency,payFrequency,inputPay:cgOut(pay),annualGross:cgOut(gross),incomeTax:cgOut(incomeTax),employeeContributions:cgOut(employeeContributions),contributions,totalModeledDeductions:cgOut(total),annualRemainder:cgOut(remaining),averageMonthlyRemainder:cgOut((remaining+6n)/12n),sampleOnly:true,taxRulesVerified:false,ruleId:input.country+'-'+input.region+'-2026-salary-remainder-v1',sourceUrls:PAY_SOURCES[input.country],warnings:[...warnings,'Money left after the modeled taxes and contributions only; not an actual payslip or complete take-home pay.']};
+}

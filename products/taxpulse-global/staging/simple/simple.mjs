@@ -1,6 +1,6 @@
 import { countryCalculate, catalog } from './engine/country.mjs';
 import { compareIncomeScenarios } from './engine/scenarios.mjs';
-import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain, calculateRegionalTax, regionalTaxCatalog } from './engine/taxable-income.mjs';
+import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain, calculateRegionalTax, regionalTaxCatalog, calculateSalaryRemainder } from './engine/taxable-income.mjs';
 import { createReceipt, verifyReceipt } from './engine/proof.mjs';
 import engineFingerprint from './engine/fingerprint.mjs';
 import manifest from './engine/manifest.mjs';
@@ -275,7 +275,7 @@ $('regional-form').addEventListener('submit',event=>{
  const input={country:$('regional-country').value,region:$('regional-region').value,taxYear:'2026',income:$('regional-income').valueAsNumber,scopeConfirmed:$('regional-confirm').value==='yes'};
  const r=calculateRegionalTax(input),f=v=>money(v,r.currency);
  $('regional-tax-label').textContent=r.country==='CA'?'Basic provincial/territorial tax before adjustments':r.country==='GB'?'Income tax under selected UK rates':'State personal income tax before credits';
- $('regional-tax').textContent=f(r.regionalTax);$('regional-taxable').textContent=f(r.taxableIncome);
+ $('regional-tax-amount').textContent=f(r.regionalTax);$('regional-taxable').textContent=f(r.taxableIncome);
  $('regional-breakdown').replaceChildren();
  const rows=[...(r.personalAllowanceApplied===null?[]:[['Personal allowance applied',r.personalAllowanceApplied]]),...r.brackets.map(b=>['Income taxed at '+percent(b.rate),b.taxableGain]),['Tax component',r.regionalTax]];
  for(const [label,value] of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=f(value);$('regional-breakdown').append(dt,dd);}
@@ -286,3 +286,31 @@ $('regional-form').addEventListener('submit',event=>{
 });
 $('regional-download').addEventListener('click',()=>downloadReceipt(lastRegional,$('regional-download'),$('regional-error')));
 regionalCountryChanged();
+
+let lastPay=null;
+const payOptions={TX:{country:'US',label:'Annual wages (USD)',scope:'Texas resident and employee for the full year. Single, under 65, nonblind, not a dependent. One job, wages only, standard deduction, no other deductions or credits. All wages subject to Social Security and Medicare. Up to USD 250,000. No state personal income tax; excludes AMT and other deductions.',max:250000,step:'0.01'},RUK:{country:'GB',label:'Monthly salary (GBP)',scope:'England, Wales or Northern Ireland taxpayer. Twelve equal monthly payments, category A National Insurance, ordinary employee (not director), no other income or reliefs. No pension, student loan or other deductions. Whole pounds only.',max:100000,step:'1'},SCT:{country:'GB',label:'Monthly salary (GBP)',scope:'Scottish taxpayer. Twelve equal monthly payments, category A National Insurance, ordinary employee (not director), no other income or reliefs. No pension, student loan or other deductions. Whole pounds only.',max:100000,step:'1'}};
+function clearPay(){lastPay=null;$('pay-result').hidden=true;$('pay-error').textContent='';}
+function payChanged(){
+ const c=payOptions[$('pay-region').value];
+ $('pay-label').textContent=c.label;$('pay-scope').textContent=c.scope;$('pay-amount').max=c.max;$('pay-amount').step=c.step;
+ $('pay-period').textContent=c.country==='US'?'Calendar year 2026':'6 April 2026 – 5 April 2027';
+ $('pay-amount').value='';$('pay-confirm').value='';clearPay();
+}
+$('pay-region').addEventListener('change',payChanged);
+$('pay-form').addEventListener('input',clearPay);
+$('pay-form').addEventListener('submit',event=>{
+ event.preventDefault();clearPay();
+ try{
+  const region=$('pay-region').value,input={country:payOptions[region].country,region,taxYear:'2026',pay:$('pay-amount').valueAsNumber,scopeConfirmed:$('pay-confirm').value==='yes'};
+  const r=calculateSalaryRemainder(input),f=v=>money(v,r.currency);
+  $('pay-annual').textContent=f(r.annualRemainder);$('pay-monthly').textContent=f(r.averageMonthlyRemainder);$('pay-deductions').textContent=f(r.totalModeledDeductions);
+  $('pay-breakdown').replaceChildren();
+  for(const [label,value] of [['Annual gross wages',r.annualGross],['Annual income tax',r.incomeTax],...r.contributions.map(c=>[c.name,c.amount]),['Annual modeled deductions',r.totalModeledDeductions],['Annual money left',r.annualRemainder]]){
+   const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=f(value);$('pay-breakdown').append(dt,dd);
+  }
+  $('pay-warnings').textContent=r.warnings.join(' ')+' Unverified example only.';
+  lastPay={kind:'salary-remainder',input};$('pay-result').hidden=false;$('pay-result').focus();
+ }catch{$('pay-error').textContent='Check the pay amount and confirm all conditions. This example does not support other employment or tax situations.';}
+});
+$('pay-download').addEventListener('click',()=>downloadReceipt(lastPay,$('pay-download'),$('pay-error')));
+payChanged();
