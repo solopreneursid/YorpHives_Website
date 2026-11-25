@@ -1,3 +1,4 @@
+import {compareCompensation} from './compensation.mjs';
 import {negotiateSalary} from './negotiation.mjs';
 import {compareSalaryOffers} from './salary-offers.mjs';
 import {reverseSalary,automaticReverseSalary} from './reverse-salary.mjs';
@@ -31,6 +32,7 @@ async function hash(value){
  return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
 }
 function calculate(kind,input){
+ if(kind==='compensation')return compareCompensation(input);
  if(kind==='salary-negotiation'){const result=negotiateSalary(input);if(!result.found)throw new RangeError('No salary target found');return result;}
  if(kind==='salary-offers')return compareSalaryOffers(input);
  if(kind==='reverse-salary'){
