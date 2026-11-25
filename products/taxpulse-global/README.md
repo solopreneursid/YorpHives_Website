@@ -88,3 +88,7 @@ POST /v1/regional/calculate and the local regional form provide three US states 
 ## Scoped salary remainder
 
 The local salary form and POST /v1/salary/remainder calculate modeled annual and average monthly money left after regular income tax plus employee FICA in Texas (single ordinary employee, <= USD 250,000) or category A National Insurance in the UK (12 identical monthly whole-pound payments). Excludes all other deductions and credits and is not actual take-home pay. Uses monthly NI thresholds, regional tax engine and unsigned replay receipts. Fixed duplicate regional-tax DOM ID and added a browser-wide duplicate-ID assertion. See rules/evidence/salary-remainder-2026-review.json. Production remains gated.
+
+## Additional employee contribution examples
+
+POST /v1/contributions/calculate and the local form support scoped Canadian CPP/CPP2/EI annual estimates, Australian full-rate Medicare levy, an Indian 12% confirmed-wage EPF illustration, and Singapore CPF full-rate monthly ordinary wages above SGD 750. The Australian levy is an assessment component, not payroll withholding. All eligibility is caller-confirmed; no complete take-home amount or automatic legal eligibility determination. See rules/evidence/contributions-2026-review.json.

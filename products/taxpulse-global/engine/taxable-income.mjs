@@ -323,3 +323,47 @@ export function calculateSalaryRemainder(input){
  const total=incomeTax+employeeContributions,remaining=gross-total;
  return {country:input.country,region:input.region,taxYear:'2026',taxYearLabel:period,currency,payFrequency,inputPay:cgOut(pay),annualGross:cgOut(gross),incomeTax:cgOut(incomeTax),employeeContributions:cgOut(employeeContributions),contributions,totalModeledDeductions:cgOut(total),annualRemainder:cgOut(remaining),averageMonthlyRemainder:cgOut((remaining+6n)/12n),sampleOnly:true,taxRulesVerified:false,ruleId:input.country+'-'+input.region+'-2026-salary-remainder-v1',sourceUrls:PAY_SOURCES[input.country],warnings:[...warnings,'Money left after the modeled taxes and contributions only; not an actual payslip or complete take-home pay.']};
 }
+
+
+// Contribution components only. Eligibility and wage bases are explicit caller assertions.
+const CONTRIBUTION_SOURCES={"CA":["https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/payroll-deductions-contributions/canada-pension-plan-cpp/cpp-contribution-rates-maximums.html","https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4032-payroll-deductions-tables/t4032oc-jan/t4032oc-january-general-information.html","https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/payroll-deductions-contributions/employment-insurance-ei/ei-premium-rates-maximums.html"],"AU":["https://www.ato.gov.au/tax-and-super-professionals/for-tax-professionals/prepare-and-lodge/tax-time/before-you-lodge/medicare-levy"],"IN":["https://unifiedportal-emp.epfindia.gov.in/epfo/"],"SG":["https://www.cpf.gov.sg/employer/employer-obligations/how-much-cpf-contributions-to-pay","https://www.cpf.gov.sg/service/article/what-is-the-ordinary-wage-ow-ceiling"]};
+const CPF_RATES=Object.freeze({'55-or-under':[2000,3700],'56-60':[1800,3400],'61-65':[1250,2500],'66-70':[750,1650],'over-70':[500,1250]});
+export function calculateEmployeeContributions(input){
+ const required=['country','taxYear','income','scopeConfirmed'];
+ if(!input||typeof input!=='object'||Array.isArray(input)||required.some(k=>!Object.hasOwn(input,k))||input.taxYear!=='2026'||input.scopeConfirmed!==true||!Object.hasOwn(CONTRIBUTION_SOURCES,input.country))throw new TypeError('Unsupported contribution example');
+ const country=input.country,keys=[...required,...(country==='SG'?['ageBand']:[])];
+ if(Object.keys(input).some(k=>!keys.includes(k))||keys.some(k=>!Object.hasOwn(input,k)))throw new TypeError('Unsupported fields');
+ const income=cgMoney(input.income);
+ let currency,period,frequency,basis,components,warnings,employerContribution=null,subjectIncome=null;
+ const component=(name,amount)=>({name,amount:cgOut(amount)});
+ if(country==='CA'){
+  currency='CAD';period='Calendar year 2026';frequency='annual';basis='pensionable-and-insurable-earnings';
+  const cpp=cgRound(maxBig(0n,minBig(income,7460000n)-350000n)*595n);
+  const cpp2=cgRound(maxBig(0n,minBig(income,8500000n)-7460000n)*400n);
+  const ei=cgRound(minBig(income,6890000n)*163n);
+  components=[component('CPP',cpp),component('CPP2',cpp2),component('Employment Insurance',ei)];
+  warnings=['Full-year ordinary employee outside Quebec, age 18–64 throughout the year, one employer, all earnings both pensionable and insurable, full basic exemption. Annual estimate; actual pay-period rounding and payroll deductions may differ. Excludes income tax and QPP/QPIP.'];
+ }else if(country==='AU'){
+  currency='AUD';period='FY 2026–27 (1 July 2026 to 30 June 2027)';frequency='annual';basis='taxable-income';
+  // Do not infer eligibility for the full levy. No future threshold extrapolation.
+  if(income<10000000n)throw new RangeError('Full-rate example requires taxable income of at least AUD 100,000');
+  components=[component('Medicare levy (full 2% rate)',cgRound(income*200n))];
+  warnings=['Full-year Australian resident with confirmed full-rate 2% Medicare levy liability, no exemption or reduction. This is an income-tax assessment component, not a separate payroll withholding calculation. Excludes Medicare levy surcharge, income tax, superannuation and other obligations.'];
+ }else if(country==='IN'){
+  currency='INR';period='Illustrative 2026 monthly contribution';frequency='monthly';basis='confirmed-epf-contribution-wage';
+  if(income%100n!==0n||income>1500000n)throw new RangeError('Enter the confirmed whole-rupee EPF contribution wage, up to INR 15,000');
+  components=[component('Employee EPF (12% example)',((income*12n+5000n)/10000n)*100n)];
+  subjectIncome=cgOut(income);
+  warnings=['Only employees with a confirmed applicable 12% EPF rate and an actual EPF contribution wage no greater than INR 15,000. Enter that wage, not gross pay; the engine does not determine the legal wage base, membership, wage ceiling eligibility or current labour-code treatment. No voluntary/higher-wage contributions, employer allocation, ESI, professional tax or income tax.'];
+ }else{
+  currency='SGD';period='Calendar year 2026';frequency='monthly';basis='ordinary-monthly-wages';
+  if(!Object.hasOwn(CPF_RATES,input.ageBand)||income<=75000n)throw new RangeError('Only full-rate age bands and monthly wages above SGD 750 are supported');
+  const [employeeRate,totalRate]=CPF_RATES[input.ageBand],wage=minBig(income,800000n);
+  // Employee contribution floor to whole dollars; total nearest dollar; employer residual.
+  const employee=wage*BigInt(employeeRate)/1000000n*100n;
+  const total=(wage*BigInt(totalRate)+500000n)/1000000n*100n;
+  components=[component('Employee CPF',employee)];employerContribution=cgOut(total-employee);subjectIncome=cgOut(wage);
+  warnings=['Singapore citizen or third-year-or-later permanent resident on full rates; ordinary monthly wages above SGD 750 only, no additional wages, one employer. Select the applicable contribution age band for the month; rate changes apply from the month after the relevant birthday. No first/second-year PR graduated rates, annual additional-wage ceiling calculation or income tax.'];
+ }
+ return {country,taxYear:'2026',taxYearLabel:period,currency,frequency,inputBasis:basis,inputIncome:cgOut(income),contributionWage:subjectIncome,components,totalEmployeeContribution:cgOut(components.reduce((sum,c)=>sum+cgMoney(c.amount),0n)),employerContribution,sampleOnly:true,taxRulesVerified:false,ruleId:country+'-2026-contributions-v1',sourceUrls:[...CONTRIBUTION_SOURCES[country]],warnings:[...warnings,'Contribution component only, not a complete take-home estimate.']};
+}

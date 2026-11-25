@@ -1,0 +1,14 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {calculateEmployeeContributions as calc} from '../engine/taxable-income.mjs';
+import {createReceipt,verifyReceipt} from '../engine/proof.mjs';
+const input=(country,income,extra={})=>({country,taxYear:'2026',income,scopeConfirmed:true,...extra});
+const c=(country,income,extra={})=>calc(input(country,income,extra));
+test('Canada 2026 annual maxima',()=>{const r=c('CA',100000);assert.deepEqual(r.components.map(x=>x.amount),[4230.45,416,1123.07]);assert.equal(r.totalEmployeeContribution,5769.52);});
+test('Canada basic exemption and second tier',()=>{assert.equal(c('CA',3500).components[0].amount,0);assert.equal(c('CA',74600).components[1].amount,0);assert.equal(c('CA',75600).components[1].amount,40);assert.equal(c('CA',0).totalEmployeeContribution,0);});
+test('Australia full rate only, not surcharge',()=>{assert.equal(c('AU',100000).totalEmployeeContribution,2000);assert.equal(c('AU',150000).totalEmployeeContribution,3000);assert.throws(()=>c('AU',99999));});
+test('India confirmed contribution wage and nearest rupee',()=>{assert.equal(c('IN',15000).totalEmployeeContribution,1800);assert.equal(c('IN',12346).totalEmployeeContribution,1482);assert.throws(()=>c('IN',15001));assert.throws(()=>c('IN',100.01));});
+for(const [ageBand,employee,employer] of [['55-or-under',1600,1360],['56-60',1440,1280],['61-65',1000,1000],['66-70',600,720],['over-70',400,600]])test('Singapore cap '+ageBand,()=>{const r=c('SG',9000,{ageBand});assert.equal(r.contributionWage,8000);assert.equal(r.totalEmployeeContribution,employee);assert.equal(r.employerContribution,employer);});
+test('Singapore statutory rounding',()=>{const r=c('SG',1003,{ageBand:'55-or-under'});assert.equal(r.totalEmployeeContribution,200);assert.equal(r.employerContribution,171);assert.throws(()=>c('SG',750,{ageBand:'55-or-under'}));});
+test('invalid eligibility and unsupported fields fail closed',()=>{for(const v of [input('CA',-1),input('CA',1.001),input('CA',100,{scopeConfirmed:false}),input('CA',100,{province:'QC'}),input('SG',1000),input('SG',1000,{ageBand:'bad'}),input('IN',NaN),input('US',1000)])assert.throws(()=>calc(v));});
+test('receipt replay',async()=>{const engineFingerprint='a'.repeat(64);const r=await createReceipt({kind:'employee-contributions',input:input('SG',9000,{ageBand:'55-or-under'}),engineFingerprint});assert.deepEqual(await verifyReceipt(r,engineFingerprint),{integrity:true,sameEngine:true,reproduced:true});});

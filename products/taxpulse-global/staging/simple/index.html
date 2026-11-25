@@ -95,6 +95,15 @@
 <p id="pay-error" class="error" role="alert"></p>
 <div id="pay-result" hidden tabindex="-1" aria-live="polite"><h3>Money left after modeled deductions</h3><div class="results"><div><span>Per year</span><strong id="pay-annual"></strong></div><div><span>Average per month</span><strong id="pay-monthly"></strong></div><div><span>Annual taxes and contributions</span><strong id="pay-deductions"></strong></div></div>
 <details><summary>See each deduction</summary><dl id="pay-breakdown" class="breakdown"></dl></details><p id="pay-warnings" class="notice"></p><button type="button" class="secondary" id="pay-download">Download salary remainder report</button></div></section>
+<section id="employee-contributions" class="card" aria-labelledby="contrib-title">
+<h2 id="contrib-title">Employee contributions and levies</h2><p>Estimate selected deductions or levies separately from income tax. Use made-up examples only.</p>
+<form id="contrib-form"><div class="fields">
+<label for="contrib-country">Country<select id="contrib-country"><option value="CA">Canada — CPP and EI</option><option value="AU">Australia — Medicare levy</option><option value="IN">India — EPF</option><option value="SG">Singapore — CPF</option></select></label>
+<div><span class="field-label">Tax period</span><p id="contrib-period" class="field-value"></p></div>
+<label for="contrib-income"><span id="contrib-label"></span><input id="contrib-income" type="number" min="0" max="1000000000" step=".01" required inputmode="decimal"></label>
+<label id="contrib-age-field" for="contrib-age" hidden>Applicable CPF contribution age band<select id="contrib-age" required disabled><option value="">Choose age band</option><option value="55-or-under">55 or below</option><option value="56-60">Above 55 to 60</option><option value="61-65">Above 60 to 65</option><option value="66-70">Above 65 to 70</option><option value="over-70">Above 70</option></select></label>
+</div><p class="notice" id="contrib-scope"></p><label for="contrib-confirm">Does the example meet all these conditions?<select id="contrib-confirm" required><option value="">Choose an answer</option><option value="yes">Yes</option><option value="no">No</option></select></label><button class="primary" type="submit">Calculate contribution example</button></form><p id="contrib-error" role="alert" class="error"></p>
+<div id="contrib-result" hidden tabindex="-1" aria-live="polite"><h3>Estimated employee amount</h3><div class="results"><div><span id="contrib-frequency"></span><strong id="contrib-total"></strong></div></div><dl id="contrib-breakdown" class="breakdown"></dl><p id="contrib-warnings" class="notice"></p><button class="secondary" type="button" id="contrib-download">Download contribution report</button></div></section>
 <section id="regional-tax" class="card" aria-labelledby="regional-title">
 <h2 id="regional-title">Tax in your state or region</h2>
 <p>Try example regional income tax in selected US states, Canadian provinces and territories, or the UK. These results are separate from federal and payroll taxes.</p>

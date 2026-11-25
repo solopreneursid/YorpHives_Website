@@ -855,6 +855,150 @@ export const spec = {
           }
         }
       }
+    },
+    "/v1/contributions/calculate": {
+      "post": {
+        "operationId": "calculateEmployeeContributions",
+        "description": "Unverified scoped contribution components only; eligibility must be confirmed. Not complete take-home pay.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "taxYear",
+                      "income",
+                      "scopeConfirmed"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "CA"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "income": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "taxYear",
+                      "income",
+                      "scopeConfirmed"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "AU"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "income": {
+                        "type": "number",
+                        "minimum": 100000,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "taxYear",
+                      "income",
+                      "scopeConfirmed"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "IN"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "income": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 15000,
+                        "multipleOf": 1
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "taxYear",
+                      "income",
+                      "scopeConfirmed",
+                      "ageBand"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "SG"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "income": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01,
+                        "exclusiveMinimum": 750
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      },
+                      "ageBand": {
+                        "enum": [
+                          "55-or-under",
+                          "56-60",
+                          "61-65",
+                          "66-70",
+                          "over-70"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unverified contribution example"
+          },
+          "400": {
+            "description": "Unsupported input"
+          }
+        }
+      }
     }
   }
 };

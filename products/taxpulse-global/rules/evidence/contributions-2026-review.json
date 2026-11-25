@@ -1,0 +1,24 @@
+{
+  "reviewDate": "2026-11-25",
+  "status": "limited-preview-only",
+  "productionEnabled": false,
+  "sources": {
+    "CA": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/payroll-deductions-contributions/canada-pension-plan-cpp/cpp-contribution-rates-maximums.html",
+      "https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4032-payroll-deductions-tables/t4032oc-jan/t4032oc-january-general-information.html",
+      "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/payroll-deductions-contributions/employment-insurance-ei/ei-premium-rates-maximums.html"
+    ],
+    "AU": [
+      "https://www.ato.gov.au/tax-and-super-professionals/for-tax-professionals/prepare-and-lodge/tax-time/before-you-lodge/medicare-levy"
+    ],
+    "IN": [
+      "https://unifiedportal-emp.epfindia.gov.in/epfo/"
+    ],
+    "SG": [
+      "https://www.cpf.gov.sg/employer/employer-obligations/how-much-cpf-contributions-to-pay",
+      "https://www.cpf.gov.sg/service/article/what-is-the-ordinary-wage-ow-ceiling"
+    ]
+  },
+  "scope": "Canada annual CPP, CPP2 and EI outside Quebec; Australian full 2% levy only; India explicitly confirmed 12% rate and contribution wage up to INR 15000 (illustrative, current labor-code applicability not independently verified); Singapore full-rate ordinary monthly wages above SGD 750 and age bands.",
+  "limitations": "No official calculator differential tests or independent statutory approval. AU low-income reductions and surcharge, Indian legal wage-base determination/professional tax, SG lower wages/additional wages and graduated PR rates, Quebec payroll and integrated take-home excluded."
+}

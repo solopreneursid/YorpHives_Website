@@ -1,6 +1,6 @@
 import { countryCalculate, catalog } from './engine/country.mjs';
 import { compareIncomeScenarios } from './engine/scenarios.mjs';
-import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain, calculateRegionalTax, regionalTaxCatalog, calculateSalaryRemainder } from './engine/taxable-income.mjs';
+import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain, calculateRegionalTax, regionalTaxCatalog, calculateSalaryRemainder, calculateEmployeeContributions } from './engine/taxable-income.mjs';
 import { createReceipt, verifyReceipt } from './engine/proof.mjs';
 import engineFingerprint from './engine/fingerprint.mjs';
 import manifest from './engine/manifest.mjs';
@@ -314,3 +314,35 @@ $('pay-form').addEventListener('submit',event=>{
 });
 $('pay-download').addEventListener('click',()=>downloadReceipt(lastPay,$('pay-download'),$('pay-error')));
 payChanged();
+
+const contributionOptions={
+ CA:{label:'Annual pensionable and insurable earnings (CAD)',scope:'Full-year employee outside Quebec, aged 18–64 throughout the year, one employer. All earnings subject to CPP and EI; full annual basic exemption.',max:1000000000,step:'.01',period:'Calendar year 2026'},
+ AU:{label:'Annual taxable income (AUD)',scope:'Full-year Australian resident who already knows the full 2% Medicare levy applies, no exemption or reduction. Only taxable income of AUD 100,000 or more. This excludes Medicare levy surcharge.',max:1000000000,step:'.01',period:'FY 2026–27'},
+ IN:{label:'Confirmed monthly EPF contribution wage (INR)',scope:'Use only if the applicable employee EPF rate is confirmed as 12% and the actual EPF contribution wage is INR 15,000 or less. Do not enter gross salary. No higher-wage or voluntary contributions, ESI or professional tax.',max:15000,step:'1',period:'Illustrative monthly 2026'},
+ SG:{label:'Ordinary monthly wages (SGD)',scope:'Singapore citizen or permanent resident from the third year on full rates. One employer, ordinary wages above SGD 750, no additional wages. Select the applicable contribution age band for the month; changes begin the month after the relevant birthday.',max:1000000000,step:'.01',period:'Calendar year 2026'}
+};
+let lastContribution=null;
+function clearContribution(){lastContribution=null;$('contrib-result').hidden=true;$('contrib-error').textContent='';}
+function contributionChanged(){
+ const country=$('contrib-country').value,c=contributionOptions[country];
+ $('contrib-label').textContent=c.label;$('contrib-scope').textContent=c.scope;$('contrib-period').textContent=c.period;$('contrib-income').max=c.max;$('contrib-income').step=c.step;
+ $('contrib-age-field').hidden=country!=='SG';$('contrib-age').disabled=country!=='SG';$('contrib-age').value='';
+ $('contrib-income').value='';$('contrib-confirm').value='';clearContribution();
+}
+$('contrib-country').addEventListener('change',contributionChanged);
+$('contrib-form').addEventListener('input',clearContribution);
+$('contrib-form').addEventListener('submit',event=>{
+ event.preventDefault();clearContribution();
+ try{
+  const country=$('contrib-country').value,input={country,taxYear:'2026',income:$('contrib-income').valueAsNumber,scopeConfirmed:$('contrib-confirm').value==='yes',...(country==='SG'?{ageBand:$('contrib-age').value}:{})};
+  const r=calculateEmployeeContributions(input),f=v=>money(v,r.currency);
+  $('contrib-total').textContent=f(r.totalEmployeeContribution);$('contrib-frequency').textContent=r.frequency==='annual'?'Per year':'Per month';
+  $('contrib-breakdown').replaceChildren();
+  const rows=[...r.components.map(c=>[c.name,c.amount]),...(r.contributionWage===null?[]:[['Contribution wage',r.contributionWage]]),...(r.employerContribution===null?[]:[['Employer contribution (not deducted from pay)',r.employerContribution]])];
+  for(const [label,value] of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=f(value);$('contrib-breakdown').append(dt,dd);}
+  $('contrib-warnings').textContent=r.warnings.join(' ')+' Unverified example only.';
+  lastContribution={kind:'employee-contributions',input};$('contrib-result').hidden=false;$('contrib-result').focus();
+ }catch{$('contrib-error').textContent='Check the amount and confirm all conditions. This example does not cover other contribution rates or situations.';}
+});
+$('contrib-download').addEventListener('click',()=>downloadReceipt(lastContribution,$('contrib-download'),$('contrib-error')));
+contributionChanged();
