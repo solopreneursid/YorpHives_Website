@@ -3012,7 +3012,7 @@
         const netUsdEach = convertBetweenCurrencies(pit.netTakeHomeAnnual, cRule.currency.code, 'USD');
         const eorAnnualUsdEach = 599 * 12; // Standard EOR benchmark
 
-        const rowTotalUsd = (grossUsdEach + erUsdEach + eorAnnualUsdEach) * row.headcount;
+        const rowTotalUsd = TaxPulseAdvanced.calculate({module:'team_planner',parameters:{roles:[{headcount:Math.min(10000,Math.max(1,Math.trunc(row.headcount))),annualSalary:Math.min(grossUsdEach,1e9),annualEmployerCosts:Math.min(erUsdEach,1e9),monthlyServiceFee:eorAnnualUsdEach/12,reportingCurrencyRate:1}]}}).result.annualCost;
         totalHeadcount += row.headcount;
         totalAnnualUsd += rowTotalUsd;
         totalOverheadUsd += (erUsdEach + eorAnnualUsdEach) * row.headcount;
@@ -3022,7 +3022,7 @@
         return `
           <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
             <td class="py-2.5 px-4">
-              <div class="font-bold text-slate-900 dark:text-white">${row.title}</div>
+              <div class="font-bold text-slate-900 dark:text-white">${String(row.title).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</div>
               <div class="text-[11px] text-slate-500">${cRule.flag} ${cRule.name} (${cRule.currency.code})</div>
             </td>
             <td class="py-2.5 px-3 text-right font-mono-num font-bold">${row.headcount}x</td>
@@ -3054,9 +3054,7 @@
       document.getElementById('teamMonthlyBurnVal').textContent = `${formatCurrency(monthlyUsd, 'USD')} / mo`;
       document.getElementById('teamMonthlyBurnInrSub').textContent = `${formatCurrency(monthlyInr, 'INR')} / month`;
       document.getElementById('teamAnnualOverheadVal').textContent = `${formatCurrency(totalOverheadUsd, 'USD')} / yr`;
-      document.getElementById('teamEorBreakEvenSub').textContent = totalHeadcount >= 4
-        ? 'Local Entity cheaper than EOR at >= 4 staff'
-        : 'EOR recommended for < 4 staff per country';
+      document.getElementById('teamEorBreakEvenSub').textContent = 'Illustrative EOR fee; compare actual provider and entity costs';
       document.getElementById('teamAnnualTotalBudgetVal').textContent = `${formatCurrency(totalAnnualUsd, 'USD')} / yr`;
       document.getElementById('teamNetToTalentRatioSub').textContent = `Talent takes home ${netRatio.toFixed(1)}% of total spend`;
     }
@@ -4596,25 +4594,11 @@ X-MCP-Tool-Target: "calculate_personal_tax"`;
       const mitAction = document.getElementById('peMitigationActionVal');
       const mitSub = document.getElementById('peMitigationSub');
 
-      if (peScore >= 65) {
-        scoreEl.textContent = `${peScore} / 100 (HIGH PE RISK)`;
-        scoreEl.className = 'text-2xl font-mono-num font-extrabold text-rose-600 dark:text-rose-400 mt-1';
-        levelBadge.textContent = 'Triggers OECD Dependent Agent / Fixed Place PE';
-        mitAction.textContent = 'Incorporate Local Cost-Plus Subsidiary';
-        mitSub.textContent = `Use Tab 24 (15.5% Cost-Plus Safe Harbour) to ring-fence ${countryRule.name} tax`;
-      } else if (peScore >= 35) {
-        scoreEl.textContent = `${peScore} / 100 (Moderate Risk)`;
-        scoreEl.className = 'text-2xl font-mono-num font-extrabold text-amber-600 dark:text-amber-400 mt-1';
-        levelBadge.textContent = 'Borderline OECD 50% Working-Time / Commercial Test';
-        mitAction.textContent = 'Hire via Global EOR & Restrict Signing Power';
-        mitSub.textContent = 'Ensure all client contracts are signed exclusively by parent entity';
-      } else {
-        scoreEl.textContent = `${peScore} / 100 (Low / Safe)`;
-        scoreEl.className = 'text-2xl font-mono-num font-extrabold text-emerald-600 dark:text-emerald-400 mt-1';
-        levelBadge.textContent = 'Preparatory / Auxiliary Back-Office Safe Zone';
-        mitAction.textContent = 'Standard Contractor or Direct Remote OK';
-        mitSub.textContent = 'Maintain <50% host-country days and voluntary home office';
-      }
+      const peReview = TaxPulseAdvanced.calculate({module:'pe_risk',parameters:{fixedPlace:s4>0,contractAuthority:s2>0,localEmployees:s3>0,longDuration:s1>0,dependentAgent:false}}).result;
+      scoreEl.textContent = peReview.reviewSuggested ? 'Review suggested' : 'No selected flags';
+      levelBadge.textContent = 'Illustrative screening only; no legal determination';
+      mitAction.textContent = 'Review applicable treaty and local law';
+      mitSub.textContent = 'No score can establish a safe harbor or remove tax obligations.';
       document.getElementById('peHostCorpRateVal').textContent = `${hostCorpRate.toFixed(2)}% (${countryRule.name})`;
 
       // 3. Module 24: Global Subsidiary Cost-Plus Transfer Pricing Simulator
@@ -4623,8 +4607,9 @@ X-MCP-Tool-Target: "calculate_personal_tax"`;
       const subCostUsd = Math.max(0, parseFloat(document.getElementById('tpSubCostUsdInput')?.value) || 400000);
       const markupPct = Math.max(0, parseFloat(document.getElementById('tpCostPlusMarkupInput')?.value) || 15.5) / 100;
 
-      const subMarginUsd = subCostUsd * markupPct;
-      const transferInvoiceUsd = subCostUsd + subMarginUsd;
+      const transferScenario = TaxPulseAdvanced.calculate({module:'transfer_pricing',parameters:{cost:Math.min(subCostUsd,1e9),markup:Math.min(markupPct,1)}}).result;
+      const subMarginUsd = transferScenario.markupAmount;
+      const transferInvoiceUsd = transferScenario.invoiceAmount;
       const subCorpTaxRate = 0.25168; // India Sec 115BAA 25.17%
       const subCorpTaxUsd = subMarginUsd * subCorpTaxRate;
 
@@ -4658,28 +4643,28 @@ X-MCP-Tool-Target: "calculate_personal_tax"`;
           name: '1. Traditional SWIFT Bank Wire',
           feeUsd: txCount * 35,
           fxSpreadPct: 0.032,
-          badge: 'High Leakage',
+          badge: 'Sample fee',
           color: 'rose'
         },
         {
           name: '2. PayPal / Legacy Card Rail',
           feeUsd: txCount * 5,
           fxSpreadPct: 0.045,
-          badge: 'Highest Cost',
+          badge: 'Sample fee',
           color: 'rose'
         },
         {
           name: '3. Wise / Mid-Market FinTech',
           feeUsd: sendUsd * 0.0048,
           fxSpreadPct: 0.00,
-          badge: 'Best Fiat Rail',
+          badge: 'Sample fee',
           color: 'emerald'
         },
         {
           name: '4. x402 / USDC Stablecoin Rail',
           feeUsd: txCount * 0.05,
           fxSpreadPct: 0.0015,
-          badge: 'Lowest Friction',
+          badge: 'Sample fee',
           color: 'indigo'
         }
       ];
@@ -4687,9 +4672,7 @@ X-MCP-Tool-Target: "calculate_personal_tax"`;
       const fxGrid = document.getElementById('fxRailsComparisonGrid');
       if (fxGrid) {
         fxGrid.innerHTML = rails.map(r => {
-          const afterFeeUsd = Math.max(0, sendUsd - r.feeUsd);
-          const effectiveUsd = afterFeeUsd * (1 - r.fxSpreadPct);
-          const receivedLocal = effectiveUsd * midRate;
+          const receivedLocal = TaxPulseAdvanced.calculate({module:'fx_payout',parameters:{amount:Math.min(sendUsd,1e9),options:[{fixedFee:Math.min(r.feeUsd,sendUsd,1e9),exchangeRate:midRate*(1-r.fxSpreadPct)}]}}).result.options[0].recipientAmount;
           const lostLocal = Math.max(0, idealLocal - receivedLocal);
           return `
             <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-2">
@@ -4701,7 +4684,7 @@ X-MCP-Tool-Target: "calculate_personal_tax"`;
                 <div class="text-lg font-mono-num font-extrabold text-slate-900 dark:text-white mt-1.5">
                   ${formatCurrency(receivedLocal, destCurr)}
                 </div>
-                <div class="text-[11px] text-slate-500">Net landed in ${destCurr} bank account</div>
+                <div class="text-[11px] text-slate-500">Illustrative receipt in ${destCurr}</div>
               </div>
               <div class="pt-2 border-t border-slate-200/70 dark:border-slate-700 text-[11px] font-mono-num text-rose-600 dark:text-rose-400">
                 Hidden FX + Fee Loss: −${formatCurrency(lostLocal, destCurr)}/yr
@@ -5813,7 +5796,8 @@ GST/LUT eligibility and actual tax treatment require independent verification.`;
       const lopDeduction = (baseMoGross / calDays) * lopDays;
       const proratedFactor = (calDays - lopDays) / calDays;
       const moTaxAndPf = ((baseCalc.finalIncomeTax + baseCalc.totalSocialSecurity) / 12) * proratedFactor;
-      const finalMoNet = Math.max(0, baseMoGross - lopDeduction + moBonus - moTaxAndPf);
+      const payrollScenario = TaxPulseAdvanced.calculate({module:'payroll_hra_generator',parameters:{monthlyGross:Math.min(baseMoGross,1e9),workingDays:Math.trunc(calDays),unpaidDays:Math.min(Math.trunc(calDays),Math.trunc(lopDays)),deductions:Math.min(moTaxAndPf,baseMoGross*(Math.trunc(calDays)-Math.min(Math.trunc(calDays),Math.trunc(lopDays)))/Math.trunc(calDays))}}).result;
+      const finalMoNet = payrollScenario.netPay + moBonus;
 
       document.getElementById('prBaseMoGrossVal').textContent = formatActiveDisplay(baseMoGross, cRule);
       document.getElementById('prLopCountLabel').textContent = String(lopDays);
@@ -5829,24 +5813,7 @@ GST/LUT eligibility and actual tax treatment require independent verification.`;
       const moRent = Math.max(0, parseFloat(document.getElementById('ctcMonthlyRentInput')?.value) || 30000);
 
       const monthsList = ['Apr 2026', 'May 2026', 'Jun 2026', 'Jul 2026', 'Aug 2026', 'Sep 2026', 'Oct 2026', 'Nov 2026', 'Dec 2026', 'Jan 2027', 'Feb 2027', 'Mar 2027'];
-      const receiptsText = `======================================================================
-12-MONTH CONSOLIDATED HOUSE RENT ALLOWANCE (HRA) RECEIPT STATEMENT
-======================================================================
-Tenant / Employee Name : [Your Name]
-Landlord Full Name     : ${landlordName}
-Landlord PAN / Tax ID  : ${landlordPan} ${moRent * 12 > 100000 ? '(Mandatory PAN Verified > ₹1L/yr)' : ''}
-Rented Premises Address: ${propAddr}
-Monthly Rent Amount    : ${formatCurrency(moRent, cRule.currency.code)} / month (${formatCurrency(moRent * 12, cRule.currency.code)} / year)
-----------------------------------------------------------------------
-Receipt No.   Period       Rent Paid            Landlord Signature
-----------------------------------------------------------------------
-` + monthsList.map((m, i) => `HRA-2026-${String(i + 1).padStart(2, '0')}   ${m.padEnd(10)}   ${formatCurrency(moRent, cRule.currency.code).padEnd(18)}   [Signed: ${landlordName}]`).join('\n') + `
-----------------------------------------------------------------------
-DECLARATION & REVENUE STAMP ACKNOWLEDGMENT:
-Received with thanks a total sum of ${formatCurrency(moRent * 12, cRule.currency.code)} towards residential rent
-for FY 2026-27. [Affix ₹1 Revenue Stamp if paid in cash]
-======================================================================`;
-
+      const receiptsText = 'UNSIGNED RENT PLANNING SUMMARY — NOT PROOF OF PAYMENT\n' + monthsList.map(m => m + ': ' + formatCurrency(moRent,cRule.currency.code)).join('\n') + '\nObtain genuine receipts and landlord confirmation separately.';
       const hraPre = document.getElementById('hraRentReceiptsPre');
       if (hraPre) hraPre.textContent = receiptsText;
 
