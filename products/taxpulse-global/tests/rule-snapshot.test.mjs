@@ -6,13 +6,14 @@ import {snapshotBytes,verifyRuleSnapshot} from '../engine/rule-snapshot.mjs';
 import {loadRuntimeRules} from '../engine/runtime-rules.mjs';
 import {createReceipt,verifyReceipt} from '../engine/proof.mjs';
 import {calculateRegionalTax,compareIndiaRegimes,calculateSalaryRemainder} from '../engine/taxable-income.mjs';
+const payroll=JSON.parse(readFileSync(new URL('../rules/payroll-versions.json',import.meta.url)));
 const regional=JSON.parse(readFileSync(new URL('../rules/regional-versions.json',import.meta.url)));
 const indiaSalary=JSON.parse(readFileSync(new URL('../rules/india-salary-versions.json',import.meta.url)));
 const hex=b=>Buffer.from(b).toString('hex');
 const engineFingerprint='a'.repeat(64),now=new Date('2026-11-25T12:00:00.000Z');
 const keys=await webcrypto.subtle.generateKey('Ed25519',true,['sign','verify']);
 const publicKeyHex=hex(await webcrypto.subtle.exportKey('raw',keys.publicKey));
-function payload(){return {schemaVersion:1,sequence:1,engineFingerprint,issuedAt:'2026-11-25T00:00:00.000Z',expiresAt:'2026-11-30T00:00:00.000Z',mode:'preview',regional:structuredClone(regional),indiaSalary:structuredClone(indiaSalary),evidence:[...regional.versions,...indiaSalary.versions].map(r=>({version:r.version,sourceUrl:r.sourceUrls[0],sourceDigest:'b'.repeat(64),reviewedAt:'2026-11-24T00:00:00.000Z',fixtureDigest:'c'.repeat(64)}))};}
+function payload(){return {schemaVersion:1,sequence:1,engineFingerprint,issuedAt:'2026-11-25T00:00:00.000Z',expiresAt:'2026-11-30T00:00:00.000Z',mode:'preview',regional:structuredClone(regional),indiaSalary:structuredClone(indiaSalary),payroll:structuredClone(payroll),evidence:[...regional.versions,...indiaSalary.versions,...payroll.versions].map(r=>({version:r.version,sourceUrl:r.sourceUrls[0],sourceDigest:'b'.repeat(64),reviewedAt:'2026-11-24T00:00:00.000Z',fixtureDigest:'c'.repeat(64)}))};}
 async function sign(p){const bytes=snapshotBytes(p);return {payload:p,digest:hex(await webcrypto.subtle.digest('SHA-256',bytes)),signature:hex(await webcrypto.subtle.sign('Ed25519',keys.privateKey,bytes))};}
 const options={publicKeyHex,engineFingerprint,now};
 test('signed snapshot drives actual calculation without code changes',async()=>{const p=payload();const il=p.regional.versions.find(r=>r.jurisdiction==='US-IL');il.rates=[500];const envelope=await sign(p),snapshot=await verifyRuleSnapshot(envelope,options);assert.equal(calculateRegionalTax({country:'US',region:'IL',taxYear:'2026',income:100000,scopeConfirmed:true},snapshot.regional).regionalTax,5000);assert.equal(snapshot.taxRulesVerified,false);});
