@@ -1,0 +1,26 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+import vm from 'node:vm';
+const root=new URL('../',import.meta.url);
+const read=p=>readFileSync(new URL(p,root),'utf8');
+test('integrated frontend builds from canonical sources and preserves original logic',()=>{
+ execFileSync(process.execPath,[new URL('staging/integrated/build.mjs',root).pathname]);
+ const original=read('staging/assets/script-3.js');
+ const i=original.indexOf('const TaxEnginePrimitives ='),j=original.indexOf('const COUNTRY_TAX_CONFIGS ='),k=original.indexOf('// Fallback synthesizer',j);
+ assert.ok(i>0&&j>i&&k>j);
+ const engine=read('staging/integrated/generated/primitives.js');
+ const rules=read('staging/integrated/generated/country-rules.js');
+ const app=read('staging/integrated/application.js');
+ assert.equal(engine.trim(),original.slice(i,j).trim());
+ assert.equal(app,original.slice(0,i)+original.slice(k));
+ const old=JSON.parse(original.slice(j,k).trim().replace(/^const COUNTRY_TAX_CONFIGS = /,'').replace(/;$/,'').replace(/\b(IN|US|GB):\s*\{/g,'"$1": {'));
+ const current=JSON.parse(rules.trim().replace(/^const COUNTRY_TAX_CONFIGS = /,'').replace(/;$/,''));
+ assert.deepEqual(current,old);
+ for(const s of [engine,rules,app])new vm.Script(s);
+ const h=read('staging/integrated/index.html');
+ assert.equal(new Set([...h.matchAll(/data-module-tab="([^"]+)"/g)].map(m=>m[1])).size,38);
+ const scripts=['primitives.js','country-rules.js','application.js'].map(x=>h.indexOf('src="/assets/'+x+'"'));
+ assert.ok(scripts[0]>=0&&scripts[1]>scripts[0]&&scripts[2]>scripts[1]);
+});
