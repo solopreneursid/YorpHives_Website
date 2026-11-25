@@ -1,0 +1,323 @@
+{
+  "country_code": "IN",
+  "country_name": "India",
+  "flag": "🇮🇳",
+  "tax_year": "2026",
+  "tax_year_label": "FY 2026-27 (AY 2027-28 — Income Tax Act 2025)",
+  "currency": {
+    "code": "INR",
+    "symbol": "₹",
+    "locale": "en-IN"
+  },
+  "source_url": "https://www.incometax.gov.in/iec/foportal/help/individual/return-applicable-1",
+  "modules": {
+    "personal_income_tax": {
+      "primitive": "progressive_brackets",
+      "standard_deduction": 75000,
+      "rebate_threshold": 1200000,
+      "max_rebate": 60000,
+      "cess_rate": 0.04,
+      "brackets": [
+        {
+          "min": 0,
+          "max": 400000,
+          "rate": 0
+        },
+        {
+          "min": 400000,
+          "max": 800000,
+          "rate": 0.05
+        },
+        {
+          "min": 800000,
+          "max": 1200000,
+          "rate": 0.1
+        },
+        {
+          "min": 1200000,
+          "max": 1600000,
+          "rate": 0.15
+        },
+        {
+          "min": 1600000,
+          "max": 2000000,
+          "rate": 0.2
+        },
+        {
+          "min": 2000000,
+          "max": 2400000,
+          "rate": 0.25
+        },
+        {
+          "min": 2400000,
+          "max": null,
+          "rate": 0.3
+        }
+      ]
+    },
+    "social_security_payroll": {
+      "primitive": "capped_percentage",
+      "employee_tiers": [
+        {
+          "name": "Employee Provident Fund (EPF - 12%)",
+          "rate": 0.12,
+          "min_Floor": 0,
+          "annual_cap": 300000,
+          "note": "12% up to ₹25,000/mo statutory ceiling (Sept 2026 notification)"
+        },
+        {
+          "name": "Employees' State Insurance (ESI - 0.75%)",
+          "rate": 0.0075,
+          "min_Floor": 0,
+          "annual_cap": 252000,
+          "note": "0.75% up to ₹21,000/mo wage ceiling"
+        }
+      ],
+      "employer_tiers": [
+        {
+          "name": "Employer EPF + EPS (12%)",
+          "rate": 0.12,
+          "min_Floor": 0,
+          "annual_cap": 300000,
+          "note": "8.33% EPS + 3.67% EPF up to ₹3,00,000/yr"
+        },
+        {
+          "name": "Employer EDLI & Admin Charges (1.0%)",
+          "rate": 0.01,
+          "min_Floor": 0,
+          "annual_cap": 300000,
+          "note": "0.5% EDLI + 0.5% EPF Admin up to ₹3,00,000/yr"
+        },
+        {
+          "name": "Employer ESI Contribution (3.25%)",
+          "rate": 0.0325,
+          "min_Floor": 0,
+          "annual_cap": 252000,
+          "note": "3.25% up to ₹2,52,000/yr"
+        }
+      ]
+    },
+    "capital_gains_crypto": {
+      "primitive": "flat_or_slab_lookup",
+      "cess_rate": 0.04,
+      "assets": {
+        "listed_equity": {
+          "label": "Listed Equity Shares & Equity Mutual Funds (Sec 111A / 112A)",
+          "long_term_months": 12,
+          "short_term_rate": 0.2,
+          "long_term_rate": 0.125,
+          "annual_exemption": 125000,
+          "note": "STCG (<12m) at 20%; LTCG (>=12m) at 12.5% above ₹1,25,000 exemption + 4% Cess"
+        },
+        "real_estate": {
+          "label": "Real Estate / Immovable Property (Sec 112)",
+          "long_term_months": 24,
+          "short_term_rate": 0.3,
+          "long_term_rate": 0.125,
+          "annual_exemption": 0,
+          "note": "STCG (<24m) at slab rate (30% top); LTCG (>=24m) at uniform 12.5% without indexation + 4% Cess"
+        },
+        "crypto_vda": {
+          "label": "Cryptocurrency & Virtual Digital Assets (Sec 115BBH)",
+          "long_term_months": 999,
+          "short_term_rate": 0.3,
+          "long_term_rate": 0.3,
+          "annual_exemption": 0,
+          "tds_rate_on_sale": 0.01,
+          "note": "Flat 30% tax on all VDA gains regardless of holding period + 4% Cess (31.2% effective) + 1% TDS u/s 194S"
+        }
+      }
+    },
+    "vat_gst": {
+      "primitive": "flat_or_slab_lookup",
+      "tax_name": "Goods & Services Tax (GST — CGST + SGST / IGST)",
+      "slabs": [
+        {
+          "id": "standard_18",
+          "label": "Standard Rate II — SaaS, IT Services, Electronics, Financial Services (18%)",
+          "rate": 0.18
+        },
+        {
+          "id": "standard_12",
+          "label": "Standard Rate I — Processed Foods, Apparel >₹1k, Business Class Air (12%)",
+          "rate": 0.12
+        },
+        {
+          "id": "merit_5",
+          "label": "Merit Rate — Household Necessities, Economy Transport, Packaged Food (5%)",
+          "rate": 0.05
+        },
+        {
+          "id": "luxury_28",
+          "label": "Luxury & Demerit Rate — Automobiles, Aerated Drinks, Luxury Goods (28%)",
+          "rate": 0.28
+        },
+        {
+          "id": "zero_0",
+          "label": "Exempt / Zero-Rated — Fresh Produce, Healthcare, Education, Exports (0%)",
+          "rate": 0
+        }
+      ]
+    },
+    "corporate_tax": {
+      "primitive": "progressive_brackets",
+      "regimes": [
+        {
+          "id": "sec_115baa",
+          "label": "Domestic Company — Section 115BAA Concessional Regime (25.17% Effective)",
+          "brackets": [
+            {
+              "min": 0,
+              "max": null,
+              "rate": 0.25168
+            }
+          ],
+          "note": "22% base tax + 10% mandatory surcharge + 4% Health & Education Cess = 25.168%"
+        },
+        {
+          "id": "sec_115bab_mfg",
+          "label": "New Manufacturing Domestic Co — Section 115BAB (17.16% Effective)",
+          "brackets": [
+            {
+              "min": 0,
+              "max": null,
+              "rate": 0.1716
+            }
+          ],
+          "note": "15% base tax + 10% surcharge + 4% Cess = 17.16%"
+        },
+        {
+          "id": "sme_msme_25",
+          "label": "MSME / Turnover <= ₹400 Crore Standard Regime (26.0% w/ Cess)",
+          "brackets": [
+            {
+              "min": 0,
+              "max": null,
+              "rate": 0.26
+            }
+          ],
+          "note": "25% base tax + 4% Cess (surcharge 7%-12% applies if net profit > ₹1 Crore)"
+        }
+      ]
+    },
+    "property_transfer_tax": {
+      "primitive": "progressive_brackets",
+      "regions": [
+        {
+          "id": "mh_mumbai",
+          "label": "Maharashtra / Mumbai Metro (6% Stamp Duty + 1% Registration)",
+          "brackets": [
+            {
+              "min": 0,
+              "max": null,
+              "rate": 0.06
+            }
+          ],
+          "registration_rate": 0.01,
+          "registration_cap": 30000,
+          "non_resident_surcharge_rate": 0,
+          "note": "6% Stamp Duty + 1% Registration (capped at ₹30,000 for properties > ₹30L). NRI buyers face higher TDS deduction by buyer."
+        },
+        {
+          "id": "ka_bengaluru",
+          "label": "Karnataka / Bengaluru Tiered Stamp Duty (2%–5% + 1% Reg)",
+          "brackets": [
+            {
+              "min": 0,
+              "max": 2000000,
+              "rate": 0.02
+            },
+            {
+              "min": 2000000,
+              "max": 4500000,
+              "rate": 0.03
+            },
+            {
+              "min": 4500000,
+              "max": null,
+              "rate": 0.05
+            }
+          ],
+          "registration_rate": 0.01,
+          "registration_cap": null,
+          "non_resident_surcharge_rate": 0,
+          "note": "2% up to ₹20L, 3% ₹20L–₹45L, 5% above ₹45L + 1% Registration Fee."
+        },
+        {
+          "id": "jh_ranchi_chaibasa",
+          "label": "Jharkhand (Chaibasa / Jamshedpur / Ranchi — 4% Stamp + 3% Reg)",
+          "brackets": [
+            {
+              "min": 0,
+              "max": null,
+              "rate": 0.04
+            }
+          ],
+          "registration_rate": 0.03,
+          "registration_cap": null,
+          "non_resident_surcharge_rate": 0,
+          "note": "4% statutory Stamp Duty + 3% Registration Fee in Jharkhand."
+        }
+      ]
+    },
+    "withholding_dtaa": {
+      "primitive": "treaty_offset",
+      "domestic_default_wht": {
+        "dividends": 0.2,
+        "interest": 0.2,
+        "royalties": 0.2
+      },
+      "treaties": {
+        "US": {
+          "partner_name": "United States (India-US DTAA)",
+          "dividends": 0.25,
+          "interest": 0.15,
+          "royalties": 0.15,
+          "article_ref": "Articles 10, 11 & 12 (15% portfolio / 10% FTS-equip)"
+        },
+        "GB": {
+          "partner_name": "United Kingdom (India-UK DTAA)",
+          "dividends": 0.15,
+          "interest": 0.15,
+          "royalties": 0.15,
+          "article_ref": "Articles 11, 12 & 13 (10%-15% WHT cap)"
+        },
+        "DE": {
+          "partner_name": "Germany (India-Germany DTAA)",
+          "dividends": 0.1,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "Articles 10, 11 & 12 (10% uniform treaty cap)"
+        },
+        "AE": {
+          "partner_name": "United Arab Emirates (India-UAE DTAA)",
+          "dividends": 0.1,
+          "interest": 0.125,
+          "royalties": 0.1,
+          "article_ref": "Articles 10, 11 & 12"
+        },
+        "SG": {
+          "partner_name": "Singapore (India-Singapore DTAA)",
+          "dividends": 0.15,
+          "interest": 0.15,
+          "royalties": 0.1,
+          "article_ref": "Articles 10, 11 & 12"
+        },
+        "CA": {
+          "partner_name": "Canada (India-Canada DTAA)",
+          "dividends": 0.25,
+          "interest": 0.15,
+          "royalties": 0.15,
+          "article_ref": "Articles 10, 11 & 12"
+        },
+        "AU": {
+          "partner_name": "Australia (India-Australia DTAA)",
+          "dividends": 0.15,
+          "interest": 0.15,
+          "royalties": 0.15,
+          "article_ref": "Articles 10, 11 & 12"
+        }
+      }
+    }
+  }
+}
