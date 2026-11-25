@@ -18,3 +18,32 @@ export function reverseSalary(input){
  }
  return {found:false,target,period,minPay,maxPay,sampleOnly:true,taxRulesVerified:false,searchStep:1};
 }
+
+/**
+ * Search automatically from a mathematically necessary lower bound.
+ * Never skip a candidate: tax rounding and relief cliffs need not be monotone.
+ * Bound work per call; distinguish unfinished search from impossible target.
+ */
+export function automaticReverseSalary({profile,target,period}){
+ if(!profile||typeof profile!=='object'||Array.isArray(profile)||profile.scopeConfirmed!==true||Object.hasOwn(profile,'pay'))throw new TypeError('Confirm salary assumptions');
+ if(!Number.isFinite(target)||target<0||target>1e9||Math.abs(target*100-Math.round(target*100))>0.00002||!['monthly','annual'].includes(period))throw new RangeError('Invalid target');
+ const limits={'US:TX':[0,250000,1],'GB:RUK':[0,100000,12],'GB:SCT':[0,100000,12],'CA:AB':[60000,150000,1],'AU:AU':[100000,1000000,1],'IN:IN':[0,1000000000,1],'SG:SG':[751,100000,12],'DE:DE':[2500,6450,12],'AE:AE':[100,1000000,12]};
+ const key=profile.country+':'+profile.region;
+ if(!Object.hasOwn(limits,key))throw new RangeError('Unsupported region');
+ const [minimum,maximum,multiplier]=limits[key];
+ let floor=minimum;
+ if(key==='DE:DE')floor=Math.max(floor,Math.ceil(profile.annualTaxableIncome/12));
+ if(key==='AE:AE')floor=Math.max(floor,Math.ceil(profile.monthlyBasicSalary));
+ if(key==='IN:IN')floor=Math.max(floor,profile.epfMonthlyWage*12,profile.epfMonthlyWage*.12*12+profile.professionalTaxAnnual);
+ // Validate the profile even if the requested target exceeds the supported range.
+ if(!Number.isFinite(floor)||floor>maximum)throw new RangeError('Unsupported profile');
+ floor=Math.ceil(floor);
+ calculateSalaryRemainder({...profile,pay:floor});
+ // Monthly output may round up by half a cent.
+ const annualTarget=period==='monthly'?Math.max(0,target-.005)*12:target;
+ const start=Math.max(floor,Math.floor(annualTarget/multiplier));
+ if(start>maximum)return {found:false,searchComplete:true,sampleOnly:true,taxRulesVerified:false};
+ const end=Math.min(maximum,start+10000);
+ const result=reverseSalary({profile,target,period,minPay:start,maxPay:end});
+ return {...result,searchComplete:result.found||end===maximum};
+}
