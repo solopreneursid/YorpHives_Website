@@ -19,6 +19,6 @@ export async function loadRuntimeRules(env,engineFingerprint,{now=new Date()}={}
   for(const r of regionalRules()){const [country,region]=r.jurisdiction.split('-');resolveRegionalRule({country,region,taxYear:r.taxYear},s.regional);}
   resolveIndiaSalaryRule('2026',s.indiaSalary);for(const r of payrollRules())resolvePayrollRule(r.jurisdiction,r.component,r.taxYear,s.payroll);
   const fingerprint=hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(engineFingerprint+':'+s.digest)));
-  return {state:'signed-preview',engineFingerprint:fingerprint,sequence:s.sequence,digest:s.digest,expiresAt:s.expiresAt,context:{regional:s.regional,indiaSalary:s.indiaSalary,payroll:s.payroll},taxRulesVerified:false};
+  return {state:'signed-preview',engineFingerprint:fingerprint,sequence:s.sequence,digest:s.digest,expiresAt:s.expiresAt,context:{regional:s.regional,indiaSalary:s.indiaSalary,payroll:s.payroll,national:s.national},taxRulesVerified:false};
  }catch{return {state:'blocked',engineFingerprint,context:{},taxRulesVerified:false};}
 }
