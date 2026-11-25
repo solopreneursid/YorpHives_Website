@@ -100,6 +100,19 @@
 <p id="pay-error" class="error" role="alert"></p>
 <div id="pay-result" hidden tabindex="-1" aria-live="polite"><h3>Money left after modeled deductions</h3><div class="results"><div><span>Per year</span><strong id="pay-annual"></strong></div><div><span>Average per month</span><strong id="pay-monthly"></strong></div><div><span>Annual taxes and contributions</span><strong id="pay-deductions"></strong></div></div>
 <details><summary>See each deduction</summary><dl id="pay-breakdown" class="breakdown"></dl></details><p id="pay-warnings" class="notice"></p><button type="button" class="secondary" id="pay-download">Download salary remainder report</button></div></section>
+<section id="reverse-salary" class="card" aria-labelledby="reverse-title">
+<h2 id="reverse-title">What salary do I need?</h2>
+<p>Enter the money you want left after tax and the employee costs included in this example. Choose your country and confirm its conditions in the salary calculator above. This calculation stays in your browser.</p>
+<form id="reverse-form"><div class="fields">
+<label for="reverse-target">Money you want left (local currency)<input id="reverse-target" type="number" min="0" max="1000000000" step="0.01" required inputmode="decimal"></label>
+<label for="reverse-period">How often?<select id="reverse-period"><option value="monthly">Each month (average)</option><option value="annual">Each year</option></select></label>
+<label for="reverse-min">Lowest salary to check<input id="reverse-min" type="number" min="0" max="1000000000" step="1" required inputmode="numeric"></label>
+<label for="reverse-max">Highest salary to check<input id="reverse-max" type="number" min="0" max="1000000000" step="1" required inputmode="numeric"></label>
+</div><p id="reverse-scope" class="notice"></p><p class="muted">Use whole currency units. The difference between the highest and lowest salary must be 10,000 or less. Any contribution wage, basic salary or assessed taxable income you entered above stays fixed throughout this example.</p>
+<button class="primary" type="submit">Find my salary</button></form>
+<p id="reverse-error" class="error" role="alert"></p>
+<div id="reverse-result" hidden tabindex="-1" aria-live="polite"><h3>Estimated salary needed</h3><div class="results"><div><span>Yearly salary before deductions</span><strong id="reverse-gross"></strong></div><div><span>Monthly money left (average)</span><strong id="reverse-net"></strong></div><div><span>Yearly modeled deductions</span><strong id="reverse-deductions"></strong></div></div><p id="reverse-warning" class="notice"></p></div>
+</section>
 <section id="employee-contributions" class="card" aria-labelledby="contrib-title">
 <h2 id="contrib-title">Employee contributions and levies</h2><p>Estimate selected deductions or levies separately from income tax. Use made-up examples only.</p>
 <form id="contrib-form"><div class="fields">
