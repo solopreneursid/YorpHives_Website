@@ -1,0 +1,379 @@
+{
+  "schemaVersion": 1,
+  "snapshots": [
+    {
+      "id": "US-2024-single-ordinary-v1",
+      "country": "US",
+      "label": "2024",
+      "start": "2024-01-01",
+      "end": "2024-12-31",
+      "currency": "USD",
+      "scope": "US single filer; regular federal rate schedule on ordinary taxable income, before credits, AMT, state taxes and payroll. Not tax-table rounding or a complete return.",
+      "legislation": "enacted",
+      "bounds": [
+        11600,
+        47150,
+        100525,
+        191950,
+        243725,
+        609350
+      ],
+      "rates": [
+        1000,
+        1200,
+        2200,
+        2400,
+        3200,
+        3500,
+        3700
+      ],
+      "sourceUrls": [
+        "https://www.irs.gov/irb/2023-48_IRB"
+      ]
+    },
+    {
+      "id": "US-2025-single-ordinary-v1",
+      "country": "US",
+      "label": "2025",
+      "start": "2025-01-01",
+      "end": "2025-12-31",
+      "currency": "USD",
+      "scope": "US single filer; regular federal rate schedule on ordinary taxable income, before credits, AMT, state taxes and payroll. Not tax-table rounding or a complete return.",
+      "legislation": "enacted",
+      "bounds": [
+        11925,
+        48475,
+        103350,
+        197300,
+        250525,
+        626350
+      ],
+      "rates": [
+        1000,
+        1200,
+        2200,
+        2400,
+        3200,
+        3500,
+        3700
+      ],
+      "sourceUrls": [
+        "https://www.irs.gov/irb/2024-45_IRB"
+      ]
+    },
+    {
+      "id": "US-2026-single-ordinary-v1",
+      "country": "US",
+      "label": "2026",
+      "start": "2026-01-01",
+      "end": "2026-12-31",
+      "currency": "USD",
+      "scope": "US single filer; regular federal rate schedule on ordinary taxable income, before credits, AMT, state taxes and payroll. Not tax-table rounding or a complete return.",
+      "legislation": "enacted",
+      "bounds": [
+        12400,
+        50400,
+        105700,
+        201775,
+        256225,
+        640600
+      ],
+      "rates": [
+        1000,
+        1200,
+        2200,
+        2400,
+        3200,
+        3500,
+        3700
+      ],
+      "sourceUrls": [
+        "https://www.irs.gov/irb/2025-45_IRB"
+      ]
+    },
+    {
+      "id": "AU-2024-25-resident-ordinary-v1",
+      "country": "AU",
+      "label": "FY 2024–25",
+      "start": "2024-07-01",
+      "end": "2025-06-30",
+      "currency": "AUD",
+      "scope": "Full-year Australian resident eligible for full tax-free threshold; ordinary taxable income before offsets, Medicare levy, surcharge, student debt or other adjustments.",
+      "legislation": "enacted",
+      "bounds": [
+        18200,
+        45000,
+        135000,
+        190000
+      ],
+      "rates": [
+        0,
+        1600,
+        3000,
+        3700,
+        4500
+      ],
+      "sourceUrls": [
+        "https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents",
+        "https://www.ato.gov.au/about-ato/new-legislation/in-detail/individuals/personal-income-tax-new-tax-cuts-for-every-australian-taxpayer"
+      ]
+    },
+    {
+      "id": "AU-2025-26-resident-ordinary-v1",
+      "country": "AU",
+      "label": "FY 2025–26",
+      "start": "2025-07-01",
+      "end": "2026-06-30",
+      "currency": "AUD",
+      "scope": "Full-year Australian resident eligible for full tax-free threshold; ordinary taxable income before offsets, Medicare levy, surcharge, student debt or other adjustments.",
+      "legislation": "enacted",
+      "bounds": [
+        18200,
+        45000,
+        135000,
+        190000
+      ],
+      "rates": [
+        0,
+        1600,
+        3000,
+        3700,
+        4500
+      ],
+      "sourceUrls": [
+        "https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents",
+        "https://www.ato.gov.au/about-ato/new-legislation/in-detail/individuals/personal-income-tax-new-tax-cuts-for-every-australian-taxpayer"
+      ]
+    },
+    {
+      "id": "AU-2026-27-resident-ordinary-v1",
+      "country": "AU",
+      "label": "FY 2026–27",
+      "start": "2026-07-01",
+      "end": "2027-06-30",
+      "currency": "AUD",
+      "scope": "Full-year Australian resident eligible for full tax-free threshold; ordinary taxable income before offsets, Medicare levy, surcharge, student debt or other adjustments.",
+      "legislation": "enacted",
+      "bounds": [
+        18200,
+        45000,
+        135000,
+        190000
+      ],
+      "rates": [
+        0,
+        1500,
+        3000,
+        3700,
+        4500
+      ],
+      "sourceUrls": [
+        "https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents",
+        "https://www.ato.gov.au/about-ato/new-legislation/in-detail/individuals/personal-income-tax-new-tax-cuts-for-every-australian-taxpayer"
+      ]
+    },
+    {
+      "id": "AU-2027-28-resident-ordinary-v1",
+      "country": "AU",
+      "label": "FY 2027–28",
+      "start": "2027-07-01",
+      "end": "2028-06-30",
+      "currency": "AUD",
+      "scope": "Full-year Australian resident eligible for full tax-free threshold; ordinary taxable income before offsets, Medicare levy, surcharge, student debt or other adjustments.",
+      "legislation": "enacted",
+      "bounds": [
+        18200,
+        45000,
+        135000,
+        190000
+      ],
+      "rates": [
+        0,
+        1400,
+        3000,
+        3700,
+        4500
+      ],
+      "sourceUrls": [
+        "https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents",
+        "https://www.ato.gov.au/about-ato/new-legislation/in-detail/individuals/personal-income-tax-new-tax-cuts-for-every-australian-taxpayer"
+      ]
+    },
+    {
+      "id": "CA-2025-ordinary-v1",
+      "country": "CA",
+      "label": "2025",
+      "start": "2025-01-01",
+      "end": "2025-12-31",
+      "currency": "CAD",
+      "scope": "Canadian federal ordinary taxable income before all credits, provincial taxes, Quebec abatement and payroll. Annual assessment rates, not withholding.",
+      "legislation": "enacted",
+      "bounds": [
+        57375,
+        114750,
+        177882,
+        253414
+      ],
+      "rates": [
+        1450,
+        2050,
+        2600,
+        2900,
+        3300
+      ],
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/last-year.html"
+      ]
+    },
+    {
+      "id": "CA-2026-ordinary-v1",
+      "country": "CA",
+      "label": "2026",
+      "start": "2026-01-01",
+      "end": "2026-12-31",
+      "currency": "CAD",
+      "scope": "Canadian federal ordinary taxable income before all credits, provincial taxes, Quebec abatement and payroll. Annual assessment rates, not withholding.",
+      "legislation": "enacted",
+      "bounds": [
+        58523,
+        117045,
+        181440,
+        258482
+      ],
+      "rates": [
+        1400,
+        2050,
+        2600,
+        2900,
+        3300
+      ],
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+      ]
+    },
+    {
+      "id": "GB-2024-25-ordinary-v1",
+      "country": "GB",
+      "label": "FY 2024–25",
+      "start": "2024-04-06",
+      "end": "2025-04-05",
+      "currency": "GBP",
+      "scope": "England, Wales and Northern Ireland ordinary non-savings, non-dividend taxable income after allowances, before credits and National Insurance. Excludes Scotland and special band extensions.",
+      "legislation": "enacted",
+      "bounds": [
+        37700,
+        125140
+      ],
+      "rates": [
+        2000,
+        4000,
+        4500
+      ],
+      "sourceUrls": [
+        "https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past"
+      ]
+    },
+    {
+      "id": "GB-2025-26-ordinary-v1",
+      "country": "GB",
+      "label": "FY 2025–26",
+      "start": "2025-04-06",
+      "end": "2026-04-05",
+      "currency": "GBP",
+      "scope": "England, Wales and Northern Ireland ordinary non-savings, non-dividend taxable income after allowances, before credits and National Insurance. Excludes Scotland and special band extensions.",
+      "legislation": "enacted",
+      "bounds": [
+        37700,
+        125140
+      ],
+      "rates": [
+        2000,
+        4000,
+        4500
+      ],
+      "sourceUrls": [
+        "https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past"
+      ]
+    },
+    {
+      "id": "GB-2026-27-ordinary-v1",
+      "country": "GB",
+      "label": "FY 2026–27",
+      "start": "2026-04-06",
+      "end": "2027-04-05",
+      "currency": "GBP",
+      "scope": "England, Wales and Northern Ireland ordinary non-savings, non-dividend taxable income after allowances, before credits and National Insurance. Excludes Scotland and special band extensions.",
+      "legislation": "enacted",
+      "bounds": [
+        37700,
+        125140
+      ],
+      "rates": [
+        2000,
+        4000,
+        4500
+      ],
+      "sourceUrls": [
+        "https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past"
+      ]
+    },
+    {
+      "id": "IN-2024-25-ordinary-v1",
+      "country": "IN",
+      "label": "FY 2024–25",
+      "start": "2024-04-01",
+      "end": "2025-03-31",
+      "currency": "INR",
+      "scope": "Indian individual new-regime ordinary taxable income after deductions. Base slab tax only, before rebate, marginal relief, surcharge, cess and statutory rounding. Does not compare old and new regimes or establish final tax.",
+      "legislation": "enacted",
+      "bounds": [
+        300000,
+        700000,
+        1000000,
+        1200000,
+        1500000
+      ],
+      "rates": [
+        0,
+        500,
+        1000,
+        1500,
+        2000,
+        3000
+      ],
+      "sourceUrls": [
+        "https://www.incometax.gov.in/iec/foportal/help/individual/return-applicable-3"
+      ]
+    },
+    {
+      "id": "IN-2025-26-ordinary-v1",
+      "country": "IN",
+      "label": "FY 2025–26",
+      "start": "2025-04-01",
+      "end": "2026-03-31",
+      "currency": "INR",
+      "scope": "Indian individual new-regime ordinary taxable income after deductions. Base slab tax only, before rebate, marginal relief, surcharge, cess and statutory rounding. Does not compare old and new regimes or establish final tax.",
+      "legislation": "enacted",
+      "bounds": [
+        400000,
+        800000,
+        1200000,
+        1600000,
+        2000000,
+        2400000
+      ],
+      "rates": [
+        0,
+        500,
+        1000,
+        1500,
+        2000,
+        2500,
+        3000
+      ],
+      "sourceUrls": [
+        "https://www.incometax.gov.in/iec/foportal/help/individual/return-applicable-1"
+      ]
+    }
+  ]
+}
