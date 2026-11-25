@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import {calculateSalaryRemainder} from '../engine/taxable-income.mjs';
 import {countryCalculate} from '../engine/country.mjs';
 const app=readFileSync(new URL('../staging/integrated/application.js',import.meta.url),'utf8');
 const start=app.indexOf('const TAX_RULES ='),end=app.indexOf('\n    };',start)+7;
@@ -18,8 +19,8 @@ for(const [gross,tax] of samples)test('UK ordinary income '+gross,()=>{
  assert.ok(Math.abs(front.bracketRows.reduce((a,b)=>a+b.taxableInTier,0)-front.taxableIncome)<1e-7);
 });
 test('US OASDI ceiling matches official 2026 maximum',()=>{
- const r=countryCalculate({country:'US',taxYear:'2026',module:'payroll',parameters:{grossSalary:200000}});
- assert.equal(r.result.employee.items[0].amount,11439);
+ const r=calculateSalaryRemainder({country:'US',region:'TX',taxYear:'2026',pay:200000,scopeConfirmed:true});
+ assert.equal(r.contributions.find(c=>c.name==='Social Security').amount,11439);
 });
 
 test('2026 US head-of-household higher-rate boundary is correct in UI and backend', () => {
