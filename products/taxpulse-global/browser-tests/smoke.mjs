@@ -255,6 +255,12 @@ try {
    await page.getByRole('button',{name:'Find my salary'}).click();
    await page.locator('#reverse-result').waitFor();
    assert.match(await page.locator('#reverse-gross').innerText(),/AED\s*240,000/);
+   const [reverseReport]=await Promise.all([page.waitForEvent('download'),page.locator('#reverse-download').click()]);
+   const reverseReceipt=JSON.parse(readFileSync(await reverseReport.path(),'utf8'));
+   assert.equal(reverseReceipt.payload.kind,'automatic-reverse-salary');
+   assert.equal(reverseReceipt.payload.result.requiredPay,20000);
+   await page.locator('#proof-file').setInputFiles(await reverseReport.path());
+   await page.waitForFunction(()=>document.getElementById('proof-status').textContent.includes('calculation was reproduced'));
    await page.locator('#reverse-manual').check();
    await page.locator('#reverse-min').fill('19990');
    await page.locator('#reverse-max').fill('20010');
