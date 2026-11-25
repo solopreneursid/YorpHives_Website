@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>TaxPulse Global | Understand your taxes</title>
+<link rel="stylesheet" href="/assets/simple.css">
+<script type="module" src="/assets/simple.mjs"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to calculator</a>
+<header class="header"><div class="wrap mast"><a class="brand" href="/">TaxPulse <span>Global</span></a><span class="badge">Demo only</span></div>
+<nav class="wrap nav" aria-label="Main navigation">
+<a href="#my-tax">My Tax</a><a href="#compare">Compare</a><a href="#plan">Plan</a><a href="#business">Business</a><a href="#updates">Updates</a>
+</nav></header>
+<main id="main" class="wrap">
+<section class="hero"><p class="eyebrow">Understand your money</p><h1>Taxes made easier.</h1><p>See how income tax works, compare two salaries and understand the numbers, step by step.</p><p class="notice"><strong>Practice with made-up numbers only.</strong> Tax rules are not fully checked yet. Do not use these results to file taxes, choose a job or make financial decisions. Do not enter real financial details.</p></section>
+<section id="my-tax" class="card" aria-labelledby="tax-title">
+<p class="eyebrow">Step 1</p><h2 id="tax-title">How much income tax might I pay?</h2>
+<p class="muted">Choose a country and enter an example yearly salary. Only three countries currently have a connected sample income-tax engine.</p>
+<form id="tax-form">
+<div class="fields">
+<label for="country">Country<select id="country" name="country" required><option value="IN">India</option><option value="US">United States</option><option value="GB">United Kingdom (England, Wales and Northern Ireland)</option></select></label>
+<div><span class="field-label">Tax period</span><p id="year" class="field-value">2026–27</p></div>
+<label for="salary">Yearly salary before tax <span id="currency" class="muted">(INR)</span><input id="salary" name="salary" type="number" min="0" max="1000000000" step="0.01" inputmode="decimal" required placeholder="Example: 1200000" aria-describedby="salary-help"></label>
+<label id="residency-field" for="resident">Tax resident in India?<select id="resident" name="resident" required><option value="">Choose an answer</option><option value="true">Yes</option><option value="false">No</option></select></label>
+<label id="filing-field" for="filing" hidden>US filing status<select id="filing" name="filing" disabled><option value="single">Single</option><option value="mfj">Married, filing together</option><option value="mfs">Married, filing separately</option><option value="hoh">Head of household</option></select></label>
+</div>
+<p id="salary-help" class="muted">Use annual pay, not monthly pay. This example does not include every tax, social contribution, pension or deduction. Tax residence is a legal status, not just citizenship.</p>
+<button type="submit" class="primary">Show my example</button><button id="reset" type="button" class="secondary">Clear</button>
+</form>
+<p id="error" class="error" role="alert"></p>
+<div id="tax-result" hidden aria-live="polite" tabindex="-1">
+<h3>Your example result</h3><div class="results"><div><span>Yearly income tax</span><strong id="income-tax"></strong></div><div><span>Money left after income tax only</span><strong id="after-tax"></strong></div><div><span>Share of salary paid in income tax</span><strong id="tax-rate"></strong></div></div>
+<p class="notice">This is not your take-home pay. Other taxes and deductions may still apply.</p>
+<details><summary>How was this worked out?</summary><dl id="breakdown" class="breakdown"></dl><p id="scope" class="muted"></p></details>
+<button id="download" type="button" class="secondary">Download example breakdown (JSON)</button>
+</div>
+</section>
+<section id="compare" class="card" aria-labelledby="compare-title">
+<p class="eyebrow">Step 2</p><h2 id="compare-title">What if my salary changes?</h2>
+<p>Compare two example salaries in the same country, using the same tax status. Start by filling in My Tax above.</p>
+<form id="compare-form"><label for="second-salary">New yearly salary <span id="second-currency" class="muted">(INR)</span><input id="second-salary" type="number" min="0" max="1000000000" step="0.01" inputmode="decimal" required placeholder="Example: 1500000"></label><button type="submit" class="primary">Compare salaries</button></form>
+<p id="compare-error" class="error" role="alert"></p><div id="compare-result" hidden aria-live="polite" tabindex="-1"><h3>What changes?</h3><div class="results"><div><span>Salary difference</span><strong id="gross-change"></strong></div><div><span>Income tax difference</span><strong id="tax-change"></strong></div><div><span>Difference after income tax only</span><strong id="net-change"></strong></div></div><p id="change-rate"></p><p class="muted">Does not compare countries, currencies, living costs, benefits or payroll deductions.</p></div>
+</section>
+<section id="plan" class="card"><h2>Plan ahead</h2><p>Learn what affects income tax before making a decision.</p><div class="tiles"><article><h3>Try a pay rise</h3><p>See how a different salary affects income tax in the example above.</p><a href="#compare">Compare two salaries</a></article><article><h3>Understand tax deductions</h3><p>Deductions reduce the amount of income that may be taxed. Eligibility depends on local law. A personalized savings check is not available yet.</p></article><article><h3>Moving to another country?</h3><p>Tax residence and local rules matter. International comparison and residency tools are still being checked.</p></article></div></section>
+<section id="business" class="card"><h2>Work for yourself or run a business?</h2><p>Business tax, freelance income and sales tax tools are being developed. They are not ready for real financial decisions.</p><a class="secondary link-button" href="/advanced-preview">Explore original experimental tools</a></section>
+<section id="updates" class="card"><h2>Can I trust these numbers?</h2><p>See which country examples are connected and whether their rules have been checked. All eight countries are currently under development.</p><ul id="country-status" class="country-list" aria-label="Country verification status"></ul><p class="muted">A rule being connected to the calculator does not mean it has been legally verified. No new law is automatically activated.</p><a href="/v1/catalog">Technical coverage and limitations (JSON)</a></section>
+</main>
+<footer class="wrap footer"><p>TaxPulse Global · HQventures · Development preview</p><p>No account required. This simple calculator processes examples on this device and does not send inputs to a server. Downloading a report saves a file on your device.</p><a href="/advanced-preview">Original advanced workspace — experimental</a></footer>
+<noscript><p class="wrap notice">Enable JavaScript to run example calculations. No calculations are available without it.</p></noscript>
+</body></html>
