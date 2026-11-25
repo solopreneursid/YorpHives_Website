@@ -1,0 +1,23 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import {countryCalculate} from '../engine/country.mjs';
+const app=readFileSync(new URL('../staging/integrated/application.js',import.meta.url),'utf8');
+const start=app.indexOf('const TAX_RULES ='),end=app.indexOf('\n    };',start)+7;
+const fn=app.indexOf('function calculateTaxForCountry('),fnEnd=app.indexOf('\n    /**',fn);
+assert.ok(start>=0&&end>start&&fn>=0&&fnEnd>fn);
+const ctx=vm.createContext({});
+new vm.Script(app.slice(start,end)+'\n'+app.slice(fn,fnEnd)).runInContext(ctx,{timeout:1000});
+const samples=[[12570,0],[50270,7540],[100000,27432],[110000,33432],[125140,42516],[130000,44703],[150000,53703]];
+for(const [gross,tax] of samples)test('UK ordinary income '+gross,()=>{
+ const backend=countryCalculate({country:'GB',taxYear:'2026',module:'pit',parameters:{grossSalary:gross}});
+ const front=ctx.calculateTaxForCountry('GB','uk_standard',gross,0);
+ assert.ok(Math.abs(backend.result.incomeTax-tax)<1e-7);
+ assert.ok(Math.abs(front.finalIncomeTax-tax)<1e-7);
+ assert.ok(Math.abs(front.bracketRows.reduce((a,b)=>a+b.taxableInTier,0)-front.taxableIncome)<1e-7);
+});
+test('US OASDI ceiling matches official 2026 maximum',()=>{
+ const r=countryCalculate({country:'US',taxYear:'2026',module:'payroll',parameters:{grossSalary:200000}});
+ assert.equal(r.result.employee.items[0].amount,11439);
+});
