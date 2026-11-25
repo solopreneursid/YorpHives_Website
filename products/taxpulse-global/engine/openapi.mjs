@@ -54,7 +54,8 @@ export const spec = {
                     ]
                   },
                   "parameters": {
-                    "type": "object"
+                    "type": "object",
+                    "description": "For US pit calculations, optional filingStatus is one of single (default), mfj, hoh, mfs; other PIT inputs are grossSalary and optional preTaxDeductions. All results are illustrative and taxRulesVerified=false."
                   }
                 },
                 "additionalProperties": false
