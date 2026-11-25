@@ -53,3 +53,14 @@ The simple browser uses the exact same country engine as the API, with local ES 
 5. P2: Additional jurisdictions based on verified data and demand; professional workspaces, APIs/widgets, optional AI explanations, and commercial integrations. No paid AI dependency for basic calculation; no unverified filing, payment or compliance claims.
 
 The simple workspace must not be described as a completed production service. Browser CI is separate from statutory verification. Existing release gates remain closed.
+
+
+## Scoped assessment engines and calculation receipts
+
+Germany (2026 EStG §32a) now has an ordinary taxable-income tariff with exact integer-rational arithmetic, whole-euro rounding and eligible joint splitting. Canada (2026) now has an ordinary federal taxable-income model with a non-refundable basic personal credit, including net-income-based phaseout. These separate assessment tools deliberately do not infer taxable income from salary. They do not activate the old German or Canadian rule fixtures or change production verification flags. See `rules/evidence/de-ca-2026-assessment-review.json` for source URLs, limitations and review scope.
+
+India ordinary-salary examples reject taxable income above INR 5,000,000 because surcharge and associated marginal relief have not yet been implemented and verified.
+
+TaxPulse example receipts contain input, result, SHA-256 content digest and an engine fingerprint derived from the bundled calculation sources. A local file checker validates integrity and replays the computation when the fingerprint matches. Receipts are unsigned and are not proof of identity, authenticity or statutory correctness. Earlier engine versions are not yet archived for browser replay. The preview continues to prohibit real financial inputs and all tax rules remain unverified.
+
+The assessment API is `POST /v1/taxable-income/calculate`; its two input variants are described in OpenAPI. The public preview remains noindex, with no production route, payments or AI inference. Full independent statutory review, official calculator differential testing and historical engine retention remain open.
