@@ -1,3 +1,4 @@
+import {createFinancialProfile,offerFromProfile} from './engine/financial-profile.mjs';
 import {compareInternational} from './engine/international.mjs';
 import {compareCompensation} from './engine/compensation.mjs';
 import {negotiateSalary} from './engine/negotiation.mjs';
@@ -614,7 +615,7 @@ for(const [id,getRecord] of [['pay',()=>lastPay],['reverse',()=>lastReverse],['o
 const workspaceSections=[...document.querySelectorAll('main > section.card')];
 const dashboardHero=document.querySelector('main > .hero');
 const workspaceNav=[...document.querySelectorAll('.nav a')];
-const groups={compare:['my-tax','compare'],'reverse-salary':['salary-remainder','reverse-salary'],'salary-negotiation':['salary-remainder','salary-negotiation']};
+const groups={compare:['my-tax','compare'],'reverse-salary':['salary-remainder','reverse-salary'],'salary-negotiation':['salary-remainder','salary-negotiation'],'salary-offers':['salary-remainder','salary-offers'],compensation:['salary-remainder','salary-offers','compensation']};
 const categories={salary:'category-salary',taxes:'category-taxes',career:'category-career',abroad:'category-abroad',money:'category-money',business:'business','tax-rules':'updates'};
 function routeId(){
  const hash=location.hash.slice(1);
@@ -654,3 +655,19 @@ search.addEventListener('input',()=>{
  document.getElementById('tool-search-count').textContent=count+' matching calculators';
 });
 showWorkspace();
+
+// Explicit, tab-memory-only transfer; never persists or transmits salary data.
+let savedProfile=null;
+$('profile-save').addEventListener('click',()=>{
+ if(!lastPay)return;
+ try{savedProfile=createFinancialProfile(lastPay.input);$('profile-summary').textContent='Saved example: '+savedProfile.region+' · '+money(savedProfile.salary.pay,savedProfile.currency)+' '+savedProfile.payPeriod;$('profile-bar').hidden=false;$('profile-use-intl').disabled=false;$('profile-save-status').textContent='Example kept in this tab. Open Work Abroad to reuse it.';}
+ catch{$('profile-save-status').textContent='Calculate a supported salary example first.';}
+});
+$('profile-clear').addEventListener('click',()=>{savedProfile=null;$('profile-summary').textContent='';$('profile-bar').hidden=true;$('profile-use-intl').disabled=true;$('profile-save-status').textContent='Saved example forgotten. Existing calculator inputs are unchanged.';$('profile-intl-status').textContent='';});
+$('profile-use-intl').addEventListener('click',()=>{
+ if(!savedProfile)return;
+ try{const s=offerFromProfile(savedProfile);$('intl-1-region').value=s.region;intlChanged(1);$('intl-1-pay').value=String(s.pay);
+ for(const [key,id] of Object.entries({epfMonthlyWage:'epf',professionalTaxAnnual:'pt',annualTaxableIncome:'taxable',healthSupplementRate:'supplement',monthlyBasicSalary:'basic'}))if(Object.hasOwn(s,key))$('intl-1-'+id).value=String(s[key]);
+ $('profile-intl-status').textContent='Salary copied. Confirm the conditions again and enter living costs and exchange rate.';
+ }catch{$('profile-intl-status').textContent='Could not reuse this example.';}
+});
