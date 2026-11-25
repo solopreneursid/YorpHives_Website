@@ -30,3 +30,16 @@ test('2026 US head-of-household higher-rate boundary is correct in UI and backen
  assert.ok(Math.abs(backend.result.incomeTax-39207)<0.005);
  assert.ok(Math.abs(front.finalIncomeTax-39207)<0.005);
 });
+
+test('India 2026 resident salary marginal relief has frontend/API parity', () => {
+ // Original frontend assumes a resident salaried individual for its sample.
+ const gross = 1285000;
+ const backend = countryCalculate({
+   country: 'IN', taxYear: '2026', module: 'pit',
+   parameters: { grossSalary: gross, residentIndividual: true }
+ });
+ const frontend = ctx.calculateTaxForCountry('IN', 'new_regime', gross, 0);
+ assert.ok(Math.abs(backend.result.taxBeforeRebate - 61500) < 0.005);
+ assert.ok(Math.abs(backend.result.marginalReliefApplied - 51500) < 0.005);
+ assert.ok(Math.abs(backend.result.incomeTax - frontend.finalIncomeTax) < 0.005);
+});
