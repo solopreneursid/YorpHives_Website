@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "versions": [
+    {
+      "jurisdiction": "US",
+      "component": "oasdi",
+      "taxYear": "2026",
+      "version": "US-2026-oasdi-preview-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "parameters": {
+        "annualWageBase": 184500,
+        "employeeRateBasisPoints": 620
+      },
+      "sourceUrls": [
+        "https://www.ssa.gov/OACT/COLA/cbb.html"
+      ]
+    },
+    {
+      "jurisdiction": "US",
+      "component": "medicare",
+      "taxYear": "2026",
+      "version": "US-2026-medicare-preview-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "parameters": {
+        "employeeRateBasisPoints": 145,
+        "additionalRateBasisPoints": 90,
+        "additionalThreshold": 200000
+      },
+      "sourceUrls": [
+        "https://www.irs.gov/taxtopics/tc560",
+        "https://www.irs.gov/instructions/i941"
+      ]
+    },
+    {
+      "jurisdiction": "GB",
+      "component": "ni",
+      "taxYear": "2026",
+      "version": "GB-2026-ni-preview-v1",
+      "effectiveFrom": "2026-04-06",
+      "effectiveUntil": "2027-04-06",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "parameters": {
+        "monthlyLower": 1048,
+        "monthlyUpper": 4189,
+        "mainRateBasisPoints": 800,
+        "upperRateBasisPoints": 200
+      },
+      "sourceUrls": [
+        "https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027"
+      ]
+    },
+    {
+      "jurisdiction": "CA",
+      "component": "cpp-ei",
+      "taxYear": "2026",
+      "version": "CA-2026-cpp-ei-preview-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "parameters": {
+        "cppExemption": 3500,
+        "cppCeiling": 74600,
+        "cpp2Ceiling": 85000,
+        "cppRateBasisPoints": 595,
+        "cpp2RateBasisPoints": 400,
+        "cppEnhancedRateBasisPoints": 100,
+        "eiCeiling": 68900,
+        "eiRateBasisPoints": 163
+      },
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/payroll-deductions-contributions/canada-pension-plan-cpp/cpp-contribution-rates-maximums.html",
+        "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/payroll-deductions-contributions/employment-insurance-ei/ei-premium-rates-maximums.html"
+      ]
+    },
+    {
+      "jurisdiction": "AU",
+      "component": "medicare-levy",
+      "taxYear": "2026",
+      "version": "AU-2026-medicare-preview-v1",
+      "effectiveFrom": "2026-07-01",
+      "effectiveUntil": "2027-07-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "parameters": {
+        "fullRateBasisPoints": 200,
+        "minimumSupportedIncome": 100000
+      },
+      "sourceUrls": [
+        "https://www.ato.gov.au/tax-and-super-professionals/for-tax-professionals/prepare-and-lodge/tax-time/before-you-lodge/medicare-levy"
+      ]
+    },
+    {
+      "jurisdiction": "IN",
+      "component": "epf",
+      "taxYear": "2026",
+      "version": "IN-2026-epf-preview-v1",
+      "effectiveFrom": "2026-04-01",
+      "effectiveUntil": "2027-04-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "parameters": {
+        "employeeRateBasisPoints": 1200,
+        "maximumSupportedWage": 15000
+      },
+      "sourceUrls": [
+        "https://unifiedportal-emp.epfindia.gov.in/epfo/"
+      ]
+    },
+    {
+      "jurisdiction": "SG",
+      "component": "cpf",
+      "taxYear": "2026",
+      "version": "SG-2026-cpf-preview-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "parameters": {
+        "ordinaryWageCeiling": 8000,
+        "minimumExclusiveWage": 750,
+        "ageRates": {
+          "55-or-under": [
+            2000,
+            3700
+          ],
+          "56-60": [
+            1800,
+            3400
+          ],
+          "61-65": [
+            1250,
+            2500
+          ],
+          "66-70": [
+            750,
+            1650
+          ],
+          "over-70": [
+            500,
+            1250
+          ]
+        }
+      },
+      "sourceUrls": [
+        "https://www.cpf.gov.sg/employer/employer-obligations/how-much-cpf-contributions-to-pay",
+        "https://www.cpf.gov.sg/service/article/what-is-the-ordinary-wage-ow-ceiling"
+      ]
+    }
+  ]
+}
