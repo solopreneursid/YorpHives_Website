@@ -94,7 +94,14 @@ export const spec = {
                       "fx_payout",
                       "team_planner",
                       "transfer_pricing",
-                      "quarterly_tax"
+                      "quarterly_tax",
+                      "equity_bonus",
+                      "contractor_eor",
+                      "gratuity_exit",
+                      "freelancer_billing",
+                      "freelancer_ledger",
+                      "residency_payslip",
+                      "ctc_restructurer"
                     ]
                   },
                   "parameters": {
