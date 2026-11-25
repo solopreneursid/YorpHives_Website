@@ -55,7 +55,7 @@ export const spec = {
                   },
                   "parameters": {
                     "type": "object",
-                    "description": "For US pit calculations, optional filingStatus is one of single (default), mfj, hoh, mfs; other PIT inputs are grossSalary and optional preTaxDeductions. All results are illustrative and taxRulesVerified=false."
+                    "description": "For US pit calculations, optional filingStatus is one of single (default), mfj, hoh, mfs. For IN pit, residentIndividual is a required boolean: only true permits illustrative Section 87A/202 rebate and marginal relief on ordinary salary income. Other PIT inputs are grossSalary and optional preTaxDeductions. All results are illustrative and taxRulesVerified=false."
                   }
                 },
                 "additionalProperties": false
