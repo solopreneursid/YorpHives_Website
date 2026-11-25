@@ -51,7 +51,7 @@ try {
    assert.equal(await page.evaluate(()=>document.activeElement.classList.contains('skip')),true);
    await page.keyboard.press('Enter');
    assert.equal(await page.evaluate(()=>document.activeElement.id),'main');
-   assert.equal(await page.locator('#tools .tool-link').count(),15);
+   assert.equal(await page.locator('#tools .tool-link').count(),19);
    assert.equal(await page.locator('#tools .category-card').count(),6);
    assert.deepEqual(await page.locator('main > section.card:visible').evaluateAll(es=>es.map(e=>e.id)),['tools']);
    await page.locator('.nav a[href="/salary"]').click();
@@ -83,6 +83,17 @@ try {
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
    await page.locator('#budget-food').fill('11000');
    assert.equal(await page.locator('#budget-result').isVisible(),false);
+   await page.locator('.nav a[href="/abroad"]').click();
+   await page.locator('#category-abroad a[href="/tools/relocation-break-even"]').click();
+   await page.locator('#relocation-break-even-currentMonthlySavings').fill('50000');
+   await page.locator('#relocation-break-even-destinationMonthlySavings').fill('70000');
+   await page.locator('#relocation-break-even-movingCost').fill('110000');
+   await page.locator('#relocation-break-even-form button[type=submit]').click();
+   await page.locator('#relocation-break-even-result').waitFor();
+   assert.match(await page.locator('#relocation-break-even-breakdown').innerText(),/Whole months to recover costs\s*6/);
+   await page.locator('#relocation-break-even-destinationMonthlySavings').fill('-1000');
+   await page.locator('#relocation-break-even-form button[type=submit]').click();
+   assert.match(await page.locator('#relocation-break-even-breakdown').innerText(),/Not recovered/);
    await page.evaluate(id=>{location.hash=id},"my-tax");await page.locator('#my-tax').waitFor({state:'visible'});
    await page.locator('#salary').fill('1275000');
    await page.locator('#resident').selectOption('true');
