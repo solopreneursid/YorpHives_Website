@@ -44,8 +44,8 @@ test('automatic search distinguishes limit from impossibility',()=>{
 });
 
 test('automatic search preserves incomplete status where no safe tighter bound exists',()=>{
- const profile={country:'AU',region:'AU',taxYear:'2026',scopeConfirmed:true};
- const result=automaticReverseSalary({profile,target:200000,period:'annual'});
+ const profile={country:'CA',region:'AB',taxYear:'2026',scopeConfirmed:true};
+ const result=automaticReverseSalary({profile,target:100000,period:'annual'});
  assert.equal(result.found,false);assert.equal(result.searchComplete,false);
 });
 test('automatic search handles fixed UAE premiums at both tiers',()=>{
@@ -54,5 +54,24 @@ test('automatic search handles fixed UAE premiums at both tiers',()=>{
   const result=automaticReverseSalary({profile,target:900000,period:'monthly'});
   assert.equal(result.requiredPay,basic<=16000?900006:900011);
   assert.equal(result.searchComplete,true);
+ }
+});
+
+for(const [country,region,pay,extras] of [
+ ['GB','RUK',8333,{}],['GB','SCT',10476,{}],['AU','AU',350000,{}],
+ ['SG','SG',8000,{}],['SG','SG',50000,{}],
+ ['DE','DE',6450,{annualTaxableIncome:50000,healthSupplementRate:2.9}],
+ ['AE','AE',900000,{monthlyBasicSalary:16000}]
+])test('optimized automatic search '+region+' at '+pay,()=>{
+ const profile={country,region,taxYear:'2026',scopeConfirmed:true,...extras};
+ for(const period of ['monthly','annual']){
+  const field=period==='monthly'?'averageMonthlyRemainder':'annualRemainder';
+  const target=calculateSalaryRemainder({...profile,pay})[field];
+  const result=automaticReverseSalary({profile,target,period});
+  assert.equal(result.found,true);
+  assert.equal(result.searchComplete,true);
+  assert.ok(result.requiredPay<=pay);
+  assert.ok(result.achieved>=target);
+  assert.ok(calculateSalaryRemainder({...profile,pay:result.requiredPay-1})[field]<target);
  }
 });
