@@ -49,14 +49,18 @@ export function automaticReverseSalary({profile,target,period}){
  if(key==='AE:AE')deductionFloor=base.totalModeledDeductions;
  if(key==='DE:DE')deductionFloor=base.incomeTax;
  if(key==='IN:IN')deductionFloor=base.employeeContributions;
- // Texas regular federal tax and FICA are individually nondecreasing in
- // gross wages, including the contribution ceiling and additional Medicare.
+ // For these scoped profiles total deductions are nondecreasing: progressive
+ // tax on nondecreasing taxable income, plus nondecreasing contributions.
+ // Singapore whole-dollar CPF rises by at most one dollar per dollar of pay;
+ // Australia is restricted above the low-income offset phaseout.
+ // Germany and UAE hold assessment and basic wage fixed.
+ // Canada and India remain conservative pending proof across rounding and relief boundaries.
  // Iterating a necessary bound cannot skip any feasible candidate.
  let start=Math.max(floor,Math.floor((annualTarget+deductionFloor)/multiplier));
- if(key==='US:TX'){
+ if(['US:TX','GB:RUK','GB:SCT','AU:AU','SG:SG','DE:DE','AE:AE'].includes(key)){
   for(let i=0;i<64&&start<=maximum;i++){
    const at=calculateSalaryRemainder({...profile,pay:start});
-   const next=Math.floor(annualTarget+at.totalModeledDeductions);
+   const next=Math.floor((annualTarget+at.totalModeledDeductions)/multiplier);
    if(next<=start)break;
    start=next;
   }
