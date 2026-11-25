@@ -53,7 +53,7 @@ function fakeIndexedDB() {
               return row.id;
             }),
             get: id => makeRequest(() => structuredClone(rows.get(id))),
-            getAll: () => makeRequest(() => [...rows.values()].map(structuredClone)),
+            getAll: () => makeRequest(() => [...rows.values()].map(row => structuredClone(row))),
             delete: id => makeRequest(() => rows.delete(id))
           };
         }
