@@ -208,8 +208,8 @@
         },
         incomeTaxBrackets: [
           { min: 0, max: 37700, rate: 0.20, bandName: 'Basic Rate (20%)' },
-          { min: 37700, max: 112570, rate: 0.40, bandName: 'Higher Rate (40%)' },
-          { min: 112570, max: null, rate: 0.45, bandName: 'Additional Rate (45%)' }
+          { min: 37700, max: 125140, rate: 0.40, bandName: 'Higher Rate (40%)' },
+          { min: 125140, max: null, rate: 0.45, bandName: 'Additional Rate (45%)' }
         ],
         socialSecurity: {
           rate: 0.08,
@@ -707,15 +707,8 @@
       let rawBracketTax = 0;
       let marginalRate = 0;
 
-      // For UK when Personal Allowance is tapered, the Higher Rate (40%) threshold in gross terms stays £50,270,
-      // and the Additional Rate (45%) threshold stays at £125,140 of taxable income when PA = £0.
-      const effectiveBrackets = brackets.map((b, idx) => {
-        if (countryCode === 'GB' && specialRules.ukPersonalAllowanceTaper && idx === 1) {
-          const paLost = 12570 - standardDeductionAmount;
-          return { ...b, max: b.max + paLost };
-        }
-        return b;
-      });
+      // UK income-tax bands apply to taxable income after allowance; never extend a band for taper.
+      const effectiveBrackets = brackets;
 
       const bracketRows = effectiveBrackets.map((tier) => {
         const min = tier.min;
@@ -2495,7 +2488,7 @@
             { min: 31092, max: 62430, rate: 0.42 }, { min: 62430, max: 112570, rate: 0.45 }, { min: 112570, max: null, rate: 0.48 }
           ]).totalTax;
           const rukTax = TaxEnginePrimitives.progressive_brackets(taxable, [
-            { min: 0, max: 37700, rate: 0.20 }, { min: 37700, max: 112570, rate: 0.40 }, { min: 112570, max: null, rate: 0.45 }
+            { min: 0, max: 37700, rate: 0.20 }, { min: 37700, max: 125140, rate: 0.40 }, { min: 125140, max: null, rate: 0.45 }
           ]).totalTax;
           return Math.max(0, scotTax - rukTax);
         }}
