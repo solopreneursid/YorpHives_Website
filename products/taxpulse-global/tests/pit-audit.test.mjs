@@ -72,3 +72,9 @@ test('India residency must be explicit and controls eligibility', () => {
   assert.ok(nonresident.incomeTax > resident.incomeTax);
   assert.equal(nonresident.rebateApplied, 0);
 });
+
+test('India example rejects taxable income above surcharge boundary',()=>{
+ assert.doesNotThrow(()=>calc('IN',5075000,{residentIndividual:true}));
+ assert.throws(()=>calc('IN',5075000.01,{residentIndividual:true}),/surcharge/);
+ assert.throws(()=>calc('IN',6000000,{residentIndividual:false}),/surcharge/);
+});
