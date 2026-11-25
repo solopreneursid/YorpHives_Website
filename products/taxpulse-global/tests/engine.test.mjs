@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {TaxEnginePrimitives as p} from '../engine/primitives.mjs';
+const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
+test('progressive bracket boundaries and zero income',()=>{const b=[{min:0,max:500,rate:.1},{min:500,max:null,rate:.2}];near(p.progressive_brackets(0,b).totalTax,0);near(p.progressive_brackets(500,b).totalTax,50);near(p.progressive_brackets(1000,b).totalTax,150)});
+test('contribution cap and floor',()=>{const r=[{name:'fixture',rate:.1,min_Floor:100,annual_cap:800}];near(p.capped_percentage(50,r).totalContribution,0);near(p.capped_percentage(1000,r).totalContribution,70)});
+test('exclusive and inclusive tax',()=>{near(p.flat_or_slab_lookup({amount:100,rate:.18}).grossAmount,118);near(p.flat_or_slab_lookup({amount:118,rate:.18,mode:'inclusive'}).netAmount,100)});
+test('treaty credit arithmetic',()=>{const r=p.treaty_offset({grossIncome:1000,sourceDomesticWhtRate:.2,treatyWhtRate:.1,residenceTaxRate:.3});near(r.foreignTaxPaid,100);near(r.foreignTaxCreditAllowed,100);near(r.totalGlobalTax,300)});
+for(const c of ['IN','US','GB'])test('original rule fixture '+c,()=>{const r=JSON.parse(readFileSync(new URL('../rules/2026/'+c+'.json',import.meta.url),'utf8'));assert.equal(r.country_code,c);assert.equal(String(r.tax_year),'2026');assert.equal(Object.keys(r.modules).length,7);assert.ok(r.source_url.startsWith('https://'))});
+test('all extracted frontend assets exist and module inventory remains intact',()=>{const h=readFileSync(new URL('../staging/assets/index.html',import.meta.url),'utf8');assert.equal(new Set([...h.matchAll(/data-module-tab="([^"]+)"/g)].map(m=>m[1])).size,38);for(const m of h.matchAll(/(?:src|href)="\/assets\/([^"]+)"/g))assert.ok(readFileSync(new URL('../staging/assets/'+m[1],import.meta.url)).length>0)});
