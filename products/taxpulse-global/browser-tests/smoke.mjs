@@ -251,6 +251,18 @@ try {
    const [aeReport]=await Promise.all([page.waitForEvent('download'),page.locator('#pay-download').click()]);
    await page.locator('#proof-file').setInputFiles(await aeReport.path());
    await page.waitForFunction(()=>document.getElementById('proof-status').textContent.includes('calculation was reproduced'));
+   await page.locator('#reverse-target').fill('19994.75');
+   await page.locator('#reverse-min').fill('19990');
+   await page.locator('#reverse-max').fill('20010');
+   await page.getByRole('button',{name:'Find my salary'}).click();
+   await page.locator('#reverse-result').waitFor();
+   assert.match(await page.locator('#reverse-gross').innerText(),/AED\s*240,000/);
+   await page.locator('#reverse-target').fill('30000');
+   assert.equal(await page.locator('#reverse-result').isVisible(),false);
+   await page.getByRole('button',{name:'Find my salary'}).click();
+   assert.match(await page.locator('#reverse-error').innerText(),/No salary/);
+   await page.locator('#pay-region').selectOption('TX');
+   assert.equal(await page.locator('#reverse-target').inputValue(),'');
    await page.locator('#country').selectOption('US');
    assert.equal(await page.locator('#tax-result').isVisible(),false);
    assert.equal(await page.locator('#residency-field').isVisible(),false);
