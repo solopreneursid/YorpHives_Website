@@ -23,3 +23,6 @@ for(const c of ['IN','US','GB']){
 write('country.mjs',country);write('worker.mjs',read('staging/integrated/worker.mjs'));
 
 write('manifest.mjs','export default '+JSON.stringify(JSON.parse(read('rules/manifest.json')))+';\n');
+
+const advancedBrowser='globalThis.TaxPulseAdvanced = (() => {\n'+read('engine/advanced.mjs').replace(/\bexport (?=const supported|function advancedCalculate)/g,'')+'\nreturn Object.freeze({calculate:advancedCalculate,supported:Object.freeze(supported)});\n})();\n';
+write('advanced-browser.js.txt',advancedBrowser);
