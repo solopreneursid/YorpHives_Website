@@ -20,7 +20,8 @@ for(const c of ['IN','US','GB']){
  country=country.replace(from,"import "+c+" from './"+c+".mjs';");
  write(c+'.mjs','export default '+JSON.stringify(rules[c]['2026'])+';\n');
 }
-write('country.mjs',country);write('worker.mjs',read('staging/integrated/worker.mjs'));
+write('country.mjs',country);
+write('us-filing-statuses.mjs',read('engine/us-filing-statuses.mjs'));write('worker.mjs',read('staging/integrated/worker.mjs'));
 
 write('manifest.mjs','export default '+JSON.stringify(JSON.parse(read('rules/manifest.json')))+';\n');
 
