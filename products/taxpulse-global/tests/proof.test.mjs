@@ -25,3 +25,16 @@ test('invalid receipts and unsafe values fail closed',async()=>{
  const r=await createReceipt({kind:'salary',input,engineFingerprint});
  await assert.rejects(()=>verifyReceipt({...r,signature:'fake'},engineFingerprint));
 });
+
+test('reverse salary reports replay automatic and manual calculations',async()=>{
+ const input={profile:{country:'AE',region:'AE',taxYear:'2026',scopeConfirmed:true,monthlyBasicSalary:16000},target:19994.75,period:'monthly'};
+ for(const [kind,parameters] of [['automatic-reverse-salary',input],['reverse-salary',{...input,minPay:19990,maxPay:20010}]]){
+  const receipt=await createReceipt({kind,input:parameters,engineFingerprint});
+  assert.equal(receipt.payload.result.requiredPay,20000);
+  assert.deepEqual(await verifyReceipt(receipt,engineFingerprint),{integrity:true,sameEngine:true,reproduced:true});
+  assert.deepEqual(await verifyReceipt(receipt,'b'.repeat(64)),{integrity:true,sameEngine:false,reproduced:false});
+  const tampered=structuredClone(receipt);tampered.payload.result.requiredPay=1;
+  assert.equal((await verifyReceipt(tampered,engineFingerprint)).integrity,false);
+ }
+ await assert.rejects(()=>createReceipt({kind:'reverse-salary',input:{...input,minPay:19990,maxPay:19999},engineFingerprint}));
+});
