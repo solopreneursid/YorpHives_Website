@@ -609,3 +609,23 @@ async function printReceipt(record,button,error){
  finally{button.disabled=false;}
 }
 for(const [id,getRecord] of [['pay',()=>lastPay],['reverse',()=>lastReverse],['offers',()=>lastOffers],['negotiation',()=>lastNegotiation],['comp',()=>lastCompensation],['intl',()=>lastInternational]])$(id+'-print').addEventListener('click',()=>printReceipt(getRecord(),$(id+'-print'),$(id+'-error')));
+
+// Hash navigation preserves form state while exposing only the chosen workspace.
+const workspaceSections=[...document.querySelectorAll('main > section.card')];
+const dashboardHero=document.querySelector('main > .hero');
+const workspaceNav=[...document.querySelectorAll('.nav a')];
+const groups={compare:['my-tax','compare'],'reverse-salary':['salary-remainder','reverse-salary'],'salary-negotiation':['salary-remainder','salary-negotiation']};
+function showWorkspace({focus=false}={}){
+ const hash=location.hash.slice(1);
+ const requested=workspaceSections.find(section=>section.id===hash);
+ const active=requested?.id||'tools';
+ const home=active==='tools';
+ const shown=new Set(groups[active]||[active]);
+ dashboardHero.hidden=!home;
+ for(const section of workspaceSections)section.hidden=!shown.has(section.id);
+ for(const link of workspaceNav){if(link.hash==='#'+active)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');}
+ const target=document.getElementById(active);
+ if(focus&&hash!=='main'){target.tabIndex=-1;target.focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}
+}
+window.addEventListener('hashchange',()=>showWorkspace({focus:true}));
+showWorkspace();
