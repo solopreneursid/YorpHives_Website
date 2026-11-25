@@ -4,6 +4,7 @@ import {DatabaseSync} from 'node:sqlite';
 import {readFileSync} from 'node:fs';
 import {snapshotBytes} from '../engine/rule-snapshot.mjs';
 import {publishSnapshot,blockSnapshot} from '../engine/rule-publisher.mjs';
+import {runScheduledPublication} from '../engine/scheduled-publication.mjs';
 import {loadRuntimeRules} from '../engine/runtime-rules.mjs';
 const read=p=>JSON.parse(readFileSync(new URL('../rules/'+p,import.meta.url)));
 const regional=read('regional-versions.json'),indiaSalary=read('india-salary-versions.json'),payroll=read('payroll-versions.json');
@@ -48,3 +49,5 @@ test('atomic publication, fixture rejection, replay, emergency block and forward
  assert.equal(sqlite.prepare('SELECT count(*) n FROM regulatory_events').get().n,3);
  }finally{sqlite.close();}
 });
+
+test('scheduled publisher consumes signed inbox once, rejects tampered update, retains active head',async()=>{const sqlite=new DatabaseSync(':memory:');try{sqlite.exec(readFileSync(new URL('../migrations/001-regulatory-snapshots.sql',import.meta.url),'utf8'));const db=dbAdapter(sqlite);let pending=null;const env={RULE_DB:db,RULE_PUBLIC_KEY:publicKeyHex,RULE_INBOX:{get:async()=>pending}};assert.equal((await runScheduledPublication(env,engineFingerprint,{now})).state,'no_candidate');pending=JSON.stringify(await pack(1));assert.equal((await runScheduledPublication(env,engineFingerprint,{now})).state,'active');assert.equal((await runScheduledPublication(env,engineFingerprint,{now})).state,'already_processed');const two=await pack(2);two.envelope.signature='0'.repeat(128);pending=JSON.stringify(two);await assert.rejects(runScheduledPublication(env,engineFingerprint,{now}));assert.equal(sqlite.prepare('SELECT sequence FROM regulatory_head').get().sequence,1);pending=JSON.stringify(await pack(2));assert.equal((await runScheduledPublication(env,engineFingerprint,{now})).sequence,2);}finally{sqlite.close();}});
