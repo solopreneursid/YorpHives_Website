@@ -3775,7 +3775,7 @@ Restricted Stock Units (RSU Vest): £20,000`
           seeds[j] = Math.imul(seeds[j] ^ ch ^ ((i + 1) * (j + 1)), 0x01000193) >>> 0;
         }
       }
-      return 'txp_sha256_' + seeds.map(n => n.toString(16).padStart(8, '0')).join('');
+      return 'txp_demo_checksum_' + seeds.map(n => n.toString(16).padStart(8, '0')).join('');
     }
 
     function generateSignedCalculationReceipt() {
@@ -3815,7 +3815,10 @@ Restricted Stock Units (RSU Vest): £20,000`
       const proofHash = computeDeterministicHash(JSON.stringify(canonicalPayload));
       return {
         verification_hash: proofHash,
-        zero_hallucination_guarantee: true,
+        zero_hallucination_guarantee: false,
+        signed: false,
+        taxRulesVerified: false,
+        checksumAlgorithm: 'noncryptographic-demo',
         ...canonicalPayload
       };
     }
@@ -3846,13 +3849,13 @@ Restricted Stock Units (RSU Vest): £20,000`
       schema_version: "1.0.0",
       name: "taxpulse-global-tax-engine",
       title: "TaxPulse Global 2026 Deterministic Tax Engine",
-      description: "Machine-callable deterministic tax calculation oracle exposing 4 mathematical primitives and 21 tax modules with SHA-256 execution proofs.",
-      protocols: ["mcp-2026-07-28", "openapi-3.1.0", "window-rpc-v1"],
+      description: "Machine-callable deterministic tax calculation oracle exposing 4 mathematical primitives and 21 tax modules with unsigned illustrative calculations.",
+      protocols: ["openapi-3.1.0", "window-rpc-v1"],
       in_browser_rpc: "window.TaxPulseAgent.callTool(toolName, arguments)",
       tools: [
         {
           name: "calculate_personal_tax",
-          description: "Computes exact 2026 income tax, social security, effective/marginal rates, and SHA-256 verification hash.",
+          description: "Estimates illustrative 2026 income tax, social security, effective/marginal rates, and noncryptographic demo checksum.",
           inputSchema: {
             type: "object",
             required: ["country_code", "gross_annual"],
@@ -4011,16 +4014,16 @@ Restricted Stock Units (RSU Vest): £20,000`
       const scope = document.getElementById('a2aPreferredJurisdictionSelect')?.value || 'ALL';
 
       const deals = runA2ADealDeskNegotiation(maxBudgetUsd, minNetUsd, scope);
-      const feasibleDeals = deals.filter(d => d.feasible);
+      const feasibleDeals = deals.filter(d => d.feasible && TaxPulseAdvanced.calculate({module:'agent_deal_desk',parameters:{employerBudget:Math.min(maxBudgetUsd,1e9),fixedEmployerCosts:0,assumedEmployerCostRate:0,assumedEmployeeDeductionRate:Math.min(1,Math.max(0,1-d.talentNetUsd/Math.max(1,maxBudgetUsd))),targetNet:Math.min(minNetUsd,1e9)}}).result.feasible);
 
-      document.getElementById('a2aFeasibleCountBadge').textContent = `${feasibleDeals.length} of ${deals.length} Contract Structures Satisfy Both Agents`;
+      document.getElementById('a2aFeasibleCountBadge').textContent = `${feasibleDeals.length} of ${deals.length} Sample Structures Meet Assumed Targets`;
 
       const winnerBanner = document.getElementById('a2aWinnerBanner');
       if (winnerBanner && deals.length > 0) {
         const top = deals[0];
         winnerBanner.innerHTML = `
           <div>
-            <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-300">Pareto-Optimal Agent Agreement (#1 Ranked)</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-300">Top illustrative scenario (no agreement executed)</div>
             <div class="text-base font-extrabold mt-0.5">${top.flag} ${top.countryName} — ${top.modelName}</div>
             <div class="text-xs text-emerald-100 mt-0.5">Employer pays ${formatCurrency(top.employerCostUsd, 'USD')}/yr • Talent receives ${formatCurrency(top.talentNetUsd, 'USD')}/yr Net (${formatCurrency(convertBetweenCurrencies(top.talentNetUsd, 'USD', 'INR'), 'INR')})</div>
           </div>
@@ -4301,11 +4304,11 @@ Restricted Stock Units (RSU Vest): £20,000`
         name: 'TaxPulse Global Tax Engine',
         version: '2026.11.0',
         supportedInterfaces: [
-          { url: 'https://taxpulse.edge.workers.dev/mcp', protocolBinding: 'MCP-Streamable-HTTP', protocolVersion: '2026-07-28' },
-          { url: 'https://taxpulse.edge.workers.dev/v1/calculate', protocolBinding: 'HTTP+JSON', protocolVersion: '1.0' }
+          
+          { url: '/v1/calculate', protocolBinding: 'HTTP+JSON', protocolVersion: '1.0' }
         ],
-        capabilities: { streaming: true, deterministicSha256Receipts: true, x402Micropayments: true },
-        securitySchemes: { x402: { type: 'http', scheme: 'x402' } }
+        capabilities: { streaming: false, deterministicSha256Receipts: false, x402Micropayments: false },
+        securitySchemes: {}
       };
       const WRANGLER_TOML_CONTENT = [
         'name = "taxpulse-edge-engine"',
@@ -4369,7 +4372,7 @@ Restricted Stock Units (RSU Vest): £20,000`
       document.getElementById('copySignedReceiptBtn').addEventListener('click', () => {
         const receipt = generateSignedCalculationReceipt();
         fallbackCopy(JSON.stringify(receipt, null, 2));
-        showToast(`Copied signed SHA-256 receipt (${receipt.verification_hash.slice(0, 18)}...)`);
+        showToast(`Copied unsigned scenario checksum (${receipt.verification_hash.slice(0, 18)}...)`);
       });
 
       // A2A Deal-Desk Inputs
@@ -4408,10 +4411,10 @@ Restricted Stock Units (RSU Vest): £20,000`
           name: 'TaxPulse Global Tax Engine',
           version: '2026.11.0',
           supportedInterfaces: [
-            { url: 'https://taxpulse.edge.workers.dev/mcp', protocolBinding: 'MCP-Streamable-HTTP', protocolVersion: '2026-07-28' },
-            { url: 'https://taxpulse.edge.workers.dev/v1/calculate', protocolBinding: 'HTTP+JSON', protocolVersion: '1.0' }
+            
+            { url: '/v1/calculate', protocolBinding: 'HTTP+JSON', protocolVersion: '1.0' }
           ],
-          capabilities: { streaming: true, deterministicSha256Receipts: true, x402Micropayments: true }
+          capabilities: { streaming: false, deterministicSha256Receipts: false, x402Micropayments: false }
         };
         const blob = new Blob([JSON.stringify(card, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -4670,36 +4673,17 @@ X-MCP-Tool-Target: "calculate_personal_tax"`;
       const claimSatisfied = actualNetUsd >= zkThreshUsd;
 
       const commitmentHash = computeDeterministicHash(`ZK_COMMITMENT|${salt}|${code}|2026|${Math.round(actualNetUsd)}|${zkThreshUsd}|${claimSatisfied}`);
-      const zkCredential = {
-        "@context": ["https://www.w3.org/ns/credentials/v2"],
-        type: ["VerifiableCredential", "ZeroKnowledgeIncomeAttestation"],
-        issuer: "did:web:taxpulse.global:oracle-v2026.4",
-        issuanceDate: new Date().toISOString(),
-        credentialSubject: {
-          tax_jurisdiction: code,
-          tax_year: "2026",
-          residency_status: activeResidencyStatus,
-          predicate_claim: `net_annual_take_home_usd >= ${zkThreshUsd}`,
-          predicate_verified: claimSatisfied,
-          exact_income_disclosed: "REDACTED_BY_ZERO_KNOWLEDGE_PROOF"
-        },
-        zkProof: {
-          scheme: "Pedersen-SHA256-Threshold-Range-Attestation",
-          commitment_hash: commitmentHash,
-          underlying_engine_receipt: generateSignedCalculationReceipt().verification_hash
-        }
-      };
-
+      const zkCredential = {documentType:'unsigned_threshold_scenario',country:code,taxYear:'2026',thresholdUsd:zkThreshUsd,scenarioThresholdReached:claimSatisfied,cryptographicProof:false,verified:false,signed:false};
       const zkBadge = document.getElementById('zkAssertionStatusBadge');
       if (zkBadge) {
-        zkBadge.textContent = claimSatisfied ? 'PREDICATE: TRUE (VERIFIED)' : 'PREDICATE: FALSE (BELOW MIN)';
+        zkBadge.textContent = claimSatisfied ? 'ILLUSTRATIVE THRESHOLD MET' : 'ILLUSTRATIVE THRESHOLD NOT MET';
         zkBadge.className = claimSatisfied
           ? 'px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-bold bg-emerald-500 text-slate-950'
           : 'px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-bold bg-rose-500 text-white';
       }
       document.getElementById('zkPublicClaimText').textContent = `Net Pay >= ${formatCurrency(zkThreshUsd, 'USD')}/yr`;
       document.getElementById('zkJurisdictionText').textContent = `${countryRule.flag} ${code} • 2026`;
-      document.getElementById('zkCommitmentDigestText').textContent = `Commitment: ${commitmentHash}`;
+      document.getElementById('zkCommitmentDigestText').textContent = 'Cryptographic proof unavailable';
       const zkPre = document.getElementById('zkCredentialJsonPre');
       if (zkPre) zkPre.textContent = JSON.stringify(zkCredential, null, 2);
     }
@@ -4729,7 +4713,7 @@ X-MCP-Tool-Target: "calculate_personal_tax"`;
       // Copy ZK Credential JSON button
       document.getElementById('copyZkCredentialBtn').addEventListener('click', () => {
         fallbackCopy(document.getElementById('zkCredentialJsonPre')?.textContent || '');
-        showToast('Copied signed Zero-Knowledge Income Attestation JSON!');
+        showToast('Copied unsigned threshold scenario');
       });
 
       // Bind inputs across Modules 22–26
@@ -5627,16 +5611,16 @@ GST/LUT eligibility and actual tax treatment require independent verification.`;
         return `
           <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
             <td class="py-2.5 px-4">
-              <div class="font-bold text-slate-900 dark:text-white">${cl.name}</div>
-              <div class="text-[11px] font-mono-num text-slate-400">${cl.taxId}</div>
+              <div class="font-bold text-slate-900 dark:text-white">${String(cl.name).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</div>
+              <div class="text-[11px] font-mono-num text-slate-400">${String(cl.taxId).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</div>
             </td>
             <td class="py-2.5 px-2">${cRule.flag} ${cRule.code}</td>
             <td class="py-2.5 px-3 text-right font-mono-num">${formatCurrency(cl.grossAnnual, cRule.currency.code)}</td>
             <td class="py-2.5 px-3 text-right font-mono-num text-rose-600 dark:text-rose-400">${formatCurrency(totalTax, cRule.currency.code)}</td>
             <td class="py-2.5 px-3 text-right font-mono-num font-bold text-emerald-600 dark:text-emerald-400">${formatCurrency(sim.netTakeHomeAnnual, cRule.currency.code)}</td>
             <td class="py-2.5 px-3">
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${statusColor}">${cl.status}</span>
-              <div class="text-[11px] text-slate-500 truncate max-w-[180px] mt-0.5">${cl.note}</div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${statusColor}">${String(cl.status).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</span>
+              <div class="text-[11px] text-slate-500 truncate max-w-[180px] mt-0.5">${String(cl.note).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</div>
             </td>
             <td class="py-2.5 px-4 text-right space-x-1.5 whitespace-nowrap">
               <button type="button" data-load-client="${cl.id}" class="px-2 py-1 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold text-[11px] hover:bg-indigo-100">Load</button>
@@ -5680,7 +5664,7 @@ GST/LUT eligibility and actual tax treatment require independent verification.`;
         btn.addEventListener('click', () => {
           const id = Number(btn.getAttribute('data-del-client'));
           crmClients = crmClients.filter(x => x.id !== id);
-          try { localStorage.setItem('taxpulse_ca_client_book_2026', JSON.stringify(crmClients)); } catch (e) {}
+          try { /* persistence disabled for preview */ } catch (e) {}
           renderCrmClientBook();
         });
       });
@@ -5720,7 +5704,7 @@ GST/LUT eligibility and actual tax treatment require independent verification.`;
         btn.addEventListener('click', () => {
           const id = Number(btn.getAttribute('data-del-ledger'));
           freelancerLedgerEntries = freelancerLedgerEntries.filter(x => x.id !== id);
-          try { localStorage.setItem('taxpulse_fl_ledger_2026', JSON.stringify(freelancerLedgerEntries)); } catch (e) {}
+          try { /* persistence disabled for preview */ } catch (e) {}
           renderFreelancerLedger();
           updateRetentionModules33To36();
         });
@@ -5848,9 +5832,9 @@ Residency Status      : ${activeResidencyStatus.toUpperCase()}
     function initRetentionSystems33To36() {
       // Load saved CRM clients and Freelancer Ledger from localStorage if available
       try {
-        const savedCrm = localStorage.getItem('taxpulse_ca_client_book_2026');
+        const savedCrm = null;
         if (savedCrm) crmClients = JSON.parse(savedCrm);
-        const savedFl = localStorage.getItem('taxpulse_fl_ledger_2026');
+        const savedFl = null;
         if (savedFl) freelancerLedgerEntries = JSON.parse(savedFl);
       } catch (e) {}
 
@@ -5879,7 +5863,7 @@ Residency Status      : ${activeResidencyStatus.toUpperCase()}
           status,
           note
         });
-        try { localStorage.setItem('taxpulse_ca_client_book_2026', JSON.stringify(crmClients)); } catch (e) {}
+        try { /* persistence disabled for preview */ } catch (e) {}
         renderCrmClientBook();
         showToast(`Saved ${name} to Client Book!`);
       });
@@ -5910,7 +5894,7 @@ Residency Status      : ${activeResidencyStatus.toUpperCase()}
         const tds = Math.max(0, parseFloat(document.getElementById('flLedgerTdsInput')?.value) || 0);
 
         freelancerLedgerEntries.push({ id: Date.now(), month, desc, gross, expense, tds });
-        try { localStorage.setItem('taxpulse_fl_ledger_2026', JSON.stringify(freelancerLedgerEntries)); } catch (e) {}
+        try { /* persistence disabled for preview */ } catch (e) {}
         renderFreelancerLedger();
         updateRetentionModules33To36();
         showToast(`Logged ${month} invoice (${desc})!`);
@@ -5984,7 +5968,7 @@ Residency Status      : ${activeResidencyStatus.toUpperCase()}
 
       // Persist learned profile in localStorage
       try {
-        localStorage.setItem('taxpulse_ai_accountant_profile', JSON.stringify({ workType, housing, family, invest }));
+        /* persistence disabled for preview */
       } catch (e) {}
 
       const curCalc = calculateTaxForCountry(code, state.filingStatusId, grossAnnual, currentPreTax);
@@ -6205,7 +6189,7 @@ Residency Status      : ${activeResidencyStatus.toUpperCase()}
     function initPersonalAiAccountant() {
       // Restore learned profile from localStorage if saved
       try {
-        const savedProf = localStorage.getItem('taxpulse_ai_accountant_profile');
+        const savedProf = null;
         if (savedProf) {
           const p = JSON.parse(savedProf);
           if (p.workType && document.getElementById('aiProfileWorkTypeSelect')) document.getElementById('aiProfileWorkTypeSelect').value = p.workType;
@@ -6288,8 +6272,8 @@ Residency Status      : ${activeResidencyStatus.toUpperCase()}
     };
 
     const entAuditRows = [
-      { id: 'AUD-2026-01', entity: 'Acme India Pvt Ltd', op: 'Monthly Payroll Run (142 Staff)', proof: 'txp_sha256_91c4e8a2f01b', status: 'APPROVED' },
-      { id: 'AUD-2026-02', entity: 'Acme Holdings Inc (US)', op: 'Cost-Plus 15.5% Transfer Pricing', proof: 'txp_sha256_4a8b0912cc7d', status: 'DRAFT' }
+      { id: 'AUD-2026-01', entity: 'Acme India Pvt Ltd', op: 'Monthly Payroll Run (142 Staff)', proof: 'txp_demo_checksum_91c4e8a2f01b', status: 'APPROVED' },
+      { id: 'AUD-2026-02', entity: 'Acme Holdings Inc (US)', op: 'Cost-Plus 15.5% Transfer Pricing', proof: 'txp_demo_checksum_4a8b0912cc7d', status: 'DRAFT' }
     ];
 
     function renderEntAuditLedger() {
@@ -6363,7 +6347,7 @@ Residency Status      : ${activeResidencyStatus.toUpperCase()}
       const licBadge = document.getElementById('activeLicenseBadge');
 
       try {
-        const savedLic = localStorage.getItem('taxpulse_license_key');
+        const savedLic = null;
         if (savedLic && licBadge) licBadge.textContent = `Active License: ${savedLic} (Unlocked)`;
       } catch (e) {}
 
@@ -6393,7 +6377,7 @@ Residency Status      : ${activeResidencyStatus.toUpperCase()}
           showToast('Enter a valid license key (e.g. TXP-PRO-2026)');
           return;
         }
-        try { localStorage.setItem('taxpulse_license_key', key); } catch (e) {}
+        try { /* persistence disabled for preview */ } catch (e) {}
         if (licBadge) licBadge.textContent = `Active License: ${key} (Unlocked)`;
         showToast(`Activated ${key}!`);
       });
@@ -6402,7 +6386,7 @@ Residency Status      : ${activeResidencyStatus.toUpperCase()}
       document.getElementById('entActorRoleSelect')?.addEventListener('change', renderEntAuditLedger);
       document.getElementById('logCurrentCalcAuditBtn')?.addEventListener('click', () => {
         const orgLabel = document.getElementById('entOrgEntitySelect')?.selectedOptions[0]?.textContent || 'Acme Corp';
-        const hash = document.getElementById('liveDeterministicHashBadge')?.textContent?.replace('Proof: ', '').trim() || 'txp_sha256_edge2026';
+        const hash = document.getElementById('liveDeterministicHashBadge')?.textContent?.replace('Proof: ', '').trim() || 'txp_demo_checksum_edge2026';
         entAuditRows.unshift({
           id: `AUD-2026-0${entAuditRows.length + 1}`,
           entity: orgLabel,
@@ -6420,7 +6404,7 @@ Residency Status      : ${activeResidencyStatus.toUpperCase()}
           const parsed = JSON.parse(document.getElementById('hrisWebhookPayloadInput')?.value || '{}');
           const emps = Array.isArray(parsed.employees) ? parsed.employees : [];
           const totalGross = emps.reduce((acc, e) => acc + (Number(e.grossAnnual) || 0), 0);
-          const mockHash = 'txp_sha256_' + Math.abs(Math.round(totalGross * 2654435761)).toString(16).padStart(12, '0');
+          const mockHash = 'txp_demo_checksum_' + Math.abs(Math.round(totalGross * 2654435761)).toString(16).padStart(12, '0');
           entAuditRows.unshift({
             id: `AUD-2026-0${entAuditRows.length + 1}`,
             entity: `${parsed.source || 'HRIS'} Sync`,
