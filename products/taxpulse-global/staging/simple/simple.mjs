@@ -1,3 +1,4 @@
+import {reverseSalary} from './engine/reverse-salary.mjs';
 import { countryCalculate, catalog } from './engine/country.mjs';
 import { compareIncomeScenarios } from './engine/scenarios.mjs';
 import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain, calculateRegionalTax, regionalTaxCatalog, calculateSalaryRemainder, calculateEmployeeContributions } from './engine/taxable-income.mjs';
@@ -329,6 +330,31 @@ $('pay-form').addEventListener('submit',event=>{
 });
 $('pay-download').addEventListener('click',()=>downloadReceipt(lastPay,$('pay-download'),$('pay-error')));
 payChanged();
+
+function clearReverse(){ $('reverse-result').hidden=true;$('reverse-error').textContent='';}
+function reverseRegionChanged(){
+ const c=payOptions[$('pay-region').value];
+ $('reverse-scope').textContent='Selected salary type: '+c.label+'. Supported range: '+(c.min??0)+' to '+c.max+'.';
+ for(const id of ['reverse-min','reverse-max']){const el=$(id);el.min=c.min??0;el.max=c.max;el.value='';}
+ $('reverse-target').value='';clearReverse();
+}
+$('pay-region').addEventListener('change',reverseRegionChanged);
+$('pay-form').addEventListener('input',clearReverse);
+$('reverse-form').addEventListener('input',clearReverse);
+$('reverse-form').addEventListener('submit',event=>{
+ event.preventDefault();clearReverse();
+ try{
+  const region=$('pay-region').value;
+  const profile={country:payOptions[region].country,region,taxYear:'2026',scopeConfirmed:$('pay-confirm').value==='yes',...(region==='IN'?{epfMonthlyWage:$('pay-epf').valueAsNumber,professionalTaxAnnual:$('pay-professional-tax').valueAsNumber}:region==='DE'?{annualTaxableIncome:$('pay-de-taxable').valueAsNumber,healthSupplementRate:$('pay-de-supplement').valueAsNumber}:region==='AE'?{monthlyBasicSalary:$('pay-ae-basic').valueAsNumber}:{})};
+  const r=reverseSalary({profile,target:$('reverse-target').valueAsNumber,period:$('reverse-period').value,minPay:$('reverse-min').valueAsNumber,maxPay:$('reverse-max').valueAsNumber});
+  if(!r.found){$('reverse-error').textContent='No salary in this range meets your target. Try another range.';return;}
+  const s=r.salary,f=v=>money(v,s.currency);
+  $('reverse-gross').textContent=f(s.annualGross);$('reverse-net').textContent=f(s.averageMonthlyRemainder);$('reverse-deductions').textContent=f(s.totalModeledDeductions);
+  $('reverse-warning').textContent='Lowest whole-unit salary within your selected range, not necessarily outside it. '+s.warnings.join(' ')+' Unverified example only.';
+  $('reverse-result').hidden=false;$('reverse-result').focus();
+ }catch{$('reverse-error').textContent='Check the salary range, target and country conditions above. The full range must be supported by the selected example.';}
+});
+reverseRegionChanged();
 
 const contributionOptions={
  CA:{label:'Annual pensionable and insurable earnings (CAD)',scope:'Full-year employee outside Quebec, aged 18–64 throughout the year, one employer. All earnings subject to CPP and EI; full annual basic exemption.',max:1000000000,step:'.01',period:'Calendar year 2026'},
