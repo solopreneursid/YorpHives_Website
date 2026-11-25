@@ -1,0 +1,16 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import worker from '../staging/worker.mjs';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+const url='https://preview.example.test';
+const response=await worker.fetch(new Request(url));
+const html=await response.text();
+test('preview response and release restrictions',()=>{assert.equal(response.status,200);assert.match(response.headers.get('x-robots-tag'),/noindex/);assert.match(response.headers.get('content-security-policy'),/connect-src 'none'/);assert.match(html,/fictional inputs only/);});
+test('38 original module interfaces',()=>{assert.equal(new Set([...html.matchAll(/data-module-tab="([^"]+)"/g)].map(m=>m[1])).size,38)});
+test('unique IDs and static element references',()=>{const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);assert.equal(new Set(ids).size,ids.length);for(const m of html.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g))assert.ok(ids.includes(m[1]),m[1]);});
+test('inline JavaScript parses',()=>{for(const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi))if(!m[1].includes('src='))new vm.Script(m[2]);});
+test('health accurately reports unverified tax rules',async()=>{const r=await worker.fetch(new Request(url+'/health'));assert.equal(r.status,200);assert.equal((await r.json()).taxRulesVerified,false);});
+test('mutating requests are rejected',async()=>{assert.equal((await worker.fetch(new Request(url,{method:'POST'}))).status,405);});
+test('unknown routes are rejected',async()=>{assert.equal((await worker.fetch(new Request(url+'/mcp'))).status,404);});
+test('HEAD does not return HTML',async()=>{assert.equal(await (await worker.fetch(new Request(url,{method:'HEAD'}))).text(),'');});
