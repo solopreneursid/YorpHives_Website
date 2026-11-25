@@ -297,6 +297,10 @@ Object.assign(payOptions,{
  IN:{country:'IN',label:'Annual cash salary before employee deductions (INR)',scope:'Indian resident under 60 using new regime, ordinary salary only, no other income, exemptions or deductions. Enter confirmed monthly EPF contribution wage (12% applies; zero only if not liable) and actual annual professional tax (zero only if none). No ESI or other deductions. Whole rupees.',min:0,max:1000000000,step:'1',period:'FY 2026–27'},
  SG:{country:'SG',label:'Ordinary monthly salary (SGD)',scope:'Full-year resident, Singapore citizen or third-year-or-later PR on full CPF rates, below 55 throughout 2026. Twelve equal ordinary monthly wages, no bonus, other income, reliefs or deductions except employee CPF and ordinary earned income relief. Whole dollars SGD 751–100,000. YA 2027 before rebates.',min:751,max:100000,step:'1',period:'2026 earnings; YA 2027'}
 });
+Object.assign(payOptions,{
+ DE:{country:'DE',label:'Monthly gross wages (EUR)',scope:'Full-year resident, individual assessment, childless age 23–64, outside Saxony, no church tax. One ordinary fully insured job and twelve identical monthly wages, EUR 2,500–6,450. Supply your actual annual taxable income after eligible deductions and insurer supplemental rate (not the employee share). No other income, adjustments or credits. Annual assessment estimate, not wage-tax withholding.',min:2500,max:6450,step:'0.01',period:'Calendar year 2026'},
+ AE:{country:'AE',label:'Monthly gross wages (AED)',scope:'Non-GCC expatriate private-sector employee, wages only, no UAE/GCC pension liability. Twelve identical monthly payments and unchanged basic salary, standard ILOE premium with 5% VAT. No foreign taxes, optional deductions, service fees or end-of-service benefits. AED 100–1,000,000.',min:100,max:1000000,step:'0.01',period:'Calendar year 2026'}
+});
 function clearPay(){lastPay=null;$('pay-result').hidden=true;$('pay-error').textContent='';}
 function payChanged(){
  const c=payOptions[$('pay-region').value];
@@ -304,6 +308,7 @@ function payChanged(){
  $('pay-period').textContent=c.period||(c.country==='US'?'Calendar year 2026':'6 April 2026 – 5 April 2027');
  $('pay-amount').min=c.min??0;
  for(const id of ['pay-epf','pay-professional-tax']){$(id+'-field').hidden=c.country!=='IN';$(id).disabled=c.country!=='IN';$(id).value='';}
+ for(const [id,country] of [['pay-de-taxable','DE'],['pay-de-supplement','DE'],['pay-ae-basic','AE']]){$(id+'-field').hidden=c.country!==country;$(id).disabled=c.country!==country;$(id).value='';}
  $('pay-amount').value='';$('pay-confirm').value='';clearPay();
 }
 $('pay-region').addEventListener('change',payChanged);
@@ -311,7 +316,7 @@ $('pay-form').addEventListener('input',clearPay);
 $('pay-form').addEventListener('submit',event=>{
  event.preventDefault();clearPay();
  try{
-  const region=$('pay-region').value,input={country:payOptions[region].country,region,taxYear:'2026',pay:$('pay-amount').valueAsNumber,scopeConfirmed:$('pay-confirm').value==='yes',...(region==='IN'?{epfMonthlyWage:$('pay-epf').valueAsNumber,professionalTaxAnnual:$('pay-professional-tax').valueAsNumber}:{})};
+  const region=$('pay-region').value,input={country:payOptions[region].country,region,taxYear:'2026',pay:$('pay-amount').valueAsNumber,scopeConfirmed:$('pay-confirm').value==='yes',...(region==='IN'?{epfMonthlyWage:$('pay-epf').valueAsNumber,professionalTaxAnnual:$('pay-professional-tax').valueAsNumber}:region==='DE'?{annualTaxableIncome:$('pay-de-taxable').valueAsNumber,healthSupplementRate:$('pay-de-supplement').valueAsNumber}:region==='AE'?{monthlyBasicSalary:$('pay-ae-basic').valueAsNumber}:{})};
   const r=calculateSalaryRemainder(input),f=v=>money(v,r.currency);
   $('pay-annual').textContent=f(r.annualRemainder);$('pay-monthly').textContent=f(r.averageMonthlyRemainder);$('pay-deductions').textContent=f(r.totalModeledDeductions);
   $('pay-breakdown').replaceChildren();

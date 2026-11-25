@@ -293,6 +293,7 @@ export function calculateRegionalTax(input){
 // UK category A uses actual monthly pay-period thresholds, not annual NI thresholds.
 const PAY_SOURCES={"US":["https://www.irs.gov/irb/2025-45_IRB","https://www.irs.gov/instructions/i941","https://www.irs.gov/taxtopics/tc560","https://www.texas.gov/business-taxes/taxes"],"GB":["https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027","https://www.gov.uk/income-tax-rates"]};
 export function calculateSalaryRemainder(input){
+ if(input&&['DE','AE'].includes(input.country))return germanEmiratiSalaryRemainder(input);
  if(input&&['CA','AU','IN','SG'].includes(input.country))return extendedSalaryRemainder(input);
  const keys=['country','region','taxYear','pay','scopeConfirmed'];
  if(!input||typeof input!=='object'||Array.isArray(input)||keys.some(k=>!Object.hasOwn(input,k))||Object.keys(input).some(k=>!keys.includes(k))||input.taxYear!=='2026'||input.scopeConfirmed!==true)throw new TypeError('Unsupported salary example');
@@ -436,4 +437,46 @@ function extendedSalaryRemainder(input){
  const employeeContributions=contributions.reduce((sum,c)=>sum+cgMoney(c.amount),0n),total=tax+employeeContributions,remaining=gross-total;
  if(remaining<0n)throw new RangeError('Modeled deductions exceed wages');
  return {country,region:input.region,taxYear:'2026',taxYearLabel:period,currency,payFrequency,inputPay:cgOut(pay),annualGross:cgOut(gross),taxableIncome:cgOut(taxable),incomeTax:cgOut(tax),incomeTaxComponents,taxAdjustments,employeeContributions:cgOut(employeeContributions),contributions,totalModeledDeductions:cgOut(total),annualRemainder:cgOut(remaining),averageMonthlyRemainder:cgOut((remaining+6n)/12n),sampleOnly:true,taxRulesVerified:false,ruleId:country+'-'+input.region+'-2026-salary-remainder-v1',sourceUrls:[...new Set([...EXTENDED_PAY_SOURCES[country],...CONTRIBUTION_SOURCES[country]])],warnings:[...warnings,'Money left after modeled taxes and contributions only; not an actual payslip or complete take-home pay.']};
+}
+
+
+// Deliberately scoped annual assessment plus monthly contributions, not payroll withholding.
+const DE_AE_PAY_SOURCES={"DE":["https://www.gesetze-im-internet.de/estg/__32a.html","https://www.gesetze-im-internet.de/solzg_1995/__3.html","https://www.gesetze-im-internet.de/solzg_1995/__4.html","https://www.bmas.de/DE/Service/Gesetze-und-Gesetzesvorhaben/sozialversicherungs-rechengroessenverordnung-2026.html","https://www.bundesgesundheitsministerium.de/beitraege","https://www.bundesgesundheitsministerium.de/themen/pflege/online-ratgeber-pflege/die-pflegeversicherung/finanzierung","https://www.deutsche-rentenversicherung.de/KnappschaftBahnSee/DE/Aktuelles/Meldungen/2026/2026_01_02_Sozialversicherungsrechengroessen2026.html"],"AE":["https://u.ae/en/information-and-services/finance-and-investment/taxation","https://u.ae/en/information-and-services/moving-to-the-uae/expatriates-working-in-the-uae/pension-schemes-for-expatriate-workers","https://u.ae/en/information-and-services/jobs/insurance/unemployment-insurance-scheme","https://iloe.ae/default.aspx","https://tax.gov.ae/en/faq.aspx?keyword=What+is+the+standard+rate+of+VAT+in+the+UAE%3F"]};
+function germanEmiratiSalaryRemainder(input){
+ const keys=['country','region','taxYear','pay','scopeConfirmed',...(input.country==='DE'?['annualTaxableIncome','healthSupplementRate']:['monthlyBasicSalary'])];
+ if(!input||typeof input!=='object'||Array.isArray(input)||keys.some(k=>!Object.hasOwn(input,k))||Object.keys(input).some(k=>!keys.includes(k))||input.taxYear!=='2026'||input.scopeConfirmed!==true||input.region!==input.country)throw new TypeError('Unsupported salary example');
+ const pay=cgMoney(input.pay),gross=pay*12n;
+ let tax,taxable,currency,contributions,incomeTaxComponents,warnings;
+ const item=(name,amount)=>({name,amount:cgOut(amount)});
+ if(input.country==='DE'){
+  if(pay<250000n||pay>645000n)throw new RangeError('Monthly gross must be EUR 2,500–6,450');
+  taxable=cgMoney(input.annualTaxableIncome);
+  if(taxable>gross||taxable%100n!==0n)throw new RangeError('Supply whole-euro annual assessed taxable income no greater than annual gross');
+  const supplement=cgMoney(input.healthSupplementRate);
+  if(supplement>1000n)throw new RangeError('Supply insurer supplemental percentage from 0 to 10');
+  currency='EUR';
+  const incomeTax=cgMoney(assessTaxableIncome({country:'DE',taxYear:'2026',taxableIncome:cgOut(taxable),assessment:'individual'}).incomeTax);
+  const solidarity=minBig(incomeTax*550n/10000n,maxBig(0n,incomeTax-2035000n)*1190n/10000n);
+  tax=incomeTax+solidarity;
+  incomeTaxComponents=[item('Ordinary income tax',incomeTax),item('Solidarity surcharge',solidarity)];
+  const pensionBase=minBig(pay,845000n),healthBase=minBig(pay,581250n);
+  const pension=cgRound(pensionBase*930n),unemployment=cgRound(pensionBase*130n);
+  // Total insurer rate (14.6% plus supplemental rate), employee pays half.
+  const health=(healthBase*(1460n+supplement)+10000n)/20000n;
+  const care=cgRound(healthBase*240n);
+  contributions=[item('Employee pension insurance',pension*12n),item('Employee unemployment insurance',unemployment*12n),item('Statutory health insurance',health*12n),item('Long-term care insurance (childless)',care*12n)];
+  warnings=['Full-year German resident, individual assessment, no children, age 23–64, outside Saxony, no church tax. One ordinary job, twelve equal monthly cash wages, fully subject to statutory general-rate health, pension, unemployment and care insurance. Enter actual insurer supplemental rate unchanged for all months and assessed taxable income after eligible deductions; the engine does not derive taxable income from salary. Excludes special income, credits, midyear changes, other obligations and payroll withholding rounding.'];
+ }else if(input.country==='AE'){
+  if(pay<10000n||pay>100000000n)throw new RangeError('Monthly salary must be AED 100–1,000,000');
+  const basic=cgMoney(input.monthlyBasicSalary);
+  if(basic<=0n||basic>pay)throw new RangeError('Basic salary must be positive and no greater than monthly gross');
+  currency='AED';tax=0n;taxable=null;
+  incomeTaxComponents=[item('UAE personal income tax on wages',0n)];
+  const monthlyPremium=basic<=1600000n?525n:1050n;
+  contributions=[item('Standard ILOE job-loss insurance premium including VAT',monthlyPremium*12n)];
+  warnings=['Full-year non-GCC expatriate private-sector employee, ordinary cash wages only, not subject to UAE or GCC pension contributions, eligible for and paying the standard ILOE insurance subscription with 5% VAT. Twelve equal salary months and unchanged basic salary. Excludes foreign tax obligations, visa and other costs, insurance transaction fees, optional plans, other employee deductions and end-of-service benefits. ILOE is an out-of-pocket premium, not necessarily payroll withholding.'];
+ }else throw new TypeError('Unsupported country');
+ const employeeContributions=contributions.reduce((sum,c)=>sum+cgMoney(c.amount),0n),total=tax+employeeContributions,remaining=gross-total;
+ if(remaining<0n)throw new RangeError('Modeled deductions exceed wages');
+ return {country:input.country,region:input.region,taxYear:'2026',taxYearLabel:'Calendar year 2026',currency,payFrequency:'monthly',inputPay:cgOut(pay),annualGross:cgOut(gross),...(taxable===null?{}:{taxableIncome:cgOut(taxable)}),incomeTax:cgOut(tax),incomeTaxComponents,taxAdjustments:[],employeeContributions:cgOut(employeeContributions),contributions,totalModeledDeductions:cgOut(total),annualRemainder:cgOut(remaining),averageMonthlyRemainder:cgOut((remaining+6n)/12n),sampleOnly:true,taxRulesVerified:false,ruleId:input.country+'-2026-scoped-salary-remainder-v1',sourceUrls:[...DE_AE_PAY_SOURCES[input.country]],warnings:[...warnings,'Money left after modeled annual taxes and employee costs only; not an actual payslip or complete take-home pay.']};
 }

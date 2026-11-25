@@ -104,3 +104,7 @@ The history module contains seven explicit enacted rule snapshots, mirrored in r
 ## Time Machine expansion and compatible replay
 
 Append-only v2 archive adds seven historical rate schedules for India, Canada and the UK. v1 archive is unchanged. Historical reports with a different overall engine fingerprint can be reproduced only when the retained ordinary-progressive-minor-units-v1 algorithm and locally retained rule IDs reproduce the full result exactly. No report-provided code or tax rates are executed; rehashing altered results does not establish reproducibility. All other report kinds remain engine-build-bound. No signature or professional certification is claimed.
+
+## Germany and UAE salary remainder
+
+The scoped salary model now covers Germany (caller-confirmed annual taxable income and actual health insurer supplement, individual tariff, solidarity surcharge, monthly statutory insurance for childless employees outside Saxony) and the UAE (non-GCC expatriate ordinary wages and standard ILOE insurance premium incl VAT). This is not automatic gross-to-net payroll: German taxable income is supplied, UAE pension-covered employees and foreign tax are excluded. All eight original countries now have a scoped salary remainder example. See rules/evidence/german-emirati-salary-2026-review.json. Production flags remain unchanged.

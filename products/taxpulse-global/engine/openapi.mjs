@@ -972,6 +972,88 @@ export const spec = {
                         "const": true
                       }
                     }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "region",
+                      "taxYear",
+                      "pay",
+                      "scopeConfirmed",
+                      "annualTaxableIncome",
+                      "healthSupplementRate"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "DE"
+                      },
+                      "region": {
+                        "const": "DE"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "pay": {
+                        "type": "number",
+                        "minimum": 2500,
+                        "maximum": 6450,
+                        "multipleOf": 0.01
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      },
+                      "annualTaxableIncome": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 77400
+                      },
+                      "healthSupplementRate": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10,
+                        "multipleOf": 0.01
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "region",
+                      "taxYear",
+                      "pay",
+                      "scopeConfirmed",
+                      "monthlyBasicSalary"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "AE"
+                      },
+                      "region": {
+                        "const": "AE"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "pay": {
+                        "type": "number",
+                        "minimum": 100,
+                        "maximum": 1000000,
+                        "multipleOf": 0.01
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      },
+                      "monthlyBasicSalary": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "maximum": 1000000,
+                        "multipleOf": 0.01
+                      }
+                    }
                   }
                 ]
               }

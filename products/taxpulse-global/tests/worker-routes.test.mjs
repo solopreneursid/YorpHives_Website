@@ -60,6 +60,10 @@ test('generated Worker routes and validation',async()=>{
  const compare=await call('/v1/history/compare',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'AU',firstRuleId:'AU-2024-25-resident-ordinary-v1',secondRuleId:'AU-2027-28-resident-ordinary-v1',taxableIncome:100000,scopeConfirmed:true})});
  assert.equal(compare.status,200);assert.equal((await compare.json()).taxChange,-536);
  assert.equal((await call('/v1/history/compare')).status,405);
+ const dePay=await call('/v1/salary/remainder',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'DE',region:'DE',taxYear:'2026',pay:5000,annualTaxableIncome:50000,healthSupplementRate:2.9,scopeConfirmed:true})});
+ assert.equal(dePay.status,200);assert.equal((await dePay.json()).annualRemainder,36402);
+ const aePay=await call('/v1/salary/remainder',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'AE',region:'AE',taxYear:'2026',pay:20000,monthlyBasicSalary:16000,scopeConfirmed:true})});
+ assert.equal(aePay.status,200);assert.equal((await aePay.json()).annualRemainder,239937);
  assert.equal((await call('/missing')).status,404);
  assert.equal((await call('/v1/country/calculate')).status,405);
  }finally{rmSync(temp,{recursive:true,force:true})}
