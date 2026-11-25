@@ -619,7 +619,7 @@ const workspaceSections=[...document.querySelectorAll('main > section.card')];
 const dashboardHero=document.querySelector('main > .hero');
 const workspaceNav=[...document.querySelectorAll('.nav a')];
 const groups={compare:['my-tax','compare'],'reverse-salary':['salary-remainder','reverse-salary'],'salary-negotiation':['salary-remainder','salary-negotiation'],'salary-offers':['salary-remainder','salary-offers'],compensation:['salary-remainder','salary-offers','compensation']};
-const categories={salary:'category-salary',taxes:'category-taxes',career:'category-career',abroad:'category-abroad',money:'category-money',business:'business','tax-rules':'updates'};
+const categories={salary:'category-salary',taxes:'category-taxes',career:'category-career',abroad:'category-abroad',money:'category-money',business:'business','tax-rules':'updates',countries:'countries','country/india':'country-india','country/united-states':'country-united-states','country/united-kingdom':'country-united-kingdom','country/canada':'country-canada','country/australia':'country-australia','country/germany':'country-germany','country/singapore':'country-singapore','country/uae':'country-uae'};
 function routeId(){
  const hash=location.hash.slice(1);
  if(workspaceSections.some(s=>s.id===hash))return hash;
