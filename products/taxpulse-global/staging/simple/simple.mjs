@@ -1,11 +1,14 @@
 import { countryCalculate, catalog } from './engine/country.mjs';
 import { compareIncomeScenarios } from './engine/scenarios.mjs';
+import { assessTaxableIncome } from './engine/taxable-income.mjs';
+import { createReceipt, verifyReceipt } from './engine/proof.mjs';
+import engineFingerprint from './engine/fingerprint.mjs';
 import manifest from './engine/manifest.mjs';
 
 const $ = id => document.getElementById(id);
 const countries = new Map(catalog().countries.map(country => [country.code, country]));
 const allCountries = {IN:'India',US:'United States',GB:'United Kingdom',DE:'Germany',AE:'United Arab Emirates',CA:'Canada',AU:'Australia',SG:'Singapore'};
-let lastResult = null;
+let lastResult = null, lastAssessment = null, proofRequest = 0;
 
 function money(value, currency) {
   return new Intl.NumberFormat(currency === 'INR' ? 'en-IN' : 'en', {style:'currency',currency,currencyDisplay:'code',maximumFractionDigits:2}).format(value);
@@ -75,7 +78,7 @@ $('tax-form').addEventListener('submit',event=>{
       ['Final sample income tax',result.incomeTax]
     ]) addRow(label,format(value));
     $('scope').textContent=response.warnings.join(' ');
-    lastResult={type:'TaxPulse example breakdown',input,response,verified:false,warning:'Fictional inputs only. Not a signed proof or filing document.'};
+    lastResult={kind:'salary',input};
     $('tax-result').hidden=false;$('tax-result').focus();
   } catch { $('error').textContent='Please check the salary and tax status. This example could not be calculated.'; }
 });
@@ -95,15 +98,60 @@ $('compare-form').addEventListener('submit',event=>{
   } catch { $('compare-error').textContent='Enter valid example salaries and tax status in both forms.'; }
 });
 $('clear-button').addEventListener('click',()=>{$('tax-form').reset();$('compare-form').reset();countryChanged();});
-$('download').addEventListener('click',()=>{
-  if(!lastResult)return;
-  const url=URL.createObjectURL(new Blob([JSON.stringify(lastResult,null,2)],{type:'application/json'}));
+async function downloadReceipt(record,button,error){
+ if(!record)return;
+ button.disabled=true;
+ try{
+  const receipt=await createReceipt({...record,engineFingerprint});
+  const url=URL.createObjectURL(new Blob([JSON.stringify(receipt,null,2)],{type:'application/json'}));
   const link=document.createElement('a');link.href=url;link.download='taxpulse-example.json';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ }catch{error.textContent='Could not create a report. Use a secure browser and try again.';}
+ finally{button.disabled=false;}
+}
+$('download').addEventListener('click',()=>downloadReceipt(lastResult,$('download'),$('error')));
+$('assessment-download').addEventListener('click',()=>downloadReceipt(lastAssessment,$('assessment-download'),$('assessment-error')));
+function clearAssessment(){lastAssessment=null;$('assessment-result').hidden=true;$('assessment-error').textContent='';}
+function assessmentChanged(){
+ const canada=$('assessment-country').value==='CA';
+ $('assessment-type-field').hidden=canada;$('assessment-type').disabled=canada;
+ for(const id of ['net-income','canada-resident']){$(id+'-field').hidden=!canada;$(id).disabled=!canada;$(id).value='';}
+ $('taxable-amount').value='';$('assessment-currency').textContent=canada?'(CAD)':'(EUR)';
+ $('assessment-help').textContent=canada?'Canadian federal tax after the basic personal credit only. Excludes provincial tax, Quebec abatement, payroll and other credits. Net income must be at least taxable income.':'German ordinary income tax only. Excludes church tax, solidarity surcharge and payroll contributions.';
+ clearAssessment();
+}
+$('assessment-country').addEventListener('change',assessmentChanged);
+$('assessment-form').addEventListener('input',clearAssessment);
+$('assessment-form').addEventListener('submit',event=>{
+ event.preventDefault();clearAssessment();
+ try{
+  const country=$('assessment-country').value;
+  const input={country,taxYear:'2026',taxableIncome:$('taxable-amount').valueAsNumber,...(country==='DE'?{assessment:$('assessment-type').value}:{netIncome:$('net-income').valueAsNumber,fullYearResident:$('canada-resident').value==='yes'})};
+  const r=assessTaxableIncome(input),f=v=>money(v,r.currency);
+  $('assessment-result-label').textContent=country==='CA'?'Federal income tax after basic personal credit':'Ordinary German income tax';
+  $('assessment-tax').textContent=f(r.incomeTax);
+  const rows=country==='CA'?[['Tax before credits',f(r.taxBeforeCredits)],['Basic personal amount',f(r.basicPersonalAmount)],['Credit applied',f(r.basicPersonalCredit)]]:[['Taxable income per assessment unit',f(r.unitTaxableIncome)],['Tax zone',r.tariffZone]];
+  $('assessment-breakdown').replaceChildren();
+  for(const [label,value] of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;$('assessment-breakdown').append(dt,dd);}
+  $('assessment-scope').textContent=r.warnings.join(' ')+' Unverified example only.';
+  lastAssessment={kind:'taxable-income',input};$('assessment-result').hidden=false;$('assessment-result').focus();
+ }catch{$('assessment-error').textContent='Check the amounts and tax status. Only full-year Canadian residents and eligible German assessment types are supported.';}
 });
+$('proof-file').addEventListener('change',async()=>{
+ const request=++proofRequest,file=$('proof-file').files[0];
+ $('proof-status').textContent='';
+ if(!file)return;
+ try{
+  if(file.size>65536)throw new Error('Report too large');
+  const r=await verifyReceipt(JSON.parse(await file.text()),engineFingerprint);
+  if(request!==proofRequest)return;
+  $('proof-status').textContent=!r.integrity?'The report contents do not match its fingerprint.':!r.sameEngine?'The fingerprint matches, but this is a different engine version. We cannot replay it here.':r.reproduced?'The fingerprint matches and the example calculation was reproduced. This is not legal verification or a digital signature.':'The fingerprint matches, but the calculation could not be reproduced.';
+ }catch{if(request===proofRequest)$('proof-status').textContent='This file is not a supported TaxPulse example report.';}
+});
+assessmentChanged();
 for(const [code,name] of Object.entries(allCountries)){
   const item=document.createElement('li');
   const state=manifest.countries[code];
-  item.textContent=name+' — '+(countries.has(code)?'Example calculator connected':'Not available in simple calculator')+'; '+(state?.verification==='verified'&&state?.productionEnabled===true?'marked verified in manifest':'tax rules not verified');
+  item.textContent=name+' — '+(countries.has(code)?'Salary example connected':['DE','CA'].includes(code)?'Taxable-income example connected (limited scope)':'Not available in simple calculator')+'; '+(state?.verification==='verified'&&state?.productionEnabled===true?'marked verified in manifest':'tax rules not verified');
   $('country-status').append(item);
 }
 countryChanged();
