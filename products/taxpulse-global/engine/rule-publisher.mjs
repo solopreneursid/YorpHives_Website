@@ -1,5 +1,6 @@
+import {nationalEvidenceRules} from './national-registry.mjs';
 import {verifyRuleSnapshot,snapshotBytes} from './rule-snapshot.mjs';
-import {calculateRegionalTax,compareIndiaRegimes,calculateSalaryRemainder,calculateEmployeeContributions} from './taxable-income.mjs';
+import {calculateRegionalTax,compareIndiaRegimes,calculateSalaryRemainder,calculateEmployeeContributions,assessTaxableIncome,calculateCapitalGain} from './taxable-income.mjs';
 import {regionalRules,resolveRegionalRule} from './regional-registry.mjs';
 import {resolveIndiaSalaryRule} from './india-salary-registry.mjs';
 import {payrollRules,resolvePayrollRule} from './payroll-registry.mjs';
@@ -11,19 +12,22 @@ const methods={
  'regional-tax':(i,c)=>calculateRegionalTax(i,c.regional),
  'india-salary':(i,c)=>compareIndiaRegimes(i,c.indiaSalary),
  'salary-remainder':calculateSalaryRemainder,
- 'employee-contributions':calculateEmployeeContributions
+ 'employee-contributions':calculateEmployeeContributions,
+ 'taxable-income':assessTaxableIncome,
+ 'capital-gain':calculateCapitalGain
 };
 export async function verifyPublicationFixtures(snapshot,evidence,fixtures){
  if(!Array.isArray(fixtures)||fixtures.length>1000)throw Error('Invalid fixtures');
- const ctx={regional:snapshot.regional,indiaSalary:snapshot.indiaSalary,payroll:snapshot.payroll};
+ const ctx={regional:snapshot.regional,indiaSalary:snapshot.indiaSalary,payroll:snapshot.payroll,national:snapshot.national};
+ const rules=[...snapshot.regional.versions,...snapshot.indiaSalary.versions,...snapshot.payroll.versions,...await nationalEvidenceRules(snapshot.national)];
  for(const e of evidence){
-  const rule=[...snapshot.regional.versions,...snapshot.indiaSalary.versions,...snapshot.payroll.versions].find(r=>r.version===e.version);
+  const rule=rules.find(r=>r.version===e.version);
   const rows=fixtures.filter(f=>f.version===e.version);
   if(!rule)throw Error('Unknown fixture rule');
   if(rows.length<2||new Set(rows.map(f=>f.id)).size!==rows.length||await hash(rows)!==e.fixtureDigest)throw Error('Missing independent fixture evidence: '+e.version);
   for(const f of rows){if(!Object.hasOwn(methods,f.method)||typeof f.id!=='string'||!Array.isArray(f.path)||!f.path.length||f.path.some(k=>typeof k!=='string'||['__proto__','constructor','prototype'].includes(k))||typeof f.expected!=='number'||!Number.isFinite(f.expected))throw Error('Invalid fixture');
    const i=f.input;if(!i||i.taxYear!==rule.taxYear||i.country!==rule.jurisdiction.split('-')[0])throw Error('Fixture jurisdiction or period mismatch');
-   if(rule.component==='regional-income-tax'&&(f.method!=='regional-tax'||i.country+'-'+i.region!==rule.jurisdiction)||rule.component==='ordinary-salary'&&f.method!=='india-salary'||['oasdi','medicare','ni'].includes(rule.component)&&f.method!=='salary-remainder'||['cpp-ei','medicare-levy','epf','cpf'].includes(rule.component)&&f.method!=='employee-contributions')throw Error('Fixture does not exercise rule component');
+   if(rule.component==='national-assessment'&&f.method!==(rule.jurisdiction==='US'?'salary-remainder':'taxable-income')||rule.component==='investment-assessment'&&f.method!=='capital-gain'||rule.component==='regional-income-tax'&&(f.method!=='regional-tax'||i.country+'-'+i.region!==rule.jurisdiction)||rule.component==='ordinary-salary'&&f.method!=='india-salary'||['oasdi','medicare','ni'].includes(rule.component)&&f.method!=='salary-remainder'||['cpp-ei','medicare-levy','epf','cpf'].includes(rule.component)&&f.method!=='employee-contributions')throw Error('Fixture does not exercise rule component');
    const result=methods[f.method](i,ctx);
    const actual=f.path.reduce((o,k)=>o&&Object.hasOwn(o,k)?o[k]:undefined,result);
    if(typeof actual!=='number'||!Number.isFinite(actual)||Math.abs(actual-f.expected)>.005)throw Error('Fixture mismatch: '+f.id);
