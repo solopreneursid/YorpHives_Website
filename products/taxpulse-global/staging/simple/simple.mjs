@@ -1,3 +1,4 @@
+import {compareCompensation} from './engine/compensation.mjs';
 import {negotiateSalary} from './engine/negotiation.mjs';
 import {compareSalaryOffers} from './engine/salary-offers.mjs';
 import {reverseSalary,automaticReverseSalary} from './engine/reverse-salary.mjs';
@@ -424,6 +425,28 @@ $('negotiation-form').addEventListener('submit',event=>{
  }catch{$('negotiation-error').textContent='Check your current salary, desired increase and tax conditions.';}
 });
 $('negotiation-download').addEventListener('click',()=>downloadReceipt(lastNegotiation,$('negotiation-download'),$('negotiation-error')));
+
+let lastCompensation=null;
+function clearCompensation(){lastCompensation=null;$('comp-result').hidden=true;$('comp-error').textContent='';}
+for(const id of ['pay-form','offers-form'])$(id).addEventListener('input',()=>{$('comp-confirm').checked=false;clearCompensation();});
+$('pay-region').addEventListener('change',()=>{$('comp-confirm').checked=false;clearCompensation();});
+$('offers-form').addEventListener('submit',clearCompensation);
+$('comp-form').addEventListener('input',clearCompensation);
+$('comp-form').addEventListener('submit',event=>{
+ event.preventDefault();clearCompensation();
+ try{
+  if(!lastOffers||!$('comp-confirm').checked)throw new Error('Compare offers first');
+  const extras=n=>Object.fromEntries(['retirement','insurance','otherBenefits','commuting','otherExpenses'].map(k=>[k,$('comp-'+n+'-'+k).valueAsNumber]));
+  const input={...lastOffers.input,firstExtras:extras(1),secondExtras:extras(2)},r=compareCompensation(input),f=v=>money(v,r.currency);
+  $('comp-breakdown').replaceChildren();
+  for(const [label,value] of [['Offer 1 annual cash after work expenses',r.first.annualAvailableCash],['Offer 2 annual cash after work expenses',r.second.annualAvailableCash],['Offer 1 estimated non-cash benefits',r.first.annualBenefits],['Offer 2 estimated non-cash benefits',r.second.annualBenefits],['Offer 1 estimated combined annual value',r.first.estimatedAnnualCombinedValue],['Offer 2 estimated combined annual value',r.second.estimatedAnnualCombinedValue],['Annual cash difference (offer 2 minus offer 1)',r.annualCashDifference],['Combined value difference (offer 2 minus offer 1)',r.annualCombinedValueDifference]]){
+   const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=f(value);$('comp-breakdown').append(dt,dd);
+  }
+  $('comp-warning').textContent=[...r.warnings,...new Set([...r.first.salary.warnings,...r.second.salary.warnings])].join(' ')+' Unverified example only.';
+  lastCompensation={kind:'compensation',input};$('comp-result').hidden=false;$('comp-result').focus();
+ }catch{$('comp-error').textContent='Compare both job offers above first, enter valid yearly amounts and confirm the conditions.';}
+});
+$('comp-download').addEventListener('click',()=>downloadReceipt(lastCompensation,$('comp-download'),$('comp-error')));
 
 const contributionOptions={
  CA:{label:'Annual pensionable and insurable earnings (CAD)',scope:'Full-year employee outside Quebec, aged 18–64 throughout the year, one employer. All earnings subject to CPP and EI; full annual basic exemption.',max:1000000000,step:'.01',period:'Calendar year 2026'},
