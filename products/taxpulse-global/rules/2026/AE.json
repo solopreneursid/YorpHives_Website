@@ -1,0 +1,172 @@
+{
+  "country_code": "AE",
+  "country_name": "United Arab Emirates",
+  "flag": "🇦🇪",
+  "tax_year": "2026",
+  "tax_year_label": "2026 Calendar Year (0% Personal Income Tax)",
+  "currency": {
+    "code": "AED",
+    "symbol": "AED ",
+    "locale": "en-AE"
+  },
+  "source_url": "https://u.ae/en/information-and-services/jobs/Sector-of-employment/working-in-uae-government-sector/pensions-and-social-security-for-uae-citizens",
+  "modules": {
+    "personal_income_tax": {
+      "primitive": "progressive_brackets",
+      "standard_deduction": 0,
+      "brackets": [
+        {
+          "min": 0,
+          "max": null,
+          "rate": 0,
+          "bandName": "Zero Personal Income Tax (0%)"
+        }
+      ]
+    },
+    "social_security_payroll": {
+      "primitive": "capped_percentage",
+      "employee_tiers": [
+        {
+          "name": "Expatriate Social Security",
+          "rate": 0,
+          "min_Floor": 0,
+          "annual_cap": null,
+          "note": "0% employee deduction; covered by statutory End-of-Service Gratuity"
+        }
+      ],
+      "employer_tiers": [
+        {
+          "name": "EOSG Statutory Accrual / GPSSA Employer Share",
+          "rate": 0.0833,
+          "min_Floor": 0,
+          "annual_cap": null,
+          "note": "~8.33% statutory gratuity accrual (15% GPSSA for Emiratis)"
+        }
+      ]
+    },
+    "capital_gains_crypto": {
+      "primitive": "flat_or_slab_lookup",
+      "cess_rate": 0,
+      "assets": {
+        "listed_equity": {
+          "label": "United Arab Emirates Listed Equities & ETFs",
+          "long_term_months": 12,
+          "short_term_rate": 0,
+          "long_term_rate": 0,
+          "annual_exemption": 0,
+          "note": "0% statutory Capital Gains Tax on investment shares."
+        },
+        "real_estate": {
+          "label": "United Arab Emirates Real Estate Property",
+          "long_term_months": 12,
+          "short_term_rate": 0,
+          "long_term_rate": 0,
+          "annual_exemption": 0,
+          "note": "Assessed on net realized property appreciation."
+        },
+        "crypto_vda": {
+          "label": "United Arab Emirates Digital Assets & Crypto",
+          "long_term_months": 12,
+          "short_term_rate": 0,
+          "long_term_rate": 0,
+          "annual_exemption": 0,
+          "note": "Taxed according to digital asset capital gains rules."
+        }
+      }
+    },
+    "vat_gst": {
+      "primitive": "flat_or_slab_lookup",
+      "tax_name": "UAE Federal VAT",
+      "slabs": [
+        {
+          "id": "std",
+          "label": "Standard Rate (5%)",
+          "rate": 0.05
+        },
+        {
+          "id": "red",
+          "label": "Reduced / Merit Rate (0%)",
+          "rate": 0
+        },
+        {
+          "id": "zero",
+          "label": "Zero-Rated / Exports (0%)",
+          "rate": 0
+        }
+      ]
+    },
+    "corporate_tax": {
+      "primitive": "progressive_brackets",
+      "regimes": [
+        {
+          "id": "std_corp",
+          "label": "United Arab Emirates Standard Corporate Tax Rate",
+          "brackets": [
+            {
+              "min": 0,
+              "max": 375000,
+              "rate": 0
+            },
+            {
+              "min": 375000,
+              "max": null,
+              "rate": 0.09
+            }
+          ],
+          "note": "0% up to AED 375,000; 9% federal corporate tax above AED 375,000."
+        }
+      ]
+    },
+    "property_transfer_tax": {
+      "primitive": "progressive_brackets",
+      "regions": [
+        {
+          "id": "std_prop",
+          "label": "United Arab Emirates Standard Property Transfer / Stamp Duty",
+          "brackets": [
+            {
+              "min": 0,
+              "max": null,
+              "rate": 0.04
+            }
+          ],
+          "registration_rate": 0.005,
+          "registration_cap": 5000,
+          "non_resident_surcharge_rate": 0,
+          "note": "Standard regional transfer duty plus registration fee."
+        }
+      ]
+    },
+    "withholding_dtaa": {
+      "primitive": "treaty_offset",
+      "domestic_default_wht": {
+        "dividends": 0,
+        "interest": 0,
+        "royalties": 0
+      },
+      "treaties": {
+        "IN": {
+          "partner_name": "India DTAA",
+          "dividends": 0.1,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "Bilateral DTAA Articles 10-12"
+        },
+        "US": {
+          "partner_name": "United States Treaty",
+          "dividends": 0.15,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "Bilateral Tax Convention"
+        },
+        "GB": {
+          "partner_name": "United Kingdom Treaty",
+          "dividends": 0.1,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "Bilateral DTT"
+        }
+      }
+    }
+  }
+}
