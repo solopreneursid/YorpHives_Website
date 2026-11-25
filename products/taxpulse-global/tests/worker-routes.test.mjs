@@ -10,8 +10,10 @@ test('generated Worker routes and validation',async()=>{
  const worker=(await import(pathToFileURL(join(temp,'worker.mjs')).href)).default;
  const call=(path,options)=>worker.fetch(new Request('https://preview.example'+path,options));
  const health=await call('/health');assert.equal(health.status,200);assert.equal((await health.json()).taxRulesVerified,false);
- const html=await call('/');assert.equal(html.status,200);assert.match(html.headers.get('x-robots-tag'),/noindex/);const simpleHtml=await html.text();assert.match(simpleHtml,/Taxes made easier/);assert.doesNotMatch(simpleHtml,/https:\/\//);
+ const html=await call('/');assert.equal(html.status,200);assert.match(html.headers.get('x-robots-tag'),/noindex/);const simpleHtml=await html.text();assert.match(simpleHtml,/Taxes made easier/);assert.deepEqual([...simpleHtml.matchAll(/https:\/\/[^"'\s<]+/g)].map(m=>m[0]),['https://data.worldbank.org/indicator/PA.NUS.PRVT.PP']);assert.doesNotMatch(simpleHtml,/<(?:script|link)[^>]+(?:src|href)="https?:/i);
  assert.match(html.headers.get('content-security-policy'),/script-src 'self';/);assert.doesNotMatch(html.headers.get('content-security-policy'),/tailwindcss/);
+ for(const path of ['/salary','/taxes','/career','/abroad','/money','/business','/tax-rules','/tools/india-ctc','/tools/purchasing-power','/tools/relocation-break-even','/tools/india-deduction-scenario']){const res=await call(path);assert.equal(res.status,200,path);assert.match(res.headers.get('x-robots-tag'),/noindex/);}
+ assert.equal((await call('/tools/not-a-tool')).status,404);
  assert.equal((await call('/advanced-preview')).status,404);
  assert.equal((await call('/assets/application.js')).status,404);
  for(const path of ['/assets/simple.css','/assets/simple.mjs',...['country','primitives','us-filing-statuses','IN','US','GB','manifest','scenarios','taxable-income','proof','fingerprint','reverse-salary'].map(n=>'/assets/engine/'+n+'.mjs')]){
