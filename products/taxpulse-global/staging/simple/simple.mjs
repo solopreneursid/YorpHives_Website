@@ -153,6 +153,10 @@ for(const [code,name] of Object.entries(allCountries)){
   const item=document.createElement('li');
   const state=manifest.countries[code];
   item.textContent=name+' — '+(countries.has(code)?'Salary example connected':['DE','CA'].includes(code)?'Taxable-income example connected (limited scope)':'Not available in simple calculator')+'; '+(state?.verification==='verified'&&state?.productionEnabled===true?'marked verified in manifest':'tax rules not verified');
+  if(['DE','CA'].includes(code)){
+    const source=code==='DE'?'https://www.gesetze-im-internet.de/estg/__32a.html':'https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4032-payroll-deductions-tables/t4032on-jan/t4032on-january-general-information.html';
+    const a=document.createElement('a');a.href=source;a.textContent='Official source for reviewed formula';a.target='_blank';a.rel='noopener noreferrer';item.append(document.createElement('br'),a);
+  }
   $('country-status').append(item);
 }
 countryChanged();
