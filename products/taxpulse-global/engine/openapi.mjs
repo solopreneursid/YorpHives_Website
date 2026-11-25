@@ -767,7 +767,7 @@ export const spec = {
     "/v1/salary/remainder": {
       "post": {
         "operationId": "calculateSalaryRemainder",
-        "description": "Unverified salary remainder, not actual payslip. US Texas single annual wages <=250000 USD; UK ordinary category A employee with 12 identical monthly whole-pound payments <=100000 GBP.",
+        "description": "Scoped salary remainder after modeled income tax and contributions; not actual payslip. Country-specific eligibility and inputs; Singapore calendar 2026 wages assessed in YA 2027 before rebates.",
         "requestBody": {
           "required": true,
           "content": {
@@ -835,6 +835,138 @@ export const spec = {
                         "minimum": 0,
                         "maximum": 100000,
                         "multipleOf": 1
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "region",
+                      "taxYear",
+                      "pay",
+                      "scopeConfirmed"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "CA"
+                      },
+                      "region": {
+                        "const": "AB"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "pay": {
+                        "type": "integer",
+                        "minimum": 60000,
+                        "maximum": 150000
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "region",
+                      "taxYear",
+                      "pay",
+                      "scopeConfirmed"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "AU"
+                      },
+                      "region": {
+                        "const": "AU"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "pay": {
+                        "type": "integer",
+                        "minimum": 100000,
+                        "maximum": 1000000
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "region",
+                      "taxYear",
+                      "pay",
+                      "scopeConfirmed",
+                      "epfMonthlyWage",
+                      "professionalTaxAnnual"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "IN"
+                      },
+                      "region": {
+                        "const": "IN"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "pay": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000000
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      },
+                      "epfMonthlyWage": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 15000
+                      },
+                      "professionalTaxAnnual": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2500
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "country",
+                      "region",
+                      "taxYear",
+                      "pay",
+                      "scopeConfirmed"
+                    ],
+                    "properties": {
+                      "country": {
+                        "const": "SG"
+                      },
+                      "region": {
+                        "const": "SG"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "pay": {
+                        "type": "integer",
+                        "minimum": 751,
+                        "maximum": 100000
                       },
                       "scopeConfirmed": {
                         "const": true

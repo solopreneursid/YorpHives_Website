@@ -92,3 +92,7 @@ The local salary form and POST /v1/salary/remainder calculate modeled annual and
 ## Additional employee contribution examples
 
 POST /v1/contributions/calculate and the local form support scoped Canadian CPP/CPP2/EI annual estimates, Australian full-rate Medicare levy, an Indian 12% confirmed-wage EPF illustration, and Singapore CPF full-rate monthly ordinary wages above SGD 750. The Australian levy is an assessment component, not payroll withholding. All eligibility is caller-confirmed; no complete take-home amount or automatic legal eligibility determination. See rules/evidence/contributions-2026-review.json.
+
+## Extended salary remainder
+
+The salary endpoint and local form now also support scoped Alberta (federal and provincial taxes, enhanced CPP deduction, CPP/EI credits), Australia (full Medicare levy, no surcharge), India (new regime, confirmed EPF wage and supplied professional tax), and Singapore (calendar 2026 monthly wages assessed YA 2027 before rebates). These are constrained estimates, not full take-home or payroll calculations. No automatic eligibility, professional tax schedule or future tax rebate inference. See rules/evidence/extended-salary-2026-review.json.

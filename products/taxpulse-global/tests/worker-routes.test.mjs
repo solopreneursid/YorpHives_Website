@@ -54,6 +54,8 @@ test('generated Worker routes and validation',async()=>{
  const contribution=await call('/v1/contributions/calculate',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'CA',taxYear:'2026',income:100000,scopeConfirmed:true})});
  assert.equal(contribution.status,200);assert.equal((await contribution.json()).totalEmployeeContribution,5769.52);
  assert.equal((await call('/v1/contributions/calculate')).status,405);
+ const extendedPay=await call('/v1/salary/remainder',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:'AU',region:'AU',taxYear:'2026',pay:100000,scopeConfirmed:true})});
+ assert.equal(extendedPay.status,200);assert.equal((await extendedPay.json()).annualRemainder,77480);
  assert.equal((await call('/missing')).status,404);
  assert.equal((await call('/v1/country/calculate')).status,405);
  }finally{rmSync(temp,{recursive:true,force:true})}

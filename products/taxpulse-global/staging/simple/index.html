@@ -85,11 +85,13 @@
 <section id="plan" class="card"><h2>Plan ahead</h2><p>Learn what affects income tax before making a decision.</p><div class="tiles"><article><h3>Try a pay rise</h3><p>See how a different salary affects income tax in the example above.</p><a href="#compare">Compare two salaries</a></article><article><h3>Understand tax deductions</h3><p>Deductions reduce the amount of income that may be taxed. Eligibility depends on local law. A personalized savings check is not available yet.</p></article><article><h3>Moving to another country?</h3><p>Tax residence and local rules matter. International comparison and residency tools are still being checked.</p></article></div></section>
 <section id="salary-remainder" class="card" aria-labelledby="pay-title">
 <h2 id="pay-title">How much salary is left after tax?</h2>
-<p>Try a made-up example that includes income tax and employee social contributions. Only Texas and the UK are supported here. Other deductions are not included.</p>
+<p>Try a made-up example that includes income tax and employee social contributions. Choose a supported country or region. Eligibility and deductions vary by location. Other deductions are not included.</p>
 <form id="pay-form"><div class="fields">
-<label for="pay-region">Where do you pay tax?<select id="pay-region"><option value="TX">United States — Texas</option><option value="RUK">UK — England, Wales and Northern Ireland</option><option value="SCT">UK — Scotland</option></select></label>
+<label for="pay-region">Where do you pay tax?<select id="pay-region"><option value="TX">United States — Texas</option><option value="RUK">UK — England, Wales and Northern Ireland</option><option value="SCT">UK — Scotland</option><option value="AB">Canada — Alberta</option><option value="AU">Australia</option><option value="IN">India — new regime</option><option value="SG">Singapore</option></select></label>
 <div><span class="field-label">Tax period</span><p id="pay-period" class="field-value"></p></div>
 <label for="pay-amount"><span id="pay-label">Annual wages (USD)</span><input id="pay-amount" type="number" min="0" max="250000" step="0.01" inputmode="decimal" required></label>
+<label id="pay-epf-field" for="pay-epf" hidden>Confirmed monthly EPF contribution wage (INR)<input id="pay-epf" type="number" min="0" max="15000" step="1" inputmode="numeric" required disabled></label>
+<label id="pay-professional-tax-field" for="pay-professional-tax" hidden>Confirmed annual professional tax (INR)<input id="pay-professional-tax" type="number" min="0" max="2500" step="1" inputmode="numeric" required disabled></label>
 </div><p class="notice" id="pay-scope"></p><label for="pay-confirm">Does the example meet all these conditions?<select id="pay-confirm" required><option value="">Choose an answer</option><option value="yes">Yes</option><option value="no">No</option></select></label>
 <button type="submit" class="primary">Calculate salary remainder</button></form>
 <p id="pay-error" class="error" role="alert"></p>

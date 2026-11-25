@@ -289,11 +289,19 @@ regionalCountryChanged();
 
 let lastPay=null;
 const payOptions={TX:{country:'US',label:'Annual wages (USD)',scope:'Texas resident and employee for the full year. Single, under 65, nonblind, not a dependent. One job, wages only, standard deduction, no other deductions or credits. All wages subject to Social Security and Medicare. Up to USD 250,000. No state personal income tax; excludes AMT and other deductions.',max:250000,step:'0.01'},RUK:{country:'GB',label:'Monthly salary (GBP)',scope:'England, Wales or Northern Ireland taxpayer. Twelve equal monthly payments, category A National Insurance, ordinary employee (not director), no other income or reliefs. No pension, student loan or other deductions. Whole pounds only.',max:100000,step:'1'},SCT:{country:'GB',label:'Monthly salary (GBP)',scope:'Scottish taxpayer. Twelve equal monthly payments, category A National Insurance, ordinary employee (not director), no other income or reliefs. No pension, student loan or other deductions. Whole pounds only.',max:100000,step:'1'}};
+Object.assign(payOptions,{
+ AB:{country:'CA',label:'Annual salary (CAD)',scope:'Full-year Alberta resident aged 18–64, one job, all earnings pensionable and insurable, no other income, deductions, credits or dependents. CAD 60,000–150,000 whole dollars. Includes CPP, CPP2, EI and basic federal/Alberta credits.',min:60000,max:150000,step:'1',period:'Calendar year 2026'},
+ AU:{country:'AU',label:'Annual salary excluding employer super (AUD)',scope:'Full-year Australian resident, salary equals taxable income, full 2% Medicare levy, no Medicare levy surcharge, student debt, other income, offsets or deductions. AUD 100,000–1,000,000 whole dollars.',min:100000,max:1000000,step:'1',period:'FY 2026–27'},
+ IN:{country:'IN',label:'Annual cash salary before employee deductions (INR)',scope:'Indian resident under 60 using new regime, ordinary salary only, no other income, exemptions or deductions. Enter confirmed monthly EPF contribution wage (12% applies; zero only if not liable) and actual annual professional tax (zero only if none). No ESI or other deductions. Whole rupees.',min:0,max:1000000000,step:'1',period:'FY 2026–27'},
+ SG:{country:'SG',label:'Ordinary monthly salary (SGD)',scope:'Full-year resident, Singapore citizen or third-year-or-later PR on full CPF rates, below 55 throughout 2026. Twelve equal ordinary monthly wages, no bonus, other income, reliefs or deductions except employee CPF and ordinary earned income relief. Whole dollars SGD 751–100,000. YA 2027 before rebates.',min:751,max:100000,step:'1',period:'2026 earnings; YA 2027'}
+});
 function clearPay(){lastPay=null;$('pay-result').hidden=true;$('pay-error').textContent='';}
 function payChanged(){
  const c=payOptions[$('pay-region').value];
  $('pay-label').textContent=c.label;$('pay-scope').textContent=c.scope;$('pay-amount').max=c.max;$('pay-amount').step=c.step;
- $('pay-period').textContent=c.country==='US'?'Calendar year 2026':'6 April 2026 – 5 April 2027';
+ $('pay-period').textContent=c.period||(c.country==='US'?'Calendar year 2026':'6 April 2026 – 5 April 2027');
+ $('pay-amount').min=c.min??0;
+ for(const id of ['pay-epf','pay-professional-tax']){$(id+'-field').hidden=c.country!=='IN';$(id).disabled=c.country!=='IN';$(id).value='';}
  $('pay-amount').value='';$('pay-confirm').value='';clearPay();
 }
 $('pay-region').addEventListener('change',payChanged);
@@ -301,11 +309,11 @@ $('pay-form').addEventListener('input',clearPay);
 $('pay-form').addEventListener('submit',event=>{
  event.preventDefault();clearPay();
  try{
-  const region=$('pay-region').value,input={country:payOptions[region].country,region,taxYear:'2026',pay:$('pay-amount').valueAsNumber,scopeConfirmed:$('pay-confirm').value==='yes'};
+  const region=$('pay-region').value,input={country:payOptions[region].country,region,taxYear:'2026',pay:$('pay-amount').valueAsNumber,scopeConfirmed:$('pay-confirm').value==='yes',...(region==='IN'?{epfMonthlyWage:$('pay-epf').valueAsNumber,professionalTaxAnnual:$('pay-professional-tax').valueAsNumber}:{})};
   const r=calculateSalaryRemainder(input),f=v=>money(v,r.currency);
   $('pay-annual').textContent=f(r.annualRemainder);$('pay-monthly').textContent=f(r.averageMonthlyRemainder);$('pay-deductions').textContent=f(r.totalModeledDeductions);
   $('pay-breakdown').replaceChildren();
-  for(const [label,value] of [['Annual gross wages',r.annualGross],['Annual income tax',r.incomeTax],...r.contributions.map(c=>[c.name,c.amount]),['Annual modeled deductions',r.totalModeledDeductions],['Annual money left',r.annualRemainder]]){
+  for(const [label,value] of [['Annual gross wages',r.annualGross],...(r.taxableIncome===undefined?[]:[['Taxable income',r.taxableIncome]]),...(r.taxAdjustments||[]).map(c=>[c.name,c.amount]),...(r.incomeTaxComponents||[{name:'Annual income tax',amount:r.incomeTax}]).map(c=>[c.name,c.amount]),...r.contributions.map(c=>[c.name,c.amount]),['Annual modeled deductions',r.totalModeledDeductions],['Annual money left',r.annualRemainder]]){
    const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=f(value);$('pay-breakdown').append(dt,dd);
   }
   $('pay-warnings').textContent=r.warnings.join(' ')+' Unverified example only.';

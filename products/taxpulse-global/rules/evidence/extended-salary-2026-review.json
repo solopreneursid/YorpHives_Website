@@ -1,0 +1,29 @@
+{
+  "reviewDate": "2026-11-25",
+  "status": "source-reviewed-preview-only",
+  "productionEnabled": false,
+  "sources": {
+    "CA": [
+      "https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4032-payroll-deductions-tables/t4032ab-jan/t4032ab-january-general-information.html",
+      "https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/payroll-deductions-t4127-payroll-deductions-formulas/t4127-jan-122nd-edition-effective-january-1-2026/t4127-jan-payroll-deductions-formulas-computer-programs.html",
+      "https://www.canada.ca/en/services/benefits/publicpensions/cpp/cpp-enhancement.html"
+    ],
+    "AU": [
+      "https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents",
+      "https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insurance/medicare-levy/what-is-the-medicare-levy",
+      "https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insurance/medicare-levy-surcharge/medicare-levy-surcharge-income-thresholds-and-rates"
+    ],
+    "IN": [
+      "https://www.incometax.gov.in/iec/foportal/help/all-topics/e-filing-services/objective-and-scope-new-act",
+      "https://www.incometax.gov.in/iec/foportal/help/new-tax-vs-old-tax-regime-faqs"
+    ],
+    "SG": [
+      "https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates",
+      "https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/earned-income-relief",
+      "https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund%28cpf%29-relief-for-employees"
+    ]
+  },
+  "scope": "Alberta annual salary 60–150k with federal/provincial basic credits, CPP enhancement and CPP/EI credits; AU full levy, no surcharge, 100k–1m; India resident new regime and explicitly supplied EPF wage/professional tax; SG under 55 full-rate CPF and earned income relief, YA2027 before rebates.",
+  "limitations": "Professional tax is user input, not state schedule. No independent statutory verification, other reliefs, actual payslip, benefits, other provinces, Australian low-income or surcharge cases, Singapore future rebates or other age bands.",
+  "tests": "tests/extended-salary.test.mjs"
+}
