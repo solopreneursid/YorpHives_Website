@@ -32,38 +32,38 @@ async function hash(value){
  const digest=await globalThis.crypto.subtle.digest('SHA-256',data);
  return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
 }
-function calculate(kind,input){
- if(kind==='international-salary')return compareInternational(input);
- if(kind==='compensation')return compareCompensation(input);
- if(kind==='salary-negotiation'){const result=negotiateSalary(input);if(!result.found)throw new RangeError('No salary target found');return result;}
- if(kind==='salary-offers')return compareSalaryOffers(input);
+function calculate(kind,input,ruleContext={}){
+ if(kind==='international-salary')return compareInternational(input,ruleContext);
+ if(kind==='compensation')return compareCompensation(input,ruleContext);
+ if(kind==='salary-negotiation'){const result=negotiateSalary(input,ruleContext);if(!result.found)throw new RangeError('No salary target found');return result;}
+ if(kind==='salary-offers')return compareSalaryOffers(input,ruleContext);
  if(kind==='reverse-salary'){
-  const result=reverseSalary(input);
+  const result=reverseSalary(input,ruleContext);
   if(!result.found)throw new RangeError('No salary result to report');
   return result;
  }
  if(kind==='automatic-reverse-salary'){
-  const result=automaticReverseSalary(input);
+  const result=automaticReverseSalary(input,ruleContext);
   if(!result.found)throw new RangeError('No salary result to report');
   return result;
  }
  if(kind==='historical-tax')return compareHistoricalTax(input);
  if(kind==='salary')return countryCalculate({...input,module:'pit'});
  if(kind==='employee-contributions')return calculateEmployeeContributions(input);
- if(kind==='salary-remainder')return calculateSalaryRemainder(input);
- if(kind==='regional-tax')return calculateRegionalTax(input);
+ if(kind==='salary-remainder')return calculateSalaryRemainder(input,ruleContext);
+ if(kind==='regional-tax')return calculateRegionalTax(input,ruleContext.regional);
  if(kind==='capital-gain')return calculateCapitalGain(input);
- if(kind==='india-regimes')return compareIndiaRegimes(input);
+ if(kind==='india-regimes')return compareIndiaRegimes(input,ruleContext.indiaSalary);
  if(kind==='taxable-income')return assessTaxableIncome(input);
  throw new TypeError('Unknown calculation type');
 }
-export async function createReceipt({kind,input,engineFingerprint}){
+export async function createReceipt({kind,input,engineFingerprint},ruleContext={}){
  if(typeof engineFingerprint!=='string'||!HASH.test(engineFingerprint))throw new TypeError('Invalid engine fingerprint');
  const normalizedInput=plain(input);
- const payload={schema:SCHEMA,kind,input:normalizedInput,engineFingerprint,result:calculate(kind,normalizedInput),warning:WARNING,verified:false};
+ const payload={schema:SCHEMA,kind,input:normalizedInput,engineFingerprint,result:calculate(kind,normalizedInput,ruleContext),warning:WARNING,verified:false};
  return {payload,digest:await hash(payload),algorithm:'SHA-256',signature:null};
 }
-export async function verifyReceipt(receipt,currentFingerprint){
+export async function verifyReceipt(receipt,currentFingerprint,ruleContext={}){
  if(typeof currentFingerprint!=='string'||!HASH.test(currentFingerprint))throw new TypeError('Invalid current engine fingerprint');
  if(!receipt||receipt.algorithm!=='SHA-256'||receipt.signature!==null||typeof receipt.digest!=='string'||!HASH.test(receipt.digest))throw new TypeError('Invalid receipt format');
  const p=receipt.payload;
@@ -76,6 +76,6 @@ export async function verifyReceipt(receipt,currentFingerprint){
  const compatibleHistory=p.kind==='historical-tax'&&p.result?.algorithmId==='ordinary-progressive-minor-units-v1';
  if(!sameEngine&&!compatibleHistory)return {integrity:true,sameEngine:false,reproduced:false};
  let reproduced=false;
- try{reproduced=canonical(calculate(p.kind,p.input))===canonical(p.result);}catch{}
+ try{reproduced=canonical(calculate(p.kind,p.input,ruleContext))===canonical(p.result);}catch{}
  return {integrity:true,sameEngine,reproduced};
 }
