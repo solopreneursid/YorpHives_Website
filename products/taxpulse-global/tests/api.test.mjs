@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {calculate} from '../engine/api.mjs';
+const run=(primitive,parameters)=>calculate({primitive,parameters});
+const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8);
+test('API progressive calculation and preview status',()=>{const r=run('progressive_brackets',{taxableBase:1000,brackets:[{min:0,max:500,rate:.1},{min:500,max:null,rate:.2}]});near(r.result.totalTax,150);assert.equal(r.sampleOnly,true);assert.equal(r.taxRulesVerified,false)});
+test('API payroll cap',()=>near(run('capped_percentage',{grossWage:1000,rules:[{min_Floor:100,annual_cap:800,rate:.1}]}).result.totalContribution,70));
+test('API VAT inclusive and exclusive',()=>{near(run('flat_or_slab_lookup',{amount:118,rate:.18,mode:'inclusive'}).result.netAmount,100);near(run('flat_or_slab_lookup',{amount:100,rate:.18}).result.grossAmount,118)});
+test('API treaty credit',()=>near(run('treaty_offset',{grossIncome:1000,sourceDomesticWhtRate:.2,treatyWhtRate:.1,residenceTaxRate:.3}).result.totalGlobalTax,300));
+test('reject malformed numeric values',()=>{for(const amount of [-1,Infinity,NaN,'100',null,1e10])assert.throws(()=>run('flat_or_slab_lookup',{amount,rate:.18}))});
+test('reject invalid rates and modes',()=>{for(const rate of [-.1,1.01,'0.18'])assert.throws(()=>run('flat_or_slab_lookup',{amount:100,rate}));assert.throws(()=>run('flat_or_slab_lookup',{amount:100,rate:.18,mode:'unknown'}))});
+test('reject overlapping or incomplete brackets',()=>{for(const brackets of [[{min:0,max:500,rate:.1},{min:400,max:null,rate:.2}],[{min:0,max:500,rate:.1}],[{min:0,max:null,rate:.1},{min:500,max:null,rate:.2}]])assert.throws(()=>run('progressive_brackets',{taxableBase:1000,brackets}))});
+test('reject unsupported inputs',()=>{assert.throws(()=>run('constructor',{}));assert.throws(()=>calculate(null));assert.throws(()=>run('capped_percentage',{grossWage:100,rules:[{min_Floor:80,annual_cap:50,rate:.1}]}));assert.throws(()=>run('flat_or_slab_lookup',{amount:100,rate:.1,mode:'inclusive',exemption:10}))});
