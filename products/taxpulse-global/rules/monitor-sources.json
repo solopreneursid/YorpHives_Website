@@ -198,5 +198,85 @@
     ],
     "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2314111&lang=1&reg=3",
     "kind": "change-discovery"
+  },
+  {
+    "id": "IN-privacy",
+    "country": "IN",
+    "jurisdiction": "IN",
+    "topics": [
+      "privacy"
+    ],
+    "url": "https://www.meity.gov.in/documents/act-and-policies/digital-personal-data-protection-rules-2025-gDOxUjMtQWa",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "GB-privacy",
+    "country": "GB",
+    "jurisdiction": "GB",
+    "topics": [
+      "privacy"
+    ],
+    "url": "https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "CA-privacy",
+    "country": "CA",
+    "jurisdiction": "CA",
+    "topics": [
+      "privacy"
+    ],
+    "url": "https://www.priv.gc.ca/en/privacy-topics/privacy-laws-in-canada/the-personal-information-protection-and-electronic-documents-act-pipeda/pipeda-compliance-help/guide_org/",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "US-wage",
+    "country": "US",
+    "jurisdiction": "US",
+    "topics": [
+      "employment"
+    ],
+    "url": "https://www.dol.gov/agencies/whd/mw-consolidated/",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "AU-wage",
+    "country": "AU",
+    "jurisdiction": "AU",
+    "topics": [
+      "employment"
+    ],
+    "url": "https://www.fairwork.gov.au/pay-and-wages/minimum-wages",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "US-IL-rate",
+    "country": "US",
+    "jurisdiction": "US-IL",
+    "topics": [
+      "regional-tax"
+    ],
+    "url": "https://tax.illinois.gov/research/taxrates/income.html",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "US-PA-rate",
+    "country": "US",
+    "jurisdiction": "US-PA",
+    "topics": [
+      "regional-tax"
+    ],
+    "url": "https://www.pa.gov/agencies/revenue/resources/tax-rates/personal-income-tax-rates",
+    "kind": "change-discovery"
+  },
+  {
+    "id": "SG-CPF",
+    "country": "SG",
+    "jurisdiction": "SG",
+    "topics": [
+      "payroll"
+    ],
+    "url": "https://www.cpf.gov.sg/employer/employer-obligations/how-much-cpf-contributions-to-pay",
+    "kind": "change-discovery"
   }
 ]
