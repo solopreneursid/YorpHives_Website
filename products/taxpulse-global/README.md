@@ -72,3 +72,7 @@ All eight original jurisdictions now have at least one connected income-tax exam
 ## India FY 2026–27 detailed regime comparison
 
 The ordinary-salary comparison supports both regimes, age and residency categories, caller-confirmed eligible deductions, section 156 rebate and marginal relief, surcharge and surcharge marginal relief, 4% cess and section 516 rounding. Integer arithmetic uses 1/10000 INR internally; inputs are whole rupees. A separate API at POST /v1/india/regime-compare and local UI share this implementation and support unsigned replay receipts. The older basic income-tax calculator remains limited and is not a complete filing calculation. All production flags remain unchanged. See rules/evidence/india-2026-regime-compare.json.
+
+## Investment gains preview
+
+A separate scoped one-disposal engine is available in the simple workspace and POST /v1/investment/capital-gain, with report replay. US regular federal tax uses ordinary/long-term income stacking; UK ordinary shares use the standard allowance and basic band; India qualifies STT equity only, within an explicit ordinary-income range to exclude surcharge and rebate interactions. Tax basis and current-year loss eligibility are caller-confirmed. Legacy capital-gains endpoints remain illustrative and are not the new engine. No property, crypto-specific, multi-lot, carryover, NIIT or complete-return model is claimed. See rules/evidence/capital-gains-2026-review.json.

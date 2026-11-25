@@ -394,6 +394,221 @@ export const spec = {
           }
         }
       }
+    },
+    "/v1/investment/capital-gain": {
+      "post": {
+        "operationId": "calculateCapitalGainExample",
+        "description": "Unverified one-disposal example for qualifying ordinary investments only. See returned warnings. Not total tax.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "taxYear",
+                      "acquired",
+                      "disposed",
+                      "saleProceeds",
+                      "adjustedBasis",
+                      "eligibleLosses",
+                      "otherTaxableIncome",
+                      "scopeConfirmed",
+                      "country",
+                      "assetType"
+                    ],
+                    "properties": {
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "acquired": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "disposed": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "saleProceeds": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "adjustedBasis": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "eligibleLosses": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "otherTaxableIncome": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      },
+                      "country": {
+                        "const": "IN"
+                      },
+                      "assetType": {
+                        "enum": [
+                          "listed-equity",
+                          "equity-fund"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "taxYear",
+                      "acquired",
+                      "disposed",
+                      "saleProceeds",
+                      "adjustedBasis",
+                      "eligibleLosses",
+                      "otherTaxableIncome",
+                      "scopeConfirmed",
+                      "country",
+                      "filingStatus"
+                    ],
+                    "properties": {
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "acquired": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "disposed": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "saleProceeds": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "adjustedBasis": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "eligibleLosses": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "otherTaxableIncome": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      },
+                      "country": {
+                        "const": "US"
+                      },
+                      "filingStatus": {
+                        "enum": [
+                          "single",
+                          "mfj",
+                          "mfs",
+                          "hoh"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "taxYear",
+                      "acquired",
+                      "disposed",
+                      "saleProceeds",
+                      "adjustedBasis",
+                      "eligibleLosses",
+                      "otherTaxableIncome",
+                      "scopeConfirmed",
+                      "country"
+                    ],
+                    "properties": {
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "acquired": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "disposed": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "saleProceeds": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "adjustedBasis": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "eligibleLosses": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "otherTaxableIncome": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000,
+                        "multipleOf": 0.01
+                      },
+                      "scopeConfirmed": {
+                        "const": true
+                      },
+                      "country": {
+                        "const": "GB"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scoped example gain tax"
+          },
+          "400": {
+            "description": "Unsupported input"
+          }
+        }
+      }
     }
   }
 };

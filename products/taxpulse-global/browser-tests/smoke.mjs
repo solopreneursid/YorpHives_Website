@@ -92,6 +92,23 @@ try {
     assert.equal(await page.locator('#assessment-result').isVisible(),false);
     assert.ok(await page.locator('#assessment-error').isVisible());
    }
+   await page.locator('#gain-country').selectOption('GB');
+   await page.locator('#gain-acquired').fill('2025-06-01');
+   await page.locator('#gain-disposed').fill('2026-06-02');
+   await page.locator('#gain-sale').fill('62600');
+   await page.locator('#gain-basis').fill('50000');
+   await page.locator('#gain-other').fill('20000');
+   await page.locator('#gain-confirm').selectOption('yes');
+   await page.getByRole('button',{name:'Calculate investment tax example'}).click();
+   await page.locator('#gain-result').waitFor();
+   assert.match(await page.locator('#gain-tax').innerText(),/GBP\s*1,728/);
+   const [gainReport]=await Promise.all([page.waitForEvent('download'),page.locator('#gain-download').click()]);
+   await page.locator('#proof-file').setInputFiles(await gainReport.path());
+   await page.waitForFunction(()=>document.getElementById('proof-status').textContent.includes('calculation was reproduced'));
+   await page.locator('#gain-confirm').selectOption('no');
+   await page.getByRole('button',{name:'Calculate investment tax example'}).click();
+   assert.equal(await page.locator('#gain-result').isVisible(),false);
+   assert.ok(await page.locator('#gain-error').isVisible());
    await page.locator('#country').selectOption('US');
    assert.equal(await page.locator('#tax-result').isVisible(),false);
    assert.equal(await page.locator('#residency-field').isVisible(),false);

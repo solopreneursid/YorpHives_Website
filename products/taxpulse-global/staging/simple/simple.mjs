@@ -1,6 +1,6 @@
 import { countryCalculate, catalog } from './engine/country.mjs';
 import { compareIncomeScenarios } from './engine/scenarios.mjs';
-import { assessTaxableIncome, compareIndiaRegimes } from './engine/taxable-income.mjs';
+import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain } from './engine/taxable-income.mjs';
 import { createReceipt, verifyReceipt } from './engine/proof.mjs';
 import engineFingerprint from './engine/fingerprint.mjs';
 import manifest from './engine/manifest.mjs';
@@ -193,3 +193,40 @@ for(const [code,name] of Object.entries(allCountries)){
   $('country-status').append(item);
 }
 countryChanged();
+
+const gainOptions={
+ IN:{currency:'INR',period:'1 April 2026 – 31 March 2027',start:'2026-04-01',end:'2027-03-31',scope:'Resident individual using the new regime. Qualifying Indian equity shares or equity-oriented funds bought after 31 January 2018; required securities transaction tax (STT) paid. Other taxable ordinary income at least INR 13 lakh; combined net income at most INR 50 lakh. Full annual equity allowance available. No other gains or special income.'},
+ US:{currency:'USD',period:'1 January – 31 December 2026',start:'2026-01-01',end:'2026-12-31',scope:'US resident individual, ordinary investment stock, one directly purchased lot, no qualified dividends, other gains, unused deductions, wash sales or special asset rates. Current-year losses must be legally eligible. Federal regular rate schedule only; no state tax, AMT or net investment income tax.'},
+ GB:{currency:'GBP',period:'6 April 2026 – 5 April 2027',start:'2026-04-06',end:'2027-04-05',scope:'UK resident individual, ordinary investment shares, correct tax cost already known, full GBP 3,000 annual allowance, standard basic rate band, no other gains, carryovers, FIG claims or special reliefs. Only eligible current-year losses.'}
+};
+let lastGain=null;
+function clearGain(){lastGain=null;$('gain-result').hidden=true;$('gain-error').textContent='';}
+function gainChanged(){
+ const country=$('gain-country').value,c=gainOptions[country];
+ $('gain-period').textContent=c.period;$('gain-scope').textContent=c.scope;
+ $('gain-disposed').min=c.start;$('gain-disposed').max=c.end;
+ for(const e of document.querySelectorAll('.gain-currency'))e.textContent='('+c.currency+')';
+ for(const [field,control,show] of [['gain-asset-field','gain-asset',country==='IN'],['gain-filing-field','gain-filing',country==='US']]){$(field).hidden=!show;$(control).disabled=!show;}
+ for(const id of ['gain-acquired','gain-disposed','gain-sale','gain-basis','gain-other','gain-confirm'])$(id).value='';
+ $('gain-losses').value='0';clearGain();
+}
+$('gain-country').addEventListener('change',gainChanged);
+$('gain-form').addEventListener('input',clearGain);
+$('gain-form').addEventListener('submit',event=>{
+ event.preventDefault();clearGain();
+ try{
+  const country=$('gain-country').value;
+  const input={country,taxYear:'2026',acquired:$('gain-acquired').value,disposed:$('gain-disposed').value,saleProceeds:$('gain-sale').valueAsNumber,adjustedBasis:$('gain-basis').valueAsNumber,otherTaxableIncome:$('gain-other').valueAsNumber,eligibleLosses:$('gain-losses').valueAsNumber,scopeConfirmed:$('gain-confirm').value==='yes',...(country==='US'?{filingStatus:$('gain-filing').value}:country==='IN'?{assetType:$('gain-asset').value}:{})};
+  const r=calculateCapitalGain(input),f=v=>money(v,r.currency);
+  $('gain-profit').textContent=f(r.realizedGain);$('gain-taxable').textContent=f(r.taxableGain);$('gain-tax').textContent=f(r.estimatedGainTax);
+  $('gain-holding').textContent=r.holding==='not-rate-determining'?'The UK rate depends on taxable income, not how long the shares were held.':r.holding==='long-term'?'Held for more than one year: long-term example.':'Held for one year or less: short-term example.';
+  $('gain-breakdown').replaceChildren();
+  for(const [label,value] of [['Profit or loss',r.realizedGain],['Eligible losses used',r.eligibleLossesApplied],['Tax-free gain allowance used',r.allowanceApplied],...r.brackets.map(b=>['Gain taxed at '+percent(b.rate),b.taxableGain]),['Tax before cess',r.taxBeforeCess],['Cess',r.cessAmount],['Estimated tax on gain only',r.estimatedGainTax]]){
+   const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=f(value);$('gain-breakdown').append(dt,dd);
+  }
+  $('gain-warnings').textContent=r.warnings.join(' ')+' Unverified example only.';
+  lastGain={kind:'capital-gain',input};$('gain-result').hidden=false;$('gain-result').focus();
+ }catch{$('gain-error').textContent='Check dates, amounts, eligible losses and the conditions above. Unsupported examples cannot be calculated.';}
+});
+$('gain-download').addEventListener('click',()=>downloadReceipt(lastGain,$('gain-download'),$('gain-error')));
+gainChanged();

@@ -139,3 +139,81 @@ export function compareIndiaRegimes(input){
  const newRegime=indiaRegime('new',gross,newDeductions,input.residentIndividual,input.ageGroup);
  return {country:'IN',taxYear:'2026',taxYearLabel:'FY 2026–27 (1 April 2026 to 31 March 2027)',currency:'INR',sampleOnly:true,taxRulesVerified:false,inputBasis:'ordinary-salary',ruleId:'IN-TY2026-27-ordinary-salary-comparison-v1',sourceUrls:["https://www.incometaxindia.gov.in/documents/d/guest/income_tax_act_2025_as_amended_by_fa_act_2026-pdf","https://www.incometaxindia.gov.in/documents/d/guest/finance-act-2026-pdf-1","https://www.incometax.gov.in/iec/foportal/help/all-topics/e-filing-services/income-and-tax-estimator-um"],oldRegime,newRegime,lowerTaxRegime:oldRegime.incomeTax===newRegime.incomeTax?'equal':oldRegime.incomeTax<newRegime.incomeTax?'old':'new',taxDifference:Math.abs(oldRegime.incomeTax-newRegime.incomeTax),warnings:['Ordinary salary only. Additional deductions are user-confirmed eligible amounts, excluding the standard deduction; eligibility is not independently determined. Excludes capital gains, business income, agricultural income, foreign tax credits, arrears relief, other taxes and payroll. This comparison is an unverified example, not a filing recommendation.']};
 }
+
+// One qualifying investment disposal; no inferred legal eligibility or tax basis.
+// Integer minor units and basis-point rates; round final component to cents.
+const CG_SOURCES={"US":["https://www.irs.gov/irb/2025-45_IRB","https://www.irs.gov/taxtopics/tc409","https://www.irs.gov/publications/p550"],"GB":["https://www.gov.uk/capital-gains-tax/rates","https://www.gov.uk/guidance/capital-gains-tax-rates-and-allowances","https://www.gov.uk/capital-gains-tax/losses"],"IN":["https://wm.incometaxindia.gov.in/w/determination-of-tax-in-certain-special-cases","https://wmstatic-prd.incometaxindia.gov.in/web/guest/w/section-198-76","https://wm.incometaxindia.gov.in/w/section-2-1"]};
+const US_CG={
+ single:{zero:49450,top:545500,bounds:[12400,50400,105700,201775,256225,640600]},
+ mfj:{zero:98900,top:613700,bounds:[24800,100800,211400,403550,512450,768700]},
+ mfs:{zero:49450,top:306850,bounds:[12400,50400,105700,201775,256225,384350]},
+ hoh:{zero:66200,top:579600,bounds:[17700,67450,105700,201750,256200,640600]}
+};
+const CG_RATES=[1000,1200,2200,2400,3200,3500,3700];
+function cgMoney(v){
+ if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>MAX)throw new RangeError('Invalid amount');
+ const scaled=v*100,rounded=Math.round(scaled);
+ if(Math.abs(scaled-rounded)>0.00002)throw new RangeError('Use at most two decimal places');
+ return BigInt(rounded);
+}
+const cgOut=v=>Number(v)/100;
+const cgRound=v=>(v+5000n)/10000n;
+function cgDate(v){
+ if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(v)||v<'1900-01-01'||v>'2099-12-31')throw new TypeError('Invalid date');
+ const d=new Date(v+'T00:00:00Z');
+ if(!Number.isFinite(d.getTime())||d.toISOString().slice(0,10)!==v)throw new TypeError('Invalid calendar date');
+ return v;
+}
+function cgSlices(start,gain,bounds,rates){
+ let lower=0n,total=0n;const rows=[];
+ const end=start+gain;
+ for(let i=0;i<rates.length;i++){
+  const upper=i<bounds.length?BigInt(bounds[i])*100n:null;
+  const used=maxBig(0n,(upper===null?end:minBig(end,upper))-maxBig(start,lower));
+  const raw=used*BigInt(rates[i]);total+=raw;
+  if(used>0n)rows.push({rate:rates[i]/10000,taxableGain:cgOut(used),tax:cgOut(cgRound(raw))});
+  if(upper!==null)lower=upper;
+ }
+ return {total,rows};
+}
+export function calculateCapitalGain(input){
+ const common=['country','taxYear','acquired','disposed','saleProceeds','adjustedBasis','eligibleLosses','otherTaxableIncome','scopeConfirmed'];
+ if(!input||typeof input!=='object'||Array.isArray(input)||!['IN','US','GB'].includes(input.country)||input.taxYear!=='2026'||input.scopeConfirmed!==true)throw new TypeError('Unsupported investment example');
+ const country=input.country,keys=[...common,...(country==='US'?['filingStatus']:country==='IN'?['assetType']:[])];
+ if(Object.keys(input).some(k=>!keys.includes(k))||keys.some(k=>!Object.hasOwn(input,k)))throw new TypeError('Unsupported fields');
+ const acquired=cgDate(input.acquired),disposed=cgDate(input.disposed);
+ const period=country==='US'?['2026-01-01','2026-12-31']:country==='IN'?['2026-04-01','2027-03-31']:['2026-04-06','2027-04-05'];
+ if(acquired>disposed||disposed<period[0]||disposed>period[1])throw new RangeError('Disposal must be in the selected tax year and on or after acquisition');
+ // Leap-day anniversary rules are excluded until jurisdiction-specific evidence is reviewed.
+ if(country!=='GB'&&acquired.slice(5)==='02-29')throw new RangeError('Leap-day acquisition not supported');
+ const anniversary=(Number(acquired.slice(0,4))+1)+acquired.slice(4);
+ const holding=country==='GB'?'not-rate-determining':disposed>anniversary?'long-term':'short-term';
+ const proceeds=cgMoney(input.saleProceeds),basis=cgMoney(input.adjustedBasis),loss=cgMoney(input.eligibleLosses),other=cgMoney(input.otherTaxableIncome);
+ const realized=proceeds-basis,positive=maxBig(0n,realized);
+ if(loss>positive)throw new RangeError('Eligible loss offset cannot exceed positive gain');
+ const net=positive-loss;
+ let allowance=0n,raw=0n,rows=[],cess=0n,warnings=[];
+ if(country==='US'){
+  if(!Object.hasOwn(US_CG,input.filingStatus))throw new TypeError('Unsupported filing status');
+  const p=US_CG[input.filingStatus];
+  const s=holding==='long-term'?cgSlices(other,net,[p.zero,p.top],[0,1500,2000]):cgSlices(other,net,p.bounds,CG_RATES);
+  raw=s.total;rows=s.rows;
+  warnings=['Regular federal marginal rate schedule only, not total tax or Form 1040 tax-table rounding. No NIIT, AMT, state tax, qualified dividends, other gains, unused deductions, wash sales, special asset rates or carryovers.'];
+ }else if(country==='GB'){
+  allowance=minBig(net,300000n);
+  const s=cgSlices(other,net-allowance,[37700],[1800,2400]);raw=s.total;rows=s.rows;
+  warnings=['Ordinary UK-resident individual investment shares only, full annual exempt amount and standard basic rate band. Excludes property, business reliefs, pension/Gift Aid band extensions, FIG claims, special share matching and other gains or carryovers. Holding length does not select the rate.'];
+ }else{
+  if(!['listed-equity','equity-fund'].includes(input.assetType)||acquired<'2018-02-01')throw new RangeError('Only qualifying post-January 2018 equity investments supported');
+  // Avoid rebate, unused basic exemption and surcharge interactions.
+  if(other<130000000n||other+net>500000000n)throw new RangeError('India requires other taxable ordinary income of INR 13 lakh or more and combined net taxable income at most INR 50 lakh');
+  allowance=holding==='long-term'?minBig(net,12500000n):0n;
+  const rate=holding==='long-term'?1250:2000;
+  raw=(net-allowance)*BigInt(rate);rows=net>allowance?[{rate:rate/10000,taxableGain:cgOut(net-allowance),tax:cgOut(cgRound(raw))}]:[];
+  cess=cgRound(raw*4n/100n);
+  warnings=['Resident individual, new regime, qualifying STT conditions confirmed, full annual equity gain threshold available. No other gains or special income. Ordinary taxable income must be at least INR 13 lakh and combined net income at most INR 50 lakh. Includes 4% cess; excludes surcharge, final return-level rounding and other taxes.'];
+ }
+ const base=cgRound(raw),total=cgRound(raw+(country==='IN'?raw*4n/100n:0n));
+ if(realized<0n)warnings.push('This disposal has a loss. No tax benefit, refund or carryforward is calculated.');
+ return {country,taxYear:'2026',taxYearLabel:period.join(' to '),currency:country==='US'?'USD':country==='GB'?'GBP':'INR',sampleOnly:true,taxRulesVerified:false,ruleId:country+'-2026-investment-disposal-v1',acquired,disposed,holding,realizedGain:cgOut(realized),eligibleLossesApplied:cgOut(loss),netPositiveGain:cgOut(net),allowanceApplied:cgOut(allowance),taxableGain:cgOut(net-allowance),otherTaxableIncome:cgOut(other),brackets:rows,taxBeforeCess:cgOut(base),cessAmount:cgOut(cess),estimatedGainTax:cgOut(total),sourceUrls:CG_SOURCES[country],warnings};
+}
