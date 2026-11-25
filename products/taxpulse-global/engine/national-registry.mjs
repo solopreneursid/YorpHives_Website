@@ -21,3 +21,6 @@ export function validateNationalRegistry(data){
 function freeze(o){if(o&&typeof o==='object'&&!Object.isFrozen(o)){Object.values(o).forEach(freeze);Object.freeze(o);}return o;}
 const data=freeze(validateNationalRegistry(baseline));
 export function nationalRules(year,registry=data){if(year!==data.taxYear)throw RangeError('Unsupported national assessment year');return registry===data?data:validateNationalRegistry(registry);}
+
+// Each independently reviewable component receives a stable content-addressed identity.
+export async function nationalEvidenceRules(registry){validateNationalRegistry(registry);const rows=[];for(const component of ['national','investment'])for(const [country,parameters] of Object.entries(registry[component])){const raw=JSON.stringify(parameters);const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw))),b=>b.toString(16).padStart(2,'0')).join('');rows.push({version:country+'-'+registry.taxYear+'-'+component+'-'+digest,jurisdiction:country,taxYear:registry.taxYear,component:component==='national'?'national-assessment':'investment-assessment',sourceUrls:registry.sources[country]});}return rows;}
