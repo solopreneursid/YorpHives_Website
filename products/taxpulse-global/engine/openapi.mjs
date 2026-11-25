@@ -44,13 +44,7 @@ export const spec = {
                   },
                   "module": {
                     "enum": [
-                      "pit",
-                      "payroll",
-                      "capgains",
-                      "vat",
-                      "corporate",
-                      "property",
-                      "dtaa"
+                      "pit"
                     ]
                   },
                   "parameters": {
