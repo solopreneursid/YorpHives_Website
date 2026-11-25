@@ -9,6 +9,7 @@ test('generated Worker routes and validation',async()=>{
  writeFileSync(join(temp,'worker.mjs'),source);
  const worker=(await import(pathToFileURL(join(temp,'worker.mjs')).href)).default;
  const call=(path,options)=>worker.fetch(new Request('https://preview.example'+path,options));
+ const status=await call('/v1/regulatory/runtime');assert.equal(status.status,200);assert.equal((await status.json()).state,'bundled-preview');const context=await call('/assets/engine/runtime-context.mjs');assert.equal(context.status,200);assert.match(await context.text(),/bundled-preview/);
  const health=await call('/health');assert.equal(health.status,200);const healthBody=await health.json();assert.equal(healthBody.taxRulesVerified,false);assert.match(healthBody.previewRevision,/^[a-f0-9]{64}$/);assert.equal(healthBody.monetization,'disabled');
  const html=await call('/');assert.equal(html.status,200);assert.match(html.headers.get('x-robots-tag'),/noindex/);const simpleHtml=await html.text();assert.match(simpleHtml,/Taxes made easier/);assert.deepEqual([...simpleHtml.matchAll(/https:\/\/[^"'\s<]+/g)].map(m=>m[0]),['https://data.worldbank.org/indicator/PA.NUS.PRVT.PP']);assert.doesNotMatch(simpleHtml,/<(?:script|link)[^>]+(?:src|href)="https?:/i);
  assert.match(html.headers.get('content-security-policy'),/script-src 'self';/);assert.doesNotMatch(html.headers.get('content-security-policy'),/tailwindcss/);
