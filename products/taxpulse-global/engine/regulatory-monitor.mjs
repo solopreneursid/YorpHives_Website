@@ -1,4 +1,5 @@
 import {createHash} from 'node:crypto';
+import {classifyObservation} from './regulatory-policy.mjs';
 import {readFileSync,writeFileSync,renameSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
 const sources=JSON.parse(readFileSync(new URL('../rules/monitor-sources.json',import.meta.url),'utf8'));
@@ -14,7 +15,7 @@ export async function inspect(source,previous={},fetcher=fetch){
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
  const output=process.argv[2]||'regulatory-report.json';let prior={};try{prior=Object.fromEntries(JSON.parse(readFileSync(output,'utf8')).sources.map(s=>[s.id,s]))}catch{}
- const report=[];for(const s of sources)report.push(await inspect(s,prior[s.id]));
- writeFileSync(output+'.tmp',JSON.stringify({mode:'review_only',sources:report},null,2)+'\n',{mode:0o600});
+ const report=[];for(const s of sources){const observation=await inspect(s,prior[s.id]);report.push({...observation,...classifyObservation(s,observation)});}
+ writeFileSync(output+'.tmp',JSON.stringify({mode:'review_only',generatedAt:new Date().toISOString(),automaticRuleChanges:false,sources:report},null,2)+'\n',{mode:0o600});
  renameSync(output+'.tmp',output);
 }
