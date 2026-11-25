@@ -6,7 +6,8 @@
     "US": [
       "https://www.irs.gov/irb/2025-45_IRB",
       "https://www.irs.gov/taxtopics/tc409",
-      "https://www.irs.gov/publications/p550"
+      "https://www.irs.gov/publications/p550",
+      "https://www.irs.gov/publications/p505"
     ],
     "GB": [
       "https://www.gov.uk/capital-gains-tax/rates",
@@ -19,7 +20,7 @@
       "https://wm.incometaxindia.gov.in/w/section-2-1"
     ]
   },
-  "scope": "One ordinary investment disposal; US regular marginal federal schedule, UK ordinary shares and standard allowance, India qualifying STT equity in narrow income range. Exact dates except unsupported leap-day acquisition, current-year eligible loss amounts caller-confirmed. No complete return, property or special asset calculations.",
+  "scope": "One ordinary investment disposal; US regular marginal federal schedule, UK ordinary shares and standard allowance, India qualifying STT equity in narrow income range. Exact dates except unsupported leap-day acquisition, current-year eligible loss amounts caller-confirmed. No complete return, property or special asset calculations. US preferential tax capped by ordinary rate calculation per IRS 2026 Publication 505.",
   "tests": "tests/capital-gain.test.mjs",
   "limitations": "Official HTML source review, not independent certification or live official calculator differential tests."
 }

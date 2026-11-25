@@ -142,7 +142,7 @@ export function compareIndiaRegimes(input){
 
 // One qualifying investment disposal; no inferred legal eligibility or tax basis.
 // Integer minor units and basis-point rates; round final component to cents.
-const CG_SOURCES={"US":["https://www.irs.gov/irb/2025-45_IRB","https://www.irs.gov/taxtopics/tc409","https://www.irs.gov/publications/p550"],"GB":["https://www.gov.uk/capital-gains-tax/rates","https://www.gov.uk/guidance/capital-gains-tax-rates-and-allowances","https://www.gov.uk/capital-gains-tax/losses"],"IN":["https://wm.incometaxindia.gov.in/w/determination-of-tax-in-certain-special-cases","https://wmstatic-prd.incometaxindia.gov.in/web/guest/w/section-198-76","https://wm.incometaxindia.gov.in/w/section-2-1"]};
+const CG_SOURCES={"US":["https://www.irs.gov/irb/2025-45_IRB","https://www.irs.gov/taxtopics/tc409","https://www.irs.gov/publications/p550","https://www.irs.gov/publications/p505"],"GB":["https://www.gov.uk/capital-gains-tax/rates","https://www.gov.uk/guidance/capital-gains-tax-rates-and-allowances","https://www.gov.uk/capital-gains-tax/losses"],"IN":["https://wm.incometaxindia.gov.in/w/determination-of-tax-in-certain-special-cases","https://wmstatic-prd.incometaxindia.gov.in/web/guest/w/section-198-76","https://wm.incometaxindia.gov.in/w/section-2-1"]};
 const US_CG={
  single:{zero:49450,top:545500,bounds:[12400,50400,105700,201775,256225,640600]},
  mfj:{zero:98900,top:613700,bounds:[24800,100800,211400,403550,512450,768700]},
@@ -196,9 +196,13 @@ export function calculateCapitalGain(input){
  if(country==='US'){
   if(!Object.hasOwn(US_CG,input.filingStatus))throw new TypeError('Unsupported filing status');
   const p=US_CG[input.filingStatus];
-  const s=holding==='long-term'?cgSlices(other,net,[p.zero,p.top],[0,1500,2000]):cgSlices(other,net,p.bounds,CG_RATES);
+  const ordinary=cgSlices(other,net,p.bounds,CG_RATES);
+  const preferential=holding==='long-term'?cgSlices(other,net,[p.zero,p.top],[0,1500,2000]):ordinary;
+  // IRS Publication 505 worksheet 2-7: compare preferential and ordinary regular tax.
+  // The same ordinary-income base cancels when comparing incremental tax.
+  const s=preferential.total<=ordinary.total?preferential:ordinary;
   raw=s.total;rows=s.rows;
-  warnings=['Regular federal marginal rate schedule only, not total tax or Form 1040 tax-table rounding. No NIIT, AMT, state tax, qualified dividends, other gains, unused deductions, wash sales, special asset rates or carryovers.'];
+  warnings=['Lower of ordinary and preferential regular federal rate schedules, not total tax or Form 1040 tax-table rounding. No NIIT, AMT, state tax, qualified dividends, other gains, unused deductions, wash sales, special asset rates or carryovers.'];
  }else if(country==='GB'){
   allowance=minBig(net,300000n);
   const s=cgSlices(other,net-allowance,[37700],[1800,2400]);raw=s.total;rows=s.rows;
