@@ -24,7 +24,7 @@ function fixture(){
  const run=sqlite.prepare('INSERT INTO source_ingest_runs VALUES (?,?,?,?,?,?,?,?,?,?)');
  for(const [source,offset] of [['uk-dfe-teaching-vacancies',1000],['uk-dfe-teaching-vacancies',3601000],['manitoba-jobs',500],['india-employment-news',100]])run.run(source+offset,source,now-offset,now-offset,'ok',1,1,0,null,'{"origin":"scheduled"}');
  const db={prepare(sql){const statement=sqlite.prepare(sql);let params=[];return {bind(...values){params=values;return this;},async all(){return {results:statement.all(...params)};},async first(){return statement.get(...params)||null;},async run(){return {meta:statement.run(...params)};}};}};
- return {sqlite,db};
+ return {sqlite,db,now,future,past};
 }
 const get=async(db,path,method='GET')=>worker.fetch(new Request('https://preview.example'+path,{method}),{DB:db});
 
@@ -32,21 +32,45 @@ test('every public listing and change query enforces source rights in the databa
  const {sqlite,db}=fixture();try{
   for(const suffix of ['','?scope=research','?country=United%20Kingdom&limit=50']){
    const response=await get(db,'/api/notices'+suffix);assert.equal(response.status,200);
-   const body=await response.json();assert.equal(body.releaseProfile,'uk_only_release_preview');assert.equal(body.publicLaunchAuthorized,false);
+   const body=await response.json();assert.equal(body.releaseProfile,'approved_staging');assert.equal(body.publicLaunchAuthorized,false);
    assert.deepEqual(body.notices.map(x=>x.id),['uk-good']);assert.deepEqual(body.sources.map(x=>x.id),['uk-dfe-teaching-vacancies']);assert.equal(body.total,1);
   }
   for(const query of ['country=Canada','country=India','country=Australia','jurisdiction=IN-BR']){
    const body=await (await get(db,'/api/notices?'+query)).json();assert.equal(body.total,0,query);assert.deepEqual(body.notices,[]);
   }
   assert.equal((await get(db,'/api/notices?source=manitoba-jobs&scope=research')).status,403);
+  assert.equal((await get(db,'/api/notices?source=india-isro-opportunities')).status,403,'ISRO is withheld until two completed native checks');
   const changes=await (await get(db,'/api/notice-changes?scope=research')).json();
   assert.deepEqual(changes.changes.map(x=>x.noticeId),['uk-good']);
   assert.deepEqual((await (await get(db,'/api/notice-changes?country=India')).json()).changes,[]);
   const status=await (await get(db,'/api/ingestion-status')).json();
   assert.equal(status.openImportedNotices,1);assert.deepEqual(status.bySource.map(x=>x.sourceId),['uk-dfe-teaching-vacancies']);
   assert.ok(status.latest.every(x=>x.sourceId==='uk-dfe-teaching-vacancies'));
-  assert.deepEqual(status.automation.sources.map(x=>x.sourceId),['uk-dfe-teaching-vacancies']);
-  assert.equal(status.automation.twoCycleCronGatePassed,true);
+  assert.deepEqual(status.automation.sources.map(x=>x.sourceId),['uk-dfe-teaching-vacancies','india-isro-opportunities']);
+  assert.equal(status.indiaSourceCheck.ready,false);assert.equal(status.automation.twoCycleCronGatePassed,false);
+ }finally{sqlite.close();}
+});
+
+test('ISRO notices appear only after two complete checks and only from the latest snapshot',async()=>{
+ const {sqlite,db,now,future,past}=fixture();try{
+  const snapshot=now-2000,source='india-isro-opportunities';
+  const insert=sqlite.prepare('INSERT INTO official_job_notices VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+  for(const [id,seen] of [['isro-current',snapshot],['isro-missing',snapshot-1]])insert.run(id,source,id,'ISRO test centre','India','India','Technical','https://www.isro.gov.in/TestRecruitment.html',past,future,now-60000,seen,'official_feed_unreviewed','IN','India','national','government_agency','open');
+  const addRun=sqlite.prepare('INSERT INTO source_ingest_runs VALUES (?,?,?,?,?,?,?,?,?,?)');
+  addRun.run('isro-old',source,now-3*3600000,now-3*3600000+50,'ok',10,0,10,null,'{"origin":"scheduled","snapshot":"complete"}');
+  addRun.run('isro-new',source,snapshot,snapshot+50,'ok',10,1,9,null,'{"origin":"scheduled","snapshot":"complete"}');
+  let india=await (await get(db,'/api/notices?country=India')).json();
+  assert.equal(india.indiaSourceCheck.ready,true);assert.deepEqual(india.notices.map(x=>x.id),['isro-current']);
+  assert.equal(india.sources.some(x=>x.id===source&&x.commercialReuseApprovedForCurrentFields),true);
+  const restricted=await (await get(db,'/api/release-preview/notices?country=India')).json();assert.deepEqual(restricted.notices,[]);
+  assert.equal((await get(db,'/api/release-preview/notices?source='+source)).status,403);
+  const addRevision=sqlite.prepare('INSERT INTO notice_revisions VALUES (?,?,?,?,?,?,?)');
+  for(const id of ['isro-current','isro-missing'])addRevision.run(id,source,now-100,id,id+' changed',past,future);
+  const changes=await (await get(db,'/api/notice-changes?country=India')).json();assert.deepEqual(changes.changes.map(x=>x.noticeId),['isro-current']);
+  const status=await (await get(db,'/api/ingestion-status')).json();assert.equal(status.indiaSourceCheck.ready,true);assert.equal(status.openImportedNotices,2);
+  addRun.run('isro-pending',source,now-100,now-100,'error',0,0,0,'isro_collection_pending','{"origin":"scheduled","snapshot":"pending"}');
+  india=await (await get(db,'/api/notices?country=India')).json();assert.equal(india.indiaSourceCheck.ready,false);assert.deepEqual(india.notices,[]);
+  assert.deepEqual((await (await get(db,'/api/notice-changes?country=India')).json()).changes,[]);
  }finally{sqlite.close();}
 });
 

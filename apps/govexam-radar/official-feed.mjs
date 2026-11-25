@@ -1,6 +1,7 @@
 // GovRadar government recruitment feed adapter, source-bound and portable SQLite/D1.
 import { INDIA_EMPLOYMENT_NEWS } from "./india-employment-news.mjs";
-import {OFFICIAL_SOURCE_RIGHTS,allowedCommercialPreviewSources} from "./source-rights.mjs";
+import {OFFICIAL_SOURCE_RIGHTS,allowedCommercialPreviewSources,allowedIsroPreviewSource} from "./source-rights.mjs";
+import {ISRO_SOURCE,isroPublicationGate} from "./isro-feed.mjs";
 // First supported adapter: UK Department for Education Teaching Vacancies (OGL v3).
 // Source: https://teaching-vacancies.service.gov.uk/api/v1/jobs.json
 // Licence: https://teaching-vacancies.service.gov.uk/pages/terms-and-conditions
@@ -205,11 +206,17 @@ export async function ingestDfE(db,fetcher=fetch,clock=Date.now(),meta={}){
 export async function serveOfficialNotices(db,params,scope="research"){
  if(!db)return json({error:"not_configured",notices:[]},503);
  // Scope is a server-side Worker argument, never a public request parameter.
- if(!["research","uk_only_release_preview"].includes(scope))
+ if(!["research","uk_only_release_preview","approved_staging"].includes(scope))
   return json({error:"unknown_release_profile",notices:[]},503);
- let releaseSourceIds=null;
- if(scope==="uk_only_release_preview"){
-  try{releaseSourceIds=allowedCommercialPreviewSources();}
+ let releaseSourceIds=null,isroGate={ready:false};
+ if(scope==="uk_only_release_preview"||scope==="approved_staging"){
+  try{
+   releaseSourceIds=allowedCommercialPreviewSources();
+   if(scope==="approved_staging"){
+    const id=allowedIsroPreviewSource();isroGate=await isroPublicationGate(db);
+    if(isroGate.ready)releaseSourceIds.push(id);
+   }
+  }
   catch{return json({error:"commercial_release_rights_not_approved",notices:[]},503);}
  }
  try{
@@ -217,7 +224,7 @@ export async function serveOfficialNotices(db,params,scope="research"){
   const page=Math.max(1,Math.min(1000,Number(params.get("page"))||1));
   const keyword=plain(params.get("q"),60);
   const stream=["Technical","Non-technical","Unclassified"].includes(params.get("stream"))?params.get("stream"):"";
-  const allowedSources=[DFE_SOURCE.id,"manitoba-jobs",INDIA_EMPLOYMENT_NEWS.id];
+  const allowedSources=[DFE_SOURCE.id,"manitoba-jobs",INDIA_EMPLOYMENT_NEWS.id,ISRO_SOURCE.id];
   const requestedSource=params.get("source");
   if(releaseSourceIds && requestedSource && !releaseSourceIds.includes(requestedSource))
    return json({error:"source_not_approved_for_release_preview",notices:[],sources:[]},403);
@@ -236,6 +243,13 @@ export async function serveOfficialNotices(db,params,scope="research"){
    where.push("source_id IN ("+releaseSourceIds.map(()=>"?").join(",")+")");
    bind.push(...releaseSourceIds);
   }
+  // ISRO serves a complete snapshot. Only rows observed in its latest fully
+  // successful run may be displayed; a vanished row is withheld, not called
+  // withdrawn. Incomplete/failed runs close the gate before any row is shown.
+  if(scope==="approved_staging"&&isroGate.ready){
+   where.push("(source_id!=? OR (last_seen_at=? AND NOT EXISTS (SELECT 1 FROM source_ingest_runs g WHERE g.source_id=? AND g.started_at>?)))");
+   bind.push(ISRO_SOURCE.id,isroGate.snapshotAt,ISRO_SOURCE.id,isroGate.snapshotAt);
+  }
   if(sourceId){where.push("source_id=?");bind.push(sourceId);}
   if(country){where.push("country=?");bind.push(country);}
   if(level){where.push("government_tier=?");bind.push(level);}
@@ -253,14 +267,16 @@ export async function serveOfficialNotices(db,params,scope="research"){
     jurisdiction:"England",level:"national",employerType:"public_education"};
    if(rights.id==="manitoba-jobs")return{...rights,name:"Government of Manitoba Job Opportunities",
     country:"Canada",jurisdiction:"Manitoba",level:"province",employerType:"provincial_government"};
+   if(rights.id===ISRO_SOURCE.id)return{...rights,name:ISRO_SOURCE.name,country:"India",jurisdiction:"India",level:"national",employerType:"government_agency"};
    return{...rights,name:INDIA_EMPLOYMENT_NEWS.name,country:"India",jurisdiction:"India",
     level:"unclassified",employerType:"government_recruitment_digest"};
   });
   return json({sources,notices:rows.results||[],total:total?.total||0,page,limit,
-   releaseProfile:releaseSourceIds?"uk_only_release_preview": "research",
+   releaseProfile:scope,
    publicLaunchAuthorized:false,
+   ...(scope==="approved_staging"?{indiaSourceCheck:{ready:isroGate.ready,lastCheckAt:isroGate.lastCheckAt||null,successfulCycles:isroGate.successfulCycles||0}}:{}),
    filters:{source:sourceId,country,jurisdiction,level,stream,keyword},
-   disclaimer:"Government employer and public education sector listings are distinguished. Records were retrieved from an official source feed, but each vacancy, eligibility and closing time must be confirmed on the original authority's site. An India Employment News row is a government-published summary index, not an independently verified employer vacancy or direct application link. A date-only closing field is not an exact local-time deadline."});
+   disclaimer:"Government employer and public education sector listings are distinguished. Records come from official sources, but every vacancy, eligibility and exact closing time must be confirmed on the original authority's site. ISRO date-only closing fields use the end of the Indian calendar day as a visibility boundary, not a verified application deadline. An India Employment News research row is a summary index, not an independently verified employer vacancy."});
  }catch(e){console.error(JSON.stringify({event:"official_notices_read_failed",reason:String(e?.message||e)}));return json({error:"temporarily_unavailable",notices:[]},503);}
 }
 export async function serveIngestionStatus(db){
@@ -311,19 +327,22 @@ export async function serveIngestionStatus(db){
 export async function servePublicIngestionStatus(db){
  if(!db)return json({error:"not_configured"},503);
  try{
-  const ids=allowedCommercialPreviewSources();
-  const placeholders=ids.map(()=>"?").join(",");
+  const gate=await isroPublicationGate(db),candidate=allowedIsroPreviewSource();
+  const ids=allowedCommercialPreviewSources();if(gate.ready)ids.push(candidate);
+  const auditIds=[...allowedCommercialPreviewSources(),candidate];
+  const placeholders=ids.map(()=>"?").join(","),auditPlaceholders=auditIds.map(()=>"?").join(",");
   const now=Date.now(),cutoff=new Date(now).toISOString();
-  const latest=await db.prepare("SELECT source_id as sourceId,started_at as startedAt,finished_at as finishedAt,state,received,accepted,discarded,error_code as errorCode FROM source_ingest_runs WHERE source_id IN ("+placeholders+") ORDER BY finished_at DESC LIMIT 8").bind(...ids).all();
-  const bySource=await db.prepare("SELECT source_id AS sourceId,country,jurisdiction_name AS jurisdiction,government_tier AS level,employer_type AS employerType,COUNT(*) AS count FROM official_job_notices WHERE source_id IN ("+placeholders+") AND life_status='open' AND closing_at>? AND last_seen_at>=? AND review_state IN ('official_feed_unreviewed','founder_reviewed') GROUP BY source_id,country,jurisdiction_name,government_tier,employer_type").bind(...ids,cutoff,now-14*86400000).all();
-  const recent=await db.prepare("SELECT source_id AS sourceId,MAX(CASE WHEN state='ok' AND details LIKE '%\"origin\":\"scheduled\"%' THEN finished_at ELSE NULL END) AS lastSuccessfulScheduledAt,SUM(CASE WHEN state='ok' AND details LIKE '%\"origin\":\"scheduled\"%' AND finished_at>=? THEN 1 ELSE 0 END) AS recentNativeSuccessCount,MAX(CASE WHEN id NOT LIKE 'bootstrap-%' AND details NOT LIKE '%\"origin\":\"signed_portable_collector\"%' AND (error_code IS NULL OR error_code!='collector_claim_pending') THEN finished_at ELSE NULL END) AS lastNativeAttemptAt FROM source_ingest_runs WHERE source_id IN ("+placeholders+") GROUP BY source_id").bind(now-8*3600000,...ids).all();
-  const sources=ids.map(sourceId=>{
+  const latest=await db.prepare("SELECT source_id as sourceId,started_at as startedAt,finished_at as finishedAt,state,received,accepted,discarded,error_code as errorCode FROM source_ingest_runs WHERE source_id IN ("+auditPlaceholders+") ORDER BY finished_at DESC LIMIT 8").bind(...auditIds).all();
+  const snapshotGuard=gate.ready?" AND (source_id!=? OR (last_seen_at=? AND NOT EXISTS (SELECT 1 FROM source_ingest_runs g WHERE g.source_id=? AND g.started_at>?)))":"";
+  const bySource=await db.prepare("SELECT source_id AS sourceId,country,jurisdiction_name AS jurisdiction,government_tier AS level,employer_type AS employerType,COUNT(*) AS count FROM official_job_notices WHERE source_id IN ("+placeholders+") AND life_status='open' AND closing_at>? AND last_seen_at>=? AND review_state IN ('official_feed_unreviewed','founder_reviewed')"+snapshotGuard+" GROUP BY source_id,country,jurisdiction_name,government_tier,employer_type").bind(...ids,cutoff,now-14*86400000,...(gate.ready?[candidate,gate.snapshotAt,candidate,gate.snapshotAt]:[])).all();
+  const recent=await db.prepare("SELECT source_id AS sourceId,MAX(CASE WHEN state='ok' AND details LIKE '%\"origin\":\"scheduled\"%' THEN finished_at ELSE NULL END) AS lastSuccessfulScheduledAt,SUM(CASE WHEN state='ok' AND details LIKE '%\"origin\":\"scheduled\"%' AND finished_at>=? THEN 1 ELSE 0 END) AS recentNativeSuccessCount,MAX(CASE WHEN id NOT LIKE 'bootstrap-%' AND details NOT LIKE '%\"origin\":\"signed_portable_collector\"%' AND (error_code IS NULL OR error_code!='collector_claim_pending') THEN finished_at ELSE NULL END) AS lastNativeAttemptAt FROM source_ingest_runs WHERE source_id IN ("+auditPlaceholders+") GROUP BY source_id").bind(now-8*3600000,...auditIds).all();
+  const sources=auditIds.map(sourceId=>{
    const row=(recent.results||[]).find(x=>x.sourceId===sourceId)||{};
    const last=row.lastSuccessfulScheduledAt||null;
    const count=Number(row.recentNativeSuccessCount)||0;
-   return {sourceId,scheduledSuccessObserved:!!last,freshSuccess:!!last&&now-last<86400000,recentNativeSuccessCount:count,twoCycleNativeProof:count>=2&&!!last&&now-last<=5*3600000&&row.lastNativeAttemptAt===last,lastSuccessfulScheduledAt:last,lastNativeAttemptAt:row.lastNativeAttemptAt||null};
+   return {sourceId,scheduledSuccessObserved:!!last,freshSuccess:sourceId===candidate?gate.ready:!!last&&now-last<86400000,recentNativeSuccessCount:count,twoCycleNativeProof:sourceId===candidate?gate.ready:count>=2&&!!last&&now-last<=5*3600000&&row.lastNativeAttemptAt===last,lastSuccessfulScheduledAt:last,lastNativeAttemptAt:row.lastNativeAttemptAt||null};
   });
   const rows=bySource.results||[];
-  return json({source:"approved preview sources",openImportedNotices:rows.reduce((n,x)=>n+(Number(x.count)||0),0),bySource:rows,latest:latest.results||[],automation:{observedForAllSources:sources.every(x=>x.scheduledSuccessObserved),healthy:sources.every(x=>x.freshSuccess),twoCycleCronGatePassed:sources.every(x=>x.twoCycleNativeProof),sources},status:"official_feed_imports_not_independently_verified"});
+  return json({source:"approved preview sources",openImportedNotices:rows.reduce((n,x)=>n+(Number(x.count)||0),0),bySource:rows,latest:latest.results||[],automation:{observedForAllSources:sources.every(x=>x.scheduledSuccessObserved),healthy:sources.every(x=>x.freshSuccess),twoCycleCronGatePassed:sources.every(x=>x.twoCycleNativeProof),sources},indiaSourceCheck:{ready:gate.ready,lastCheckAt:gate.lastCheckAt||null,successfulCycles:gate.successfulCycles||0},status:"official_feed_imports_not_independently_verified"});
  }catch(e){console.error(JSON.stringify({event:"public_ingestion_status_failed",reason:String(e?.message||e).slice(0,150)}));return json({error:"status_unavailable"},503);}
 }

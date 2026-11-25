@@ -60,13 +60,14 @@ test("country and keyword filters cannot bypass the UK scope",async()=>{
  assert.equal(data.sources.length,1);
  assert.ok(storage.queries.some(x=>x.sql.includes("source_id IN (?)")&&x.sql.includes("country=?")));
 });
-test("existing research endpoint keeps both source labels without approving their commercial reuse",async()=>{
+test("research metadata keeps source-specific rights and ISRO attribution separate",async()=>{
  const storage=db();
  const r=await serveOfficialNotices(storage,new URLSearchParams(),"research"),data=await r.json();
  assert.equal(r.status,200);
  assert.equal(data.releaseProfile,"research");
- assert.equal(data.sources.length,3);
+ assert.equal(data.sources.length,4);
  assert.equal(data.sources.find(x=>x.id==="manitoba-jobs").commercialReuseApprovedForCurrentFields,false);
+ assert.equal(data.sources.find(x=>x.id==="india-isro-opportunities").commercialReuseApprovedForCurrentFields,true);
  assert.equal(data.notices.length,2);
 });
 test("unknown server mode fails closed and cannot be enabled through a query string",async()=>{

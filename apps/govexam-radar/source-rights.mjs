@@ -15,6 +15,17 @@ const RIGHT_ENTRIES=[
   note:"Reuse is conditional: no fees or commission for contacting, interviewing or hiring respondents to reused listings. Do not imply government endorsement. Keep applications on the official site."
  },
  {
+  id:"india-isro-opportunities",
+  reuseStatus:"conditional_isro_website_policy",
+  commercialReuseApprovedForCurrentFields:true,
+  licence:"ISRO/DOS website copyright policy; accurate reproduction and prominent attribution required",
+  licenceUrl:"https://www.isro.gov.in/Website_Policy.html",
+  termsUrl:"https://www.isro.gov.in/Website_Policy.html",
+  officialSourceUrl:"https://www.isro.gov.in/ViewAllOpportunities.html",
+  attribution:"Source: Indian Space Research Organisation / Department of Space, Government of India.",
+  note:"The permission covers ISRO/DOS material on its site, with accurate reproduction and prominent attribution; identified third-party material is excluded. Import only named ISRO/DOS centres and official ISRO links. Not a government service or endorsement."
+ },
+ {
   id:"manitoba-jobs",
   reuseStatus:"source_specific_review_required",
   commercialReuseApprovedForCurrentFields:false,
@@ -58,4 +69,10 @@ export const UK_ONLY_PREVIEW_SOURCE_IDS=Object.freeze(["uk-dfe-teaching-vacancie
 export function allowedCommercialPreviewSources(){
  assertSourceRightsForCommercialRelease(UK_ONLY_PREVIEW_SOURCE_IDS);
  return [...UK_ONLY_PREVIEW_SOURCE_IDS];
+}
+
+export function allowedIsroPreviewSource(){
+ const id="india-isro-opportunities";
+ assertSourceRightsForCommercialRelease([id]);
+ return id;
 }

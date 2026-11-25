@@ -109,6 +109,26 @@ test('latest search response wins and UK notices can be saved on this device',as
   assert.match(await page.locator('#saved-official-notices').innerText(),/Engineer - test data/);
  }finally{await page.close();}
 });
+test('an eligible ISRO notice can be viewed, saved, exported and shown on the low-data page',async()=>{
+ // This record is synthetic and exists only in the browser test.
+ const sample={id:'test-isro',title:'Test ISRO vacancy',employer:'Space Applications Centre',country:'India',jurisdiction:'India',jurisdictionCode:'IN',region:'All India',stream:'Technical',closingAt,lastSeenAt:Date.now(),sourceId:'india-isro-opportunities',sourceUrl:'https://www.isro.gov.in/SACRecruitment1.html'};
+ const page=await browser.newPage({viewport:{width:375,height:820}});
+ try{
+  await page.route('**/api/notices?*',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({total:1,notices:[sample]})}));
+  await page.goto(origin,{waitUntil:'domcontentloaded'});await page.locator('#official-notice-grid article').first().waitFor();
+  assert.match(await page.locator('#official-notice-grid').innerText(),/ISRO · India/);
+  assert.equal(await page.locator('#official-notice-grid a[href="https://www.isro.gov.in/SACRecruitment1.html"]').count(),1);
+  await page.locator('#official-notice-grid [data-save-notice]').click();await page.locator('#nav-mobile-saved').click();
+  assert.match(await page.locator('#saved-official-notices').innerText(),/Test ISRO vacancy/);
+  const downloadPromise=page.waitForEvent('download');await page.locator('#portable-export').click();
+  const stream=await (await downloadPromise).createReadStream();let raw='';for await(const chunk of stream)raw+=chunk;
+  const exported=JSON.parse(raw);assert.equal(exported.bookmarks[0].sourceId,'india-isro-opportunities');assert.equal(exported.bookmarks[0].sourceUrl,sample.sourceUrl);
+  await page.goto(origin+'/lite',{waitUntil:'domcontentloaded'});await page.locator('#jobs .card').first().waitFor();
+  assert.match(await page.locator('#jobs').innerText(),/Test ISRO vacancy/);
+  assert.equal(await page.locator('#jobs a[href="https://www.isro.gov.in/SACRecruitment1.html"]').count(),1);
+  assert.match(await page.locator('#credit').innerText(),/ISRO/);
+ }finally{await page.close();}
+});
 test('Hindi translates the search and government directory while keeping source titles intact',async()=>{
  const page=await browser.newPage({viewport:{width:375,height:820}});
  try{
