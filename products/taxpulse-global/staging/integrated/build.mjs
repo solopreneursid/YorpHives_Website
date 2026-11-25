@@ -56,11 +56,11 @@ for(const [name,content] of [['india-salary-registry',indiaRegistry],['india-sal
 const regionalRegistry=read('engine/regional-registry.mjs').replace("import registry from '../rules/regional-versions.json' with { type: 'json' };","import registry from './regional-versions.mjs';");
 const regionalVersions='export default '+JSON.stringify(JSON.parse(read('rules/regional-versions.json')))+';\n';
 for(const [name,content] of [['regional-registry',regionalRegistry],['regional-versions',regionalVersions]]){write(name+'.mjs',content);write('browser-'+name+'.mjs.txt',content);}
-for(const name of ['taxable-income','proof','history','reverse-salary','salary-offers','negotiation','compensation','international']){
+for(const name of ['taxable-income','proof','history','reverse-salary','salary-offers','negotiation','compensation','international','rule-snapshot','runtime-rules']){
   const content=read('engine/'+name+'.mjs');
   write(name+'.mjs',content);write('browser-'+name+'.mjs.txt',content);
 }
-const fingerprintInputs=['india-salary-registry','india-salary-versions','regional-registry','regional-versions','country','primitives','us-filing-statuses','IN','US','GB','taxable-income','proof','history','reverse-salary','salary-offers','negotiation','compensation','international'].map(name=>[name,readFileSync(new URL(name+'.mjs',bundle),'utf8')]);
+const fingerprintInputs=['rule-snapshot','runtime-rules','india-salary-registry','india-salary-versions','regional-registry','regional-versions','country','primitives','us-filing-statuses','IN','US','GB','taxable-income','proof','history','reverse-salary','salary-offers','negotiation','compensation','international'].map(name=>[name,readFileSync(new URL(name+'.mjs',bundle),'utf8')]);
 const fingerprint=createHash('sha256').update(JSON.stringify(fingerprintInputs)).digest('hex');
 write('browser-fingerprint.mjs.txt','export default '+JSON.stringify(fingerprint)+';\n');
 
