@@ -12,7 +12,7 @@ const timestamp=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\
 function unchangedHistorical(previous,next,now){
  const today=now.toISOString().slice(0,10);
  const oldRows=previous?.versions||[];
- for(const row of oldRows){if(row.effectiveUntil<=today){const match=next.versions.find(r=>r.version===row.version);if(!match||JSON.stringify(canonical(row))!==JSON.stringify(canonical(match)))throw Error('Historical version cannot be replaced');}}
+ for(const row of oldRows){const match=next.versions.find(r=>r.version===row.version);if(match&&JSON.stringify(canonical(row))!==JSON.stringify(canonical(match)))throw Error('Immutable version changed');if(row.effectiveUntil<=today&&!match)throw Error('Historical version cannot be replaced');}
 }
 export async function verifyRuleSnapshot(envelope,{publicKeyHex,engineFingerprint,previous=null,minimumSequence=0,now=new Date()}){
  exact(envelope,['payload','digest','signature']);
