@@ -1,0 +1,296 @@
+{
+  "country_code": "GB",
+  "country_name": "United Kingdom",
+  "flag": "🇬🇧",
+  "tax_year": "2026",
+  "tax_year_label": "2026/27 Tax Year (HMRC England, Wales & NI)",
+  "currency": {
+    "code": "GBP",
+    "symbol": "£",
+    "locale": "en-GB"
+  },
+  "source_url": "https://www.gov.uk/income-tax-rates",
+  "modules": {
+    "personal_income_tax": {
+      "primitive": "progressive_brackets",
+      "standard_deduction": 12570,
+      "taper_threshold": 100000,
+      "brackets": [
+        {
+          "min": 0,
+          "max": 37700,
+          "rate": 0.2
+        },
+        {
+          "min": 37700,
+          "max": 112570,
+          "rate": 0.4
+        },
+        {
+          "min": 112570,
+          "max": null,
+          "rate": 0.45
+        }
+      ]
+    },
+    "social_security_payroll": {
+      "primitive": "capped_percentage",
+      "employee_tiers": [
+        {
+          "name": "Class 1 Employee NI — Main Band (8%)",
+          "rate": 0.08,
+          "min_Floor": 12570,
+          "annual_cap": 50270,
+          "note": "8% between £12,570 Primary Threshold and £50,270 UEL"
+        },
+        {
+          "name": "Class 1 Employee NI — Upper Band (2%)",
+          "rate": 0.02,
+          "min_Floor": 50270,
+          "annual_cap": null,
+          "note": "2% on earnings above £50,270 Upper Earnings Limit"
+        }
+      ],
+      "employer_tiers": [
+        {
+          "name": "Class 1 Secondary Employer NI (15%)",
+          "rate": 0.15,
+          "min_Floor": 5000,
+          "annual_cap": null,
+          "note": "15% employer NIC rate above £5,000 Secondary Threshold (2026/27)"
+        },
+        {
+          "name": "Workplace Auto-Enrolment Pension (3%)",
+          "rate": 0.03,
+          "min_Floor": 6240,
+          "annual_cap": 50270,
+          "note": "3% statutory minimum employer pension on qualifying earnings (£6,240–£50,270)"
+        }
+      ]
+    },
+    "capital_gains_crypto": {
+      "primitive": "flat_or_slab_lookup",
+      "cess_rate": 0,
+      "assets": {
+        "listed_equity": {
+          "label": "UK & Global Shares / ETFs (Non-ISA Chargeable Gains)",
+          "long_term_months": 12,
+          "short_term_rate": 0.24,
+          "long_term_rate": 0.18,
+          "annual_exemption": 3000,
+          "note": "2026/27 Annual Exempt Amount £3,000; 18% Basic Rate band / 24% Higher & Additional Rate band."
+        },
+        "real_estate": {
+          "label": "UK Residential Investment Property (Non-PRR)",
+          "long_term_months": 12,
+          "short_term_rate": 0.24,
+          "long_term_rate": 0.18,
+          "annual_exemption": 3000,
+          "note": "Aligned at 18% (basic rate) and 24% (higher rate) above £3,000 Annual Exempt Amount; 60-day HMRC reporting rule applies."
+        },
+        "crypto_vda": {
+          "label": "Cryptoassets & Digital Tokens (HMRC Cryptoassets Manual)",
+          "long_term_months": 12,
+          "short_term_rate": 0.24,
+          "long_term_rate": 0.18,
+          "annual_exemption": 3000,
+          "note": "Section 104 pooling applies; net gains above £3,000 AEA taxed at 18% (basic) or 24% (higher rate)."
+        }
+      }
+    },
+    "vat_gst": {
+      "primitive": "flat_or_slab_lookup",
+      "tax_name": "UK Value Added Tax (HMRC VAT)",
+      "slabs": [
+        {
+          "id": "uk_standard_20",
+          "label": "Standard VAT Rate — Most Goods & Services (20%)",
+          "rate": 0.2
+        },
+        {
+          "id": "uk_reduced_5",
+          "label": "Reduced VAT Rate — Domestic Fuel, Power, Children's Car Seats (5%)",
+          "rate": 0.05
+        },
+        {
+          "id": "uk_zero_0",
+          "label": "Zero-Rated VAT — Basic Groceries, Books, Children's Clothing, Exports (0%)",
+          "rate": 0
+        }
+      ]
+    },
+    "corporate_tax": {
+      "primitive": "progressive_brackets",
+      "regimes": [
+        {
+          "id": "uk_corp_marginal_2026",
+          "label": "UK Corporation Tax 2026/27 (19% Small Profits / 25% Main Rate w/ Marginal Relief)",
+          "brackets": [
+            {
+              "min": 0,
+              "max": 50000,
+              "rate": 0.19
+            },
+            {
+              "min": 50000,
+              "max": 250000,
+              "rate": 0.265
+            },
+            {
+              "min": 250000,
+              "max": null,
+              "rate": 0.25
+            }
+          ],
+          "note": "19% up to £50,000; 26.5% effective marginal taper between £50,000 and £250,000; flat 25% Main Rate above £250,000."
+        },
+        {
+          "id": "uk_investment_cihc",
+          "label": "Close Investment-Holding Company / Ring-Fenced Rate (25.0% Flat)",
+          "brackets": [
+            {
+              "min": 0,
+              "max": null,
+              "rate": 0.25
+            }
+          ],
+          "note": "Flat 25% Main Rate without Small Profits Rate relief."
+        }
+      ]
+    },
+    "property_transfer_tax": {
+      "primitive": "progressive_brackets",
+      "regions": [
+        {
+          "id": "uk_sdlt_standard",
+          "label": "England & Northern Ireland — Standard Residential SDLT (2026/27)",
+          "brackets": [
+            {
+              "min": 0,
+              "max": 125000,
+              "rate": 0
+            },
+            {
+              "min": 125000,
+              "max": 250000,
+              "rate": 0.02
+            },
+            {
+              "min": 250000,
+              "max": 925000,
+              "rate": 0.05
+            },
+            {
+              "min": 925000,
+              "max": 1500000,
+              "rate": 0.1
+            },
+            {
+              "min": 1500000,
+              "max": null,
+              "rate": 0.12
+            }
+          ],
+          "registration_rate": 0.001,
+          "registration_cap": 1105,
+          "non_resident_surcharge_rate": 0.02,
+          "note": "0% to £125k, 2% to £250k, 5% to £925k, 10% to £1.5M, 12% above. Non-UK residents pay an extra +2% surcharge across all bands."
+        },
+        {
+          "id": "uk_sdlt_additional",
+          "label": "Additional Dwelling / Buy-to-Let (+5% Higher Rates SDLT)",
+          "brackets": [
+            {
+              "min": 0,
+              "max": 125000,
+              "rate": 0.05
+            },
+            {
+              "min": 125000,
+              "max": 250000,
+              "rate": 0.07
+            },
+            {
+              "min": 250000,
+              "max": 925000,
+              "rate": 0.1
+            },
+            {
+              "min": 925000,
+              "max": 1500000,
+              "rate": 0.15
+            },
+            {
+              "min": 1500000,
+              "max": null,
+              "rate": 0.17
+            }
+          ],
+          "registration_rate": 0.001,
+          "registration_cap": 1105,
+          "non_resident_surcharge_rate": 0.02,
+          "note": "Includes +5% Additional Dwelling surcharge on second homes/buy-to-let properties (+2% if non-UK resident)."
+        }
+      ]
+    },
+    "withholding_dtaa": {
+      "primitive": "treaty_offset",
+      "domestic_default_wht": {
+        "dividends": 0,
+        "interest": 0.2,
+        "royalties": 0.2
+      },
+      "treaties": {
+        "IN": {
+          "partner_name": "India (UK-India Double Taxation Convention)",
+          "dividends": 0.15,
+          "interest": 0.15,
+          "royalties": 0.15,
+          "article_ref": "UK-India DTT Articles 11, 12 & 13 (0% UK domestic WHT on ordinary dividends)"
+        },
+        "US": {
+          "partner_name": "United States (UK-US Tax Treaty)",
+          "dividends": 0,
+          "interest": 0,
+          "royalties": 0,
+          "article_ref": "UK-US DTT Articles 10, 11 & 12 (0% WHT on interest & royalties)"
+        },
+        "DE": {
+          "partner_name": "Germany (UK-Germany Tax Treaty)",
+          "dividends": 0,
+          "interest": 0,
+          "royalties": 0,
+          "article_ref": "UK-Germany DTT (0% interest & royalties)"
+        },
+        "AE": {
+          "partner_name": "United Arab Emirates (UK-UAE Tax Treaty)",
+          "dividends": 0,
+          "interest": 0,
+          "royalties": 0,
+          "article_ref": "UK-UAE DTT (0% treaty WHT for qualified residents)"
+        },
+        "CA": {
+          "partner_name": "Canada (UK-Canada Tax Treaty)",
+          "dividends": 0.15,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "UK-Canada DTT (10% interest & royalties)"
+        },
+        "AU": {
+          "partner_name": "Australia (UK-Australia Tax Treaty)",
+          "dividends": 0.15,
+          "interest": 0.1,
+          "royalties": 0.05,
+          "article_ref": "UK-Australia DTT (10% int / 5% roy)"
+        },
+        "SG": {
+          "partner_name": "Singapore (UK-Singapore Tax Treaty)",
+          "dividends": 0,
+          "interest": 0.05,
+          "royalties": 0.08,
+          "article_ref": "UK-Singapore DTT (5% int / 8% roy)"
+        }
+      }
+    }
+  }
+}
