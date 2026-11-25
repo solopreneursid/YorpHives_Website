@@ -1,0 +1,27 @@
+name: TaxPulse hosted preview verification
+on:
+  push:
+    branches: [hqventures/taxpulse-global]
+    paths:
+      - 'products/taxpulse-global/data/hosted-preview-check.json'
+permissions:
+  contents: read
+jobs:
+  hosted-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned browser test dependency
+        working-directory: products/taxpulse-global
+        run: |
+          if [ ! -f package.json ]; then npm init -y; fi
+          npm install --save-dev --save-exact --package-lock=true --ignore-scripts playwright@1.65.1
+          npx --no-install playwright install --with-deps chromium
+      - name: Check exact hosted revision
+        run: node products/taxpulse-global/browser-tests/hosted-smoke.mjs
