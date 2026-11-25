@@ -13,7 +13,7 @@ export function indiaCtc(input){
  const ctc=whole(input.annualCtc),employer=whole(input.employerContributions),benefits=whole(input.nonCashBenefits),employee=whole(input.employeeContributions),other=whole(input.otherPayrollDeductions);
  const gross=ctc-employer-benefits;if(gross<0n||employee+other>gross)throw new RangeError('Salary components exceed cash wages');
  const tax=compareIndiaRegimes({country:'IN',taxYear:'2026',grossSalary:Number(gross),residentIndividual:input.residentIndividual,ageGroup:input.ageGroup,ordinarySalaryOnly:true,oldEligibleDeductions:input.oldEligibleDeductions,newEligibleDeductions:input.newEligibleDeductions});
- const regime=r=>{const net=gross-employee-other-BigInt(Math.round(r.incomeTax));return {incomeTax:r.incomeTax,annualCash:Number(net),monthlyCash:out(round(net*100n,12n))};};
+ const regime=r=>{const net=(gross-employee-other)*100n-units(r.incomeTax);return {incomeTax:r.incomeTax,annualCash:out(net),monthlyCash:out(round(net,12n))};};
  return {...sample,currency:'INR',annualGross:Number(gross),annualEmployerContributions:Number(employer),annualNonCashBenefits:Number(benefits),annualEmployeeContributions:Number(employee),annualOtherPayrollDeductions:Number(other),old:regime(tax.oldRegime),new:regime(tax.newRegime),tax,warnings:['Use annual employer and employee amounts confirmed by the employer; do not double count noncash benefits or deductions. Assumes all remaining cash is ordinary taxable salary. No EPF, gratuity, professional tax, or eligibility is inferred. India EPFO wage-ceiling change effective 17 September 2026 requires independent review. Unverified example only.']};
 }
 export function purchasingPower(input){
