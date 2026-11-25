@@ -14,6 +14,6 @@ export function extractSsaWageBase(html){
   if(cells[0]===String(year)&&cells.length===2&&/^\$?[\d,]+$/.test(cells[1]))matches.push(Number(cells[1].replace(/[$,]/g,'')));
  }
  if(matches.length!==1||matches[0]!==cap)throw Error('SSA table and narrative disagree');
- return {jurisdiction:'US',component:'employee-oasdi',taxYear:String(year),effectiveFrom:year+'-01-01',effectiveUntil:(year+1)+'-01-01',parameters:{annualWageBase:cap,employeeRateBasisPoints:basisPoints},status:'candidate',legalStatus:'review_required',automaticActivation:false};
+ return {jurisdiction:'US',component:'oasdi',taxYear:String(year),effectiveFrom:year+'-01-01',effectiveUntil:(year+1)+'-01-01',parameters:{annualWageBase:cap,employeeRateBasisPoints:basisPoints},status:'candidate',legalStatus:'review_required',automaticActivation:false};
 }
 export function extractCandidate(source,bytes){if(source.id!=='US-1'||source.url!=='https://www.ssa.gov/OACT/COLA/cbb.html')return null;return extractSsaWageBase(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}
