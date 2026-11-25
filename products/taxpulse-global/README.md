@@ -30,3 +30,10 @@ Use `openEncryptedVault()` in a supported secure browser to open a device-local 
 ## Remaining hard blockers
 
 Full official tax-rule review for all eight jurisdictions and required modules; independent browser/end-to-end tests; authentication and access-control review; secure record UI and backup/recovery experience; privacy and financial-data handling review; reliable document ingestion; honest AI and payment integration; final release/rollback testing. Maintain noindex and preview-only disclaimers until these gates are cleared.
+
+## Narrow income-tax correctness improvements
+
+- The 2026 US personal income sample accepts `parameters.filingStatus`: `single` (default), `mfj`, `hoh`, or `mfs`. Official IRS bracket thresholds were copied into `engine/us-filing-statuses.mjs`; the original US single filing status remains the default. The 2026 head-of-household threshold at $201,750 was corrected in the frontend. These results remain illustrative and exclude credits, itemization, AMT, and state/local taxes.
+- India `pit` now **requires** `parameters.residentIndividual` to be explicitly `true` or `false`. Only `true` applies the prototype Section 87A/202 rebate and marginal relief; ordinary salary income is assumed. The 2026 Income Tax Department FAQ test examples are recorded in `rules/evidence/india-2026-rebate-marginal-relief-review.json` and tested in `tests/pit-audit.test.mjs`. Full FY 2026–27 legislative coverage is not certified.
+- `pit` API responses now expose pre-tax deductions, standard allowance, progressive tax before rebate, rebate amount, marginal relief, cess, effective income-tax rate, a tax-year label, and band-by-band calculations so reviewers can reconcile the arithmetic.
+- The original frontend's India demo still assumes residence for its new-regime example. The explicit API residency contract does not imply a verified customer identity or residency determination.
