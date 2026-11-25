@@ -50,6 +50,9 @@ write('browser-financial-profile.mjs.txt',read('engine/financial-profile.mjs'));
 write('browser-budget.mjs.txt',read('engine/budget.mjs'));
 write('browser-decision-tools.mjs.txt',read('engine/decision-tools.mjs'));
 
+const payrollRegistry=read('engine/payroll-registry.mjs').replace("import data from '../rules/payroll-versions.json' with { type: 'json' };","import data from './payroll-versions.mjs';");
+const payrollVersions='export default '+JSON.stringify(JSON.parse(read('rules/payroll-versions.json')))+';\n';
+for(const [name,content] of [['payroll-registry',payrollRegistry],['payroll-versions',payrollVersions]]){write(name+'.mjs',content);write('browser-'+name+'.mjs.txt',content);}
 const indiaRegistry=read('engine/india-salary-registry.mjs').replace("import data from '../rules/india-salary-versions.json' with { type: 'json' };","import data from './india-salary-versions.mjs';");
 const indiaVersions='export default '+JSON.stringify(JSON.parse(read('rules/india-salary-versions.json')))+';\n';
 for(const [name,content] of [['india-salary-registry',indiaRegistry],['india-salary-versions',indiaVersions]]){write(name+'.mjs',content);write('browser-'+name+'.mjs.txt',content);}
@@ -60,7 +63,7 @@ for(const name of ['taxable-income','proof','history','reverse-salary','salary-o
   const content=read('engine/'+name+'.mjs');
   write(name+'.mjs',content);write('browser-'+name+'.mjs.txt',content);
 }
-const fingerprintInputs=['rule-snapshot','runtime-rules','india-salary-registry','india-salary-versions','regional-registry','regional-versions','country','primitives','us-filing-statuses','IN','US','GB','taxable-income','proof','history','reverse-salary','salary-offers','negotiation','compensation','international'].map(name=>[name,readFileSync(new URL(name+'.mjs',bundle),'utf8')]);
+const fingerprintInputs=['payroll-registry','payroll-versions','rule-snapshot','runtime-rules','india-salary-registry','india-salary-versions','regional-registry','regional-versions','country','primitives','us-filing-statuses','IN','US','GB','taxable-income','proof','history','reverse-salary','salary-offers','negotiation','compensation','international'].map(name=>[name,readFileSync(new URL(name+'.mjs',bundle),'utf8')]);
 const fingerprint=createHash('sha256').update(JSON.stringify(fingerprintInputs)).digest('hex');
 write('browser-fingerprint.mjs.txt','export default '+JSON.stringify(fingerprint)+';\n');
 
