@@ -1,4 +1,4 @@
-import {reverseSalary} from './engine/reverse-salary.mjs';
+import {reverseSalary,automaticReverseSalary} from './engine/reverse-salary.mjs';
 import { countryCalculate, catalog } from './engine/country.mjs';
 import { compareIncomeScenarios } from './engine/scenarios.mjs';
 import { assessTaxableIncome, compareIndiaRegimes, calculateCapitalGain, calculateRegionalTax, regionalTaxCatalog, calculateSalaryRemainder, calculateEmployeeContributions } from './engine/taxable-income.mjs';
@@ -341,16 +341,20 @@ function reverseRegionChanged(){
 $('pay-region').addEventListener('change',reverseRegionChanged);
 $('pay-form').addEventListener('input',clearReverse);
 $('reverse-form').addEventListener('input',clearReverse);
+$('reverse-manual').addEventListener('change',()=>{
+ for(const id of ['reverse-min','reverse-max']){const el=$(id);el.disabled=!$('reverse-manual').checked;el.closest('label').hidden=el.disabled;}
+});
 $('reverse-form').addEventListener('submit',event=>{
  event.preventDefault();clearReverse();
  try{
   const region=$('pay-region').value;
   const profile={country:payOptions[region].country,region,taxYear:'2026',scopeConfirmed:$('pay-confirm').value==='yes',...(region==='IN'?{epfMonthlyWage:$('pay-epf').valueAsNumber,professionalTaxAnnual:$('pay-professional-tax').valueAsNumber}:region==='DE'?{annualTaxableIncome:$('pay-de-taxable').valueAsNumber,healthSupplementRate:$('pay-de-supplement').valueAsNumber}:region==='AE'?{monthlyBasicSalary:$('pay-ae-basic').valueAsNumber}:{})};
-  const r=reverseSalary({profile,target:$('reverse-target').valueAsNumber,period:$('reverse-period').value,minPay:$('reverse-min').valueAsNumber,maxPay:$('reverse-max').valueAsNumber});
-  if(!r.found){$('reverse-error').textContent='No salary in this range meets your target. Try another range.';return;}
+  const request={profile,target:$('reverse-target').valueAsNumber,period:$('reverse-period').value};
+  const r=$('reverse-manual').checked?reverseSalary({...request,minPay:$('reverse-min').valueAsNumber,maxPay:$('reverse-max').valueAsNumber}):automaticReverseSalary(request);
+  if(!r.found){$('reverse-error').textContent=r.searchComplete===false?'Automatic search reached its limit. Choose a salary range yourself to continue.':'No salary in the supported search range meets your target.';return;}
   const s=r.salary,f=v=>money(v,s.currency);
   $('reverse-gross').textContent=f(s.annualGross);$('reverse-net').textContent=f(s.averageMonthlyRemainder);$('reverse-deductions').textContent=f(s.totalModeledDeductions);
-  $('reverse-warning').textContent='Lowest whole-unit salary within your selected range, not necessarily outside it. '+s.warnings.join(' ')+' Unverified example only.';
+  $('reverse-warning').textContent=($('reverse-manual').checked?'Lowest whole-unit salary within your selected range, not necessarily outside it. ':'Lowest whole-unit salary meeting the target under these fixed assumptions. ')+s.warnings.join(' ')+' Unverified example only.';
   $('reverse-result').hidden=false;$('reverse-result').focus();
  }catch{$('reverse-error').textContent='Check the salary range, target and country conditions above. The full range must be supported by the selected example.';}
 });
