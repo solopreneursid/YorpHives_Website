@@ -2630,7 +2630,8 @@
 
       const incrementalTax = Math.max(0, (stackedSim.finalIncomeTax + stackedSim.totalSocialSecurity) - (baseOnlySim.finalIncomeTax + baseOnlySim.totalSocialSecurity));
       const suppEffRate = suppTotal > 0 ? (incrementalTax / suppTotal) : 0;
-      const totalSharesGranted = Math.floor(eqRsu / eqSharePrice);
+      const equityScenario = TaxPulseAdvanced.calculate({module:'equity_bonus',parameters:{salary:Math.min(eqBase,1e9),cashBonus:Math.min(eqBonus,1e9),vestedUnits:Math.min(10000000,Math.floor(eqRsu/eqSharePrice)),marketPrice:Math.min(eqSharePrice,1e9),assumedTaxRate:Math.min(1,suppEffRate)}}).result;
+      const totalSharesGranted = Math.floor(equityScenario.equityGain / Math.min(eqSharePrice,1e9));
       const sharesSoldToCover = Math.min(totalSharesGranted, Math.ceil(totalSharesGranted * suppEffRate));
       const sharesRetained = Math.max(0, totalSharesGranted - sharesSoldToCover);
 
@@ -2642,11 +2643,7 @@
       document.getElementById('eqSharesSoldSub').textContent = `${sharesSoldToCover} shares withheld via Sell-to-Cover`;
       document.getElementById('eqNetSupplementalVal').textContent = formatActiveDisplay(Math.max(0, suppTotal - incrementalTax), countryRule);
       document.getElementById('eqWithholdingGapSub').textContent = `Total Net Package: ${formatActiveDisplay(stackedSim.netTakeHomeAnnual, countryRule)}`;
-      document.getElementById('eqRuleNoteBox').textContent = code === 'US'
-        ? 'US IRS Supplemental Withholding Rule: Employers withhold a flat 22% federal tax on supplemental wages (bonuses & RSU vests) up to $1,000,000, and 37% above $1,000,000, plus FICA.'
-        : code === 'SG'
-        ? 'Singapore CPF Additional Wage Ceiling: Bonuses attract CPF up to S$102,000 minus Ordinary Wages subject to CPF.'
-        : `${countryRule.name}: Bonuses and RSU perquisites stack on top of base salary at your marginal progressive slab (${stackedSim.marginalRatePct.toFixed(1)}%).`;
+      document.getElementById('eqRuleNoteBox').textContent = 'Illustrative incremental tax and sell-to-cover estimate; actual employer withholding and equity treatment may differ.';
 
       // 3. Update Module 9: Contractor vs. Salaried & EOR Break-Even Optimizer
       const ceGross = Math.max(0, parseFloat(document.getElementById('ceGrossAmountInput')?.value) || 0);
@@ -2663,47 +2660,35 @@
       const contractorTaxableIncome = Math.max(0, ceGross * (1 - ceExpPct));
       const contractorSim = calculateTaxForCountry(code, state.filingStatusId, contractorTaxableIncome, 0);
       const contractorSeTax = code === 'US' ? (contractorTaxableIncome * 0.1413) : 0; // US SE tax adjustment
-      const contractorNet = Math.max(0, ceGross - contractorSim.finalIncomeTax - contractorSeTax);
+      const contractorScenario = TaxPulseAdvanced.calculate({module:'contractor_eor',parameters:{contractRevenue:Math.min(ceGross,1e9),contractExpenses:Math.min(ceGross*ceExpPct,1e9),employeeSalary:Math.min(ceGross,1e9),employeeDeductions:Math.min(ceGross,Math.max(0,ceGross-salSim.netTakeHomeAnnual),1e9),assumedContractorTaxRate:contractorTaxableIncome>0?Math.min(1,(contractorSim.finalIncomeTax+contractorSeTax)/contractorTaxableIncome):0}}).result;
+      const contractorNet = contractorScenario.contractorNet;
       const diffNet = contractorNet - salSim.netTakeHomeAnnual;
 
       document.getElementById('ceSalariedNetVal').textContent = formatActiveDisplay(salSim.netTakeHomeAnnual, countryRule);
       document.getElementById('ceSalariedEmployerCostSub').textContent = `Total Client Cost (incl. EOR + Taxes): ${formatActiveDisplay(totalClientCostSalaried, countryRule)}`;
       document.getElementById('ceContractorNetVal').textContent = formatActiveDisplay(contractorNet, countryRule);
-      document.getElementById('ceContractorRegimeTag').textContent = code === 'IN' ? 'Sec 44ADA Presumptive' : code === 'US' ? '1099 + Sec 199A QBI' : 'Independent Consultant';
+      document.getElementById('ceContractorRegimeTag').textContent = 'Illustrative independent contractor';
       document.getElementById('ceContractorAdvantageSub').textContent = diffNet >= 0
         ? `+${formatActiveDisplay(diffNet, countryRule)}/yr higher net take-home as Contractor`
         : `${formatActiveDisplay(Math.abs(diffNet), countryRule)}/yr lower net than Salaried`;
 
-      const breakEvenDayRate = salSim.netTakeHomeAnnual / Math.max(0.2, (1 - (contractorSim.finalIncomeTax + contractorSeTax) / Math.max(1, ceGross))) / ceDays;
+      const breakEvenDayRate = salSim.netTakeHomeAnnual / Math.max(0.01, contractorNet / Math.max(1, ceGross)) / ceDays;
       document.getElementById('ceBreakEvenDayRateVal').textContent = `${formatActiveDisplay(breakEvenDayRate, countryRule)} / day`;
       document.getElementById('ceBreakEvenHourlySub').textContent = `Equivalent to ${formatActiveDisplay(breakEvenDayRate / 8, countryRule)}/hr across ${ceDays} billable days`;
-      document.getElementById('ceRuleExplanationBox').textContent = code === 'IN'
-        ? 'India Section 44ADA Presumptive Taxation: Resident professionals (software developers, architects, consultants) with gross receipts up to ₹75 lakh (>95% digital receipts) can declare 50% of gross receipts as taxable profit with zero audit books required.'
-        : 'Compares full-time W-2/salaried employment (where the client pays employer payroll taxes and EOR platform fees) against independent consulting with business expense deductions.';
+      document.getElementById('ceRuleExplanationBox').textContent = 'Illustrative comparison after business expenses and assumed taxes. Employment classification, deductions and special regimes require independent verification.';
 
       // 4. Update Module 10: 183-Day Statutory Tax Residency Test & Printable Payslip
       const dCurr = Math.max(0, parseFloat(document.getElementById('resDaysCurrentYearInput')?.value) || 0);
       const dPrior1 = Math.max(0, parseFloat(document.getElementById('resDaysPriorYear1Input')?.value) || 0);
       const dPrior2 = Math.max(0, parseFloat(document.getElementById('resDaysPriorYear2Input')?.value) || 0);
 
-      let isResident = dCurr >= 183;
-      let weightedReadout = `${dCurr} Days in 2026 (Threshold: 183 Days)`;
-      let resExplain = 'Standard 183-day physical presence threshold in the assessment year.';
-
-      if (code === 'US') {
-        const sptDays = Math.round(dCurr + (dPrior1 / 3) + (dPrior2 / 6));
-        isResident = dCurr >= 31 && sptDays >= 183;
-        weightedReadout = `US SPT Weighted Score: ${sptDays} Days (Current ${dCurr} + 1/3 of ${dPrior1} + 1/6 of ${dPrior2})`;
-        resExplain = 'IRS Substantial Presence Test (SPT): Resident Alien if present >= 31 days in 2026 AND weighted 3-year total >= 183 days.';
-      } else if (code === 'IN') {
-        isResident = dCurr >= 182 || (dCurr >= 60 && (dPrior1 + dPrior2) >= 180);
-        weightedReadout = `${dCurr} Days in FY 2026-27 (182-Day Primary / 60-Day Lookback Rule)`;
-        resExplain = 'Income Tax Act Resident Test: Resident if in India >= 182 days in FY, or >= 60 days in FY plus >= 365 days across preceding 4 years (120 days for Indian citizens with > ₹15L Indian income).';
-      }
-
+      const residencyScenario = TaxPulseAdvanced.calculate({module:'residency_payslip',parameters:{daysPresent:Math.min(366,Math.floor(dCurr)),assumedDayThreshold:code==='IN'?182:183,grossPay:Math.min(grossAnnualLocal,1e9),totalDeductions:Math.min(grossAnnualLocal,Math.max(0,grossAnnualLocal-baseCalc.netTakeHomeAnnual),1e9)}}).result;
+      const isResident = residencyScenario.thresholdReached;
+      const weightedReadout = residencyScenario.daysPresent + ' days; illustrative threshold ' + residencyScenario.assumedThreshold;
+      const resExplain = 'Day-count screening only. Prior-year presence, exceptions, domicile and treaties may affect legal residency.';
       const resBadge = document.getElementById('resStatusDeterminationBadge');
       if (resBadge) {
-        resBadge.textContent = isResident ? 'Tax Resident (Worldwide Income)' : 'Non-Resident (Source Income Only)';
+        resBadge.textContent = isResident ? 'Illustrative threshold reached' : 'Illustrative threshold not reached';
         resBadge.className = isResident
           ? 'px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
           : 'px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300';
@@ -2718,7 +2703,7 @@
         ? ((baseCalc.finalIncomeTax + subNat.amount + baseCalc.totalSocialSecurity) / grossAnnualLocal) * 100
         : 0;
 
-      document.getElementById('payslipHeaderTitle').textContent = `${countryRule.flag} ${countryRule.name} — 2026 Statutory Compensation Statement`;
+      document.getElementById('payslipHeaderTitle').textContent = `${countryRule.flag} ${countryRule.name} — 2026 Illustrative Compensation Statement`;
       document.getElementById('payslipStatusLine').textContent = `Regime: ${baseCalc.statusObj.label}`;
       document.getElementById('payslipSubNationalLine').textContent = `Region: ${subNat.label}`;
       document.getElementById('payslipGrossAnnual').textContent = formatActiveDisplay(grossAnnualLocal, countryRule);
@@ -3568,8 +3553,8 @@ Restricted Stock Units (RSU Vest): £20,000`
       const expatGrid = document.getElementById('expatRegimesComparisonGrid');
       if (expatGrid) {
         expatGrid.innerHTML = expatPrograms.map(p => {
-          const taxUsd = expatGrossUsd * p.effRate;
-          const netUsd = expatGrossUsd - taxUsd;
+          const expatScenario = TaxPulseAdvanced.calculate({module:'expat_nomad',parameters:{annualIncome:Math.min(expatGrossUsd,1e9),assumedHomeTaxRate:0,assumedHostTaxRate:p.effRate,assumedRelief:0,annualLivingCosts:0}}).result;
+          const netUsd = expatScenario.remainingAfterTaxAndLiving;
           const netInr = convertBetweenCurrencies(netUsd, 'USD', 'INR');
           return `
             <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-2.5">
@@ -3578,7 +3563,7 @@ Restricted Stock Units (RSU Vest): £20,000`
                   <span class="font-bold text-slate-900 dark:text-white">${p.flag} ${p.title}</span>
                   <span class="px-2 py-0.5 rounded font-mono-num font-bold text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">${(p.effRate * 100).toFixed(1)}% Eff.</span>
                 </div>
-                <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-1">${p.rule}</p>
+                <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-1">Illustrative rate only; eligibility and home-country tax not assessed.</p>
               </div>
               <div class="pt-2 border-t border-slate-200/70 dark:border-slate-700 flex items-center justify-between font-mono-num">
                 <div>
@@ -3601,32 +3586,16 @@ Restricted Stock Units (RSU Vest): £20,000`
       const leaveDays = Math.max(0, parseFloat(document.getElementById('gratUnusedLeaveDaysInput')?.value) || 0);
       const arrears = Math.max(0, parseFloat(document.getElementById('gratUnpaidArrearsInput')?.value) || 0);
 
-      let gratuityAmt = 0;
-      let gratFormula = '';
-      if (code === 'AE') {
-        const first5 = Math.min(5, yrs) * (basicMo * 12 / 365) * 21;
-        const after5 = Math.max(0, yrs - 5) * (basicMo * 12 / 365) * 30;
-        gratuityAmt = yrs >= 1 ? (first5 + after5) : 0;
-        gratFormula = 'UAE MOHRE EOSG: 21 days/yr (first 5 yrs) + 30 days/yr thereafter (0% tax)';
-      } else {
-        // India Payment of Gratuity Act (15/26 * Basic * Years) / Standard Severance
-        gratuityAmt = (basicMo * 15 / 26) * Math.round(yrs);
-        gratFormula = code === 'IN'
-          ? 'India Gratuity Act: (15/26) × Last Drawn Basic × Completed Years (Exempt to ₹20L)'
-          : 'Statutory Redundancy / Severance Estimate (UK £30,000 ITEPA s.403 tax-free cap)';
-      }
-
-      const leaveEncashment = (basicMo / 30) * leaveDays;
-      const leaveAndDues = leaveEncashment + arrears;
-      const taxableExitSlice = code === 'AE' ? 0 : arrears + Math.max(0, gratuityAmt - (code === 'IN' ? 2000000 : 30000));
-      const exitTax = taxableExitSlice * (baseCalc.marginalRatePct / 100);
-      const netFnf = Math.max(0, gratuityAmt + leaveAndDues - exitTax);
-
+      const benefit = TaxPulseAdvanced.calculate({module:'gratuity_exit',parameters:{monthlyBasePay:Math.min(basicMo,1e9),serviceYears:Math.min(yrs,60),assumedBenefitDaysPerYear:code==='IN'?15:code==='AE'&&yrs>=1?(21*Math.min(yrs,5)+30*Math.max(0,yrs-5))/yrs:0,monthlyDayDivisor:code==='IN'?26:30,unusedLeaveDays:Math.min(leaveDays,366),otherPayout:Math.min(arrears,1e9)}}).result;
+      const gratuityAmt = benefit.gratuity;
+      const gratFormula = 'Illustrative benefit only; statutory eligibility and caps not verified.';
+      const leaveAndDues = benefit.leavePayout + benefit.otherPayout;
+      const netFnf = benefit.grossSettlement;
       document.getElementById('gratAmountVal').textContent = formatActiveDisplay(gratuityAmt, countryRule);
       document.getElementById('gratFormulaSub').textContent = gratFormula;
       document.getElementById('gratLeaveAndDuesVal').textContent = formatActiveDisplay(leaveAndDues, countryRule);
-      document.getElementById('gratTaxOnExitVal').textContent = formatActiveDisplay(exitTax, countryRule);
-      document.getElementById('gratNetPayoutVal').textContent = formatActiveDisplay(netFnf, countryRule);
+      document.getElementById('gratTaxOnExitVal').textContent = 'Not verified';
+      document.getElementById('gratNetPayoutVal').textContent = formatActiveDisplay(netFnf, countryRule) + ' before tax';
 
       // 5. Update Module 19: FIRE Runway & Geographic Tax Arbitrage
       const savRate = Math.min(90, Math.max(5, parseFloat(document.getElementById('fireSavingsRateInput')?.value) || 40)) / 100;
@@ -5014,8 +4983,9 @@ X-MCP-Tool-Target: "calculate_personal_tax"`;
       document.getElementById('ctcBasicPctLabel').textContent = `${basicPct}%`;
       document.getElementById('ctcNpsPctLabel').textContent = `${npsPct}%`;
 
-      const basicAnnual = ctcTotal * (basicPct / 100);
-      const employerNpsAnnual = basicAnnual * (npsPct / 100);
+      const ctcScenario = TaxPulseAdvanced.calculate({module:'ctc_restructurer',parameters:{totalAnnualBudget:Math.min(ctcTotal,1e9),basicSalaryShare:basicPct/100,assumedEmployerContributionRate:npsPct/100}}).result;
+      const basicAnnual = ctcScenario.basicSalary;
+      const employerNpsAnnual = ctcScenario.employerContribution;
       const hraReceivedAnnual = basicAnnual * 0.50; // Metro 50% of basic
       const annualRent = monthlyRent * 12;
 
@@ -5027,9 +4997,9 @@ X-MCP-Tool-Target: "calculate_personal_tax"`;
 
       const unoptSim = calculateTaxForCountry(code, state.filingStatusId, ctcTotal, 0);
       const totalTaxFreeShield = employerNpsAnnual + allowances;
-      const optSim = calculateTaxForCountry(code, state.filingStatusId, ctcTotal, totalTaxFreeShield);
+      const optSim = calculateTaxForCountry(code, state.filingStatusId, ctcScenario.grossSalary, Math.min(allowances,ctcScenario.grossSalary));
       const annualTaxSaved = Math.max(0, unoptSim.finalIncomeTax - optSim.finalIncomeTax);
-      const optMonthlyTotalValue = (ctcTotal - optSim.finalIncomeTax - optSim.totalSocialSecurity) / 12;
+      const optMonthlyTotalValue = (ctcScenario.grossSalary - optSim.finalIncomeTax - optSim.totalSocialSecurity) / 12;
 
       document.getElementById('ctcBeforeMonthlyVal').textContent = `${formatActiveDisplay(unoptSim.netTakeHomeAnnual / 12, countryRule)} / mo`;
       document.getElementById('ctcBeforeTaxSub').textContent = `Unoptimized Tax: ${formatActiveDisplay(unoptSim.finalIncomeTax, countryRule)}/yr`;
@@ -5487,7 +5457,8 @@ GST/LUT eligibility and actual tax treatment require independent verification.`;
         const fam = computeFamilyAndSeniorAdjustment(cRule.code, gross, sim.finalIncomeTax, sim.totalSocialSecurity, 'adult', kids);
         const netTax = Math.max(0, sim.finalIncomeTax - fam.taxCreditSavings);
         const netSoc = Math.max(0, sim.totalSocialSecurity - fam.socialSavings);
-        const netAnnual = Math.max(0, gross - netTax - netSoc - preTax);
+        const csvScenario = TaxPulseAdvanced.calculate({module:'bulk_csv',parameters:{csv:'gross,deductions,employerCosts\n'+Math.min(gross,1e9).toFixed(2)+','+Math.min(gross,netTax+netSoc+preTax,1e9).toFixed(2)+',0'}}).result;
+        const netAnnual = csvScenario.rows[0].net;
         const netMonthly = netAnnual / 12;
 
         lastProcessedCsvRows.push({
@@ -5505,7 +5476,7 @@ GST/LUT eligibility and actual tax treatment require independent verification.`;
 
         return `
           <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
-            <td class="py-2 px-3 font-bold text-slate-900 dark:text-white">${empName}</td>
+            <td class="py-2 px-3 font-bold text-slate-900 dark:text-white">${String(empName).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</td>
             <td class="py-2 px-2">${cRule.flag} ${cRule.code}</td>
             <td class="py-2 px-3 text-right font-mono-num">${formatCurrency(gross, cRule.currency.code)}</td>
             <td class="py-2 px-3 text-right font-mono-num text-rose-600 dark:text-rose-400">${formatCurrency(netTax, cRule.currency.code)}</td>
@@ -5521,7 +5492,7 @@ GST/LUT eligibility and actual tax treatment require independent verification.`;
       processBulkCsvRegister();
       const header = 'EmployeeName,Country,Currency,GrossAnnual,PreTaxDeduction,Children,IncomeTax,SocialSecurity,NetAnnualTakeHome,NetMonthlyTakeHome\n';
       const body = lastProcessedCsvRows.map(r =>
-        `"${r.name}",${r.country},${r.currency},${r.grossAnnual},${r.preTaxDeduction},${r.children},${r.incomeTax},${r.socialSecurity},${r.netAnnual},${r.netMonthly}`
+        `"${(/^[\s]*[=+@-]/.test(r.name)?"'"+r.name:r.name).replace(/"/g,'""')}",${r.country},${r.currency},${r.grossAnnual},${r.preTaxDeduction},${r.children},${r.incomeTax},${r.socialSecurity},${r.netAnnual},${r.netMonthly}`
       ).join('\n');
       const blob = new Blob([header + body], { type: 'text/csv;charset=utf-8' });
       const url = URL.createObjectURL(blob);
@@ -5733,7 +5704,7 @@ GST/LUT eligibility and actual tax treatment require independent verification.`;
         return `
           <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
             <td class="py-2 px-3 font-mono-num font-semibold">${row.month}</td>
-            <td class="py-2 px-3 font-medium text-slate-900 dark:text-white">${row.desc}</td>
+            <td class="py-2 px-3 font-medium text-slate-900 dark:text-white">${String(row.desc).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</td>
             <td class="py-2 px-3 text-right font-mono-num">${formatActiveDisplay(row.gross, cRule)}</td>
             <td class="py-2 px-3 text-right font-mono-num text-amber-600">−${formatActiveDisplay(row.expense, cRule)}</td>
             <td class="py-2 px-3 text-right font-mono-num text-indigo-600 dark:text-indigo-400">${formatActiveDisplay(row.tds, cRule)}</td>
@@ -5756,7 +5727,8 @@ GST/LUT eligibility and actual tax treatment require independent verification.`;
       });
 
       // Calculate Assessed Tax on YTD Freelance Income (using lower of 50% Sec 44ADA or Actual Profit)
-      const taxable44Ada = code === 'IN' ? Math.min(ytdGross * 0.50, Math.max(0, ytdGross - ytdExp)) : Math.max(0, ytdGross - ytdExp);
+      const ledgerScenario = TaxPulseAdvanced.calculate({module:'freelancer_ledger',parameters:{entries:[{type:'revenue',amount:Math.min(ytdGross,1e9)},{type:'expense',amount:Math.min(ytdExp,1e9)},{type:'withholding',amount:Math.min(ytdTds,1e9)}],assumedTaxRate:0}}).result;
+      const taxable44Ada = Math.max(0,ledgerScenario.profit);
       const flSim = calculateTaxForCountry(code, state.filingStatusId, taxable44Ada, 0);
       const assessedTax = flSim.finalIncomeTax;
       const refundOrDue = ytdTds - assessedTax;
@@ -5771,11 +5743,11 @@ GST/LUT eligibility and actual tax treatment require independent verification.`;
       if (refundOrDue >= 0) {
         refEl.textContent = `Refund: +${formatActiveDisplay(refundOrDue, cRule)}`;
         refEl.className = 'text-xl font-mono-num font-extrabold text-emerald-700 dark:text-emerald-400 mt-1';
-        refSub.textContent = 'TDS withheld exceeds tax owed → Claim Refund in ITR!';
+        refSub.textContent = 'Illustrative excess withholding; actual refund not determined.';
       } else {
         refEl.textContent = `Due: ${formatActiveDisplay(Math.abs(refundOrDue), cRule)}`;
         refEl.className = 'text-xl font-mono-num font-extrabold text-rose-600 dark:text-rose-400 mt-1';
-        refSub.textContent = 'Net balance payable via Advance Tax';
+        refSub.textContent = 'Illustrative shortfall; actual filing obligation not determined.';
       }
     }
 
@@ -5825,7 +5797,10 @@ GST/LUT eligibility and actual tax treatment require independent verification.`;
       const cgCost = parseFloat(document.getElementById('cgPurchasePriceInput')?.value) || 0;
       const cgNetGain = Math.max(0, cgSale - cgCost);
 
-      const dossierText = `================================================================================
+      const handoffScenario = TaxPulseAdvanced.calculate({module:'ca_handoff',parameters:{grossIncome:Math.min(grossAnnualLocal+ytdFlGross,1e9),expenses:Math.min(ytdFlExp,1e9),withholding:Math.min(ytdFlTds,1e9),taxPayments:0,estimatedTax:Math.min(baseCalc.finalIncomeTax,1e9)}}).result;
+      const dossierText = `UNSIGNED ILLUSTRATIVE SUMMARY — NOT A FILING DOCUMENT
+Scenario income before tax: ${handoffScenario.netBeforeTax}
+================================================================================
 TAXPULSE GLOBAL — 2026 ACCOUNTANT (CA / CPA) YEAR-END FILING HANDOFF DOSSIER
 ================================================================================
 Generated On          : ${new Date().toISOString().slice(0, 10)}
@@ -5863,7 +5838,7 @@ Residency Status      : ${activeResidencyStatus.toUpperCase()}
 
 5. DETERMINISTIC ENGINE VERIFICATION PROOF
 --------------------------------------------------------------------------------
-• Verification Hash                 : ${generateSignedCalculationReceipt().verification_hash}
+• No independent verification or digital signature
 ================================================================================`;
 
       const caPre = document.getElementById('caHandoffDossierPre');
