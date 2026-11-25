@@ -516,3 +516,47 @@ $('history-form').addEventListener('submit',event=>{
 });
 $('history-download').addEventListener('click',()=>downloadReceipt(lastHistory,$('history-download'),$('history-error')));
 historyChanged();
+
+const printTitles={'salary-remainder':'Salary after modeled deductions','reverse-salary':'Required salary','automatic-reverse-salary':'Required salary','salary-offers':'Job offer comparison','salary-negotiation':'Pay rise estimate','compensation':'Total compensation comparison'};
+function reportText(tag,value,parent){const el=document.createElement(tag);el.textContent=value;parent.append(el);return el;}
+function reportRows(parent,title,rows){
+ reportText('h2',title,parent);const dl=document.createElement('dl');parent.append(dl);
+ for(const [label,value] of rows){reportText('dt',label,dl);reportText('dd',String(value),dl);}
+}
+function printSalary(parent,title,s){
+ const f=v=>money(v,s.currency);
+ reportRows(parent,title,[['Country / region',s.country+' / '+s.region],['Tax period',s.taxYearLabel],['Annual gross salary',f(s.annualGross)],['Annual income tax',f(s.incomeTax)],...s.contributions.map(c=>[c.name,f(c.amount)]),['Annual modeled deductions',f(s.totalModeledDeductions)],['Annual money left',f(s.annualRemainder)],['Average monthly money left',f(s.averageMonthlyRemainder)]]);
+}
+function renderPrintReport(receipt){
+ const {kind,result:r,input}=receipt.payload,root=$('print-content');root.replaceChildren();
+ $('print-subtitle').textContent=printTitles[kind];
+ const salaries=[];
+ if(kind==='salary-remainder')salaries.push(['Salary',r]);
+ else if(kind==='reverse-salary'||kind==='automatic-reverse-salary'){
+  reportRows(root,'Income goal',[['Target ('+r.period+')',money(r.target,r.salary.currency)],['Achieved',money(r.achieved,r.salary.currency)],['Gross salary search range',r.minPay+' – '+r.maxPay+' ('+r.salary.payFrequency+')']]);salaries.push(['Required salary',r.salary]);
+ }else if(kind==='salary-offers')salaries.push(['Offer 1',r.first],['Offer 2',r.second]);
+ else if(kind==='salary-negotiation'){
+  reportRows(root,'Pay rise goal',[['Desired monthly increase',money(r.monthlyIncrease,r.baseline.currency)],['Estimated monthly increase',money(r.netIncrease,r.baseline.currency)],['Annual gross increase',money(r.grossIncrease,r.baseline.currency)]]);salaries.push(['Current salary',r.baseline],['Proposed salary',r.proposed]);
+ }else if(kind==='compensation'){
+  for(const [title,v] of [['Offer 1',r.first],['Offer 2',r.second]]){
+   const f=n=>money(n,r.currency);reportRows(root,title+' compensation',[['Annual expenses',f(v.annualExpenses)],['Annual available cash',f(v.annualAvailableCash)],['Estimated non-cash benefits',f(v.annualBenefits)],['Estimated combined value',f(v.estimatedAnnualCombinedValue)]]);salaries.push([title+' salary',v.salary]);
+  }
+ }
+ for(const [title,s] of salaries)printSalary(root,title,s);
+ reportText('h2','Calculation inputs',root);
+ function flatten(o,prefix=''){return Object.entries(o).flatMap(([k,v])=>{const label=(prefix?prefix+' / ':'')+k.replace(/([a-z])([A-Z])/g,'$1 $2');return v&&typeof v==='object'?flatten(v,label):[[label,v===true?'Yes':v===false?'No':v]];});}
+ const dl=document.createElement('dl');root.append(dl);for(const [k,v] of flatten(input)){reportText('dt',k,dl);reportText('dd',v,dl);}
+ reportText('h2','Assumptions and limitations',root);
+ const warnings=new Set([...(r.warnings||[]),...salaries.flatMap(([,s])=>s.warnings||[])]);for(const w of warnings)reportText('p',w,root);
+ reportText('h2','Tax rule references',root);for(const u of new Set(salaries.flatMap(([,s])=>s.sourceUrls||[])))reportText('p',u,root);
+ $('print-integrity').textContent='SHA-256: '+receipt.digest+' | Engine: '+receipt.payload.engineFingerprint;
+}
+function closePrintReport(){document.body.classList.remove('taxpulse-printing');$('print-report').hidden=true;$('print-content').replaceChildren();$('print-integrity').textContent='';}
+window.addEventListener('afterprint',closePrintReport);
+async function printReceipt(record,button,error){
+ if(!record)return;button.disabled=true;
+ try{const receipt=await createReceipt({...record,engineFingerprint});renderPrintReport(receipt);$('print-report').hidden=false;document.body.classList.add('taxpulse-printing');window.print();}
+ catch{closePrintReport();error.textContent='Could not prepare the printable report. Try again in a secure browser.';}
+ finally{button.disabled=false;}
+}
+for(const [id,getRecord] of [['pay',()=>lastPay],['reverse',()=>lastReverse],['offers',()=>lastOffers],['negotiation',()=>lastNegotiation],['comp',()=>lastCompensation]])$(id+'-print').addEventListener('click',()=>printReceipt(getRecord(),$(id+'-print'),$(id+'-error')));
