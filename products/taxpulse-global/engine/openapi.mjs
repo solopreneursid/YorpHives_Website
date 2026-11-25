@@ -159,6 +159,92 @@ export const spec = {
           }
         }
       }
+    },
+    "/v1/taxable-income/calculate": {
+      "post": {
+        "operationId": "calculateTaxableIncomeSample",
+        "description": "Fictional examples: German ordinary tariff, Canadian federal tax after BPA only. Not gross salary or take-home pay.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "country",
+                      "taxYear",
+                      "taxableIncome",
+                      "assessment"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "country": {
+                        "const": "DE"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "taxableIncome": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000
+                      },
+                      "assessment": {
+                        "enum": [
+                          "individual",
+                          "joint"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "country",
+                      "taxYear",
+                      "taxableIncome",
+                      "netIncome",
+                      "fullYearResident"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "country": {
+                        "const": "CA"
+                      },
+                      "taxYear": {
+                        "const": "2026"
+                      },
+                      "taxableIncome": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000
+                      },
+                      "netIncome": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000000
+                      },
+                      "fullYearResident": {
+                        "const": true
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unverified scoped calculation"
+          },
+          "400": {
+            "description": "Invalid or unsupported input"
+          }
+        }
+      }
     }
   }
 };
