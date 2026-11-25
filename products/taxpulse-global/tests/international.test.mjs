@@ -25,3 +25,7 @@ test('international salary receipt replays',async()=>{
  const r=await createReceipt({kind:'international-salary',input,engineFingerprint});
  assert.deepEqual(await verifyReceipt(r,engineFingerprint),{integrity:true,sameEngine:true,reproduced:true});
 });
+
+test('reject currency conversion outside supported precision',()=>{
+ assert.throws(()=>compareInternational({...input,rate:1000000,second:{...second,housing:1000000000}}),/monetary precision/);
+});
