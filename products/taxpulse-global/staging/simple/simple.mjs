@@ -1,3 +1,4 @@
+import {negotiateSalary} from './engine/negotiation.mjs';
 import {compareSalaryOffers} from './engine/salary-offers.mjs';
 import {reverseSalary,automaticReverseSalary} from './engine/reverse-salary.mjs';
 import { countryCalculate, catalog } from './engine/country.mjs';
@@ -403,6 +404,26 @@ $('offers-form').addEventListener('submit',event=>{
 });
 $('offers-download').addEventListener('click',()=>downloadReceipt(lastOffers,$('offers-download'),$('offers-error')));
 offersRegionChanged();
+
+let lastNegotiation=null;
+function clearNegotiation(){lastNegotiation=null;$('negotiation-result').hidden=true;$('negotiation-error').textContent='';}
+$('pay-form').addEventListener('input',()=>{$('negotiation-confirm').checked=false;clearNegotiation();});
+$('pay-region').addEventListener('change',()=>{$('negotiation-increase').value='';$('negotiation-confirm').checked=false;clearNegotiation();});
+$('negotiation-form').addEventListener('input',clearNegotiation);
+$('negotiation-form').addEventListener('submit',event=>{
+ event.preventDefault();clearNegotiation();
+ try{
+  const region=$('pay-region').value;
+  const current={country:payOptions[region].country,region,taxYear:'2026',pay:$('pay-amount').valueAsNumber,scopeConfirmed:$('pay-confirm').value==='yes'&&$('negotiation-confirm').checked,...(region==='IN'?{epfMonthlyWage:$('pay-epf').valueAsNumber,professionalTaxAnnual:$('pay-professional-tax').valueAsNumber}:region==='DE'?{annualTaxableIncome:$('pay-de-taxable').valueAsNumber,healthSupplementRate:$('pay-de-supplement').valueAsNumber}:region==='AE'?{monthlyBasicSalary:$('pay-ae-basic').valueAsNumber}:{})};
+  const input={current,monthlyIncrease:$('negotiation-increase').valueAsNumber},r=negotiateSalary(input);
+  if(!r.found){$('negotiation-error').textContent=r.search.searchComplete?'No supported salary meets this goal.':'Automatic search reached its limit. Try the manual salary range in the reverse calculator above.';return;}
+  const f=v=>money(v,r.baseline.currency);
+  $('negotiation-gross').textContent=f(r.proposed.annualGross);$('negotiation-net').textContent=f(r.netIncrease);$('negotiation-raise').textContent=f(r.grossIncrease)+(r.grossIncreasePercent===null?'':' ('+percent(r.grossIncreasePercent)+')');
+  $('negotiation-warning').textContent=[...r.warnings,...r.proposed.warnings].join(' ')+' Unverified example only.';
+  lastNegotiation={kind:'salary-negotiation',input};$('negotiation-result').hidden=false;$('negotiation-result').focus();
+ }catch{$('negotiation-error').textContent='Check your current salary, desired increase and tax conditions.';}
+});
+$('negotiation-download').addEventListener('click',()=>downloadReceipt(lastNegotiation,$('negotiation-download'),$('negotiation-error')));
 
 const contributionOptions={
  CA:{label:'Annual pensionable and insurable earnings (CAD)',scope:'Full-year employee outside Quebec, aged 18–64 throughout the year, one employer. All earnings subject to CPP and EI; full annual basic exemption.',max:1000000000,step:'.01',period:'Calendar year 2026'},
