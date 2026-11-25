@@ -1,0 +1,219 @@
+{
+  "country_code": "DE",
+  "country_name": "Germany",
+  "flag": "🇩🇪",
+  "tax_year": "2026",
+  "tax_year_label": "2026 Assessment Year (Einkommensteuer)",
+  "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "locale": "de-DE"
+  },
+  "source_url": "https://taxsummaries.pwc.com/germany/individual/other-taxes",
+  "modules": {
+    "personal_income_tax": {
+      "primitive": "progressive_brackets",
+      "standard_deduction": 1230,
+      "brackets": [
+        {
+          "min": 0,
+          "max": 12348,
+          "rate": 0,
+          "bandName": "Grundfreibetrag (0%)"
+        },
+        {
+          "min": 12348,
+          "max": 17443,
+          "rate": 0.19,
+          "bandName": "Progressive Zone I (14%–24%)"
+        },
+        {
+          "min": 17443,
+          "max": 69879,
+          "rate": 0.33,
+          "bandName": "Progressive Zone II (24%–42%)"
+        },
+        {
+          "min": 69879,
+          "max": 277826,
+          "rate": 0.42,
+          "bandName": "Spitzensteuersatz (42%)"
+        },
+        {
+          "min": 277826,
+          "max": null,
+          "rate": 0.45,
+          "bandName": "Reichensteuer (45%)"
+        }
+      ]
+    },
+    "social_security_payroll": {
+      "primitive": "capped_percentage",
+      "employee_tiers": [
+        {
+          "name": "Pension (Rentenversicherung)",
+          "rate": 0.093,
+          "min_Floor": 0,
+          "annual_cap": 101400,
+          "note": "9.3% employee share up to €101,400 BBG"
+        },
+        {
+          "name": "Unemployment (Arbeitslosenv.)",
+          "rate": 0.013,
+          "min_Floor": 0,
+          "annual_cap": 101400,
+          "note": "1.3% employee share up to €101,400 BBG"
+        },
+        {
+          "name": "Health Insurance (GKV + Zusatz)",
+          "rate": 0.0875,
+          "min_Floor": 0,
+          "annual_cap": 69750,
+          "note": "7.3% base + 1.45% avg supplementary up to €69,750"
+        },
+        {
+          "name": "Nursing Care (Pflegeversicherung)",
+          "rate": 0.024,
+          "min_Floor": 0,
+          "annual_cap": 69750,
+          "note": "2.4% childless employee rate up to €69,750"
+        }
+      ],
+      "employer_tiers": [
+        {
+          "name": "Employer Pension & Unemployment Match (10.6%)",
+          "rate": 0.106,
+          "min_Floor": 0,
+          "annual_cap": 101400,
+          "note": "9.3% RV + 1.3% AV up to €101,400"
+        },
+        {
+          "name": "Employer Health & Care Match (10.55%)",
+          "rate": 0.1055,
+          "min_Floor": 0,
+          "annual_cap": 69750,
+          "note": "8.75% GKV + 1.8% PV up to €69,750"
+        }
+      ]
+    },
+    "capital_gains_crypto": {
+      "primitive": "flat_or_slab_lookup",
+      "cess_rate": 0,
+      "assets": {
+        "listed_equity": {
+          "label": "Germany Listed Equities & ETFs",
+          "long_term_months": 12,
+          "short_term_rate": 0.26375,
+          "long_term_rate": 0.26375,
+          "annual_exemption": 1000,
+          "note": "25% Abgeltungsteuer + 5.5% Soli (26.375%) above €1,000 Sparerpauschbetrag."
+        },
+        "real_estate": {
+          "label": "Germany Real Estate Property",
+          "long_term_months": 120,
+          "short_term_rate": 0.3,
+          "long_term_rate": 0,
+          "annual_exemption": 0,
+          "note": "0% tax if held > 10 years (Spekulationsfrist)."
+        },
+        "crypto_vda": {
+          "label": "Germany Digital Assets & Crypto",
+          "long_term_months": 12,
+          "short_term_rate": 0.28,
+          "long_term_rate": 0,
+          "annual_exemption": 1000,
+          "note": "Tax-free after 12 months holding period under § 23 EStG."
+        }
+      }
+    },
+    "vat_gst": {
+      "primitive": "flat_or_slab_lookup",
+      "tax_name": "German Mehrwertsteuer (MwSt / VAT)",
+      "slabs": [
+        {
+          "id": "std",
+          "label": "Standard Rate (19%)",
+          "rate": 0.19
+        },
+        {
+          "id": "red",
+          "label": "Reduced / Merit Rate (7%)",
+          "rate": 0.07
+        },
+        {
+          "id": "zero",
+          "label": "Zero-Rated / Exports (0%)",
+          "rate": 0
+        }
+      ]
+    },
+    "corporate_tax": {
+      "primitive": "progressive_brackets",
+      "regimes": [
+        {
+          "id": "std_corp",
+          "label": "Germany Standard Corporate Tax Rate",
+          "brackets": [
+            {
+              "min": 0,
+              "max": null,
+              "rate": 0.299
+            }
+          ],
+          "note": "Standard 2026 statutory corporate rate."
+        }
+      ]
+    },
+    "property_transfer_tax": {
+      "primitive": "progressive_brackets",
+      "regions": [
+        {
+          "id": "std_prop",
+          "label": "Germany Standard Property Transfer / Stamp Duty",
+          "brackets": [
+            {
+              "min": 0,
+              "max": null,
+              "rate": 0.05
+            }
+          ],
+          "registration_rate": 0.005,
+          "registration_cap": 5000,
+          "non_resident_surcharge_rate": 0,
+          "note": "Standard regional transfer duty plus registration fee."
+        }
+      ]
+    },
+    "withholding_dtaa": {
+      "primitive": "treaty_offset",
+      "domestic_default_wht": {
+        "dividends": 0.25,
+        "interest": 0.2,
+        "royalties": 0.2
+      },
+      "treaties": {
+        "IN": {
+          "partner_name": "India DTAA",
+          "dividends": 0.1,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "Bilateral DTAA Articles 10-12"
+        },
+        "US": {
+          "partner_name": "United States Treaty",
+          "dividends": 0.15,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "Bilateral Tax Convention"
+        },
+        "GB": {
+          "partner_name": "United Kingdom Treaty",
+          "dividends": 0.1,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "Bilateral DTT"
+        }
+      }
+    }
+  }
+}
