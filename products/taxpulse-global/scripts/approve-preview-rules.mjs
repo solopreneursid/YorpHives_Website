@@ -1,0 +1,18 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {createPrivateKey,createPublicKey,sign} from 'node:crypto';
+import {snapshotBytes,verifyRuleSnapshot} from '../engine/rule-snapshot.mjs';
+import {verifyCoverage,verifyPublicationFixtures} from '../engine/rule-publisher.mjs';
+import {statutoryReviewPayload,verifyStatutoryReview} from '../engine/statutory-review.mjs';
+const [packagePath,publisherPublicPath,reviewerKeyPath,reviewerId,outputPath,confirmation]=process.argv.slice(2);
+if(!packagePath||!publisherPublicPath||!reviewerKeyPath||!reviewerId||!outputPath||confirmation!=='I_HAVE_INDEPENDENTLY_REVIEWED_THE_STATUTORY_EVIDENCE'||process.argv.length!==8)throw Error('Usage: node scripts/approve-preview-rules.mjs PACKAGE.json PUBLISHER_PUBLIC.json REVIEWER_PRIVATE.pem REVIEWER_ID OUTPUT.json I_HAVE_INDEPENDENTLY_REVIEWED_THE_STATUTORY_EVIDENCE');
+const data=JSON.parse(await readFile(packagePath,'utf8')),publisher=JSON.parse(await readFile(publisherPublicPath,'utf8'));
+if(!data||Object.keys(data).length!==2||!Object.hasOwn(data,'envelope')||!Object.hasOwn(data,'fixtures'))throw Error('Expected unsigned-review publication package');
+const key=createPrivateKey(await readFile(reviewerKeyPath));if(key.asymmetricKeyType!=='ed25519')throw Error('Ed25519 reviewer key required');
+const reviewerPublicKeyHex=Buffer.from(createPublicKey(key).export({format:'jwk'}).x,'base64url').toString('hex');
+if(reviewerPublicKeyHex===publisher.publicKeyHex)throw Error('Reviewer must have a separate key');
+const now=new Date(),snapshot=await verifyRuleSnapshot(data.envelope,{publicKeyHex:publisher.publicKeyHex,engineFingerprint:data.envelope.payload.engineFingerprint,now});
+verifyCoverage(snapshot);await verifyPublicationFixtures(snapshot,data.envelope.payload.evidence,data.fixtures);
+const payload=statutoryReviewPayload(data.envelope,reviewerId,now.toISOString()),review={payload,signature:sign(null,snapshotBytes(payload),key).toString('hex')};
+await verifyStatutoryReview(data.envelope,review,{publicKeyHex:publisher.publicKeyHex,reviewerPublicKeyHex,reviewerId,now});
+await writeFile(outputPath,JSON.stringify({...data,review})+'\n',{flag:'wx',mode:0o600});
+console.log('Review attestation written. Signature records the designated reviewer statement; it does not establish correctness by itself or authorize production.');
