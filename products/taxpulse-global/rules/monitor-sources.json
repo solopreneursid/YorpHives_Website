@@ -122,7 +122,11 @@
       "income-tax"
     ],
     "url": "https://www.gov.scot/publications/scottish-income-tax-rates-and-bands/",
-    "kind": "change-discovery"
+    "kind": "change-discovery",
+    "alternateUrls": [
+      "https://www.gov.uk/scottish-income-tax/how-it-works"
+    ],
+    "preferredUrl": "https://www.gov.uk/scottish-income-tax/how-it-works"
   },
   {
     "id": "CA-regional-brackets",
