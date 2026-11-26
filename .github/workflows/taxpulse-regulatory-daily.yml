@@ -1,0 +1,58 @@
+name: TaxPulse daily regulatory evidence (review only)
+on:
+  schedule:
+    - cron: '47 1 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/taxpulse-regulatory-daily.yml']
+permissions:
+  contents: read
+concurrency:
+  group: taxpulse-daily-evidence
+  cancel-in-progress: false
+jobs:
+  collect:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: '325156ef8c1da08d113775acb0df729fdcb9ade1'
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Collect official regulatory observations
+        working-directory: products/taxpulse-global
+        run: node scripts/probe-regulatory-sources.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: regulatory-source-probe
+          path: products/taxpulse-global/regulatory-probe.json
+          if-no-files-found: error
+          retention-days: 7
+  submit:
+    if: github.ref == 'refs/heads/main'
+    needs: collect
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: '325156ef8c1da08d113775acb0df729fdcb9ade1'
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: regulatory-source-probe
+          path: products/taxpulse-global
+      - name: Submit evidence only to the isolated preview intake
+        working-directory: products/taxpulse-global
+        run: node scripts/submit-regulatory-evidence.mjs regulatory-probe.json
