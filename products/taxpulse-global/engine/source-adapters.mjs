@@ -79,7 +79,40 @@ export function extractQuebecBrackets(html){
  if(!results.length)throw Error('No recognized Quebec periods');
  return {jurisdiction:'CA-QC',component:'income-tax-bands',candidates:results.sort((a,b)=>b.taxYear.localeCompare(a.taxYear)),status:'candidate',legalStatus:'review_required',automaticActivation:false};
 }
+// IRAS expresses each resident bracket as a cumulative amount followed by the next band.
+// The assessment year is distinct from the year income is earned; never infer an end date.
+export function extractIrasResidentBrackets(html){
+ if(typeof html!=='string'||html.length>2*1024*1024)throw Error('Invalid IRAS source');
+ const headings=[...html.matchAll(/<h[2-6]\b[^>]*>([\s\S]*?)<\/h[2-6]>/gi)];
+ const hits=headings.filter(h=>/^From YA \d{4} onwards$/.test(normalize(h[1])));
+ if(hits.length!==1)throw Error('Ambiguous IRAS assessment period');
+ const h=hits[0],year=Number(normalize(h[1]).match(/\d{4}/)[0]);
+ if(year<2000||year>2100)throw Error('Invalid assessment year');
+ const end=headings.find(x=>x.index>h.index)?.index??html.length;
+ const ts=tables(html.slice(h.index+h[0].length,end)).filter(t=>t.some(row=>row.length===3&&row[0]==='Chargeable Income'&&row[1]==='Income Tax Rate (%)'&&row[2]==='Gross Tax Payable ($)'));
+ if(ts.length!==1)throw Error('Ambiguous IRAS resident table');
+ const rows=ts[0].filter(row=>row[0]!=='Chargeable Income');
+ if(rows.length<2||rows.length>30||rows.some(row=>row.length!==3))throw Error('Incomplete IRAS bands');
+ const amt=s=>{if(!/^\d{1,3}(?:,\d{3})*$|^\d+$/.test(s))throw Error('Invalid amount');const n=Number(s.replaceAll(',',''));if(!Number.isSafeInteger(n)||n<0||n>1e9)throw Error('Amount out of range');return n;};
+ const rate=s=>{if(!/^\d{1,3}(?:\.\d{1,2})?$/.test(s))throw Error('Invalid IRAS rate');const v=Math.round(Number(s)*100);if(v>10000)throw Error('Rate out of range');return v;};
+ const bounds=[],rates=[];let cap=0,tax=0n;
+ for(let i=0;i<rows.length;i++){
+  const [income,rateCell,taxCell]=rows[i],last=i===rows.length-1;
+  const m=income.match(last?/^First \$([\d,]+) In excess of \$([\d,]+)$/:/^First \$([\d,]+) Next \$([\d,]+)$/);
+  if(!m)throw Error('Unrecognized IRAS band');
+  const first=amt(m[1]),next=amt(m[2]),rs=rateCell.split(/\s+/),xs=taxCell.split(/\s+/);
+  if(rs.length!==2||xs.length!==(last?1:2))throw Error('Unrecognized IRAS rate or tax cell');
+  if(i===0){if(last||!first)throw Error('Invalid first band');const bp=rate(rs[0]);cap=first;tax=BigInt(cap)*BigInt(bp);bounds.push(cap);rates.push(bp);}
+  else if(rs[0]!=='-'||first!==cap)throw Error('IRAS bracket gap or overlap');
+  if(BigInt(amt(xs[0]))*10000n!==tax)throw Error('IRAS cumulative tax mismatch');
+  const bp=rate(rs[1]);rates.push(bp);
+  if(last){if(next!==cap)throw Error('Invalid open band');}
+  else{if(!next||cap+next>1e9)throw Error('Invalid band width');const increment=BigInt(next)*BigInt(bp);if(BigInt(amt(xs[1]))*10000n!==increment)throw Error('IRAS band tax mismatch');tax+=increment;cap+=next;bounds.push(cap);}
+ }
+ return {jurisdiction:'SG',component:'national-assessment',assessmentYearFrom:String(year),parameters:{bounds,rates},scope:'resident-gross-tax-before-rebates',status:'candidate',legalStatus:'review_required',automaticActivation:false};
+}
 export function extractCandidate(source,bytes){
+ if(source.id==='SG-8'&&source.url==='https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates')return extractIrasResidentBrackets(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  if(source.id==='CA-QC-rate'&&['https://www.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/','https://www-prd.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/'].includes(source.url))return extractQuebecBrackets(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  if(source.id==='US-1'&&source.url==='https://www.ssa.gov/OACT/COLA/cbb.html')return extractSsaWageBase(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  const match=source.url.match(/^https:\/\/www\.gov\.uk\/guidance\/rates-and-thresholds-for-employers-(\d{4})-to-(\d{4})$/);
