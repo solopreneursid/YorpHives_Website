@@ -40,7 +40,7 @@ export async function inspectEdge(source,previous={},fetcher=fetch,clock=()=>new
   const changed=Boolean(previous.sha256&&(previous.sha256!==sha256||previous.resolvedUrl&&previous.resolvedUrl!==resolvedUrl));
   let candidate=null,extractionStatus='not_configured';
   try{candidate=extractCandidate({...source,url:resolvedUrl},bytes);if(candidate){candidate={...candidate,sourceUrl:resolvedUrl,sourceDigest:sha256,observedAt:checkedAt};extractionStatus='candidate';}}catch{extractionStatus='review_required';}
-  observation={...source,checkedAt,sha256,status:!previous.sha256?'baseline':changed?'review_required':'unchanged',reviewPending:Boolean(previous.reviewPending||changed),lastSuccessfulCheck:checkedAt,resolvedUrl,attempts,candidate,extractionStatus,ruleChangesApplied:false};
+  observation={...source,checkedAt,sha256,status:!previous.sha256?'baseline':changed?'review_required':'unchanged',reviewPending:Boolean(previous.reviewPending||changed||extractionStatus==='review_required'||(previous.extractionStatus==='candidate'&&extractionStatus!=='candidate')),lastSuccessfulCheck:checkedAt,resolvedUrl,attempts,candidate,extractionStatus,ruleChangesApplied:false};
  }catch{observation={...source,checkedAt,sha256:previous.sha256||null,status:'fetch_failed',reviewPending:Boolean(previous.reviewPending),lastSuccessfulCheck:previous.lastSuccessfulCheck||null,resolvedUrl:previous.resolvedUrl||null,attempts,failure,candidate:previous.candidate||null,extractionStatus:'source_unavailable',ruleChangesApplied:false};}
  return {...observation,...classifyObservation(source,observation)};
 }
