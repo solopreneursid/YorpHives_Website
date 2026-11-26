@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: '80230f3288b765ccd63aac90151f208a0087e8b2'
+          ref: '00afa4bb966747f1c229cb7ca78902b3654acd59'
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -51,7 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: '80230f3288b765ccd63aac90151f208a0087e8b2'
+          ref: '00afa4bb966747f1c229cb7ca78902b3654acd59'
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -60,6 +60,13 @@ jobs:
         with:
           name: ${{ needs.collect.outputs.evidence_artifact }}
           path: products/taxpulse-global
-      - name: Submit evidence only to the isolated preview intake
+      - name: Submit signed evidence only to the isolated preview intake
         working-directory: products/taxpulse-global
-        run: node scripts/submit-regulatory-artifact.mjs regulatory-probe.json
+        env:
+          TAXPULSE_EVIDENCE_PRIVATE_KEY: ${{ secrets.TAXPULSE_EVIDENCE_PRIVATE_KEY }}
+        run: |
+          if [ -z "$TAXPULSE_EVIDENCE_PRIVATE_KEY" ]; then
+            echo '::error::Collector key enrollment required. Collection artifact remains available.'
+            exit 1
+          fi
+          node scripts/submit-regulatory-signed.mjs regulatory-probe.json
