@@ -1,0 +1,17 @@
+import {generateKeyPairSync} from 'node:crypto';
+import {spawnSync} from 'node:child_process';
+const repo='solopreneursid/YorpHives_Website',name='TAXPULSE_EVIDENCE_PRIVATE_KEY';
+if(process.argv.length!==3||process.argv[2]!=='ENROLL_TAXPULSE_EVIDENCE')throw Error('Usage: node scripts/enroll-regulatory-collector.mjs ENROLL_TAXPULSE_EVIDENCE');
+const status=spawnSync('gh',['auth','status'],{stdio:'ignore'});
+if(status.status!==0)throw Error('Authenticate GitHub CLI first with gh auth login');
+const listing=spawnSync('gh',['secret','list','--repo',repo,'--json','name'],{encoding:'utf8',maxBuffer:1024*1024,stdio:['ignore','pipe','ignore']});
+if(listing.status!==0)throw Error('Cannot verify existing repository secrets; no changes made');
+const existing=JSON.parse(listing.stdout);
+if(existing.some(s=>s.name===name))throw Error('Collector key already exists; explicit coordinated rotation is required');
+const {privateKey,publicKey}=generateKeyPairSync('ed25519');
+const pem=privateKey.export({type:'pkcs8',format:'pem'});
+const publicKeyHex=Buffer.from(publicKey.export({format:'jwk'}).x,'base64url').toString('hex');
+const result=spawnSync('gh',['secret','set',name,'--repo',repo],{input:pem,stdio:['pipe','ignore','ignore'],timeout:30000});
+if(result.status!==0)throw Error('Secret enrollment failed or timed out; check secret existence before retrying');
+console.log('GitHub collector secret enrolled. Share only this public verification key for Cloudflare enrollment:');
+console.log(publicKeyHex);
