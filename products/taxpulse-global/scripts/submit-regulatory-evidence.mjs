@@ -19,6 +19,6 @@ console.log('Local cryptographic verification of GitHub workflow identity passed
 const body=await readFile(process.argv[2]||'regulatory-probe.json');
 if(body.length>300000)throw Error('Evidence too large');
 const response=await fetch(target,{method:'POST',headers:{authorization:'Bearer '+value,'content-type':'application/json'},body,redirect:'error',signal:AbortSignal.timeout(30000)});
-if(!response.ok)throw Error('Evidence intake rejected request: '+response.status);
+if(!response.ok){let reason='unknown';try{const data=await response.json();if(['issuer_unavailable','key_not_found','crypto_unavailable','signature_invalid','claims_rejected','invalid_token'].includes(data.reason))reason=data.reason;}catch{}throw Error('Evidence intake rejected request: '+response.status+' '+reason);}
 const result=await response.json();if(!['accepted','already_observed'].includes(result.state))throw Error('Unexpected intake response');
 console.log(JSON.stringify(result));
