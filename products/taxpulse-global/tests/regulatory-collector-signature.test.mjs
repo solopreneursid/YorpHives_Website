@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {collectorSignaturePayload,verifyCollectorSignature} from '../engine/regulatory-collector-signature.mjs';
+import {createEvidenceIntake} from '../engine/regulatory-evidence-intake.mjs';
+const now=Date.parse('2026-11-26T04:00:00Z'),issuedAt=new Date(now).toISOString(),runId='12345',body=new TextEncoder().encode('{"mode":"review_only"}');
+const pair=await crypto.subtle.generateKey('Ed25519',true,['sign','verify']);
+const hex=b=>Buffer.from(b).toString('hex');
+const publicKeyHex=hex(await crypto.subtle.exportKey('raw',pair.publicKey));
+const {message,reportDigest}=await collectorSignaturePayload(body,runId,issuedAt);
+const signature=hex(await crypto.subtle.sign('Ed25519',pair.privateKey,message));
+const options={runId,issuedAt,signature,publicKeyHex,now};
+test('verify exact report, time, run ID and enrolled collector key without network',async()=>{assert.deepEqual(await verifyCollectorSignature(body,options),{runId,reportDigest,collectorSignature:true});await assert.rejects(verifyCollectorSignature(new TextEncoder().encode('changed'),options));for(const patch of [{runId:'12346'},{issuedAt:new Date(now-1000).toISOString()},{now:now+300001},{now:now-30001},{publicKeyHex:'0'.repeat(64)},{signature:'0'.repeat(128)},{publicKeyHex:undefined}])await assert.rejects(verifyCollectorSignature(body,{...options,...patch}));});
+test('signed route rejects missing key and obsolete artifact route stays disabled',async()=>{const w=createEvidenceIntake([]);const req=path=>new Request('https://example.com'+path,{method:'POST',body:'{}',headers:{'content-type':'application/json','x-taxpulse-run-id':'12345'}});assert.equal((await w.fetch(req('/v1/evidence/signed'),{})).status,503);assert.equal((await w.fetch(req('/v1/evidence/artifact'),{})).status,404);assert.equal((await w.fetch(req('/v1/evidence/signed'),{EVIDENCE_COLLECTOR_PUBLIC_KEY:publicKeyHex})).status,401);});
