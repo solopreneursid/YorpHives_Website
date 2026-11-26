@@ -1,0 +1,14 @@
+{
+  "status": "source-reviewed-preview-only",
+  "reviewDate": "2026-11-25",
+  "productionEnabled": false,
+  "sources": [
+    "https://www.irs.gov/irb/2023-48_IRB",
+    "https://www.irs.gov/irb/2024-45_IRB",
+    "https://www.irs.gov/irb/2025-45_IRB",
+    "https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents",
+    "https://www.ato.gov.au/about-ato/new-legislation/in-detail/individuals/personal-income-tax-new-tax-cuts-for-every-australian-taxpayer"
+  ],
+  "scope": "US single regular federal rate schedules 2024–2026; AU resident gross rate schedules FY2024–25 through FY2027–28 enacted rate reduction. Same taxable income, before all credits and levies.",
+  "limitations": "No full tax return, inflation adjustment, future offset modeling, historical deduction rules or prior-engine receipt execution. Archive comparison test detects unintended drift but is not an external immutable ledger."
+}

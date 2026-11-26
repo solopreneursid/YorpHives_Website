@@ -1,0 +1,12 @@
+import {generateKeyPairSync,createHash} from 'node:crypto';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {resolve,join} from 'node:path';
+const directory=process.argv[2];
+if(!directory||process.argv.length!==3)throw Error('Usage: node scripts/generate-rule-signing-key.mjs NEW_PRIVATE_DIRECTORY');
+const target=resolve(directory);
+await mkdir(target,{mode:0o700,recursive:false});
+const {privateKey,publicKey}=generateKeyPairSync('ed25519');
+const publicKeyHex=Buffer.from(publicKey.export({format:'jwk'}).x,'base64url').toString('hex');
+await writeFile(join(target,'private.pem'),privateKey.export({type:'pkcs8',format:'pem'}),{flag:'wx',mode:0o600});
+await writeFile(join(target,'public.json'),JSON.stringify({algorithm:'Ed25519',publicKeyHex,keyId:createHash('sha256').update(Buffer.from(publicKeyHex,'hex')).digest('hex')},null,2)+'\n',{flag:'wx',mode:0o644});
+console.log('Key generated. Keep private.pem offline and outside repositories. Only public.json may be used for preview enrollment. No statutory approval is implied.');

@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {reconcileRegulatoryReports} from '../engine/regulatory-reconciliation.mjs';
+const now=new Date('2026-11-26T03:00:00Z');
+const source={id:'SG-8',jurisdiction:'SG',url:'https://www.iras.gov.sg/example'};
+const config=[source];
+const row=(rates=[0,200],sha256='a'.repeat(64))=>({...source,checkedAt:'2026-11-26T02:30:00Z',status:'baseline',sha256,resolvedUrl:source.url,extractionStatus:'candidate',candidate:{jurisdiction:'SG',component:'national-assessment',assessmentYearFrom:'2024',parameters:{bounds:[20000],rates},status:'candidate',automaticActivation:false,sourceDigest:sha256}});
+const report=r=>({mode:'review_only',automaticRuleChanges:false,checkedAt:r.checkedAt,sources:[r]});
+test('semantic equality does not require identical HTML bytes',()=>{const r=reconcileRegulatoryReports(config,report(row()),report(row([0,200],'b'.repeat(64))),{now});assert.equal(r.reachable,1);assert.equal(r.sources[0].extraction,'matching_candidates');assert.equal(r.sources[0].sameContent,false);assert.equal(r.automaticRuleChanges,false);});
+test('conflicting rates never activate and require review',()=>{const r=reconcileRegulatoryReports(config,report(row()),report(row([0,300])),{now});assert.equal(r.conflictingCandidates,1);assert.equal(r.sources[0].reviewPending,true);assert.equal(r.sources[0].automaticActivation,false);});
+test('independent retrieval covers an edge failure; stale reports cannot cover it',()=>{const failed={...row(),status:'fetch_failed'};const r=reconcileRegulatoryReports(config,report(failed),report(row()),{now});assert.equal(r.sources[0].status,'independent_only');assert.equal(r.sources[0].extraction,'single_candidate');assert.equal(reconcileRegulatoryReports(config,report(failed),report(row()),{now:new Date('2026-11-29T03:00:00Z')}).unavailable,1);});
+test('candidate digest mismatch is rejected',()=>{const r=row();r.candidate.sourceDigest='c'.repeat(64);assert.throws(()=>reconcileRegulatoryReports(config,report(r),null,{now}),/evidence/);});

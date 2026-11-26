@@ -1,0 +1,16 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {calculateCapitalGain as calc} from '../engine/taxable-income.mjs';
+import {createReceipt,verifyReceipt} from '../engine/proof.mjs';
+const base={country:'IN',taxYear:'2026',assetType:'property',acquired:'2024-08-01',disposed:'2026-08-02',saleProceeds:1500000,adjustedBasis:1000000,eligibleLosses:0,otherTaxableIncome:1500000,scopeConfirmed:true};
+const india=(extra={})=>calc({...base,...extra});
+const us=(extra={})=>calc({...base,country:'US',assetType:'investment-land',saleProceeds:60000,adjustedBasis:50000,otherTaxableIncome:45000,filingStatus:'single',...extra});
+const gb=(extra={})=>calc({...base,country:'GB',saleProceeds:62600,adjustedBasis:50000,otherTaxableIncome:20000,...extra});
+test('India property exact 24-month boundary and no equity exemption',()=>{const r=india();assert.equal(r.holding,'long-term');assert.equal(r.holdingYears,2);assert.equal(r.allowanceApplied,0);assert.equal(r.estimatedGainTax,65000);const st=india({disposed:'2026-08-01'});assert.equal(st.holding,'short-term');assert.equal(st.estimatedGainTax,98800);});
+test('India property grandfathered acquisition rejects rather than overtax',()=>assert.throws(()=>india({acquired:'2024-07-22'}),/grandfathering/));
+test('India VDA gross proceeds less acquisition cost at 30 percent plus cess',()=>{const r=india({assetType:'crypto'});assert.equal(r.holding,'not-rate-determining');assert.equal(r.taxBeforeCess,150000);assert.equal(r.cessAmount,6000);assert.equal(r.estimatedGainTax,156000);assert.equal(r.allowanceApplied,0);assert.ok(r.sourceUrls.some(u=>u.includes('section-194')));});
+test('India VDA loss no refund, no offset and scope ceiling',()=>{assert.equal(india({assetType:'crypto',saleProceeds:900000}).estimatedGainTax,0);assert.throws(()=>india({assetType:'crypto',eligibleLosses:1}),/cannot be offset/);assert.throws(()=>india({assetType:'crypto',otherTaxableIncome:4800000}));});
+test('US vacant land and cash crypto sale reuse marginal schedule',()=>{assert.equal(us().estimatedGainTax,832.5);assert.equal(us({assetType:'crypto'}).estimatedGainTax,832.5);assert.equal(us({assetType:'crypto',acquired:'2025-08-02'}).estimatedGainTax,1660);});
+test('UK residential property and crypto use annual allowance and band stacking',()=>{assert.equal(gb().estimatedGainTax,1728);assert.match(gb().warnings.join(' '),/60 days/);assert.equal(gb({assetType:'crypto'}).estimatedGainTax,1728);assert.match(gb({assetType:'crypto'}).warnings.join(' '),/30-day/);});
+test('unsupported assets and extra fields fail closed',()=>{assert.throws(()=>us({assetType:'property'}));assert.throws(()=>gb({assetType:'investment-land'}));assert.throws(()=>india({assetType:'crypto',sellingFees:10}));assert.throws(()=>gb({scopeConfirmed:false}));assert.throws(()=>us({assetType:null}));});
+test('new asset report replay',async()=>{const engineFingerprint='a'.repeat(64);const receipt=await createReceipt({kind:'capital-gain',input:{...base,assetType:'crypto'},engineFingerprint});assert.equal((await verifyReceipt(receipt,engineFingerprint)).reproduced,true);});

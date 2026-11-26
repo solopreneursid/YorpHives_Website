@@ -1,0 +1,22 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {calculateCapitalGain as calc} from '../engine/taxable-income.mjs';
+import {createReceipt,verifyReceipt} from '../engine/proof.mjs';
+const base={country:'US',taxYear:'2026',acquired:'2025-06-01',disposed:'2026-06-02',saleProceeds:60000,adjustedBasis:50000,eligibleLosses:0,otherTaxableIncome:45000,scopeConfirmed:true,filingStatus:'single'};
+const us=(extra={})=>calc({...base,...extra});
+const gb=(extra={})=>{const {filingStatus,...rest}=base;return calc({...rest,country:'GB',otherTaxableIncome:20000,saleProceeds:62600,...extra});};
+const india=(extra={})=>{const {filingStatus,...rest}=base;return calc({...rest,country:'IN',assetType:'listed-equity',otherTaxableIncome:1500000,saleProceeds:350000,adjustedBasis:100000,...extra});};
+test('US stacks gain across zero and 15 percent bands',()=>{const r=us();assert.equal(r.estimatedGainTax,832.5);assert.deepEqual(r.brackets.map(x=>x.taxableGain),[4450,5550]);});
+test('US exact anniversary remains short-term, next day long-term',()=>{assert.equal(us({disposed:'2026-06-01'}).holding,'short-term');assert.equal(us({disposed:'2026-06-01'}).estimatedGainTax,1660);assert.equal(us().holding,'long-term');});
+test('US 15 and 20 percent boundary',()=>assert.equal(us({otherTaxableIncome:540000}).estimatedGainTax,1725));
+test('US filing status thresholds',()=>{for(const [filingStatus,otherTaxableIncome] of [['mfj',98900],['mfs',49450],['hoh',66200],['single',49450]])assert.equal(us({filingStatus,otherTaxableIncome}).estimatedGainTax,1500);});
+test('HMRC published examples',()=>{assert.equal(gb().estimatedGainTax,1728);assert.equal(gb({saleProceeds:102600}).estimatedGainTax,10842);});
+test('UK uses full allowance after eligible loss offset, not holding duration',()=>{const a=gb({eligibleLosses:4600});assert.equal(a.taxableGain,5000);assert.equal(a.estimatedGainTax,900);assert.equal(gb({acquired:'2026-06-01'}).estimatedGainTax,1728);});
+test('India long-term annual threshold and 4 percent cess',()=>{const r=india();assert.equal(r.taxableGain,125000);assert.equal(r.taxBeforeCess,15625);assert.equal(r.cessAmount,625);assert.equal(r.estimatedGainTax,16250);});
+test('India short-term 20 percent plus cess',()=>assert.equal(india({disposed:'2026-06-01'}).estimatedGainTax,52000));
+test('India loss offset and threshold',()=>{assert.equal(india({eligibleLosses:125000}).estimatedGainTax,0);assert.equal(india({saleProceeds:225000}).estimatedGainTax,0);});
+test('loss is shown without invented refund',()=>{const r=us({saleProceeds:40000});assert.equal(r.realizedGain,-10000);assert.equal(r.estimatedGainTax,0);});
+test('unsupported scope and malformed input reject',()=>{for(const extra of [{scopeConfirmed:false},{acquired:'2025-02-30'},{acquired:'2024-02-29'},{disposed:'2027-01-01'},{acquired:'2026-07-01'},{saleProceeds:10.001},{eligibleLosses:10001},{filingStatus:'bad'},{extra:1}])assert.throws(()=>us(extra));for(const extra of [{otherTaxableIncome:1299999},{otherTaxableIncome:4900000},{acquired:'2018-01-31'},{assetType:'collectible'}])assert.throws(()=>india(extra));});
+test('report replay and changed inputs',async()=>{const engineFingerprint='a'.repeat(64);const r=await createReceipt({kind:'capital-gain',input:base,engineFingerprint});assert.equal((await verifyReceipt(r,engineFingerprint)).reproduced,true);r.payload.input.adjustedBasis=1;assert.equal((await verifyReceipt(r,engineFingerprint)).integrity,false);});
+
+test('US ordinary rate ceiling when 12 percent is below preferential rate',()=>{const r=us({otherTaxableIncome:49450,saleProceeds:50950});assert.equal(r.estimatedGainTax,114);assert.equal(r.brackets[0].rate,.12);});

@@ -1,0 +1,20 @@
+{
+  "jurisdiction": "US",
+  "component": "oasdi",
+  "taxYear": "2027",
+  "version": "US-2027-oasdi-preview-v1",
+  "effectiveFrom": "2027-01-01",
+  "effectiveUntil": "2028-01-01",
+  "status": "candidate",
+  "legalStatus": "review_required",
+  "parameters": {
+    "annualWageBase": 192300,
+    "employeeRateBasisPoints": 620
+  },
+  "sourceUrls": [
+    "https://www.ssa.gov/oact/COLA/cbb.html",
+    "https://www.govinfo.gov/content/pkg/FR-2026-10-26/html/2026-21796.htm",
+    "https://www.ssa.gov/cola/factsheets/2027.html"
+  ],
+  "reason": "Complete 2027 salary model and independent fixtures not yet available"
+}

@@ -1,0 +1,25 @@
+{
+  "reviewDate": "2026-11-25",
+  "status": "source-reviewed-preview-only",
+  "productionEnabled": false,
+  "sources": {
+    "DE": [
+      "https://www.gesetze-im-internet.de/estg/__32a.html",
+      "https://www.gesetze-im-internet.de/solzg_1995/__3.html",
+      "https://www.gesetze-im-internet.de/solzg_1995/__4.html",
+      "https://www.bmas.de/DE/Service/Gesetze-und-Gesetzesvorhaben/sozialversicherungs-rechengroessenverordnung-2026.html",
+      "https://www.bundesgesundheitsministerium.de/beitraege",
+      "https://www.bundesgesundheitsministerium.de/themen/pflege/online-ratgeber-pflege/die-pflegeversicherung/finanzierung",
+      "https://www.deutsche-rentenversicherung.de/KnappschaftBahnSee/DE/Aktuelles/Meldungen/2026/2026_01_02_Sozialversicherungsrechengroessen2026.html"
+    ],
+    "AE": [
+      "https://u.ae/en/information-and-services/finance-and-investment/taxation",
+      "https://u.ae/en/information-and-services/moving-to-the-uae/expatriates-working-in-the-uae/pension-schemes-for-expatriate-workers",
+      "https://u.ae/en/information-and-services/jobs/insurance/unemployment-insurance-scheme",
+      "https://iloe.ae/default.aspx",
+      "https://tax.gov.ae/en/faq.aspx?keyword=What+is+the+standard+rate+of+VAT+in+the+UAE%3F"
+    ]
+  },
+  "scope": "German individual assessment using caller-confirmed taxable income, 12 equal monthly wages 2500–6450 EUR, actual full insurer additional percentage, childless outside Saxony, statutory insurance and solidarity surcharge. UAE non-GCC expatriate employee ordinary cash salary and standard ILOE premium incl VAT, no pension liability.",
+  "limitations": "No gross-to-taxable German deduction engine, actual withholding, church tax, parent rates, Saxony, private insurance, transition-zone wages, UAE/GCC national pensions, foreign tax, gratuity, ILOE fees or other deductions. No independent official-calculator validation."
+}

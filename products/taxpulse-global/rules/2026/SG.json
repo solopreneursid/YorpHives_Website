@@ -1,0 +1,226 @@
+{
+  "country_code": "SG",
+  "country_name": "Singapore",
+  "flag": "🇸🇬",
+  "tax_year": "2026",
+  "tax_year_label": "YA 2026 (IRAS Resident Progressive Rates)",
+  "currency": {
+    "code": "SGD",
+    "symbol": "S$",
+    "locale": "en-SG"
+  },
+  "source_url": "https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates",
+  "modules": {
+    "personal_income_tax": {
+      "primitive": "progressive_brackets",
+      "standard_deduction": 1000,
+      "brackets": [
+        {
+          "min": 0,
+          "max": 20000,
+          "rate": 0
+        },
+        {
+          "min": 20000,
+          "max": 30000,
+          "rate": 0.02
+        },
+        {
+          "min": 30000,
+          "max": 40000,
+          "rate": 0.035
+        },
+        {
+          "min": 40000,
+          "max": 80000,
+          "rate": 0.07
+        },
+        {
+          "min": 80000,
+          "max": 120000,
+          "rate": 0.115
+        },
+        {
+          "min": 120000,
+          "max": 160000,
+          "rate": 0.15
+        },
+        {
+          "min": 160000,
+          "max": 200000,
+          "rate": 0.18
+        },
+        {
+          "min": 200000,
+          "max": 240000,
+          "rate": 0.19
+        },
+        {
+          "min": 240000,
+          "max": 280000,
+          "rate": 0.195
+        },
+        {
+          "min": 280000,
+          "max": 320000,
+          "rate": 0.2
+        },
+        {
+          "min": 320000,
+          "max": 500000,
+          "rate": 0.22
+        },
+        {
+          "min": 500000,
+          "max": 1000000,
+          "rate": 0.23
+        },
+        {
+          "min": 1000000,
+          "max": null,
+          "rate": 0.24
+        }
+      ]
+    },
+    "social_security_payroll": {
+      "primitive": "capped_percentage",
+      "employee_tiers": [
+        {
+          "name": "CPF Employee Contribution (Age ≤ 55)",
+          "rate": 0.2,
+          "min_Floor": 0,
+          "annual_cap": 96000,
+          "note": "20% capped at S$8,000/mo Ordinary Wage ceiling (S$96,000/yr)"
+        }
+      ],
+      "employer_tiers": [
+        {
+          "name": "CPF Employer Contribution (17% Age <= 55)",
+          "rate": 0.17,
+          "min_Floor": 0,
+          "annual_cap": 96000,
+          "note": "17% up to S$8,000/mo OW ceiling"
+        }
+      ]
+    },
+    "capital_gains_crypto": {
+      "primitive": "flat_or_slab_lookup",
+      "cess_rate": 0,
+      "assets": {
+        "listed_equity": {
+          "label": "Singapore Listed Equities & ETFs",
+          "long_term_months": 12,
+          "short_term_rate": 0,
+          "long_term_rate": 0,
+          "annual_exemption": 0,
+          "note": "0% statutory Capital Gains Tax on investment shares."
+        },
+        "real_estate": {
+          "label": "Singapore Real Estate Property",
+          "long_term_months": 12,
+          "short_term_rate": 0.3,
+          "long_term_rate": 0,
+          "annual_exemption": 0,
+          "note": "Assessed on net realized property appreciation."
+        },
+        "crypto_vda": {
+          "label": "Singapore Digital Assets & Crypto",
+          "long_term_months": 12,
+          "short_term_rate": 0,
+          "long_term_rate": 0,
+          "annual_exemption": 0,
+          "note": "Taxed according to digital asset capital gains rules."
+        }
+      }
+    },
+    "vat_gst": {
+      "primitive": "flat_or_slab_lookup",
+      "tax_name": "Goods & Services Tax (GST)",
+      "slabs": [
+        {
+          "id": "std",
+          "label": "Standard Rate (9%)",
+          "rate": 0.09
+        },
+        {
+          "id": "red",
+          "label": "Reduced / Merit Rate (0%)",
+          "rate": 0
+        },
+        {
+          "id": "zero",
+          "label": "Zero-Rated / Exports (0%)",
+          "rate": 0
+        }
+      ]
+    },
+    "corporate_tax": {
+      "primitive": "progressive_brackets",
+      "regimes": [
+        {
+          "id": "std_corp",
+          "label": "Singapore Standard Corporate Tax Rate",
+          "brackets": [
+            {
+              "min": 0,
+              "max": null,
+              "rate": 0.17
+            }
+          ],
+          "note": "Standard 2026 statutory corporate rate."
+        }
+      ]
+    },
+    "property_transfer_tax": {
+      "primitive": "progressive_brackets",
+      "regions": [
+        {
+          "id": "std_prop",
+          "label": "Singapore Standard Property Transfer / Stamp Duty",
+          "brackets": [
+            {
+              "min": 0,
+              "max": null,
+              "rate": 0.045
+            }
+          ],
+          "registration_rate": 0.005,
+          "registration_cap": 5000,
+          "non_resident_surcharge_rate": 0.08,
+          "note": "Standard regional transfer duty plus registration fee."
+        }
+      ]
+    },
+    "withholding_dtaa": {
+      "primitive": "treaty_offset",
+      "domestic_default_wht": {
+        "dividends": 0,
+        "interest": 0.2,
+        "royalties": 0.2
+      },
+      "treaties": {
+        "IN": {
+          "partner_name": "India DTAA",
+          "dividends": 0.1,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "Bilateral DTAA Articles 10-12"
+        },
+        "US": {
+          "partner_name": "United States Treaty",
+          "dividends": 0.15,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "Bilateral Tax Convention"
+        },
+        "GB": {
+          "partner_name": "United Kingdom Treaty",
+          "dividends": 0.1,
+          "interest": 0.1,
+          "royalties": 0.1,
+          "article_ref": "Bilateral DTT"
+        }
+      }
+    }
+  }
+}

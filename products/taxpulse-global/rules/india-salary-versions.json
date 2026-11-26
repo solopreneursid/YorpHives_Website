@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "versions": [
+    {
+      "jurisdiction": "IN",
+      "component": "ordinary-salary",
+      "taxYear": "2026",
+      "version": "IN-TY2026-27-ordinary-salary-comparison-v1",
+      "effectiveFrom": "2026-04-01",
+      "effectiveUntil": "2027-04-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "parameters": {
+        "new": {
+          "bands": [
+            [
+              400000,
+              0
+            ],
+            [
+              800000,
+              5
+            ],
+            [
+              1200000,
+              10
+            ],
+            [
+              1600000,
+              15
+            ],
+            [
+              2000000,
+              20
+            ],
+            [
+              2400000,
+              25
+            ],
+            [
+              null,
+              30
+            ]
+          ],
+          "standardDeduction": 75000,
+          "rebateThreshold": 1200000,
+          "rebateLimit": 60000,
+          "rebateMarginalRelief": true,
+          "surcharge": [
+            [
+              5000000,
+              10
+            ],
+            [
+              10000000,
+              15
+            ],
+            [
+              20000000,
+              25
+            ]
+          ]
+        },
+        "old": {
+          "exempt": {
+            "default": 250000,
+            "60-79": 300000,
+            "80-plus": 500000
+          },
+          "bands": [
+            [
+              500000,
+              5
+            ],
+            [
+              1000000,
+              20
+            ],
+            [
+              null,
+              30
+            ]
+          ],
+          "standardDeduction": 50000,
+          "rebateThreshold": 500000,
+          "rebateLimit": 12500,
+          "rebateMarginalRelief": false,
+          "surcharge": [
+            [
+              5000000,
+              10
+            ],
+            [
+              10000000,
+              15
+            ],
+            [
+              20000000,
+              25
+            ],
+            [
+              50000000,
+              37
+            ]
+          ]
+        },
+        "cessPercent": 4,
+        "roundingRupees": 10
+      },
+      "sourceUrls": [
+        "https://www.incometaxindia.gov.in/documents/d/guest/income_tax_act_2025_as_amended_by_fa_act_2026-pdf",
+        "https://www.incometaxindia.gov.in/documents/d/guest/finance-act-2026-pdf-1",
+        "https://www.incometax.gov.in/iec/foportal/help/all-topics/e-filing-services/income-and-tax-estimator-um"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "reviewDate": "2026-11-25",
+  "status": "source-reviewed-preview-only",
+  "productionEnabled": false,
+  "sources": [
+    "https://www.incometaxindia.gov.in/documents/d/guest/income_tax_act_2025_as_amended_by_fa_act_2026-pdf",
+    "https://www.incometaxindia.gov.in/documents/d/guest/finance-act-2026-pdf-1",
+    "https://www.incometax.gov.in/iec/foportal/help/all-topics/e-filing-services/income-and-tax-estimator-um"
+  ],
+  "provisions": [
+    "Income-tax Act 2025 sections 19, 156, 202 and 516",
+    "Finance Act 2026 section 3 and First Schedule Part I-B"
+  ],
+  "scope": "Ordinary salary-only old/new regime comparison, caller-confirmed deductions, resident senior age categories, rebate, surcharge, marginal relief and 4% cess, whole-rupee inputs and statutory nearest INR 10 rounding",
+  "limitations": "PDF text retrieved, screenshot rendering unavailable. Not independently certified or compared against official interactive calculator. Excludes all other income, credits, reliefs and payroll. Legacy basic salary example remains limited.",
+  "tests": "tests/india-regimes.test.mjs"
+}

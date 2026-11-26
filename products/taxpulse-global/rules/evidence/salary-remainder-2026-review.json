@@ -1,0 +1,20 @@
+{
+  "reviewDate": "2026-11-25",
+  "status": "source-reviewed-preview-only",
+  "productionEnabled": false,
+  "sources": {
+    "US": [
+      "https://www.irs.gov/irb/2025-45_IRB",
+      "https://www.irs.gov/instructions/i941",
+      "https://www.irs.gov/taxtopics/tc560",
+      "https://www.texas.gov/business-taxes/taxes"
+    ],
+    "GB": [
+      "https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027",
+      "https://www.gov.uk/income-tax-rates"
+    ]
+  },
+  "scope": "Single Texas ordinary wages with regular federal rate schedule, Social Security and Medicare including additional Medicare; UK ordinary category A employee with twelve equal monthly pay periods, Scotland/rest-of-UK annual income tax and NI.",
+  "limitations": "No complete tax return, credits, AMT, pensions, student loans, insurance, other deductions, other US states or other countries. Source-reviewed formulas only; no independent professional validation.",
+  "tests": "tests/salary-remainder.test.mjs"
+}

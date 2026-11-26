@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {validateNationalRegistry} from '../engine/national-registry.mjs';
+import {assessTaxableIncome,calculateCapitalGain,calculateSalaryRemainder} from '../engine/taxable-income.mjs';
+import {historicalRuleCatalog} from '../engine/history.mjs';
+const baseline=JSON.parse(readFileSync(new URL('../rules/national-investment-2026.json',import.meta.url)));
+test('data-only rate change affects Australian national assessment and salary',()=>{const d=structuredClone(baseline);d.national.AU.rates[1]=1400;const input={country:'AU',taxYear:'2026',taxableIncome:100000,residentEligible:true};assert.equal(assessTaxableIncome(input).incomeTax-assessTaxableIncome(input,{national:d}).incomeTax,268);const salary={country:'AU',region:'AU',taxYear:'2026',pay:100000,scopeConfirmed:true};assert.equal(calculateSalaryRemainder(salary,{national:d}).annualRemainder-calculateSalaryRemainder(salary).annualRemainder,268);});
+test('data-only capital gain rate change',()=>{const d=structuredClone(baseline);d.investment.GB.rates=[1900,2500];const input={country:'GB',taxYear:'2026',acquired:'2020-01-01',disposed:'2026-05-01',saleProceeds:10000,adjustedBasis:0,eligibleLosses:0,otherTaxableIncome:0,scopeConfirmed:true};assert.equal(calculateCapitalGain(input,{national:d}).estimatedGainTax-calculateCapitalGain(input).estimatedGainTax,70);});
+test('reject invalid schedule and preserve historic IDs',()=>{const d=structuredClone(baseline);d.national.CA.bounds[1]=1;assert.throws(()=>validateNationalRegistry(d));assert.equal(historicalRuleCatalog().length,14);});

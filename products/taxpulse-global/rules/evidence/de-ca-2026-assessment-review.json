@@ -1,0 +1,27 @@
+{
+  "reviewDate": "2026-11-25",
+  "status": "source-reviewed-scope-only",
+  "productionEnabled": false,
+  "reviewMethod": "Official HTML statutory text and CRA published 2026 tables; independently transcribed numerical boundary vectors in tests/taxable-income.test.mjs. Not an independent professional legal review.",
+  "countries": {
+    "DE": {
+      "taxYear": "2026",
+      "ruleId": "DE-2026-EStG-32a-v1",
+      "sources": [
+        "https://www.gesetze-im-internet.de/estg/__32a.html",
+        "https://www.bmf-steuerrechner.de/ekst/eingabeformekst.xhtml"
+      ],
+      "scope": "EStG §32a ordinary tariff, integer-euro floors and eligible joint splitting; no gross-to-taxable conversion, church tax, solidarity surcharge or payroll."
+    },
+    "CA": {
+      "taxYear": "2026",
+      "ruleId": "CA-2026-federal-BPA-v1",
+      "sources": [
+        "https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4032-payroll-deductions-tables/t4032on-jan/t4032on-january-general-information.html",
+        "https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/payroll-deductions-t4127-payroll-deductions-formulas/t4127-jan-122nd-edition-effective-january-1-2026/t4127-jan-payroll-deductions-formulas-computer-programs.html",
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/educational-programs/completing-basic-return.html"
+      ],
+      "scope": "Federal ordinary progressive tax, BPA credit and net-income phaseout only; full-year resident examples, no provincial tax, other credits, Quebec abatement or payroll."
+    }
+  }
+}

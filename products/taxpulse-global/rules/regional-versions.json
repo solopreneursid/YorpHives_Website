@@ -1,0 +1,479 @@
+{
+  "schemaVersion": 1,
+  "versions": [
+    {
+      "jurisdiction": "CA-AB",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "CA-AB-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Alberta",
+      "currency": "CAD",
+      "bounds": [
+        61200,
+        154259,
+        185111,
+        246813,
+        370220
+      ],
+      "rates": [
+        800,
+        1000,
+        1200,
+        1300,
+        1400,
+        1500
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+      ]
+    },
+    {
+      "jurisdiction": "CA-BC",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "CA-BC-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "British Columbia",
+      "currency": "CAD",
+      "bounds": [
+        50363,
+        100728,
+        115648,
+        140430,
+        190405,
+        265545
+      ],
+      "rates": [
+        560,
+        770,
+        1050,
+        1229,
+        1470,
+        1680,
+        2050
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+      ]
+    },
+    {
+      "jurisdiction": "CA-MB",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "CA-MB-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Manitoba",
+      "currency": "CAD",
+      "bounds": [
+        47564,
+        101200
+      ],
+      "rates": [
+        1080,
+        1275,
+        1740
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+      ]
+    },
+    {
+      "jurisdiction": "CA-NB",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "CA-NB-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "New Brunswick",
+      "currency": "CAD",
+      "bounds": [
+        52333,
+        104666,
+        193861
+      ],
+      "rates": [
+        940,
+        1400,
+        1600,
+        1950
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+      ]
+    },
+    {
+      "jurisdiction": "CA-NL",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "CA-NL-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Newfoundland and Labrador",
+      "currency": "CAD",
+      "bounds": [
+        44678,
+        89354,
+        159528,
+        223340,
+        285319,
+        570638,
+        1141275
+      ],
+      "rates": [
+        870,
+        1450,
+        1580,
+        1780,
+        1980,
+        2080,
+        2130,
+        2180
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+      ]
+    },
+    {
+      "jurisdiction": "CA-NT",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "CA-NT-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Northwest Territories",
+      "currency": "CAD",
+      "bounds": [
+        53003,
+        106009,
+        172346
+      ],
+      "rates": [
+        590,
+        860,
+        1220,
+        1405
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+      ]
+    },
+    {
+      "jurisdiction": "CA-NS",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "CA-NS-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Nova Scotia",
+      "currency": "CAD",
+      "bounds": [
+        30995,
+        61991,
+        97417,
+        157124
+      ],
+      "rates": [
+        879,
+        1495,
+        1667,
+        1750,
+        2100
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+      ]
+    },
+    {
+      "jurisdiction": "CA-NU",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "CA-NU-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Nunavut",
+      "currency": "CAD",
+      "bounds": [
+        55801,
+        111602,
+        181439
+      ],
+      "rates": [
+        400,
+        700,
+        900,
+        1150
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+      ]
+    },
+    {
+      "jurisdiction": "CA-ON",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "CA-ON-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Ontario",
+      "currency": "CAD",
+      "bounds": [
+        53891,
+        107785,
+        150000,
+        220000
+      ],
+      "rates": [
+        505,
+        915,
+        1116,
+        1216,
+        1316
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+      ]
+    },
+    {
+      "jurisdiction": "CA-PE",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "CA-PE-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Prince Edward Island",
+      "currency": "CAD",
+      "bounds": [
+        33928,
+        65820,
+        106890,
+        142520,
+        200000
+      ],
+      "rates": [
+        950,
+        1347,
+        1660,
+        1762,
+        1900,
+        2000
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+      ]
+    },
+    {
+      "jurisdiction": "CA-SK",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "CA-SK-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Saskatchewan",
+      "currency": "CAD",
+      "bounds": [
+        54532,
+        155805
+      ],
+      "rates": [
+        1050,
+        1250,
+        1450
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+      ]
+    },
+    {
+      "jurisdiction": "CA-YT",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "CA-YT-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Yukon",
+      "currency": "CAD",
+      "bounds": [
+        58523,
+        117045,
+        181440,
+        500000
+      ],
+      "rates": [
+        640,
+        900,
+        1090,
+        1280,
+        1500
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html"
+      ]
+    },
+    {
+      "jurisdiction": "US-PA",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "US-PA-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Pennsylvania",
+      "currency": "USD",
+      "bounds": [],
+      "rates": [
+        307
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.pa.gov/agencies/revenue/resources/tax-rates/personal-income-tax-rates"
+      ]
+    },
+    {
+      "jurisdiction": "US-IL",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "US-IL-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Illinois",
+      "currency": "USD",
+      "bounds": [],
+      "rates": [
+        495
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://tax.illinois.gov/research/taxrates/income.html"
+      ]
+    },
+    {
+      "jurisdiction": "US-TX",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "US-TX-2026-regional-v1",
+      "effectiveFrom": "2026-01-01",
+      "effectiveUntil": "2027-01-01",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Texas",
+      "currency": "USD",
+      "bounds": [],
+      "rates": [
+        0
+      ],
+      "allowance": null,
+      "sourceUrls": [
+        "https://www.texas.gov/business-taxes/taxes"
+      ]
+    },
+    {
+      "jurisdiction": "GB-SCT",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "GB-SCT-2026-regional-v1",
+      "effectiveFrom": "2026-04-06",
+      "effectiveUntil": "2027-04-06",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "Scotland",
+      "currency": "GBP",
+      "bounds": [
+        3967,
+        16956,
+        31092,
+        62430,
+        125140
+      ],
+      "rates": [
+        1900,
+        2000,
+        2100,
+        4200,
+        4500,
+        4800
+      ],
+      "allowance": {
+        "base": 12570,
+        "taperStart": 100000,
+        "taperDivisor": 2
+      },
+      "sourceUrls": [
+        "https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027",
+        "https://www.gov.uk/income-tax-rates"
+      ]
+    },
+    {
+      "jurisdiction": "GB-RUK",
+      "component": "regional-income-tax",
+      "taxYear": "2026",
+      "version": "GB-RUK-2026-regional-v1",
+      "effectiveFrom": "2026-04-06",
+      "effectiveUntil": "2027-04-06",
+      "status": "preview",
+      "legalStatus": "unverified",
+      "name": "England, Wales and Northern Ireland",
+      "currency": "GBP",
+      "bounds": [
+        37700,
+        125140
+      ],
+      "rates": [
+        2000,
+        4000,
+        4500
+      ],
+      "allowance": {
+        "base": 12570,
+        "taperStart": 100000,
+        "taperDivisor": 2
+      },
+      "sourceUrls": [
+        "https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027",
+        "https://www.gov.uk/income-tax-rates"
+      ]
+    }
+  ]
+}

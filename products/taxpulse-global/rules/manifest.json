@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "releaseMode": "preview",
+  "countries": {
+    "IN": {
+      "taxYear": "2026",
+      "provenance": "original_embedded",
+      "verification": "unverified",
+      "productionEnabled": false,
+      "evidence": []
+    },
+    "US": {
+      "taxYear": "2026",
+      "provenance": "original_embedded",
+      "verification": "unverified",
+      "productionEnabled": false,
+      "evidence": []
+    },
+    "GB": {
+      "taxYear": "2026",
+      "provenance": "original_embedded",
+      "verification": "unverified",
+      "productionEnabled": false,
+      "evidence": []
+    },
+    "DE": {
+      "taxYear": "2026",
+      "provenance": "original_synthesized",
+      "verification": "unverified",
+      "productionEnabled": false,
+      "evidence": []
+    },
+    "AE": {
+      "taxYear": "2026",
+      "provenance": "original_synthesized",
+      "verification": "unverified",
+      "productionEnabled": false,
+      "evidence": []
+    },
+    "CA": {
+      "taxYear": "2026",
+      "provenance": "original_synthesized",
+      "verification": "unverified",
+      "productionEnabled": false,
+      "evidence": []
+    },
+    "AU": {
+      "taxYear": "2026",
+      "provenance": "original_synthesized",
+      "verification": "unverified",
+      "productionEnabled": false,
+      "evidence": []
+    },
+    "SG": {
+      "taxYear": "2026",
+      "provenance": "original_synthesized",
+      "verification": "unverified",
+      "productionEnabled": false,
+      "evidence": []
+    }
+  }
+}

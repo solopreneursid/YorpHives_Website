@@ -1,0 +1,68 @@
+{
+  "reviewedOn": "2026-11-25",
+  "status": "partial_arithmetic_review_not_release_authorization",
+  "country": "IN",
+  "countryFixtureTaxYear": "FY 2026-27 (AY 2027-28 under Income Tax Act 2025)",
+  "module": "pit",
+  "scope": "Only hypothetical resident individuals with ordinary salary income using the prototype new-regime brackets, a ₹75,000 standard deduction, ₹12 lakh rebate threshold, and 4% cess. No special-rate income is modeled.",
+  "officialReferences": [
+    {
+      "url": "https://www.incometaxindia.gov.in/documents/20117/15766092/FAQs-Budget-2026.pdf",
+      "subject": "Official Finance Bill 2026 FAQs, Q7-Q13, marginal relief examples and resident-individual restriction"
+    },
+    {
+      "url": "https://www.incometax.gov.in/iec/foportal/help/individual/return-applicable-1",
+      "subject": "Income Tax Department official new regime and 2026 rates"
+    }
+  ],
+  "expectedTestVectors": [
+    {
+      "totalTaxableIncome": 1200000,
+      "taxBeforeRebate": 60000,
+      "marginalRelief": 0,
+      "totalRebate": 60000,
+      "taxAfterRebateBeforeCess": 0
+    },
+    {
+      "totalTaxableIncome": 1210000,
+      "taxBeforeRebate": 61500,
+      "marginalRelief": 51500,
+      "totalRebate": 51500,
+      "taxAfterRebateBeforeCess": 10000
+    },
+    {
+      "totalTaxableIncome": 1225000,
+      "taxBeforeRebate": 63750,
+      "marginalRelief": 38750,
+      "totalRebate": 38750,
+      "taxAfterRebateBeforeCess": 25000
+    },
+    {
+      "totalTaxableIncome": 1250000,
+      "taxBeforeRebate": 67500,
+      "marginalRelief": 17500,
+      "totalRebate": 17500,
+      "taxAfterRebateBeforeCess": 50000
+    },
+    {
+      "totalTaxableIncome": 1270000,
+      "taxBeforeRebate": 70500,
+      "marginalRelief": 500,
+      "totalRebate": 500,
+      "taxAfterRebateBeforeCess": 70000
+    }
+  ],
+  "explicitAssumptions": [
+    "residentIndividual must be explicitly true for Section 87A/202 rebate and marginal relief",
+    "Non-residents do not receive the rebate in the prototype API",
+    "Only regular salary income is included; no capital gains, lottery, crypto, business, other special-rate incomes",
+    "Cess of 4% is added after the rebate/marginal relief",
+    "Official FY 2026-27 statute, rounding conventions, filing status and other income-source applicability require full review before release"
+  ],
+  "implementation": [
+    "engine/country.mjs",
+    "tests/pit-audit.test.mjs",
+    "tests/regulatory.test.mjs"
+  ],
+  "affectsReleaseManifest": false
+}

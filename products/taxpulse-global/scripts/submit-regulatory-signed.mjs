@@ -1,0 +1,14 @@
+import {readFile} from 'node:fs/promises';
+import {createPrivateKey,sign} from 'node:crypto';
+import {collectorSignaturePayload} from '../engine/regulatory-collector-signature.mjs';
+const repo='solopreneursid/YorpHives_Website',workflow=repo+'/.github/workflows/taxpulse-regulatory-daily.yml@refs/heads/main';
+if(process.env.GITHUB_REPOSITORY!==repo||process.env.GITHUB_REF!=='refs/heads/main'||process.env.GITHUB_WORKFLOW_REF!==workflow||!['push','schedule','workflow_dispatch'].includes(process.env.GITHUB_EVENT_NAME))throw Error('Untrusted workflow context');
+const runId=process.env.GITHUB_RUN_ID,issuedAt=new Date().toISOString();
+const privatePem=process.env.TAXPULSE_EVIDENCE_PRIVATE_KEY;if(!privatePem)throw Error('Collector signing key enrollment required');
+const key=createPrivateKey(privatePem);if(key.asymmetricKeyType!=='ed25519')throw Error('Invalid collector signing key');
+const body=await readFile(process.argv[2]||'regulatory-probe.json');
+const {message,reportDigest}=await collectorSignaturePayload(body,runId,issuedAt);
+const signature=sign(null,message,key).toString('hex');
+const r=await fetch('https://hqventures-taxpulse-regulatory-evidence-preview.solopreneursid-proy.workers.dev/v1/evidence/signed',{method:'POST',headers:{'content-type':'application/json','x-taxpulse-run-id':runId,'x-taxpulse-issued-at':issuedAt,'x-taxpulse-signature':signature},body,redirect:'error',signal:AbortSignal.timeout(30000)});
+const result=await r.json();if(!r.ok||!['accepted','already_observed'].includes(result.state))throw Error('Signed evidence rejected: '+r.status+' '+(result.reason||result.error||'unknown'));
+console.log(JSON.stringify({state:result.state,reportDigest,reachable:result.reachable,unavailable:result.unavailable,automaticRuleChanges:false}));

@@ -1,0 +1,14 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {createPrivateKey,createPublicKey,sign,createHash} from 'node:crypto';
+import {snapshotBytes,verifyRuleSnapshot} from '../engine/rule-snapshot.mjs';
+import {verifyPublicationFixtures,verifyCoverage} from '../engine/rule-publisher.mjs';
+const [payloadPath,fixturesPath,keyPath,outputPath]=process.argv.slice(2);
+if(!payloadPath||!fixturesPath||!keyPath||!outputPath)throw Error('Usage: node scripts/sign-preview-rules.mjs PAYLOAD.json FIXTURES.json PRIVATE.pem OUTPUT.json');
+const payload=JSON.parse(await readFile(payloadPath,'utf8')),fixtures=JSON.parse(await readFile(fixturesPath,'utf8'));
+const key=createPrivateKey(await readFile(keyPath));if(key.asymmetricKeyType!=='ed25519')throw Error('Ed25519 key required');
+const publicKeyHex=Buffer.from(createPublicKey(key).export({format:'jwk'}).x,'base64url').toString('hex');
+const bytes=snapshotBytes(payload),envelope={payload,digest:createHash('sha256').update(bytes).digest('hex'),signature:sign(null,bytes,key).toString('hex')};
+const verified=await verifyRuleSnapshot(envelope,{publicKeyHex,engineFingerprint:payload.engineFingerprint});
+verifyCoverage(verified);await verifyPublicationFixtures(verified,payload.evidence,fixtures);
+await writeFile(outputPath,JSON.stringify({envelope,fixtures})+'\n',{flag:'wx',mode:0o600});
+console.log('Signed preview package written. This does not certify statutory accuracy or authorize production.');

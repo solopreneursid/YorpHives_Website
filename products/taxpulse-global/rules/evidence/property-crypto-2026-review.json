@@ -1,0 +1,25 @@
+{
+  "reviewDate": "2026-11-25",
+  "status": "source-reviewed-preview-only",
+  "productionEnabled": false,
+  "sources": {
+    "IN": [
+      "https://www.incometaxindia.gov.in/w/capital-gain",
+      "https://wm.incometaxindia.gov.in/w/section-194-78"
+    ],
+    "US": [
+      "https://www.irs.gov/taxtopics/tc409",
+      "https://www.irs.gov/taxtopics/tc704",
+      "https://www.irs.gov/individuals/international-taxpayers/frequently-asked-questions-on-digital-asset-transactions"
+    ],
+    "GB": [
+      "https://www.gov.uk/guidance/capital-gains-tax-rates-and-allowances",
+      "https://www.gov.uk/tax-sell-property/work-out-your-gain",
+      "https://www.gov.uk/guidance/check-if-you-need-to-pay-tax-when-you-sell-cryptoassets",
+      "https://www.gov.uk/hmrc-internal-manuals/cryptoassets-manual/crypto22200"
+    ]
+  },
+  "scope": "Limited single disposal: India post-July-2024 property and VDA, US vacant investment land and cash token disposal, UK investment residential property and ordinary crypto with caller-provided allowable basis.",
+  "limitations": "No independent professional review, pre-2024 Indian property grandfathering, main-home relief, US depreciable buildings, crypto pooling or matching implementation, portfolio accounting or withholding calculations.",
+  "tests": "tests/property-crypto.test.mjs"
+}

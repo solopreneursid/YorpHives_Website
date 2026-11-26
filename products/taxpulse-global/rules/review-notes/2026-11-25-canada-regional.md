@@ -1,0 +1,6 @@
+# Canada 2026 regional source cross-check
+Review date: 2026-11-25. Status: source cross-check only; independent statutory sign-off pending.
+Official source: https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html (page details 2026-06-25).
+Compared the configured 2026 federal ordinary-income bracket thresholds and rates and all 12 configured provincial/territorial basic-rate schedules (AB, BC, MB, NB, NL, NT, NS, NU, ON, PE, SK, YT) against the CRA published table. All listed thresholds and marginal rates match. Provincial calculations still exclude applicable credits, surtaxes, reductions, special residency rules and other adjustments; this does not approve complete income-tax or payroll models.
+Quebec: https://www.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/ . Published 2026 thresholds: 54345, 108680, 132245 CAD; rates 14%, 19%, 24%, 25.75%. Published 2025 thresholds: 53255, 106495, 129590 CAD; same rates. Extractor preserves separate years. Quebec is not activated as a supported calculator solely on the basis of this table.
+No signed source digest, professional reviewer identity, or approval has been fabricated. Independent fixture review and applicable legal source approval remain necessary.

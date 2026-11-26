@@ -1,0 +1,88 @@
+name: TaxPulse staging checks
+on:
+  push:
+    branches: [hqventures/taxpulse-global]
+    paths:
+      - 'products/taxpulse-global/**'
+      - '.github/workflows/taxpulse-staging.yml'
+  pull_request:
+    paths:
+      - 'products/taxpulse-global/**'
+      - '.github/workflows/taxpulse-staging.yml'
+permissions:
+  contents: read
+jobs:
+  staging-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test products/taxpulse-global/tests/*.test.mjs
+      - name: Install pinned browser test dependency
+        working-directory: products/taxpulse-global
+        run: |
+          if [ ! -f package.json ]; then npm init -y; fi
+          npm install --save-dev --save-exact --package-lock=true --ignore-scripts playwright@1.65.1
+          test -f package-lock.json
+      - name: Audit installed test dependencies
+        working-directory: products/taxpulse-global
+        run: npm audit --audit-level=high --package-lock-only
+      - name: Install Chromium
+        working-directory: products/taxpulse-global
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Test the actual simple workspace in Chromium
+        run: node products/taxpulse-global/browser-tests/smoke.mjs
+      - name: Verify deployed preview independently
+        continue-on-error: true
+        run: node products/taxpulse-global/browser-tests/hosted-smoke.mjs
+  regulatory-source-probe:
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch official sources without changing rules
+        working-directory: products/taxpulse-global
+        run: node scripts/probe-regulatory-sources.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regulatory-source-probe
+          path: products/taxpulse-global/regulatory-probe.json
+          if-no-files-found: warn
+          retention-days: 7
+  regulatory-evidence-intake:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/hqventures/taxpulse-global'
+    needs: regulatory-source-probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: taxpulse-regulatory-evidence-preview
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: regulatory-source-probe
+          path: products/taxpulse-global
+      - name: Submit review-only evidence
+        working-directory: products/taxpulse-global
+        run: node scripts/submit-regulatory-evidence.mjs regulatory-probe.json

@@ -1,0 +1,13 @@
+{
+  "reviewDate": "2026-11-25",
+  "status": "source-reviewed-preview-only",
+  "productionEnabled": false,
+  "sources": [
+    "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/last-year.html",
+    "https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html",
+    "https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past",
+    "https://www.incometax.gov.in/iec/foportal/help/individual/return-applicable-3",
+    "https://www.incometax.gov.in/iec/foportal/help/individual/return-applicable-1"
+  ],
+  "scope": "India FY2024–25 and FY2025–26 new-regime base slab tax; UK rest-of-UK ordinary income FY2024–25 through FY2026–27; Canadian federal 2025 and 2026 gross rate schedules. No rebate, cess, credits, deductions or final liability. Historical replay across builds compares full result against locally retained snapshots and algorithm; unsigned receipts do not establish authenticity."
+}

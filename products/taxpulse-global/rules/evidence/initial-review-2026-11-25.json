@@ -1,0 +1,50 @@
+{
+  "reviewedOn": "2026-11-25",
+  "status": "partial_review_not_release_authorization",
+  "findings": [
+    {
+      "country": "US",
+      "module": "pit",
+      "status": "basic_parameters_confirmed",
+      "scope": "2026 single filer federal ordinary income, standard deduction only",
+      "source": "https://www.irs.gov/irb/2025-45_IRB",
+      "confirmed": {
+        "standardDeduction": 16100,
+        "thresholds": [
+          12400,
+          50400,
+          105700,
+          201775,
+          256225,
+          640600
+        ]
+      },
+      "limitations": [
+        "Other filing statuses, credits, special deductions, AMT and state taxes not verified."
+      ]
+    },
+    {
+      "country": "GB",
+      "module": "pit",
+      "status": "correction_required",
+      "source": "https://www.gov.uk/government/publications/budget-2025-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances",
+      "scope": "2026/27 England, Wales and Northern Ireland ordinary income",
+      "originalUpperTaxableBoundary": 112570,
+      "correctUpperTaxableBoundary": 125140,
+      "personalAllowance": 12570,
+      "taperStarts": 100000,
+      "limitations": [
+        "Scottish rates excluded."
+      ]
+    },
+    {
+      "country": "IN",
+      "module": "pit",
+      "status": "tax_year_review_required",
+      "source": "https://www.incometax.gov.in/iec/foportal/help/all-topics/e-filing-services/objective-and-scope-new-act-faq",
+      "limitations": [
+        "AY 2026-27 evidence is not sufficient for tax year 2026-27 under the new Act."
+      ]
+    }
+  ]
+}

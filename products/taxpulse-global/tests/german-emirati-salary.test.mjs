@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {calculateSalaryRemainder as calc} from '../engine/taxable-income.mjs';
+import {createReceipt,verifyReceipt} from '../engine/proof.mjs';
+const de={country:'DE',region:'DE',taxYear:'2026',pay:5000,annualTaxableIncome:50000,healthSupplementRate:2.9,scopeConfirmed:true};
+const ae={country:'AE',region:'AE',taxYear:'2026',pay:20000,monthlyBasicSalary:16000,scopeConfirmed:true};
+test('Germany income assessment and monthly employee contributions',()=>{const r=calc(de);assert.equal(r.incomeTax,10548);assert.deepEqual(r.contributions.map(c=>c.amount),[5580,780,5250,1440]);assert.equal(r.employeeContributions,13050);assert.equal(r.annualRemainder,36402);assert.equal(r.averageMonthlyRemainder,3033.5);});
+test('Germany health and care ceilings, actual insurer rate and assessment surcharge',()=>{const r=calc({...de,pay:6450,annualTaxableIncome:77400});assert.equal(r.incomeTaxComponents[0].amount,21372);assert.equal(r.incomeTaxComponents[1].amount,121.61);assert.deepEqual(r.contributions.map(c=>c.amount),[7198.2,1006.2,6103.08,1674]);assert.equal(calc({...de,healthSupplementRate:3.1}).contributions[2].amount,5310);});
+test('German scope and inputs fail closed',()=>{for(const e of [{pay:2499},{pay:6451},{annualTaxableIncome:60001},{annualTaxableIncome:49999.5},{healthSupplementRate:10.01},{scopeConfirmed:false},{extra:true}])assert.throws(()=>calc({...de,...e}));});
+test('UAE ILOE basic wage threshold is inclusive and separate from gross',()=>{const r=calc(ae);assert.equal(r.incomeTax,0);assert.equal(r.employeeContributions,63);assert.equal(r.annualRemainder,239937);assert.equal(r.averageMonthlyRemainder,19994.75);assert.equal(calc({...ae,monthlyBasicSalary:16000.01}).employeeContributions,126);assert.equal(calc({...ae,monthlyBasicSalary:10000}).employeeContributions,63);});
+test('UAE rejects missing or impossible basic wage and unsupported scope',()=>{for(const e of [{monthlyBasicSalary:0},{monthlyBasicSalary:20001},{monthlyBasicSalary:undefined},{scopeConfirmed:false},{pay:99},{region:'DXB'}])assert.throws(()=>calc({...ae,...e}));});
+test('both new salary calculations replay with matching engine',async()=>{for(const input of [de,ae]){const receipt=await createReceipt({kind:'salary-remainder',input,engineFingerprint:'a'.repeat(64)});assert.deepEqual(await verifyReceipt(receipt,'a'.repeat(64)),{integrity:true,sameEngine:true,reproduced:true});}});
