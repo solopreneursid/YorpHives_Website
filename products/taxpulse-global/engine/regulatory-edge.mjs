@@ -1,3 +1,4 @@
+import {updateReviewQueue} from './regulatory-review-queue.mjs';
 import {classifyObservation} from './regulatory-policy.mjs';
 import {extractCandidate} from './source-adapters.mjs';
 const MAX=2*1024*1024;
@@ -55,4 +56,4 @@ export async function runRegulatoryMonitor(env,sources,fetcher=fetch){
  await env.REGULATORY_STATE.put('latest',JSON.stringify(report));
  return report;
 }
-export function createMonitor(sources){return {scheduled(event,env,ctx){ctx.waitUntil(runRegulatoryMonitor(env,sources));},fetch(){return new Response('Not found',{status:404,headers:{'cache-control':'no-store','x-robots-tag':'noindex'}});}};}
+export function createMonitor(sources){return {scheduled(event,env,ctx){ctx.waitUntil((async()=>{await runRegulatoryMonitor(env,sources);await updateReviewQueue(env.REGULATORY_STATE,sources);})());},fetch(){return new Response('Not found',{status:404,headers:{'cache-control':'no-store','x-robots-tag':'noindex'}});}};}
