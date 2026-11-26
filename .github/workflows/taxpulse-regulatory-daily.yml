@@ -16,10 +16,12 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    outputs:
+      evidence_artifact: ${{ steps.digest.outputs.name }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 'f9aaf31881272fc3dceeb0725545cc2a900ee790'
+          ref: '80230f3288b765ccd63aac90151f208a0087e8b2'
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -27,9 +29,15 @@ jobs:
       - name: Collect official regulatory observations
         working-directory: products/taxpulse-global
         run: node scripts/probe-regulatory-sources.mjs
+      - name: Bind report digest to immutable workflow artifact
+        id: digest
+        working-directory: products/taxpulse-global
+        run: |
+          digest=$(sha256sum regulatory-probe.json | cut -d ' ' -f 1)
+          printf 'name=taxpulse-evidence-sha256-%s\n' "$digest" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
-          name: regulatory-source-probe
+          name: ${{ steps.digest.outputs.name }}
           path: products/taxpulse-global/regulatory-probe.json
           if-no-files-found: error
           retention-days: 7
@@ -40,19 +48,18 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 'f9aaf31881272fc3dceeb0725545cc2a900ee790'
+          ref: '80230f3288b765ccd63aac90151f208a0087e8b2'
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - uses: actions/download-artifact@v4
         with:
-          name: regulatory-source-probe
+          name: ${{ needs.collect.outputs.evidence_artifact }}
           path: products/taxpulse-global
       - name: Submit evidence only to the isolated preview intake
         working-directory: products/taxpulse-global
-        run: node scripts/submit-regulatory-evidence.mjs regulatory-probe.json
+        run: node scripts/submit-regulatory-artifact.mjs regulatory-probe.json
