@@ -136,7 +136,34 @@ export function extractUkIncomeBands(html){
  const rates=[basic,higher,additional].map(r=>{if(!/^\d{1,2}(?:\.\d{1,2})?%$/.test(r[2]))throw Error('Invalid UK rate');return Math.round(parseFloat(r[2])*100);});
  return {jurisdiction:'GB-RUK',component:'regional-income-tax',taxYear:String(year),effectiveFrom:year+'-04-06',effectiveUntil:(year+1)+'-04-06',parameters:{bounds:[top-a,last],rates,allowance:{base:a,taperStart:start,taperDivisor:step}},scope:'ordinary-income-england-wales-northern-ireland',status:'candidate',legalStatus:'review_required',automaticActivation:false};
 }
+// Scotland's current-rates publication is separate from the proposed budget tables.
+// The displayed thresholds include the standard allowance except at the top band.
+export function extractScottishIncomeBands(html){
+ if(typeof html!=='string'||html.length>2*1024*1024)throw Error('Invalid Scottish source');
+ const text=normalize(html).replace(/&pound;|&#163;/g,'£');
+ const m=[...text.matchAll(/The table shows the (\d{4}) to (\d{4}) Scottish Income Tax rates you pay in each band if you have a standard Personal Allowance of £([\d,]+)\./g)];
+ if(m.length!==1||Number(m[0][2])!==Number(m[0][1])+1)throw Error('Ambiguous Scottish period');
+ const year=Number(m[0][1]);if(year<2020||year>2100)throw Error('Invalid Scottish year');
+ const amount=v=>{if(!/^(?:\d{1,3}(?:,\d{3})*|\d+)$/.test(v))throw Error('Invalid Scottish amount');const n=Number(v.replaceAll(',',''));if(!Number.isSafeInteger(n)||n<0||n>1e9)throw Error('Invalid Scottish amount');return n;};
+ const allowance=amount(m[0][3]);
+ const tops=[...text.matchAll(/if you earn over £([\d,]+)\./g)];if(tops.length!==1)throw Error('Missing Scottish allowance exhaustion point');
+ const top=amount(tops[0][1]);
+ const ts=tables(html).filter(t=>t.some(r=>r.length===3&&r[1]==='Taxable income'&&r[2]==='Scottish tax rate'));
+ if(ts.length!==1||ts[0].length!==8)throw Error('Ambiguous Scottish table');
+ const rows=ts[0].slice(1),names=['Personal Allowance','Starter rate','Basic rate','Intermediate rate','Higher rate','Advanced rate','Top rate'];
+ if(rows.some((r,i)=>r.length!==3||r[0]!==names[i]))throw Error('Unsupported Scottish band structure');
+ const first=rows[0][1].match(/^Up to £([\d,]+)$/i);
+ if(!first||amount(first[1])!==allowance||rows[0][2]!=='0%'||allowance<=0)throw Error('Invalid Scottish allowance');
+ let previous=allowance;const bounds=[],rates=[];
+ for(let i=1;i<rows.length;i++){
+  const [,label,rate]=rows[i];if(!/^\d{1,2}(?:\.\d{1,2})?%$/.test(rate))throw Error('Invalid Scottish rate');rates.push(Math.round(parseFloat(rate)*100));
+  if(i===rows.length-1){const final=label.match(/^over £([\d,]+)$/i);if(!final||amount(final[1])!==previous||previous!==top)throw Error('Invalid Scottish top band');}
+  else{const band=label.match(/^£([\d,]+) to £([\d,]+)$/);if(!band)throw Error('Invalid Scottish band');const from=amount(band[1]),to=amount(band[2]);if(from!==previous+1||to<from)throw Error('Scottish band gap');bounds.push(i===rows.length-2?to:to-allowance);previous=to;}
+ }
+ return {jurisdiction:'GB-SCT',component:'regional-income-tax',taxYear:String(year),effectiveFrom:year+'-04-06',effectiveUntil:(year+1)+'-04-06',parameters:{bounds,rates,allowanceBase:allowance,zeroAllowanceIncome:top},scope:'Scottish ordinary-income bands; taper requires separate evidence',status:'candidate',legalStatus:'review_required',automaticActivation:false};
+}
 export function extractCandidate(source,bytes){
+ if(source.id==='GB-SCT-bands'&&['https://www.gov.uk/scottish-income-tax/how-it-works','https://www.gov.uk/scottish-rate-income-tax/how-it-works'].includes(source.url))return extractScottishIncomeBands(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  if(source.id==='GB-2'&&source.url==='https://www.gov.uk/income-tax-rates')return extractUkIncomeBands(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  if(source.id==='SG-8'&&source.url==='https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates')return extractIrasResidentBrackets(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  if(source.id==='CA-QC-rate'&&['https://www.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/','https://www-prd.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/'].includes(source.url))return extractQuebecBrackets(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
