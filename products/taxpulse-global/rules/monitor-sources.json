@@ -155,7 +155,8 @@
     "url": "https://finance.odisha.gov.in/en/notification/tax-profession",
     "kind": "change-discovery",
     "alternateUrls": [
-      "https://finance.odisha.gov.in/en/financial-notification"
+      "https://odishatax.gov.in/opt_notification.php?lang=en",
+      "https://www.odishatax.gov.in/opt_notification.php"
     ]
   },
   {
@@ -178,7 +179,8 @@
     "url": "https://www.manipurtaxes.gov.in/en/professional-tax/rules/",
     "kind": "change-discovery",
     "alternateUrls": [
-      "https://manipurtaxes.gov.in/en/professional-tax/rules/"
+      "https://manipurtaxes.gov.in/en/professional-tax/rules/",
+      "https://manipurtaxes.gov.in/en/professional-tax/"
     ]
   },
   {
