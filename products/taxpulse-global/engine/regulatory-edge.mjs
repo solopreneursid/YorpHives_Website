@@ -6,7 +6,7 @@ const redirects=new Set([301,302,303,307,308]);
 function officialUrl(value){const u=new URL(value);if(u.protocol!=='https:'||u.username||u.password||u.port||u.hash)throw Error('Invalid official source URL');return u;}
 async function retrieve(source,fetcher,extraRequest){
  const initial=officialUrl(source.url),alternates=(source.alternateUrls||[]).map(officialUrl);
- let target=initial,lastFailure='network_error';
+ let target=source.preferredUrl?officialUrl(source.preferredUrl):initial,lastFailure='network_error';
  const attempts=[];
  for(let i=0;i<3;i++){
   if(i>0&&!extraRequest())break;
@@ -19,12 +19,12 @@ async function retrieve(source,fetcher,extraRequest){
    lastFailure='http_'+response.status;
    if(redirects.has(response.status)){
     let next;try{next=officialUrl(new URL(response.headers.get('location')||'',target).href);}catch{}
-    if(next&&(next.origin===initial.origin||alternates.some(a=>a.href===next.href))&&!attempts.some(a=>a.url===next.href)){await response.body?.cancel();target=next;continue;}
+    if(next&&(next.origin===target.origin||next.origin===initial.origin||alternates.some(a=>a.href===next.href))&&!attempts.some(a=>a.url===next.href)){await response.body?.cancel();target=next;continue;}
     lastFailure='redirect_rejected';
    }
    await response.body?.cancel();
   }
-  const fallback=alternates.find(a=>!attempts.some(x=>x.url===a.href));if(!fallback)break;target=fallback;
+  const fallback=[initial,...alternates].find(a=>!attempts.some(x=>x.url===a.href));if(!fallback)break;target=fallback;
  }
  return {failure:lastFailure,attempts};
 }
@@ -48,7 +48,7 @@ export async function inspectEdge(source,previous={},fetcher=fetch,clock=()=>new
 export async function runRegulatoryMonitor(env,sources,fetcher=fetch){
  if(!env?.REGULATORY_STATE)throw Error('Regulatory storage unavailable');
  if(!Array.isArray(sources)||sources.length>40||new Set(sources.map(s=>s.id)).size!==sources.length)throw Error('Invalid monitor configuration');
- for(const s of sources){officialUrl(s.url);if(s.alternateUrls&&(!Array.isArray(s.alternateUrls)||s.alternateUrls.length>2))throw Error('Invalid alternate source list');for(const url of s.alternateUrls||[])officialUrl(url);classifyObservation(s,{status:'baseline'});}
+ for(const s of sources){officialUrl(s.url);if(s.alternateUrls&&(!Array.isArray(s.alternateUrls)||s.alternateUrls.length>2))throw Error('Invalid alternate source list');for(const url of s.alternateUrls||[])officialUrl(url);if(s.preferredUrl&&![s.url,...(s.alternateUrls||[])].includes(s.preferredUrl))throw Error('Preferred source is not allowlisted');classifyObservation(s,{status:'baseline'});}
  const prior=await env.REGULATORY_STATE.get('latest','json'),old=new Map((prior?.sources||[]).map(s=>[s.id,s]));
  const results=[];let extras=Math.max(0,45-sources.length);const extraRequest=()=>extras>0?(extras--,true):false;
  for(let i=0;i<sources.length;i+=3)results.push(...await Promise.all(sources.slice(i,i+3).map(s=>inspectEdge(s,old.get(s.id),fetcher,()=>new Date(),extraRequest))));
