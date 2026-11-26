@@ -12,11 +12,10 @@ export async function verifyCollectorToken(token,{fetcher=fetch,now=Date.now()}=
  const parts=token.split('.');if(parts.length!==3)throw Error('Invalid token');
  const h=jsonPart(parts[0]),p=jsonPart(parts[1]),sec=Math.floor(now/1000);
  if(h.alg!=='RS256'||typeof h.kid!=='string'||h.kid.length>200||p.iss!==ISSUER||p.aud!==AUDIENCE||p.repository_id!=='1457876727'||p.repository!==REPO||!trustedWorkflow(p)||![p.iat,p.nbf,p.exp].every(Number.isSafeInteger)||p.iat>sec+30||p.nbf>sec+30||p.exp<=sec||p.exp-p.iat>600||p.exp<=p.iat||p.iat<sec-600||typeof p.run_id!=='string'||!/^\d+$/.test(p.run_id))throw Error('Collector identity not permitted');
- const r=await fetcher(ISSUER+'/.well-known/jwks',{redirect:'error',signal:AbortSignal.timeout(5000)});if(!r.ok)throw Error('Issuer keys unavailable');
- const jwks=await r.json();const matches=jwks.keys?.filter(k=>k.kid===h.kid&&k.kty==='RSA'&&(!k.alg||k.alg==='RS256'));
+ let r;try{r=await fetcher(ISSUER+'/.well-known/jwks',{redirect:'error',signal:AbortSignal.timeout(5000)});}catch{throw Error('Issuer keys unavailable');}if(!r.ok)throw Error('Issuer keys unavailable');
+ let jwks;try{jwks=await r.json();}catch{throw Error('Issuer keys unavailable');}const matches=jwks.keys?.filter(k=>k.kid===h.kid&&k.kty==='RSA'&&(!k.alg||k.alg==='RS256'));
  if(matches?.length!==1)throw Error('Issuer key not found');
- const key=await crypto.subtle.importKey('jwk',matches[0],{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);
- if(!await crypto.subtle.verify('RSASSA-PKCS1-v1_5',key,decode(parts[2]),new TextEncoder().encode(parts[0]+'.'+parts[1])))throw Error('Invalid token signature');
+ let valid;try{const {kty,n,e}=matches[0];const key=await crypto.subtle.importKey('jwk',{kty,n,e,alg:'RS256',ext:true},{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);valid=await crypto.subtle.verify('RSASSA-PKCS1-v1_5',key,decode(parts[2]),new TextEncoder().encode(parts[0]+'.'+parts[1]));}catch{throw Error('Identity crypto unavailable');}if(!valid)throw Error('Invalid token signature');
  return {runId:p.run_id};
 }
 export async function acceptIndependentReport(kv,config,report,identity,{now=new Date()}={}){
@@ -35,7 +34,7 @@ export async function acceptIndependentReport(kv,config,report,identity,{now=new
 export function createEvidenceIntake(config){return {async fetch(req,env){
  const reply=(body,status)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json','cache-control':'no-store','x-robots-tag':'noindex','x-content-type-options':'nosniff'}});
  if(new URL(req.url).pathname!=='/v1/evidence'||req.method!=='POST')return reply({error:'Not found'},404);
- let identity;try{const auth=req.headers.get('authorization')||'';if(!auth.startsWith('Bearer '))throw Error('No token');identity=await verifyCollectorToken(auth.slice(7));}catch{return reply({error:'Unauthorized'},401);}
+ let identity;try{const auth=req.headers.get('authorization')||'';if(!auth.startsWith('Bearer '))throw Error('No token');identity=await verifyCollectorToken(auth.slice(7));}catch(e){const codes={'Issuer keys unavailable':'issuer_unavailable','Issuer key not found':'key_not_found','Identity crypto unavailable':'crypto_unavailable','Invalid token signature':'signature_invalid','Collector identity not permitted':'claims_rejected'};return reply({error:'Unauthorized',reason:codes[e.message]||'invalid_token'},401);}
  if(!/^application\/json(?:;|$)/i.test(req.headers.get('content-type')||''))return reply({error:'Expected JSON'},415);
  try{const reader=req.body?.getReader();if(!reader)throw Error('Missing body');const chunks=[];let size=0;try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>MAX){await reader.cancel();return reply({error:'Too large'},413);}chunks.push(value);}}finally{reader.releaseLock();}const bytes=new Uint8Array(size);let pos=0;for(const c of chunks){bytes.set(c,pos);pos+=c.length;}const result=await acceptIndependentReport(env.REGULATORY_STATE,config,JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)),identity);return reply(result,200);}catch{return reply({error:'Evidence rejected'},400);}
  }};}
