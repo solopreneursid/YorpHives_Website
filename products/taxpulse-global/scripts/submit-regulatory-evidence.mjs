@@ -1,7 +1,9 @@
 import {readFile} from 'node:fs/promises';
 const target='https://hqventures-taxpulse-regulatory-evidence-preview.solopreneursid-proy.workers.dev/v1/evidence';
 const audience='taxpulse-regulatory-evidence-preview';
-if(process.env.GITHUB_EVENT_NAME!=='push'||process.env.GITHUB_REF!=='refs/heads/hqventures/taxpulse-global'||process.env.GITHUB_REPOSITORY!=='solopreneursid/YorpHives_Website')throw Error('Untrusted workflow context');
+const repo='solopreneursid/YorpHives_Website',ref=process.env.GITHUB_REF,event=process.env.GITHUB_EVENT_NAME,workflow=process.env.GITHUB_WORKFLOW_REF;
+const permitted=(event==='push'&&ref==='refs/heads/hqventures/taxpulse-global'&&workflow===repo+'/.github/workflows/taxpulse-staging.yml@'+ref)||(['push','schedule','workflow_dispatch'].includes(event)&&ref==='refs/heads/main'&&workflow===repo+'/.github/workflows/taxpulse-regulatory-daily.yml@'+ref);
+if(!permitted||process.env.GITHUB_REPOSITORY!==repo)throw Error('Untrusted workflow context');
 const requestUrl=process.env.ACTIONS_ID_TOKEN_REQUEST_URL,requestToken=process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
 if(!requestUrl||!requestToken)throw Error('Workflow identity not available');
 const u=new URL(requestUrl);if(u.protocol!=='https:')throw Error('Invalid identity endpoint');u.searchParams.set('audience',audience);
