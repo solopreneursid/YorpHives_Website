@@ -1,3 +1,4 @@
+import {verifyCollectorToken} from '../engine/regulatory-evidence-intake.mjs';
 import {readFile} from 'node:fs/promises';
 const target='https://hqventures-taxpulse-regulatory-evidence-preview.solopreneursid-proy.workers.dev/v1/evidence';
 const audience='taxpulse-regulatory-evidence-preview';
@@ -10,6 +11,11 @@ const u=new URL(requestUrl);if(u.protocol!=='https:')throw Error('Invalid identi
 const identity=await fetch(u,{headers:{authorization:'Bearer '+requestToken},redirect:'error',signal:AbortSignal.timeout(10000)});
 if(!identity.ok)throw Error('Identity issuance failed');
 const {value}=await identity.json();if(typeof value!=='string'||value.length>16000)throw Error('Invalid identity response');
+// Log only non-secret identity metadata; never log the token or request credentials.
+const claims=JSON.parse(Buffer.from(value.split('.')[1],'base64url').toString('utf8'));
+console.log(JSON.stringify({identityDiagnostics:{issuer:claims.iss,audience:claims.aud,repository:claims.repository,repositoryId:claims.repository_id,ref:claims.ref,event:claims.event_name,workflow:claims.workflow_ref,iat:claims.iat,nbf:claims.nbf,exp:claims.exp,runId:claims.run_id}}));
+await verifyCollectorToken(value);
+console.log('Local cryptographic verification of GitHub workflow identity passed');
 const body=await readFile(process.argv[2]||'regulatory-probe.json');
 if(body.length>300000)throw Error('Evidence too large');
 const response=await fetch(target,{method:'POST',headers:{authorization:'Bearer '+value,'content-type':'application/json'},body,redirect:'error',signal:AbortSignal.timeout(30000)});
