@@ -1,0 +1,16 @@
+import {readFile} from 'node:fs/promises';
+const target='https://hqventures-taxpulse-regulatory-evidence-preview.solopreneursid-proy.workers.dev/v1/evidence';
+const audience='taxpulse-regulatory-evidence-preview';
+if(process.env.GITHUB_EVENT_NAME!=='push'||process.env.GITHUB_REF!=='refs/heads/hqventures/taxpulse-global'||process.env.GITHUB_REPOSITORY!=='solopreneursid/YorpHives_Website')throw Error('Untrusted workflow context');
+const requestUrl=process.env.ACTIONS_ID_TOKEN_REQUEST_URL,requestToken=process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
+if(!requestUrl||!requestToken)throw Error('Workflow identity not available');
+const u=new URL(requestUrl);if(u.protocol!=='https:')throw Error('Invalid identity endpoint');u.searchParams.set('audience',audience);
+const identity=await fetch(u,{headers:{authorization:'Bearer '+requestToken},redirect:'error',signal:AbortSignal.timeout(10000)});
+if(!identity.ok)throw Error('Identity issuance failed');
+const {value}=await identity.json();if(typeof value!=='string'||value.length>16000)throw Error('Invalid identity response');
+const body=await readFile(process.argv[2]||'regulatory-probe.json');
+if(body.length>300000)throw Error('Evidence too large');
+const response=await fetch(target,{method:'POST',headers:{authorization:'Bearer '+value,'content-type':'application/json'},body,redirect:'error',signal:AbortSignal.timeout(30000)});
+if(!response.ok)throw Error('Evidence intake rejected request: '+response.status);
+const result=await response.json();if(!['accepted','already_observed'].includes(result.state))throw Error('Unexpected intake response');
+console.log(JSON.stringify(result));
