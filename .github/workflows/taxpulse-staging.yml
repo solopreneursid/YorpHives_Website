@@ -61,3 +61,28 @@ jobs:
           path: products/taxpulse-global/regulatory-probe.json
           if-no-files-found: warn
           retention-days: 7
+  regulatory-evidence-intake:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/hqventures/taxpulse-global'
+    needs: regulatory-source-probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: taxpulse-regulatory-evidence-preview
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: regulatory-source-probe
+          path: products/taxpulse-global
+      - name: Submit review-only evidence
+        working-directory: products/taxpulse-global
+        run: node scripts/submit-regulatory-evidence.mjs regulatory-probe.json
