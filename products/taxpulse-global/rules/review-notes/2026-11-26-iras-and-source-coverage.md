@@ -1,0 +1,9 @@
+# Regulatory evidence — 2026-11-26
+Status: source observations, not statutory approval.
+- Cloudflare scheduled report persisted at 2026-11-26T02:30:57.129Z. 20 of 30 sources retrieved. GB-NI-2026 yielded a candidate. Failed IDs: US-1, CA-6, AU-7, CA-regional-brackets, CA-regional-directory, IN-OD-profession, AU-state-directory, US-wage, AU-wage, CA-QC-rate.
+- GitHub Actions run 709 independent probe at 2026-11-26T03:06:41.831Z. 28 of 30 sources retrieved. US-1, SG-8, CA-regional-brackets and GB-NI-2026 yielded candidates. Failed IDs: IN-MN-profession (network), CA-QC-rate (403). Odisha retrieval succeeded through https://odishatax.gov.in/opt_notification.php?lang=en.
+- Combined observed reachability: 29/30, not simultaneous and not yet an automatically reconciled deployed report. Do not infer statutory completeness or treat blocked retrieval as an invitation to bypass access controls.
+- Singapore official resident tax schedule: https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates . The live extraction covers published gross resident tax rates from YA 2024 onwards and checks cumulative tax arithmetic. The assessment year is not interchangeable with income-earning year; rebates, deductions, residence eligibility and later amendments need independent verification.
+- Odisha notification index includes the professional-tax repeal ordinance. Verify continuing legal status, effective date and savings provisions before changing the calculator. No automatic rate activation.
+- Quebec: retain the source as unavailable for automated retrieval and use an authorized official legal publication or human review. Do not circumvent access restrictions.
+- Cross-collector reconciliation utility is implemented separately from the deployed monitor, read-only, and does not sign or publish candidates.
