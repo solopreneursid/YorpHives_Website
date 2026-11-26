@@ -111,7 +111,33 @@ export function extractIrasResidentBrackets(html){
  }
  return {jurisdiction:'SG',component:'national-assessment',assessmentYearFrom:String(year),parameters:{bounds,rates},scope:'resident-gross-tax-before-rebates',status:'candidate',legalStatus:'review_required',automaticActivation:false};
 }
+// GOV.UK's headline table uses income before the standard allowance, with the top
+// threshold shown at the zero-allowance point. Keep the candidate scoped to RUK.
+export function extractUkIncomeBands(html){
+ if(typeof html!=='string'||html.length>2*1024*1024)throw Error('Invalid UK source');
+ const text=normalize(html).replace(/&pound;|&#163;/g,'£');
+ const unique=re=>{const rows=[...text.matchAll(re)];if(rows.length!==1)throw Error('Ambiguous UK narrative');return rows[0];};
+ const period=unique(/The current tax year is from 6 April (\d{4}) to 5 April (\d{4})\./g);
+ const year=Number(period[1]);if(year<2020||year>2100||Number(period[2])!==year+1)throw Error('Invalid UK period');
+ const pounds=v=>{if(!/^(?:\d{1,3}(?:,\d{3})*|\d+)$/.test(v))throw Error('Invalid UK amount');const n=Number(v.replaceAll(',',''));if(!Number.isSafeInteger(n)||n<0||n>1e9)throw Error('Invalid UK amount');return n;};
+ const a=pounds(unique(/The standard Personal Allowance is £([\d,]+),/g)[1]);
+ const taper=unique(/Your personal allowance goes down by £([\d,]+) for every £([\d,]+) that your adjusted net income is above £([\d,]+)\. This means your allowance is zero if your income is £([\d,]+) or above\./g);
+ const [reduction,step,start,zero]=taper.slice(1).map(pounds);
+ if(!a||reduction!==1||step<1||step>100||start<a||start+a*step!==zero)throw Error('Unsupported UK taper');
+ const ts=tables(html).filter(t=>t.some(row=>row.join('|')==='Band|Taxable income|Tax rate'));
+ if(ts.length!==1)throw Error('Ambiguous UK income table');
+ const row=label=>{const matches=ts[0].filter(r=>r[0]===label);if(matches.length!==1||matches[0].length!==3)throw Error('Missing UK band');return matches[0];};
+ const match=(s,re)=>{const m=s.match(re);if(!m)throw Error('Invalid UK income band');return m.slice(1).map(pounds);};
+ const allowance=row('Personal Allowance'),basic=row('Basic rate'),higher=row('Higher rate'),additional=row('Additional rate');
+ if(ts[0].length!==5||allowance[2]!=='0%'||match(allowance[1],/^Up to £([\d,]+)$/i)[0]!==a)throw Error('Unsupported UK band structure');
+ const [low,top]=match(basic[1],/^£([\d,]+) to £([\d,]+)$/);
+ const [next,last]=match(higher[1],/^£([\d,]+) to £([\d,]+)$/);
+ if(low!==a+1||top<low||next!==top+1||last<next||last!==zero||match(additional[1],/^over £([\d,]+)$/i)[0]!==last)throw Error('Inconsistent UK thresholds');
+ const rates=[basic,higher,additional].map(r=>{if(!/^\d{1,2}(?:\.\d{1,2})?%$/.test(r[2]))throw Error('Invalid UK rate');return Math.round(parseFloat(r[2])*100);});
+ return {jurisdiction:'GB-RUK',component:'regional-income-tax',taxYear:String(year),effectiveFrom:year+'-04-06',effectiveUntil:(year+1)+'-04-06',parameters:{bounds:[top-a,last],rates,allowance:{base:a,taperStart:start,taperDivisor:step}},scope:'ordinary-income-england-wales-northern-ireland',status:'candidate',legalStatus:'review_required',automaticActivation:false};
+}
 export function extractCandidate(source,bytes){
+ if(source.id==='GB-2'&&source.url==='https://www.gov.uk/income-tax-rates')return extractUkIncomeBands(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  if(source.id==='SG-8'&&source.url==='https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates')return extractIrasResidentBrackets(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  if(source.id==='CA-QC-rate'&&['https://www.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/','https://www-prd.revenuquebec.ca/en/citizens/income-tax-return/completing-your-income-tax-return/income-tax-rates/'].includes(source.url))return extractQuebecBrackets(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  if(source.id==='US-1'&&source.url==='https://www.ssa.gov/OACT/COLA/cbb.html')return extractSsaWageBase(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
