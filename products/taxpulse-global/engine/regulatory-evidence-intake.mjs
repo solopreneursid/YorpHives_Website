@@ -1,3 +1,4 @@
+import {verifyArtifactProof} from './regulatory-artifact-proof.mjs';
 import {reconcileRegulatoryReports} from './regulatory-reconciliation.mjs';
 const ISSUER='https://token.actions.githubusercontent.com';
 export const AUDIENCE='taxpulse-regulatory-evidence-preview';
@@ -27,14 +28,14 @@ export async function acceptIndependentReport(kv,config,report,identity,{now=new
  reconcileRegulatoryReports(config,null,report,{now});
  const previous=await kv.get('independent-latest','json');
  if(previous&&Date.parse(previous.checkedAt)>=Date.parse(report.checkedAt))return {state:'already_observed'};
- await kv.put('independent-latest',JSON.stringify({...report,collectorRunId:identity.runId}));
+ await kv.put('independent-latest',JSON.stringify({...report,collectorRunId:identity.runId,collectorProof:identity.artifactId?{kind:'github-artifact-digest',artifactId:identity.artifactId,reportDigest:identity.reportDigest}:{kind:'github-oidc'}}));
  const summary=reconcileRegulatoryReports(config,await kv.get('latest','json'),report,{now});
  return {state:'accepted',reachable:summary.reachable,unavailable:summary.unavailable,reviewPending:summary.sources.filter(s=>s.reviewPending||s.extraction==='matching_candidates').length,automaticRuleChanges:false};
 }
 export function createEvidenceIntake(config){return {async fetch(req,env){
  const reply=(body,status)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json','cache-control':'no-store','x-robots-tag':'noindex','x-content-type-options':'nosniff'}});
- if(new URL(req.url).pathname!=='/v1/evidence'||req.method!=='POST')return reply({error:'Not found'},404);
- let identity;try{const auth=req.headers.get('authorization')||'';if(!auth.startsWith('Bearer '))throw Error('No token');identity=await verifyCollectorToken(auth.slice(7));}catch(e){const codes={'Issuer keys unavailable':'issuer_unavailable','Issuer key not found':'key_not_found','Identity crypto unavailable':'crypto_unavailable','Invalid token signature':'signature_invalid','Collector identity not permitted':'claims_rejected'};return reply({error:'Unauthorized',reason:codes[e.message]||'invalid_token'},401);}
+ const path=new URL(req.url).pathname,artifact=path==='/v1/evidence/artifact';if(!['/v1/evidence','/v1/evidence/artifact'].includes(path)||req.method!=='POST')return reply({error:'Not found'},404);
+ let identity;if(artifact){if(!/^\d{1,16}$/.test(req.headers.get('x-taxpulse-run-id')||''))return reply({error:'Unauthorized',reason:'invalid_run'},401);}else try{const auth=req.headers.get('authorization')||'';if(!auth.startsWith('Bearer '))throw Error('No token');identity=await verifyCollectorToken(auth.slice(7));}catch(e){const codes={'Issuer keys unavailable':'issuer_unavailable','Issuer key not found':'key_not_found','Identity crypto unavailable':'crypto_unavailable','Invalid token signature':'signature_invalid','Collector identity not permitted':'claims_rejected'};return reply({error:'Unauthorized',reason:codes[e.message]||'invalid_token'},401);}
  if(!/^application\/json(?:;|$)/i.test(req.headers.get('content-type')||''))return reply({error:'Expected JSON'},415);
- try{const reader=req.body?.getReader();if(!reader)throw Error('Missing body');const chunks=[];let size=0;try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>MAX){await reader.cancel();return reply({error:'Too large'},413);}chunks.push(value);}}finally{reader.releaseLock();}const bytes=new Uint8Array(size);let pos=0;for(const c of chunks){bytes.set(c,pos);pos+=c.length;}const result=await acceptIndependentReport(env.REGULATORY_STATE,config,JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)),identity);return reply(result,200);}catch{return reply({error:'Evidence rejected'},400);}
+ try{const reader=req.body?.getReader();if(!reader)throw Error('Missing body');const chunks=[];let size=0;try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>MAX){await reader.cancel();return reply({error:'Too large'},413);}chunks.push(value);}}finally{reader.releaseLock();}const bytes=new Uint8Array(size);let pos=0;for(const c of chunks){bytes.set(c,pos);pos+=c.length;}if(artifact){try{identity=await verifyArtifactProof(req.headers.get('x-taxpulse-run-id'),bytes);}catch{return reply({error:'Unauthorized',reason:'artifact_proof_rejected'},401);}}const result=await acceptIndependentReport(env.REGULATORY_STATE,config,JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)),identity);return reply(result,200);}catch{return reply({error:'Evidence rejected'},400);}
  }};}
